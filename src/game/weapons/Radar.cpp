@@ -351,7 +351,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
-    bool alienOrbit = Globals::status->inAlienOrbit();
+    int alienOrbit = Globals::status->inAlienOrbit();
     int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
@@ -470,11 +470,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + rowHeight * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
-                        String labelCopy2 = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                               this->cameraX, this->cameraY,
-                                                               this->cameraZ);
-                        this->lockLabel = labelCopy2;
-                        Globals::Canvas->DrawString(radarFont(), labelCopy2, this->screenX + offset,
+                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                             this->cameraX, this->cameraY, this->cameraZ);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
                                                     this->screenY + rowHeight, false);
                     }
                 }
@@ -1336,8 +1334,8 @@ asteroids_done:
     }
     this->field_0x1bc = 0;
     this->plasmaInRange = 0;
-    String dummy;
-
+    Globals::status->getCurrentCampaignMission();
+    Globals::status->getCurrentCampaignMission();
 }
 int Radar::getPlanetDockIndex() {
     SolarSystem *sys = reinterpret_cast<SolarSystem *>(
