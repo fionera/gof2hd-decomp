@@ -93,11 +93,11 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-08, wave 144)
+### Current state — ELF sections (2026-11-08, wave 145)
 All **27 original section headers are present**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
-`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.rel.plt`, `.dynamic`,
+`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
 `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
 and `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size- and base-exact**
 (`0x26298` @ `0x1a3b78`): `Level::createShip` is the faithful 336 B real-`new` cleanup-only
@@ -108,8 +108,11 @@ exact at 948 B. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (84,960), `.ARM.extab` (1,415) and
-`.note.gnu.build-id` (20); `.rel.plt` is now byte-identical. `.bss` is NOBITS (its file bytes are linker padding).
+section bytes are `.text` (85,767), `.ARM.extab` (1,399) and
+`.note.gnu.build-id` (20). `.rel.plt` is size- and base-exact but **4 bytes differ** (entries
+2835/2836 swap `PlayerEgo::deleteHackingGame` and `PlayerStation::setVisible`): the wave-145
+inline case-125 state-1 body moves the case-125 `default` block ahead of the case-42 state-7
+block. `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

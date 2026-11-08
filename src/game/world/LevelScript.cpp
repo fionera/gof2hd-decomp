@@ -2815,6 +2815,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 4;
                     delete m_pLevel->objectivesB;
                     m_pLevel->objectivesB = nullptr;
+                    m_nScriptTimerA = 0;
                 } else if (m_nState == 4 && ((RadioMessage *) ((*messages)[6]))->isOver()
                            && !m_pLevel->getPlayer()->isDockedToDockingPoint()) {
                     m_nScriptTimerA = 0;
@@ -2862,7 +2863,7 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         player->setComputerControlled(true);
-                        m_pLevel->getPlayer()->setCollide(false);
+                        player->setCollide(false);
                         m_pCamera->setLookAtCam(true);
                         AEGeometry *ship = player->geometry;
                         (*enemies)[0]->player->setHitpoints(0);
@@ -2995,6 +2996,7 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                         }
                         m_nScriptTimerA = 0;
+                        m_nScriptTimerB = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 4) {
@@ -3922,8 +3924,7 @@ bool LevelScript::process(int delta) {
                     player->setRoute(route);
                     m_nScriptTimerA = 0;
                 }
-                switch (m_nState) {
-                case 1: {
+                if (m_nState == 1) {
                     if (player->getRoute() != 0) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
@@ -3935,8 +3936,8 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                    break;
                 }
+                switch (m_nState) {
                 case 2: {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
@@ -3981,7 +3982,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += leader->getDirection() * 4000.0f;
                         m_tempVec += leader->getUpVector() * -500.0f;
                         m_tempVec += leader->getRightVector() * -500.0f;
-                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
