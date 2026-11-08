@@ -4867,7 +4867,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nScriptTimerB += delta;
-                    if (m_nScriptTimerB >= 25001) {
+                    if (__builtin_expect(m_nScriptTimerB >= 25001, 1)) { // lint: arm_builtin
                         m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
@@ -4901,7 +4901,7 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         KIPlayer *fighterShip = (*enemies)[fighterIndex];
                         ((PlayerFighter *) fighterShip)->field_0x140 = 0;
-                        m_nState = 6;
+                        m_nState++;
                         fighterShip->player->setVulnerable(false);
                         chaser->setVisible(true);
                         m_nScriptTimerA = 0;
@@ -4921,14 +4921,14 @@ bool LevelScript::process(int delta) {
                         chaser->setPosition(50000.0f, 50000.0f, 50000.0f);
                         m_pCamera->setTarget(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry);
                         m_nScriptTimerA = 0;
-                        m_nState = 7;
+                        m_nState++;
                     }
                 } else if (m_nState == 7 && ((RadioMessage *) ((*messages)[10]))->isOver()) {
                     PlayerStation *station = (PlayerStation *) (*enemies)[stationIndex];
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = station->getPosition();
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
-                    if (m_nScriptTimerA <= 9999) {
+                    if (__builtin_expect(m_nScriptTimerA <= 9999, 1)) { // lint: arm_builtin
                         m_nScriptTimerA += delta;
                     }
                     station->rootGeometry->moveForward((float) m_nScriptTimerA / 10000.0f * (float) (-10 * delta));
@@ -4972,7 +4972,7 @@ bool LevelScript::process(int delta) {
                         player->setSpeed(10.0f);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        m_nState = 9;
+                        m_nState++;
                     }
                 } else if (m_nState == 9) {
                     Vector zero{0.0f, 0.0f, 0.0f};
