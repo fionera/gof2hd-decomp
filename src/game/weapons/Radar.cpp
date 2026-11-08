@@ -1315,7 +1315,7 @@ asteroids_done:
                         Globals::sound->play(146, nullptr, nullptr, 0.0f);
                     } else if (Globals::status->getStation()->getIndex() == 101) {
                         Globals::sound->play(147, nullptr, nullptr, 0.0f);
-                    } else if (__builtin_expect(Globals::status->inSupernovaSystem(), 0)) { // lint: arm_builtin anchor: Radar::draw
+                    } else if (Globals::status->inSupernovaSystem()) {
                         if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
                             Globals::status->getMission()->getTargetStation() ==
                                     Globals::status->getStation()->getIndex()) {
