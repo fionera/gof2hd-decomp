@@ -4,6 +4,31 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 145)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-145 lands one faithfulness fix:
+
+* `LevelScript::process` (w9002): the four calls the original's mission-0 state-4
+  teardown owns (`setFreeLookMode`, `enableFirstPersonCam`,
+  `hideShipForFirstPersonCameraView`, `removeAllGuns`; original `0x138d6c..0x138daa`)
+  are moved out of the head of state 5 into state 4 in the witnessed order, and the
+  three state tests are written **4, 5, 3** so state 4 is laid out before state 5.
+  This is the only branch permutation that keeps `.rel.plt` byte-identical at the
+  exact 57,232 B size (3,4,5 is 57,272 B and moves setVisible/deleteHackingGame).
+  Raw **54,909 -> 54,923** (+14, faithfulness over layout); `.ARM.extab` diff
+  **1,370 -> 1,368**. The old `m4bc` -244 / `D_cached+swap45` 54,585 numbers were
+  measured on the wave-141 base and no longer reproduce.
+
+Section deltas: `.text` **86,008** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,368** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 144)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:

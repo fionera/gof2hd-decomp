@@ -676,32 +676,37 @@ bool LevelScript::process(int delta) {
                     }
                 }
             }
-        } else if (m_nState == 3) {
-            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
-            // message #8 finishes hand control back to the player and reframe onto the player ship.
-            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
-            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
-            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
-                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-                m_nState = 4;
-                player->setComputerControlled(false);
-                player->player->field_5e = 0;
-                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
-                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                m_pCamera->setLookAtCam(false);
+        } else if (m_nState == 4) {
+            // State 4 (0x138d2a): once radio message #10 finishes, run the standard cutscene-exit
+            // teardown -- stop event 143's radio sting and replay it, drop the player out of turret
+            // and free-look, reset the camera, re-enable collision, then reframe the camera onto the
+            // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
+            // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
+            if (((RadioMessage *) ((*messages)[10]))->isOver()) {
+                Globals::sound->stop(player->field_0x1c);
+                Globals::sound->play(143, nullptr, nullptr, 0.0f);
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pLevel->getPlayer()->setCollide(false);
+                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
+                player->setComputerControlled(true);
+                player->player->removeAllGuns();
+                m_pCamera->setLookAtCam(true);
                 m_pCamera->setTarget(player->geometry);
-                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
+                player->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
+                Vector playerPos = player->geometry->getPosition();
+                m_pCamera->setPosition(playerPos);
+                m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
+                m_nState = 5;
             }
-            // falls through to the shared active tail (0x137f7c)
+            // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
             // ship has slowed to cruise speed.
-            player->setFreeLookMode(false);
-            m_pCamera->enableFirstPersonCam(false);
-            player->hideShipForFirstPersonCameraView(false);
-            player->player->removeAllGuns();
             Vector pos = player->getPosition();
             int speedBits = player->getSpeed();
             if (reinterpret_cast<float &>(speedBits) == 2.0f) {
@@ -724,30 +729,25 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
                 m_nState = 6;
             }
-        } else if (m_nState == 4) {
-            // State 4 (0x138d2a): once radio message #10 finishes, run the standard cutscene-exit
-            // teardown -- stop event 143's radio sting and replay it, drop the player out of turret
-            // and free-look, reset the camera, re-enable collision, then reframe the camera onto the
-            // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
-            // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
-            if (((RadioMessage *) ((*messages)[10]))->isOver()) {
-                Globals::sound->stop(player->field_0x1c);
-                Globals::sound->play(143, nullptr, nullptr, 0.0f);
-                player->setTurretMode(false);
-                resetCamera(m_pLevel);
-                m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pLevel->getPlayer()->setCollide(false);
-                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
-                player->setComputerControlled(true);
-                m_pCamera->setLookAtCam(true);
+        } else if (m_nState == 3) {
+            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
+            // message #8 finishes hand control back to the player and reframe onto the player ship.
+            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
+            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
+                m_nState = 4;
+                player->setComputerControlled(false);
+                player->player->field_5e = 0;
+                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
+                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
-                player->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
-                Vector playerPos = player->geometry->getPosition();
-                m_pCamera->setPosition(playerPos);
-                m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
-                m_nState = 5;
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
             }
-            // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
+            // falls through to the shared active tail (0x137f7c)
         } else {
             switch (m_nState) {
                 case 6: {
