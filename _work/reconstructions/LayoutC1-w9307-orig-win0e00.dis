@@ -1,0 +1,192 @@
+
+/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+000d1d80 <_ZN6LayoutC1Ev@@Base+0xd58>:
+   d1d80:	0000      	movs	r0, r0
+   d1d82:	4170      	adcs	r0, r6
+   d1d84:	0000      	movs	r0, r0
+   d1d86:	4140      	adcs	r0, r0
+   d1d88:	0000      	movs	r0, r0
+   d1d8a:	4216      	tst	r6, r2
+   d1d8c:	0000      	movs	r0, r0
+   d1d8e:	4248      	negs	r0, r1
+   d1d90:	0000      	movs	r0, r0
+   d1d92:	4200      	tst	r0, r0
+   d1d94:	0000      	movs	r0, r0
+   d1d96:	4280      	cmp	r0, r0
+   d1d98:	0000      	movs	r0, r0
+   d1d9a:	4200      	tst	r0, r0
+   d1d9c:	210e      	movs	r1, #14
+   d1d9e:	240d      	movs	r4, #13
+   d1da0:	f8c0 1154 	str.w	r1, [r0, #340]	; 0x154
+   d1da4:	2100      	movs	r1, #0
+   d1da6:	ee00 4a10 	vmov	s0, r4
+   d1daa:	2488      	movs	r4, #136	; 0x88
+   d1dac:	4613      	mov	r3, r2
+   d1dae:	2a00      	cmp	r2, #0
+   d1db0:	eeb8 0ac0 	vcvt.f32.s32	s0, s0
+   d1db4:	eebd 0ac0 	vcvt.s32.f32	s0, s0
+   d1db8:	ed80 0a56 	vstr	s0, [r0, #344]	; 0x158
+   d1dbc:	bf1c      	itt	ne
+   d1dbe:	2493      	movne	r4, #147	; 0x93
+   d1dc0:	2301      	movne	r3, #1
+   d1dc2:	2a00      	cmp	r2, #0
+   d1dc4:	ea01 0503 	and.w	r5, r1, r3
+   d1dc8:	d106      	bne.n	d1dd8 <_ZN6LayoutC1Ev@@Base+0xdb0>
+   d1dca:	b129      	cbz	r1, d1dd8 <_ZN6LayoutC1Ev@@Base+0xdb0>
+   d1dcc:	249e      	movs	r4, #158	; 0x9e
+   d1dce:	f1b8 0f00 	cmp.w	r8, #0
+   d1dd2:	bf08      	it	eq
+   d1dd4:	244f      	moveq	r4, #79	; 0x4f
+   d1dd6:	2501      	movs	r5, #1
+   d1dd8:	ee00 4a10 	vmov	s0, r4
+   d1ddc:	220d      	movs	r2, #13
+   d1dde:	eeb8 0ac0 	vcvt.f32.s32	s0, s0
+   d1de2:	eebd 0ac0 	vcvt.s32.f32	s0, s0
+   d1de6:	ed80 0a57 	vstr	s0, [r0, #348]	; 0x15c
+   d1dea:	7834      	ldrb	r4, [r6, #0]
+   d1dec:	2c00      	cmp	r4, #0
+   d1dee:	bf18      	it	ne
+   d1df0:	2231      	movne	r2, #49	; 0x31
+   d1df2:	d106      	bne.n	d1e02 <_ZN6LayoutC1Ev@@Base+0xdda>
+   d1df4:	b12d      	cbz	r5, d1e02 <_ZN6LayoutC1Ev@@Base+0xdda>
+   d1df6:	221a      	movs	r2, #26
+   d1df8:	f1b8 0f00 	cmp.w	r8, #0
+   d1dfc:	bf08      	it	eq
+   d1dfe:	220d      	moveq	r2, #13
+   d1e00:	2400      	movs	r4, #0
+   d1e02:	ee00 2a10 	vmov	s0, r2
+   d1e06:	ea54 0109 	orrs.w	r1, r4, r9
+   d1e0a:	eeb8 0ac0 	vcvt.f32.s32	s0, s0
+   d1e0e:	eebd 0ac0 	vcvt.s32.f32	s0, s0
+   d1e12:	ed80 0a58 	vstr	s0, [r0, #352]	; 0x160
+   d1e16:	d007      	beq.n	d1e28 <_ZN6LayoutC1Ev@@Base+0xe00>
+   d1e18:	2100      	movs	r1, #0
+   d1e1a:	2d00      	cmp	r5, #0
+   d1e1c:	f8c0 1164 	str.w	r1, [r0, #356]	; 0x164
+   d1e20:	d10a      	bne.n	d1e38 <_ZN6LayoutC1Ev@@Base+0xe10>
+   d1e22:	ed1f 0a27 	vldr	s0, [pc, #-156]	; d1d88 <_ZN6LayoutC1Ev@@Base+0xd60>
+   d1e26:	e016      	b.n	d1e56 <_ZN6LayoutC1Ev@@Base+0xe2e>
+   d1e28:	b185      	cbz	r5, d1e4c <_ZN6LayoutC1Ev@@Base+0xe24>
+   d1e2a:	2119      	movs	r1, #25
+   d1e2c:	f1b8 0f00 	cmp.w	r8, #0
+   d1e30:	bf08      	it	eq
+   d1e32:	210d      	moveq	r1, #13
+   d1e34:	f8c0 1164 	str.w	r1, [r0, #356]	; 0x164
+   d1e38:	eeb3 1a09 	vmov.f32	s2, #57	; 0x41c80000  25.0
+   d1e3c:	ed1f 0a2d 	vldr	s0, [pc, #-180]	; d1d8c <_ZN6LayoutC1Ev@@Base+0xd64>
+   d1e40:	f1b8 0f00 	cmp.w	r8, #0
+   d1e44:	bf08      	it	eq
+   d1e46:	eeb0 0a41 	vmoveq.f32	s0, s2
+   d1e4a:	e004      	b.n	d1e56 <_ZN6LayoutC1Ev@@Base+0xe2e>
+   d1e4c:	2117      	movs	r1, #23
+   d1e4e:	ed1f 0a32 	vldr	s0, [pc, #-200]	; d1d88 <_ZN6LayoutC1Ev@@Base+0xd60>
+   d1e52:	f8c0 1164 	str.w	r1, [r0, #356]	; 0x164
+   d1e56:	eebd 0ac0 	vcvt.s32.f32	s0, s0
+   d1e5a:	f1b9 0f00 	cmp.w	r9, #0
+   d1e5e:	ed80 0a5a 	vstr	s0, [r0, #360]	; 0x168
+   d1e62:	d030      	beq.n	d1ec6 <_ZN6LayoutC1Ev@@Base+0xe9e>
+   d1e64:	f60f 3178 	addw	r1, pc, #2936	; 0xb78
+   d1e68:	2d00      	cmp	r5, #0
+   d1e6a:	f961 0acf 	vld1.64	{d16-d17}, [r1]
+   d1e6e:	f44f 719b 	mov.w	r1, #310	; 0x136
+   d1e72:	f8c0 117c 	str.w	r1, [r0, #380]	; 0x17c
+   d1e76:	f500 71b6 	add.w	r1, r0, #364	; 0x16c
+   d1e7a:	f941 0a8f 	vst1.32	{d16-d17}, [r1]
+   d1e7e:	d028      	beq.n	d1ed2 <_ZN6LayoutC1Ev@@Base+0xeaa>
+   d1e80:	2222      	movs	r2, #34	; 0x22
+   d1e82:	f1b8 0f00 	cmp.w	r8, #0
+   d1e86:	bf08      	it	eq
+   d1e88:	2211      	moveq	r2, #17
+   d1e8a:	464e      	mov	r6, r9
+   d1e8c:	210c      	movs	r1, #12
+   d1e8e:	f44f 79ad 	mov.w	r9, #346	; 0x15a
+   d1e92:	f1b8 0f00 	cmp.w	r8, #0
+   d1e96:	bf08      	it	eq
+   d1e98:	2106      	moveq	r1, #6
+   d1e9a:	f8c0 2180 	str.w	r2, [r0, #384]	; 0x180
+   d1e9e:	f06f 0b07 	mvn.w	fp, #7
+   d1ea2:	f8c0 9184 	str.w	r9, [r0, #388]	; 0x184
+   d1ea6:	2318      	movs	r3, #24
+   d1ea8:	f8c0 2188 	str.w	r2, [r0, #392]	; 0x188
+   d1eac:	f44f 72df 	mov.w	r2, #446	; 0x1be
+   d1eb0:	e9c0 2b63 	strd	r2, fp, [r0, #396]	; 0x18c
+   d1eb4:	2580      	movs	r5, #128	; 0x80
+   d1eb6:	f500 72ca 	add.w	r2, r0, #404	; 0x194
+   d1eba:	46b1      	mov	r9, r6
+   d1ebc:	c22a      	stmia	r2!, {r1, r3, r5}
+   d1ebe:	211a      	movs	r1, #26
+   d1ec0:	f8c0 11a0 	str.w	r1, [r0, #416]	; 0x1a0
+   d1ec4:	e0ce      	b.n	d2064 <_ZN6LayoutC1Ev@@Base+0x103c>
+   d1ec6:	b1cc      	cbz	r4, d1efc <_ZN6LayoutC1Ev@@Base+0xed4>
+   d1ec8:	2183      	movs	r1, #131	; 0x83
+   d1eca:	f8c0 116c 	str.w	r1, [r0, #364]	; 0x16c
+   d1ece:	217c      	movs	r1, #124	; 0x7c
+   d1ed0:	e028      	b.n	d1f24 <_ZN6LayoutC1Ev@@Base+0xefc>
+   d1ed2:	f60f 311c 	addw	r1, pc, #2844	; 0xb1c
+   d1ed6:	220a      	movs	r2, #10
+   d1ed8:	f961 0acf 	vld1.64	{d16-d17}, [r1]
+   d1edc:	f06f 0107 	mvn.w	r1, #7
+   d1ee0:	2518      	movs	r5, #24
+   d1ee2:	e9c0 1264 	strd	r1, r2, [r0, #400]	; 0x190
+   d1ee6:	f500 71c0 	add.w	r1, r0, #384	; 0x180
+   d1eea:	2280      	movs	r2, #128	; 0x80
+   d1eec:	f941 0a8f 	vst1.32	{d16-d17}, [r1]
+   d1ef0:	211a      	movs	r1, #26
+   d1ef2:	e9c0 5266 	strd	r5, r2, [r0, #408]	; 0x198
+   d1ef6:	f8c0 11a0 	str.w	r1, [r0, #416]	; 0x1a0
+   d1efa:	e0c4      	b.n	d2086 <_ZN6LayoutC1Ev@@Base+0x105e>
+   d1efc:	b16d      	cbz	r5, d1f1a <_ZN6LayoutC1Ev@@Base+0xef2>
+   d1efe:	218a      	movs	r1, #138	; 0x8a
+   d1f00:	f1b8 0f00 	cmp.w	r8, #0
+   d1f04:	bf08      	it	eq
+   d1f06:	2145      	moveq	r1, #69	; 0x45
+   d1f08:	f04f 0501 	mov.w	r5, #1
+   d1f0c:	f8c0 116c 	str.w	r1, [r0, #364]	; 0x16c
+   d1f10:	f04f 0180 	mov.w	r1, #128	; 0x80
+   d1f14:	bf08      	it	eq
+   d1f16:	2140      	moveq	r1, #64	; 0x40
+   d1f18:	e004      	b.n	d1f24 <_ZN6LayoutC1Ev@@Base+0xefc>
+   d1f1a:	2173      	movs	r1, #115	; 0x73
+   d1f1c:	2500      	movs	r5, #0
+   d1f1e:	f8c0 116c 	str.w	r1, [r0, #364]	; 0x16c
+   d1f22:	216a      	movs	r1, #106	; 0x6a
+   d1f24:	ee00 1a10 	vmov	s0, r1
+   d1f28:	4621      	mov	r1, r4
+   d1f2a:	2c00      	cmp	r4, #0
+   d1f2c:	eeb8 0ac0 	vcvt.f32.s32	s0, s0
+   d1f30:	eebd 0ac0 	vcvt.s32.f32	s0, s0
+   d1f34:	ed80 0a5c 	vstr	s0, [r0, #368]	; 0x170
+   d1f38:	bf18      	it	ne
+   d1f3a:	2101      	movne	r1, #1
+   d1f3c:	d112      	bne.n	d1f64 <_ZN6LayoutC1Ev@@Base+0xf3c>
+   d1f3e:	b18d      	cbz	r5, d1f64 <_ZN6LayoutC1Ev@@Base+0xf3c>
+   d1f40:	213c      	movs	r1, #60	; 0x3c
+   d1f42:	f1b8 0f00 	cmp.w	r8, #0
+   d1f46:	bf08      	it	eq
+   d1f48:	211e      	moveq	r1, #30
+   d1f4a:	f8c0 1174 	str.w	r1, [r0, #372]	; 0x174
+   d1f4e:	21aa      	movs	r1, #170	; 0xaa
+   d1f50:	222c      	movs	r2, #44	; 0x2c
+   d1f52:	f1b8 0f00 	cmp.w	r8, #0
+   d1f56:	bf08      	it	eq
+   d1f58:	2155      	moveq	r1, #85	; 0x55
+   d1f5a:	bf08      	it	eq
+   d1f5c:	2216      	moveq	r2, #22
+   d1f5e:	e9c0 215e 	strd	r2, r1, [r0, #376]	; 0x178
+   d1f62:	e00f      	b.n	d1f84 <_ZN6LayoutC1Ev@@Base+0xf5c>
+   d1f64:	4029      	ands	r1, r5
+   d1f66:	222d      	movs	r2, #45	; 0x2d
+   d1f68:	2c00      	cmp	r4, #0
+   d1f6a:	bf18      	it	ne
+   d1f6c:	222a      	movne	r2, #42	; 0x2a
+   d1f6e:	f8c0 2174 	str.w	r2, [r0, #372]	; 0x174
+   d1f72:	d00e      	beq.n	d1f92 <_ZN6LayoutC1Ev@@Base+0xf6a>
+   d1f74:	2900      	cmp	r1, #0
+   d1f76:	f04f 029b 	mov.w	r2, #155	; 0x9b
+   d1f7a:	f04f 033c 	mov.w	r3, #60	; 0x3c
+   d1f7e:	Address 0x00000000000d1f7e is out of bounds.
+
