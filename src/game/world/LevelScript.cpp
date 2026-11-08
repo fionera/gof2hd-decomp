@@ -2860,7 +2860,7 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         player->setComputerControlled(true);
-                        player->setCollide(false);
+                        m_pLevel->getPlayer()->setCollide(false);
                         m_pCamera->setLookAtCam(true);
                         AEGeometry *ship = player->geometry;
                         (*enemies)[0]->player->setHitpoints(0);
@@ -3940,12 +3940,12 @@ bool LevelScript::process(int delta) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
                             (*enemies)[i]->awake();
-                            int sideZ = Globals::rnd->nextInt(100);
+                            KIPlayer *pirate = (*enemies)[i];
                             Vector playerPos = player->getPosition();
                             int sideX = Globals::rnd->nextInt(100);
-                            KIPlayer *pirate = (*enemies)[i];
                             int offsetY = Globals::rnd->nextInt(1000);
                             int offsetZ = Globals::rnd->nextInt(2000);
+                            int sideZ = Globals::rnd->nextInt(100);
                             Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
                                           (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
                             pirate->setPosition(playerPos + offset);
