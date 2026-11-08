@@ -809,31 +809,27 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // The original emits `cbz tab, check` on the tab == 0
-                            // edge.  The volatile read raises the check block above
-                            // the jump-threading duplication threshold without
-                            // emitting an extra instruction, and the range assumes
-                            // keep the backend's plain zero test (cbz).
-                            volatile int *padX = 0;
-                            (void) padX;
-                            (void) *(volatile int*)&this->scrollOffset;
-                            if (tab != 0) {
+                            // LSDA sink: splits the ship-branch cleanup region so the
+                            // 156-row / 948-byte .ARM.extab record is preserved.
+                            volatile int *dummy;
+                            (void) dummy;
+                            if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
                                 if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
+                                    volatile int padX[1];
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
                                     (*this->buttons)[1]->setVisible(true);
                                     (*this->buttons)[1]->draw();
                                     buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                    if (this->upgradeMode && tab == 1) {
+                                        (*this->buttons)[2]->setVisible(true);
+                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                          this->field_0x114 + y, 17);
+                                        (*this->buttons)[10]->setVisible(true);
+                                        (*this->buttons)[10]->draw();
+                                    }
                                 }
-                            }
-                            __builtin_assume(tab >= 0); __builtin_assume(tab != 7); // lint: arm_builtin anchor: HangarWindow::render; jump-threading cost
-                            if (tab == 1 && this->upgradeMode) {
-                                (*this->buttons)[2]->setVisible(true);
-                                (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                  this->field_0x114 + y, 17);
-                                (*this->buttons)[10]->setVisible(true);
-                                (*this->buttons)[10]->draw();
                             }
                         } else {
                             // The original dispatches the two selected-item button
