@@ -1728,7 +1728,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 4) {
                     m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
-                        m_nState = 5;
+                        m_nState++;
                         for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                             KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                             if (ship != nullptr && ship->shipGroup == 9) {
@@ -4673,7 +4673,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (m_nScriptTimerA >= 2001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 2001, 1)) { // lint: arm_builtin
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*enemies)[i];
                             if (ship->shipGroup == 9) {
