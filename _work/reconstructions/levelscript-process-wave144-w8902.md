@@ -102,10 +102,11 @@ Tried and measured (all size-exact 57232, raw 54,697 — no change): local
 `Transform *t` per arm (A), `break` after the if arm's Update (B), same plus
 local (D), `longlong d = delta` in the else arm (E), explicit `unsigned int idx`
 (F), local in the if arm (G), local in the else arm (H), transform local +
-delta local in the else arm (W), delta local in the if arm (X).  A `volatile`
-local in the else arm does split the calls but costs +16 B (57248, raw 55,024),
-so it is not usable.  Forcing the split needs the original's global register
-allocation, not a local source edit; left open.
+delta local in the else arm (W), delta local in the if arm (X), and replacing
+the `else` with `break` + a following `if` (Y).  A `volatile` local in the else
+arm does split the calls but costs +16 B (57248, raw 55,024), so it is not
+usable.  Forcing the split needs the original's global register allocation, not
+a local source edit; left open.
 
 ## Reproduction
 
@@ -121,8 +122,20 @@ python3 /dev/shm/w8902/apply.py swap break                  # re-apply the edits
 ## Open questions
 
 * The `delta` stack slot is 4 bytes lower than the original (`[sp,#72]` vs
-  `[sp,#76]`); the frame size is identical (432).  Finding the local that owns
-  the other half of the original's `strd` pair would flip the pair order and
-  likely recover most of the +78.
+  `[sp,#76]`); the frame size is identical (432).  The prologue's
+  `strd r5,r6,[sp,#72]` in the original stores `messages` at `sp+72` and
+  `delta` at `sp+76`; ours stores `delta` at `sp+72` and `messages` at
+  `sp+76`.  Finding the local that owns the other half of the original's
+  `strd` pair would flip the pair order and likely recover most of the +78.
+* **The prologue accessor order is still wrong.**  The original's first three
+  calls are `Level::getMessages`, `Level::getPlayer`, `Level::getEnemies`
+  (`0x137d3e`, `0x137d46`, `0x137d50`); our source declares them
+  `enemies`, `player`, `messages` and emits `getEnemies`, `getPlayer`,
+  `getMessages`.  Swapping the three declarations to `messages`, `player`,
+  `enemies` reproduces the original prologue (including the `strd r4,r0,[sp,#80]`
+  / `strd r4,r8,[sp,#92]` stores) but costs **+76 B** (57308, raw 54,831 on
+  the unfaithful base; 54866 with the break+swap), so it needs a -76 companion
+  before it can land size-exact.  This is a genuine source-order divergence
+  worth a dedicated pass.
 * The two `TransformGetTransform` calls need the original's register
   allocation (delta in a callee-saved register on the if arm).
