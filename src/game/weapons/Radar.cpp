@@ -668,7 +668,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    int enemyHit = false;
+    bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         int alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -682,8 +682,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool dead = enemy->isDead() || enemy->isDying();
-            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -1085,8 +1084,8 @@ asteroids:
             int asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
-                bool dead = asteroid->isDead() || asteroid->isDying();
-                if (dead && !asteroid->hasCargo) {
+                if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
+                    (asteroid->isDead() || asteroid->isDying())) {
                     continue;
                 }
                 this->update(asteroid);
