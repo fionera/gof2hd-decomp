@@ -455,6 +455,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int offset = i == 0 ? this->originX : this->originY;
                 Globals::Canvas->DrawString(radarFont(), *this->labelStrings->data()[i], this->screenX + offset,
                                             this->screenY, false);
+                int rowHeight = Globals::layout->field_0x4;
                 if (i <= 1) {
                     if (i == 0 && !alienOrbit) {
                         Globals::Canvas->DrawString(
@@ -466,14 +467,14 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
                                                              this->cameraX, this->cameraY, this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
-                                                    this->screenY + Globals::layout->field_0x4 * 2, false);
+                                                    this->screenY + rowHeight * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
                         this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
                                                              this->cameraX, this->cameraY,
                                                              this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
-                                                    this->screenY + Globals::layout->field_0x4, false);
+                                                    this->screenY + rowHeight, false);
                     }
                 }
             } else if ((i & 0x7fffffff) == 3) {
@@ -668,7 +669,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    int enemyHit = false;
+    bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -1087,7 +1088,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
