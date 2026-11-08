@@ -2810,7 +2810,7 @@ void MGame::OnUpdate() {
                            !this->jumpDriveActive && !this->usingJumpDrive) {
                     Status *st = Globals::status;
                     int radioIndex = Globals::rnd->nextInt(2);
-                    int radioBase = st->getCurrentCampaignMission() == 122 ? 3164 : 3166;
+                    int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     this->level->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = st->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
