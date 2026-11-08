@@ -4875,7 +4875,6 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
-                        m_pHud->visible = 0;
                     }
                     if ((destroyed >= 9 && m_nScriptTime > 200000)
                         || (*enemies)[fighterIndex]->player->getHitpoints()
@@ -4886,8 +4885,8 @@ bool LevelScript::process(int delta) {
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
                         destroyed = 0;
-                        m_nScriptTimerB = 0;
                         m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         player->player->setVulnerable(false);
                         player->setFreeze(true);
