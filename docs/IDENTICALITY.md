@@ -4,14 +4,14 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-08 (wave 145)
+## Update 2026-11-08 (wave 145, final)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
 avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
 
-Wave-145 lands one faithfulness fix:
+Wave-145 lands five source changes (20 agents; the rest are analysis notes):
 
 * `LevelScript::process` (w9002): the four calls the original's mission-0 state-4
   teardown owns (`setFreeLookMode`, `enableFirstPersonCam`,
@@ -20,12 +20,36 @@ Wave-145 lands one faithfulness fix:
   three state tests are written **4, 5, 3** so state 4 is laid out before state 5.
   This is the only branch permutation that keeps `.rel.plt` byte-identical at the
   exact 57,232 B size (3,4,5 is 57,272 B and moves setVisible/deleteHackingGame).
-  Raw **54,909 -> 54,923** (+14, faithfulness over layout); `.ARM.extab` diff
-  **1,370 -> 1,368**. The old `m4bc` -244 / `D_cached+swap45` 54,585 numbers were
-  measured on the wave-141 base and no longer reproduce.
+  Raw **54,909 -> 54,923** (+14, faithfulness over layout).
+* `LevelScript::process` (w9004): a genuine +16 B state-5 `getSpeed` re-read
+  (the original re-reads the speed after the state-4 teardown). Raw
+  **54,923 -> 54,895**; `.ARM.extab` diff **1,368 -> 1,370**.
+* `Radar::draw` (w9009): the asteroid loop's dead-pair duplication is forced with
+  `!(hasCargo && (isDead() || isDying())) && (isDead() || isDying())`, so clang
+  emits the original's six `isDead`/`isDying` calls (ours had four). The pre-update
+  block is now instruction-for-instruction identical. Raw **8,471 -> 8,373**.
+* `MGame::OnTouchEnd` (w9011 + w9012): the `failed` test is a word-typed flag
+  (`int failed`; `failed == 1`), which places the type12 chain after the
+  mission-selection chain as in the original, and the campaign chain is written
+  `if (!isCampaignMission())` so the `==161` test becomes the original's `cbz`.
+  Raw **4,399 -> 4,180** (measured on the merged tree; each alone is worse:
+  4,691 and 4,272).
+* `HangarWindow::render` (w9016): `setSplitText` after `draw()` (METRIC-ONLY;
+  the original's asm order is replaceText, setSplitText, draw). Raw
+  **1,731 -> 1,719**.
 
-Section deltas: `.text` **86,008** differing bytes (size exact); `.ARM.exidx` **0**
-(byte-identical); `.ARM.extab` **1,368** (size- and base-exact **156,312 B**);
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,895** (57,232 B), `Radar::draw` **8,373** (9,908 B), `Layout` C1/C2
+**5,704** (7,072 B), `Level::createMission` **5,592** (17,172 B), `MGame::OnTouchEnd`
+**4,180** (8,080 B), `Level::createShip` **1,978** (2,764 B), `HangarWindow::render`
+**1,719** (9,700 B), `Hud::draw` **1,325** (9,332 B), `Status::missionCompleted`
+**722** (1,432 B), `Gun::calcCharacterCollision` **463** (1,984 B),
+`Generator::createMission` **445** (1,996 B), `SpaceLounge::drawLounge` **175**
+(1,948 B), `MGame::OnUpdate` **41** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**28** (1,896 B), `ModStation` C1/C2 **11** (1,008 B).
+
+Section deltas: `.text` **85,651** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,370** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
