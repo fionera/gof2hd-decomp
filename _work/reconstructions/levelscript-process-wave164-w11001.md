@@ -152,3 +152,53 @@ So a future pass that wants to land `4,3,5` must (a) find a -8 B size
 compensation (the dead `m_bCinematicBreak = 0` in the mission-2 3001 block is
 worth -4 B) and (b) apply the mission-125 `0,6,7` reorder.  Even then the
 fuzzy is 49.1 (< HEAD 50.3), so it is a structural-match-only change.
+
+## Addendum (w11001, second pass): why source order alone cannot reproduce the layout
+
+The emitted arm-test order is **not** the source order — `MachineBlockPlacement`
+reorders the `else if` chain per body size/probability.  Measured on full links
+(`gen.py plain <order>`), with the first `PlayerEgo::getSpeed` /
+`PlayerEgo::setFreeLookMode` / `PlayerStation::setVisible` call addresses:
+
+| source arm order | emitted test order / layout | raw | aligned | size | getSpeed | setFreeLook | setVisible |
+|---|---|---|---:|---:|---:|---|---|---|
+| **4,5,3** (HEAD) | test5, test4, body4 inline; state 3 merged into switch (13-entry 3..15) | 54,541 | 17,427 | 57,232 | 0x138da8 | 0x138a02 | 0x13d764 |
+| 4,3,5 | test3, test5, test4, body4 inline; 10-entry 6..15 | 55,204 | 18,010 | 57,240 | 0x138f40 | 0x138a08 | 0x13d0a6 |
+| 3,5,4 | test5, test3, body3 inline; state 4 merged into switch (12-entry 4..15) | 54,921 | **17,328** | 57,232 | 0x138d2e | 0x13908e | 0x13d764 |
+| 3,4,5 | test5, test4, test3, body3 inline; 10-entry 6..15 | 55,316 | 18,015 | 57,256 | 0x138fc4 | 0x138f20 | 0x13d0ae |
+| 5,4,3 | test3, test4, test5, body5 inline; state 3 merged (13-entry) | 55,372 | 19,580 | 57,240 | 0x1389d2 | 0x1392a6 | 0x13d74e |
+| 5,3,4 | same as 5,4,3 | 55,372 | 19,580 | 57,240 | 0x1389d2 | 0x1392a6 | 0x13d74e |
+
+The original's layout is `test4, test3, body3 inline; body4 out of line;
+test5, body5 inline` (0x1389c8 / 0x1389ce / 0x1389d4 / 0x138d2a / 0x138fd8 /
+0x138fde).  None of the six source permutations emits that layout with our
+body contents: 4,3,5 emits test3 first, and 3,4,5 emits test5 first.
+
+`__builtin_expect` cannot force it at constant size: on 4,3,5,
+`expect(state==4,0)` -> 57,248 B / aligned 18,866; `expect(state==3,1)` ->
+57,492 B / 18,864; both -> 57,476 B / 18,324.  All size-fatal.
+
+Nesting the state-5 condition (`else if (state==5) { if (msg12->isOver()) … }`)
+in 4,3,5 / 3,4,5 / 3,5,4 makes the three orders codegen-identical
+(54,925 / 18,989 / 57,232, rel.plt OK) — still worse than HEAD on aligned.
+
+### rel.plt consequence
+
+`3,5,4` is the only shape with aligned < HEAD (17,328) and size exact, but its
+body5 is emitted at 0x138d2e, before body4's first `setFreeLookMode` at
+0x13908e, so `.rel.plt` rotates one slot (`PlayerEgo::getSpeed` moves to
+0x213274).  That is what drops `byte_exact` 4507 -> 4503 (MGame::successCheck /
+switchCamera / dialogueEvent / gameOverCheck).  There is no earlier
+`setFreeLookMode` reference in the TU to move in front of it, so the swap
+cannot be repaired without changing body layout or adding a call.
+
+### Final answer
+
+* Original mission-0 `tbh`: 10 entries, states **6..15**, physical order
+  **6, 10, 7, 8, 9, 11, 12, 13, 15, 14** (state 16 = default).
+* Original outer arm source order: **4, 3, 5** (test 4, then 3, body3 inline;
+  body4 out of line; test 5, body5 inline).
+* Measured best shape: **3,5,4** — raw 54,921 / aligned 17,328 / 57,232 B
+  (fuzzy 50.6), but one `.rel.plt` slot rotates.
+* Only gate-green, size-exact, rel.plt-identical shape: **HEAD 4,5,3** —
+  raw 54,541 / aligned 17,427 / 57,232 B (fuzzy 50.3).  Nothing landed.
