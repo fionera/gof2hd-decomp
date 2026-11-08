@@ -55,15 +55,15 @@ are allocator ties), w9719 (the Radar extab tie is a tail-frequency lever),
 w9720 (the Status 1,432 B downstream diffs are a 5-entry `.rel.plt`
 permutation, not a literal-pool artefact).
 
-**Aligned total (15 functions): 24,124** (wave-150 base 24,439). Per function:
-Layout 2,189, LevelScript 17,244 (indicative), createShip 480, Status 320,
+**Aligned total (15 functions): 24,083** (wave-150 base 24,439). Per function:
+Layout 2,148, LevelScript 17,244 (indicative), createShip 480, Status 320,
 Radar 1,530, MGame::OnTouchEnd 904, createMission 714, Gun 57, HangarWindow
 291, SpaceLounge 41, Hud 249, Generator 59, MenuTouchWindow 15, ModStation 12,
 MGame::OnUpdate 19.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **55,320** (57,232 B), `Radar::draw` **8,620** (9,908 B), `Layout` C1/C2
-**5,741** (7,072 B), `Level::createMission` **5,657** (17,172 B),
+**5,800** (7,072 B), `Level::createMission` **5,657** (17,172 B),
 `MGame::OnTouchEnd` **4,392** (8,080 B), `Level::createShip` **2,056** (2,764 B),
 `HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
@@ -72,7 +72,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **29** (1,896 B).
 
-Section deltas: `.text` **87,271** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **87,330** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,327** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
