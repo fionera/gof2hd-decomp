@@ -1706,7 +1706,7 @@ bool LevelScript::process(int delta) {
                     int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
                     Route *route = new Route(routePoints, 3);
                     camPos.z += -15000.0f;
-                    for (unsigned int i = 0; i < enemies->count; i++) {
+                    for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                         KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                         if (ship != nullptr && ship->shipGroup == 9) {
                             ship->setPosition(camPos.x, camPos.y - 2000.0f + (float) Globals::rnd->nextInt(4000),
@@ -1794,7 +1794,7 @@ bool LevelScript::process(int delta) {
                     *dir *= 45000.0f; // @0x13ed9c
                     *ahead += *dir;
                     (*m_pLevel->getLandmarks())[3]->setPosition(ahead->x, ahead->y, ahead->z);
-                    for (unsigned int j = 0; j < enemies->count; ++j) {
+                    for (unsigned int j = 0; j < m_pLevel->getEnemies()->count; ++j) {
                         (*m_pLevel->getEnemies())[j]->player->setEnemies(nullptr);
                     }
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -4292,7 +4292,6 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA >= 7001) {
                             m_nState = 4;
                             Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
@@ -5146,9 +5145,9 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
+                        Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
-                        Level::initStreamOutPosition = 1;
                     }
                 }
                 break;
