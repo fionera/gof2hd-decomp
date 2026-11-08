@@ -54,8 +54,8 @@ Five source changes landed:
   2,764 B exact.
 
 Measured and **not landed** (notes kept): w9901 (0x30 gold pad + else-arm
-String copy: raw 8,570 / aligned 1,345 but needs the gold binary patch and
-conflicts with w9902), w9903 (`wreck`-before-`update` + `int gasHit`: raw
+String copy: raw 8,570 / aligned 1,345; landed in wave 154 / w10001 by
+composing it with w9902's scoped copy), w9903 (`wreck`-before-`update` + `int gasHit`: raw
 8,579 / aligned 1,583), w9906 (case-125 composition: aligned 17,365), w9907
 (c154->strong adjacency: aligned 17,401), w9911 (`v`-before-`rotation`: raw
 5,482 / aligned 794), w9914 (faithful tail-merge owners: raw 4,424 / aligned

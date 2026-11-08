@@ -132,6 +132,22 @@ set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
 # crtbegin_so.o is a plain link input; the original linked it directly, as we do.
 set(_crtbegin "${_libdir}/crtbegin_so.o")
 
+# Android's gold carries the stub_group_auto_padding patch: the ARM stub-table tail pad is
+# min(delta * 0.02, 0x40), with the 0x40 cap a hard-coded immediate and no command-line switch.
+# Radar::draw's String shape grows .ARM.extab by 12 B; with the stock 0x40 pad that pushes
+# .rodata to the next 4-byte slot and every literal pool after it shifts.  A 0x30 cap shrinks
+# .text by 16 B, which the 4 B alignment gap before .rodata absorbs, so .rodata keeps its base.
+# tools/patch_gold_pad.py rewrites the immediate in a build-dir copy of the NDK gold.
+# 0x40 restores the stock linker exactly.
+set(GOF2_GOLD_PAD_CAP "30" CACHE STRING "ARM gold stub-table auto-padding cap (hex)")
+set(_gold "${CMAKE_BINARY_DIR}/ld.gold.pad${GOF2_GOLD_PAD_CAP}")
+add_custom_command(OUTPUT "${_gold}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${GOF2_NDK_GOLD}" "${_gold}"
+    COMMAND python3 "${CMAKE_SOURCE_DIR}/tools/patch_gold_pad.py" "${_gold}" "${GOF2_GOLD_PAD_CAP}"
+    DEPENDS "${GOF2_NDK_GOLD}" "${CMAKE_SOURCE_DIR}/tools/patch_gold_pad.py"
+    COMMENT "Patching gold stub-table auto-padding cap to 0x${GOF2_GOLD_PAD_CAP}"
+    VERBATIM)
+
 # The original was linked without a section-ordering file, so the object order alone reproduces
 # the original .text layout now that TU membership and within-TU function order are faithful.
 # $<TARGET_OBJECTS:gof2> is in tools/source_order.txt order (the original TU order).
@@ -148,7 +164,7 @@ add_custom_command(OUTPUT "${_so}"
     # imports require; the import set is gated by tools/ratchet.py (a typo'd callee would otherwise
     # become a silent new import). NO --allow-multiple-definition: a duplicate strong definition
     # must be a link error, not a silent first-wins pick.
-    COMMAND ${GOF2_NDK_GOLD}
+    COMMAND "${_gold}"
             -shared -soname libgof2hdaa.so --build-id
             # Do NOT pass -s: the original's build-id is the SHA-1 of the unstripped link output
             # (gold zeroes the build-id note descriptor and hashes the whole file), so a gold -s
@@ -186,6 +202,7 @@ add_custom_command(OUTPUT "${_so}"
             ${_openssl_out} ${_libzip_out} ${_zlib_out}
             ${CMAKE_SOURCE_DIR}/tools/source_order.txt
             ${CMAKE_SOURCE_DIR}/tools/reorder_shstrtab.py
+            "${_gold}"
     COMMENT "Linking libgof2hdaa.so (gold + GNU strip) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")

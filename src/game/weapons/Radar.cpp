@@ -476,7 +476,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                                    this->cameraZ);
                             this->lockLabel = labelCopy2;
                         }
-                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
+                        String labelCopy3 = this->lockLabel;
+                        Globals::Canvas->DrawString(radarFont(), labelCopy3, this->screenX + offset,
                                                     this->screenY + rowHeight, false);
                     }
                 }
@@ -552,7 +553,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            bool marked = false;
+            int marked = false;
             if (__builtin_expect(campaignMission != nullptr && !campaignMission->isEmpty() && // lint: arm_builtin anchor: Radar::draw
                                  campaignMission->isVisible() &&
                                  (Globals::status->getCurrentCampaignMission() < 148 ||
@@ -672,7 +673,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    int enemyHit = false;
+    bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
