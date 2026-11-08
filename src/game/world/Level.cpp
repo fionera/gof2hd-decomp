@@ -1961,10 +1961,7 @@ void Level::createMission() {
             const float (*t)[6] = (bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
-            gun->field_0x70 = 0;
-            gun->cargo = nullptr;
-            Vector p2 = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
-            v = p2;
+            v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = localRace;
