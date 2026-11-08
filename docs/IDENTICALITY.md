@@ -11,41 +11,87 @@ linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
-Wave-164 landed one source change:
+Wave-164 ran 20 agents: 16 on the worst residual functions, 4 on build
+provenance (round 5).  Ten source changes landed (the largest raw-byte
+reduction of any wave so far):
 
-* `Level::createMission` (w11010): `__builtin_expect(Level::comingFromAlienWorld, 0)`
-  on the alien-attack `||` chain flips the `StackSlotColoring` weight order
-  (raid bool 1.197954 -> 1.173560 < guard 1.193761) with zero code change.
-  Raw **5,454 -> 5,436** (-18), aligned **786 -> 767** (-19); 17,172 B exact,
-  `.rel.plt` byte-identical.  `bitsToFloat` now uses plain `memcpy` instead
-  of `__builtin_memcpy` so the per-file `arm_builtin` lint count stays at 1
-  (the generated code is byte-identical).
+* `LevelScript::process` (w11002): 13 PLT-safe `__builtin_expect` cells
+  found by a whole-function re-sweep.  Raw **54,541 -> 54,247** (-294),
+  aligned **17,427 -> 17,532** (+105); 57,232 B exact, `.rel.plt`
+  byte-identical.
+* `LevelScript::process` (w11019): per-TU `-mllvm -disable-postra-machine-sink`
+  on `LevelScript.cpp` (matching knob, alongside the existing per-file
+  branch-weight knobs).  Raw **54,541 -> 54,539** (-2) before w11002, size
+  and `.rel.plt` unchanged.  The flag space is otherwise exhausted
+  (round-5 note).
+* `Radar::draw` (w11008): `expect` on the `field_0x1bc` sound-ladder
+  sub-guards + faithful tail (`field_0x1bc = 0` only).  Raw **8,124 ->
+  7,578** (-546), aligned **1,320 -> 1,428** (+108), `.ARM.extab` 725 ->
+  720; 9,908 B exact.
+* `Layout::Layout` (w11005+w11006): explicit `iPadHD/n9/else` chain for the
+  first two fields, plus five tail store-order relocations.  Raw **5,705 ->
+  5,688** (-17, super-additive), aligned **2,082 -> 2,108** (+26); 7,072 B
+  exact.
+* `Level::createMission` (w11010): `__builtin_expect(comingFromAlienWorld, 0)`
+  flips the `StackSlotColoring` weight order with zero code change.  Raw
+  **5,454 -> 5,436** (-18), aligned **786 -> 767** (-19); 17,172 B exact.
+* `MGame::OnTouchEnd` (w11011+w11012): `bool Mission::hasFailed` field/return,
+  then the 100/110 reward-chain block swap.  Raw **4,127 -> 4,087** (-40),
+  aligned **906 -> 917** (+11); 8,080 B exact.
+* `HangarWindow::render` (w11013): volatile `scrollOffset` LSDA sink.  Raw
+  **2,514 -> 2,245** (-269), aligned **485 -> 620** (+135), `.ARM.extab`
+  725 -> 659 (-66); 9,700 B exact.
+* `Hud::draw` (w11015): move the volatile `Globals::status` reload to the
+  `hitFlags & 2/0x24` boundary and `barYOffset` after the show-bar `String`.
+  Raw **1,015 -> 762** (-253), aligned **229 -> 222** (-7); 9,332 B exact.
+* `Level::createShip` (w11014): original switch case order `0x31,0x2c,0x33`
+  plus jitter call order `Y,X,Z`.  Raw **1,563 -> 1,560** (-3), aligned
+  **449 -> 455** (+6); 2,764 B exact.
+* `Generator::createMission` (w11017): `volatile int bonus` + local `b`.
+  Raw **162 -> 127** (-35), aligned **64 -> 107** (+43), `.ARM.extab`
+  725 -> 719; 1,996 B exact.
 
-**Aligned total (15 functions): 24,181** (wave-163 base 24,200). Per
-function: Layout 2,082, LevelScript 17,427 (indicative), createShip 449,
-Status 320, Radar 1,320, MGame::OnTouchEnd 906, createMission 767, Gun 57,
-HangarWindow 485, SpaceLounge 41, Hud 229, Generator 64, MenuTouchWindow 16,
+Measured and **not landed** (notes kept): w11001 (LevelScript mission-0
+case order + `tbh` tables), w11003 (LevelScript `0.8f` hoist + state-3
+companion: raw +303, structural), w11004 (LevelScript callee-saved map),
+w11007 (Radar campaign/sl block map), w11009 (createMission
+`FindMergedConditions` is the `and`-operand gate, not `Reassociate`),
+w11016 (Status source-level switch weights), w11018 (toolchain provenance),
+w11020 (link recipe provenance).
+
+**Aligned total (15 functions): 24,608** (wave-163 base 24,200). Per
+function: Layout 2,108, LevelScript 17,532 (indicative), createShip 455,
+Status 320, Radar 1,428, MGame::OnTouchEnd 917, createMission 767, Gun 57,
+HangarWindow 620, SpaceLounge 41, Hud 222, Generator 107, MenuTouchWindow 16,
 ModStation 12, MGame::OnUpdate 6.  Total differing bytes fall
-**85,397 -> 85,379** (-18) and `.text` **84,652 -> 84,634** (-18).
+**85,397 -> 83,856** (-1,541) and `.text` **84,652 -> 83,177** (-1,475);
+`.ARM.extab` falls **725 -> 659** (-66).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,541** (57,232 B), `Radar::draw` **8,124** (9,908 B), `Layout` C1/C2
-**5,705** (7,072 B), `Level::createMission` **5,436** (17,172 B),
-`MGame::OnTouchEnd` **4,127** (8,080 B), `HangarWindow::render` **2,514**
-(9,700 B), `Level::createShip` **1,563** (2,764 B), `Hud::draw` **1,015**
+**54,247** (57,232 B), `Radar::draw` **7,578** (9,908 B), `Layout` C1/C2
+**5,688** (7,072 B), `Level::createMission` **5,436** (17,172 B),
+`MGame::OnTouchEnd` **4,087** (8,080 B), `HangarWindow::render` **2,245**
+(9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **762**
 (9,332 B), `Status::missionCompleted` **722** (1,432 B),
 `Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
-**175** (1,948 B), `Generator::createMission` **162** (1,996 B),
+**175** (1,948 B), `Generator::createMission` **127** (1,996 B),
 `ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **84,634** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **725** (size- and base-exact
+Section deltas: `.text` **83,177** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **659** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
-See `_work/reconstructions/level-createmission-wave164-w11010.md`.
+Build provenance round 5 (w11018/w11020) pinned the toolchain: NDK r18b
+clang 7.0.2 (r18-beta1/r18/r18b `clang` are the same binary), gold 1.12,
+binutils 2.27 `strip --strip-all`, API 16, C++11, `-Oz`, full `-g`, r18b
+CMake toolchain (not ndk-build).  The ground-truth file is the APK copy with
+`.shstrtab` rewritten into gold Stringpool order; `tools/reorder_shstrtab.py`
+reproduces that normalisation exactly.  Every non-code ELF byte is identical;
+the residual is `.text`, `.ARM.extab` and the 20-byte build-id descriptor.
+See `_work/reconstructions/build-provenance-round5-{toolchain,flags,link}.md`.
 
 ## Update 2026-11-08 (wave 163)
 
