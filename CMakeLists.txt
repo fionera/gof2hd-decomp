@@ -95,6 +95,16 @@ if(NOT GOF2_NO_PER_FILE_WEIGHTS)
         PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 endif()
 
+# LevelScript.cpp: the PostRAMachineSink pass is a matching knob.  With the pass on (the clang
+# default), LevelScript::process's 8-byte `mov r4,r3` / `mov r3,r4` reordering at +0x8d46 differs
+# from the original by 2 more text bytes; disabling the pass for this TU alone leaves the function
+# size (57,232 B), .ARM.extab (725 differing bytes) and every gate count unchanged and takes the
+# raw .text diff 84,652 -> 84,650.  Found by the wave-164 round-5 flag sweep (about 2,000 per-TU
+# cells); it is the only size-exact, byte_exact-neutral raw win in that sweep.  See
+# _work/reconstructions/build-provenance-round5-flags.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-sink")
+
 # Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
 # the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
 # (`__builtin_expect(onScreen,1) && __builtin_expect(screenX > centerX - field_0x128,1) && ...`),
