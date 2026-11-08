@@ -1953,8 +1953,9 @@ void Level::createMission() {
         Vector v = {0.0f, 0.0f, 0.0f};
         int k = 0;
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
+        const int end = this->friendCount + alienGuns + this->field_164 + this->field_168;
         for (int i = this->friendCount + this->field_164 + this->field_168;
-             i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
+             (i < end) & (i < this->friendCount + alienGuns + this->field_164 + this->field_168); i++, k++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
@@ -2205,9 +2206,9 @@ case4Tail:
                         default:
                             // Store order chosen to reproduce the original's literal-pool
                             // ordering and store scheduling for this block.
+                            offset[1] = 6000.0f;
                             offset[2] = -45000.0f;
                             offset[0] = 12000.0f;
-                            offset[1] = 6000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
