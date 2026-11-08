@@ -683,7 +683,7 @@ enemies:
             }
             this->update(enemy);
             bool dead = enemy->isDead() || enemy->isDying();
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
