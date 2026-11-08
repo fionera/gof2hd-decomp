@@ -668,9 +668,9 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    bool enemyHit = false;
+    int enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
-        int alwaysEnemy = false;
+        bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
             if (!enemy->player->isActive() ||
@@ -682,7 +682,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -799,9 +799,9 @@ enemies:
             } else {
                 enemy->field_0x76 = 0;
                 enemy->field_0x73 = 0;
+                unsigned int image;
                 if (wreck) {
                     KIPlayer *e = this->enemies->data()[i];
-                    unsigned int image;
                     if (e->countsAsEnemyExcludeFlag) {
                         image = this->image_0xb0;
                     } else if (e->shipGroup == 9) {
@@ -809,9 +809,7 @@ enemies:
                     } else {
                         image = this->image_0xa8;
                     }
-                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 } else {
-                    unsigned int image;
                     if (enemy->player->enemyFlagsLo) {
                         image = enemy == locked ? this->image_0x90 : this->image_0x60;
                     } else if (enemy->player->carriesFriendCargoFlag) {
@@ -819,8 +817,8 @@ enemies:
                     } else {
                         image = enemy == locked ? this->image_0x98 : this->image_0x78;
                     }
-                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 }
+                Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 goto tractor;
             }
             if (!this->level->getPlayer()->isAutoPilot() && !this->level->getPlayer()->isDockedToDockingPoint() &&
@@ -1081,7 +1079,7 @@ asteroids:
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
             }
             int slotCount = 0;
-            int asteroidHit = false;
+            bool asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
                 if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
