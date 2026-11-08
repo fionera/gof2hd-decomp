@@ -1588,9 +1588,9 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pLevel->flashScreen(3);
-                    player->setComputerControlled(true);
                     player->setSpeed(0.0f);
                     player->player->removeAllGuns();
+                    player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setTarget(player->geometry);
                     m_pCamera->setPosition(player->getPosition());
