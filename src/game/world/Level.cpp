@@ -1950,9 +1950,9 @@ void Level::createMission() {
     }
     if (alienGuns != 0) {
         Matrix rotation;
-        Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         Vector v = {0.0f, 0.0f, 0.0f};
         int k = 0;
+        Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         for (int i = this->friendCount + this->field_164 + this->field_168;
              i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
