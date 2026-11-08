@@ -1361,17 +1361,18 @@ bool LevelScript::process(int delta) {
                 ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(false);
                 ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
             }
-        } else if (m_nState == 2) {
+        } else if (__builtin_expect(m_nState == 2, 0)) { // lint: arm_builtin
             m_nScriptTimerA += delta;
             m_pLevel->lodManager->forceUpdate(0, false);
             if (__builtin_expect(m_nScriptTimerA >= 3001, 0)) { // lint: arm_builtin
+                m_bCinematicBreak = 0;
                 AEGeometry *ship = (*enemies)[0]->geometry;
-                m_pCamera->setPosition(m_tempVec);
-                m_tempVec = ship->getPosition();
-                m_tempVec += ship->getDirection() * 8000.0f;
-                m_tempVec += ship->getUpVector() * 500.0f;
-                m_tempVec += ship->getRightVector() * 1000.0f;
                 m_pCamera->setTarget(ship);
+                m_tempVec = ((AEGeometry *) (*enemies)[0]->geometry)->getPosition();
+                m_tempVec += ((AEGeometry *) (*enemies)[0]->geometry)->getDirection() * 8000.0f;
+                m_tempVec += ((AEGeometry *) (*enemies)[0]->geometry)->getUpVector() * 500.0f;
+                m_tempVec += ((AEGeometry *) (*enemies)[0]->geometry)->getRightVector() * 1000.0f;
+                m_pCamera->setPosition(m_tempVec);
                 m_nState = 3;
                 m_nScriptTimerA = 0;
             } else {
@@ -1386,7 +1387,7 @@ bool LevelScript::process(int delta) {
             m_nState = 5;
             (*enemies)[0]->player->setHitpoints(0);
             m_nScriptTimerA = 0;
-        } else if (m_nState == 5) {
+        } else if (__builtin_expect(m_nState == 5, 1)) { // lint: arm_builtin
             m_nScriptTimerA += delta;
             if (m_nScriptTimerA >= 3001) {
                 m_nState++;
