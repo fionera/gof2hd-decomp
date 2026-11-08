@@ -2797,9 +2797,9 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
                     m_nScriptTimerB = 0;
                     m_nState = 1;
-                    (*enemies)[0]->setActive(true);
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
                             ->setName(String(*Globals::gameText->getText(3211), false));
+                    (*enemies)[0]->setActive(true);
                 } else if (m_nState == 1 && player->isDockedToDockingPoint()) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
@@ -3926,8 +3926,8 @@ bool LevelScript::process(int delta) {
                             m_nState = 2;
                             for (int i = 8; i <= 10; i++) {
                                 PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
-                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
                                 (*enemies)[i]->setActive(true);
+                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
                                 (*enemies)[i]->field_0x74 = 0;
                             }
                         }
