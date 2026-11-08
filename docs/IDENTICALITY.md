@@ -4,6 +4,98 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 150)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-150 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 3 on `Layout`,
+2 on `createMission`, 2 on `MGame`, 2 on the small tail, the rest on
+extab/PGO). Ten source changes landed:
+
+* `Radar::draw` (w9607): remove the wave-143
+  `__builtin_expect(lockedAsteroid == nullptr && lockedGasCloud == nullptr &&
+  field_0x1c == nullptr, 0)` metric pad (it is not witnessed). Raw
+  **8,712 -> 8,461**; **aligned 1,657 -> 1,646**; 9,908 B exact.
+* `Radar::draw` (w9606): `int wreck` (enemy loop) and `bool asteroidHit`
+  (asteroid loop) restore the original type widths; the strd-tail shapes are
+  documented but every 9,908 B variant regresses at least one metric. Combined
+  with w9607: raw **8,739**, **aligned 1,483** (best structural pair found).
+* `Layout::Layout` (w9610): keep the 4-store `0x184` chain and add the
+  `0x54<->0x58`, `0x2b0<->ringNearMidThreshold`, `0x110_strip58<->0x11c`
+  statement swaps. Raw **5,768 -> 5,741**; **aligned 2,198 -> 2,189**;
+  7,072 B exact.
+* `LevelScript::process` (w9603): the size-exact prologue accessor permutation
+  `enemies, messages, player`. Raw **54,898** (unchanged); **aligned
+  15,802 -> 15,795**.
+* `LevelScript::process` (w9602): the case-125 `switch` becomes three
+  independent `if`s in the order 2, 3, default(4..6), with state-3/hacking hot
+  expects. The independent-if form detaches the hacking block from the state-3
+  chain, so the first `PlayerStation::setVisible` reference precedes
+  `PlayerEgo::deleteHackingGame`: **`.rel.plt` is now byte-identical (4 -> 0)**.
+  Raw **54,898 -> 54,792**; aligned 15,802 -> 17,605 (the greedy alignment is
+  indicative for this 57 KB function); 57,232 B exact.
+* `MGame::OnTouchEnd` (w9613): spell the mining-report guard as
+  `amount != 0 && amount != 1` so the backend emits `cmp #2; bcc` instead of
+  `cmp #-1; bgt`. Raw **4,393 -> 4,392**; aligned **904** (unchanged).
+* `MGame::OnUpdate` (w9617): read `Globals::status` directly at the
+  `getCurrentCampaignMission` site and keep the `Status*` anchor only for the
+  `getPlayingTime` store. Raw **37 -> 318** (same-address shift); **aligned
+  109 -> 19**; 11,440 B exact.
+* `Level::createShip` (w9616): declare the waypoint reads `wy, wz, wx` so the
+  null-branch spill slots match. Raw **1,978 -> 2,056**; **aligned 482 -> 480**;
+  2,764 B exact.
+* `Level::createMission` (w9612): move `int guns = alienGuns + fortressGuns;`
+  after the inner `if` (the original's witnessed `add.w r5,sl,fp` at `b37e6`);
+  the emitted bytes are bit-identical to HEAD.
+* `Level::createMission` (w9611): the alien turret loop reverts the first
+  rotate to the plain `v = MatrixRotateVector(...)` (the original shares one
+  sret slot for both rotates) and moves `setScaling` after `setPosition`.
+  Raw **5,495 -> 5,657**; **aligned 731 -> 714**; 17,172 B exact.
+
+Measured and **not landed** (notes kept): w9604 (case-125 else-if + `m_nState++`
+does not compose with w9602: 57,248 B); w9609 (`0x148` joins the SLP group but
+is +8 B with w9610 and worsens both metrics alone); w9614 (branch-reorder
+removes the `expect` hint but costs +27 raw / +13 aligned vs w9613);
+w9615 (Hud `pivotY=0` anchor removal is 9,332 B but raw +5,639 / aligned +699).
+
+Analysis-only passes: w9601 (the c154->strong adjacency shape is 57,272 B; the
+current `m_nState = 6` is a +4 B size companion and should be `m_nState++`),
+w9605 (the `.text` tail is 467 gold Thumb->ARM veneers + a fixed 0x40 pad; one
+fewer veneer is exactly -16 B, the clean lever for the Radar String shape),
+w9608 (the 44 missing Layout literal words are in the `0x2c4..0x2d8`,
+`0x2f4..0x318` and `0x7c..0x94` device groups), w9618 (MenuTouchWindow/ModStation/
+SpaceLounge residual is Greedy-RA remat / scheduler choice), w9619 (extab
+LP-tie arithmetic: `Radar::Radar` needs `k` in [1.000958,1.0014) or `k=2`),
+w9620 (Status: `-profile-guided-section-prefix=false` + the rank profile reaches
+1,428 B; a 1,432 B hit still gives byte_exact 4493, so no clean profile).
+
+**Aligned total (15 functions): 24,439** (wave-149 base 22,928; the increase is
+the LevelScript `.rel.plt` fix, whose greedy alignment is indicative). Per
+function: Layout 2,189, LevelScript 17,605 (indicative), createShip 480,
+Status 320, Radar 1,483, MGame::OnTouchEnd 904, createMission 714, Gun 57,
+HangarWindow 291, SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 15,
+ModStation 12, MGame::OnUpdate 19.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,792** (57,232 B), `Radar::draw` **8,739** (9,908 B), `Layout` C1/C2
+**5,741** (7,072 B), `Level::createMission` **5,657** (17,172 B),
+`MGame::OnTouchEnd` **4,392** (8,080 B), `Level::createShip` **2,056** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **445** (1,996 B),
+`SpaceLounge::drawLounge` **176** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **86,863** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,326** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 149)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
