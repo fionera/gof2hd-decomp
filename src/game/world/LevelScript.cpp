@@ -2906,9 +2906,10 @@ bool LevelScript::process(int delta) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
-                        (*enemies)[0]->setPosition((*enemies)[3]->getPosition() + Vector{-76000.0f, 5000.0f, 5000.0f});
+                        Vector ref = (*enemies)[3]->getPosition();
+                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
-                        (*enemies)[2]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 2500.0f});
+                        (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                             (*enemies)[i]->field_0x38 = 3;
@@ -4288,6 +4289,7 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA >= 7001) {
                             m_nState = 4;
                             Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
@@ -4666,7 +4668,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (__builtin_expect(m_nScriptTimerA >= 2001, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerA >= 2001) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*enemies)[i];
                             if (ship->shipGroup == 9) {
@@ -4864,7 +4866,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nScriptTimerB += delta;
-                    if (__builtin_expect(m_nScriptTimerB >= 25001, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerB >= 25001) {
                         m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
