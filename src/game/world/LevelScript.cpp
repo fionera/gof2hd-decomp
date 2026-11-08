@@ -608,9 +608,9 @@ bool LevelScript::process(int delta) {
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
-    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
     PlayerEgo *player = m_pLevel->getPlayer();
+    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -2906,10 +2906,9 @@ bool LevelScript::process(int delta) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
-                        Vector ref = (*enemies)[3]->getPosition();
-                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
+                        (*enemies)[0]->setPosition((*enemies)[3]->getPosition() + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
-                        (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
+                        (*enemies)[2]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                             (*enemies)[i]->field_0x38 = 3;
@@ -4289,7 +4288,6 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA >= 7001) {
                             m_nState = 4;
                             Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
@@ -4703,7 +4701,7 @@ bool LevelScript::process(int delta) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nState = 6;
+                        m_nState++;
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
