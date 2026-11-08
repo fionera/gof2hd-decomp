@@ -929,7 +929,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     } else if (type == 9) {
         reward *= 1.2f;
     } else if (type == 8) {
-        reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
+        Item *it = (*Globals::items)[itemId];
+        reward = (float) (it->getMaxPrice() * amount) * 1.7f;
     } else if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
