@@ -32,11 +32,12 @@ Wave-141 lands nine source-level improvements (plus eleven note-only research co
 * `Hud::draw` (w8617): faithful short `barH` + dock2 `String`-first LSDA proof; byte-neutral
   (raw stays 1,362).
 
-Note-only: w8602 (w8506 case-125 re-measure), w8605 (exact LSDA call-site table), w8611 /
-w8612 (createMission alien/tail blocks and escort-hoist RNG order), w8613 (OnTouchEnd block
-map), w8615 (Status `.profdata` + createShip forms), w8618 (near-miss probes), w8619
-(codegen flag fingerprint), w8620 (long tail), w8621 (APK/toolchain forensics), w8622
-(linker matrix).
+Note-only: w8602 (w8506 case-125 re-measure), w8605 (exact LSDA call-site table), w8608
+(`0xdc` strd flip; its 5,752 companion loses to w8607's 5,728 and relocates the
+`field_0x138` branch bodies), w8611 / w8612 (createMission alien/tail blocks and
+escort-hoist RNG order), w8613 (OnTouchEnd block map), w8615 (Status `.profdata` +
+createShip forms), w8618 (near-miss probes), w8619 (codegen flag fingerprint), w8620
+(long tail), w8621 (APK/toolchain forensics), w8622 (linker matrix).
 
 Section deltas: `.text` **84,567** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
