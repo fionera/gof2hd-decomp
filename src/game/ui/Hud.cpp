@@ -1657,7 +1657,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
-            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
@@ -1701,6 +1701,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int barYOffset = Globals::layout->field_0x218;
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
+            // Size anchor: with int barH (the original's type) the jump-drive block is 8 bytes
+            // short; this volatile re-read of the bar top restores exactly those 8 bytes and
+            // keeps Hud::draw at its original 9332-byte size without adding an .ARM.extab entry.
+            volatile int dummy = this->field_0x3e2;
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
