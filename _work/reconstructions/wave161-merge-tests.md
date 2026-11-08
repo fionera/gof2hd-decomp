@@ -78,3 +78,31 @@ MGame::OnTouchEnd pair.  `check` is green, byte_exact 4507/4524.
    shape that is size-exact at 9,700 B with the credits call.
 5. **Build provenance**: every non-code ELF byte is identical; the remaining
    levers are not per-TU flags.
+
+## Late wave-161 workers (w10705 / w10706 / w10709 / w10713 / w10714 / w10717)
+
+* **w10706** (Layout: six-statement block permutation around
+  `0x15c/0x158/0x204/0x2bc/0x160`): raw **5,733 -> 5,719** (-14), aligned
+  **1,978 -> 2,013** (+35).  Combined with w10707 the pair gives
+  **5,715 / 2,050** (best raw, worst aligned); both landed.
+* **w10717** (Hud: `int barH` + a volatile size anchor): raw
+  **1,325 -> 1,233** (-92), aligned **249 -> 256** (+7), 9,332 B exact.
+  Landed.
+* **w10713** (createMission case-183 default store order 2,0,1): raw
+  **5,461 -> 5,454** (-7), aligned **781 -> 786** (+5).  Landed.
+* **w10705** (LevelScript epilogue/canary): `expect(m_bStartSequence != 0, 0)`
+  flips the callee-saved tie to the original (`sl`=this, `fp`=canary) and
+  makes the prologue and mid-function epilogue byte-identical, but it moves
+  the block cold (+20 B, 57,252) and rotates 9 `.rel.plt` bytes.  `L1526:0`
+  is a size-exact raw win (55,048 -> 54,959) but rotates 16 `.rel.plt`
+  bytes and drops byte_exact to 4502.  Not landed.
+* **w10709** (Radar extab operand swap): extab -2 at +404 raw / +35 aligned;
+  the better -11 extab variant is +4 B (gate-fatal).  Not landed.
+* **w10714** (createShip): 1,560/460 (raw -3, aligned +11); base keeps 449.
+
+Final wave-161 totals: `.text` **85,374** (-144), `.ARM.extab` **725**
+(-533), `.rel.plt` 0, `.note.gnu.build-id` 20, total differing bytes
+**86,119** (was 86,796, -677).  Aligned total **24,178** (+632): the rise is
+the deliberate price of the mission-89 bug fix (+259), the HangarWindow
+extab win (+194), the MGame::OnUpdate raw win (+90), and the Layout store
+permutations (+72).  `check` is green, byte_exact 4507/4524.
