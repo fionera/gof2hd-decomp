@@ -13,7 +13,7 @@ imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 
 Wave-149 ran 20 agents (2 on `Radar`, 2 on `Layout`, 3 on `LevelScript`, 2 on
 `createMission`, 2 on `MGame`, 2 on build provenance, the rest on the smaller
-residuals). Six source changes landed:
+residuals). Seven source changes landed:
 
 * `Layout::Layout` (w9504): the `0x184` chain must test `iPad` before `n9`
   (a genuine semantic bug). A flat fix merges the `iPadLarge`/`iPad` arms and
@@ -40,6 +40,10 @@ residuals). Six source changes landed:
   branch-weight hint flips the tail-merge ownership enough to absorb the 4 B
   at the original 8,080 B and the original literal-pool address. Raw
   **4,127 -> 4,393**; **aligned 906 -> 904**.
+* `Radar::draw` (w9607): drop the invented wave-143 `otherLock`
+  `__builtin_expect(..., 0)` pad (plain `if`). The play-site table is
+  re-derived and is 7/7 (not 8/7) on both binaries. Raw **8,712 -> 8,461**;
+  **aligned 1,657 -> 1,646**; 9,908 B exact.
 
 Analysis-only passes (notes committed, no source change): w9501 (the
 String-labelCopy 9,908 shape is blocked on a 12 B `.text` shrink that must be
@@ -58,14 +62,14 @@ w9519 (MGame::OnUpdate 37-byte residual re-derived; no source win), w9520
 clang 7.0.2, so any profile replay must disable it; a full-TU profile can
 reach 1,432 B but not the source-order switch layout).
 
-**Aligned total (15 functions): 22,928** (wave-148 base 22,945). Per function:
+**Aligned total (15 functions): 22,917** (wave-148 base 22,945). Per function:
 Layout 2,198, LevelScript 15,802 (indicative), createShip 482, Status 320,
-Radar 1,657, MGame::OnTouchEnd 904, createMission 731, Gun 57, HangarWindow 291,
+Radar 1,646, MGame::OnTouchEnd 904, createMission 731, Gun 57, HangarWindow 291,
 SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 15, ModStation 12,
 MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,898** (57,232 B), `Radar::draw` **8,712** (9,908 B), `Layout` C1/C2
+**54,898** (57,232 B), `Radar::draw` **8,461** (9,908 B), `Layout` C1/C2
 **5,768** (7,072 B), `Level::createMission` **5,495** (17,172 B),
 `MGame::OnTouchEnd` **4,393** (8,080 B), `Level::createShip` **1,978** (2,764 B),
 `HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
@@ -75,7 +79,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **29** (1,896 B).
 
-Section deltas: `.text` **86,449** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **86,198** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;

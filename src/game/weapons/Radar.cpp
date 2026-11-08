@@ -408,8 +408,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     bool otherLockFlag;
-    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin anchor: Radar::draw
-                         this->field_0x1c == nullptr, 0)) {
+    if (this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr &&
+        this->field_0x1c == nullptr) {
         otherLockFlag = this->field_0x14 != 0;
     } else {
         otherLockFlag = 1;
