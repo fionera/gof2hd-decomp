@@ -2595,8 +2595,9 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     m_bCinematicBreak = 1;
-                    m_pCamera->setTarget(m_pGeometry6);
+                    m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
+                    m_pRadar->dockNavPtr = nullptr;
                     player->setComputerControlled(true);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
