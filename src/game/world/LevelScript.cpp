@@ -2912,8 +2912,8 @@ bool LevelScript::process(int delta) {
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
-                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 0;
                             (*enemies)[i]->field_0x38 = 3;
+                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 0;
                             (*enemies)[i]->awake();
                             (*enemies)[i]->setVisible(true);
                         }
