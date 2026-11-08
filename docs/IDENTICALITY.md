@@ -4,6 +4,52 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 147)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-147 lands one source change:
+
+* `SpaceLounge::drawLounge`: the `__builtin_expect(agent->isKnown(), 1)` guard is
+  reverted to the plain `if (agent->isKnown())`. **METRIC-ONLY (aligned)**: the
+  instruction-index alignment improves **57 -> 47** and our instruction count now
+  equals the original's (741 vs 741), but raw same-address diff **175 -> 265**,
+  `.text` **85,928 -> 86,018** and `.ARM.extab` **1,393 -> 1,396**. Size stays
+  1948 B. The old comment ("plain form grows body 1948 -> 1952") was stale. See
+  `_work/reconstructions/expect-sweep-wave147-w9318.md`.
+
+The wave-147 `__builtin_expect` sweep found that the six smallest residuals
+(MenuTouchWindow, ModStation, Gun, Generator, SpaceLounge, MGame::OnUpdate) are
+register-allocation/jump-threading residuals and do not respond to branch-weight
+hints. `__builtin_expect_with_probability` does not exist in clang 7.0.2.
+
+Aligned total (15 functions, measured on this tree): **24,222** (wave-146
+measured: 24,232; the wave-146 doc figure 24,443 used a stale `Hud::draw` 460,
+current measured `Hud::draw` is 249). Per function: Layout 2,304, LevelScript
+15,737 (indicative), createShip 486, Status 320, Radar 2,712, MGame::OnTouchEnd
+906, createMission 728, Gun 57, HangarWindow 480, SpaceLounge **47**, Hud 249,
+Generator 59, MenuTouchWindow 16, ModStation 12, MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,869** (57,232 B), `Radar::draw` **8,733** (9,908 B), `Layout` C1/C2
+**5,704** (7,072 B), `Level::createMission` **5,560** (17,172 B),
+`MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
+`HangarWindow::render` **1,719** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **445** (1,996 B),
+`SpaceLounge::drawLounge` **265** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**28** (1,896 B).
+
+Section deltas: `.text` **86,018** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,396** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
+the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 146)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
