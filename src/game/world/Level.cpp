@@ -5171,8 +5171,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wx = waypoint != nullptr ? waypoint->x : 0;
     int wy = waypoint != nullptr ? waypoint->y : 0;
+    int wx = waypoint != nullptr ? waypoint->x : 0;
     int wz = waypoint != nullptr ? waypoint->z : 0;
     int jitterX = Globals::rnd->nextInt(40000);
     int jitterY = Globals::rnd->nextInt(40000);
