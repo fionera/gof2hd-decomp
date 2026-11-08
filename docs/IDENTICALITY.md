@@ -4,6 +4,27 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 144)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-144 lands one source-level improvement:
+
+* `LevelScript::process` (w8905): the case-80 metric-only `m_pRadar->dockNavPtr = nullptr`
+  store is removed (the original case-80 block has no `Radar+8` store), and the genuinely
+  missing `m_nScriptTimerA = 0` is restored at the case-91 state-3 tail (original
+  `0x13fed6` is a single `strd r1,r1,[r2,#144]`). The `dockNavPtr` store is relocated to
+  the same tail as the size/encoding companion (METRIC-ONLY there: the original tail has
+  no `Radar+8` store). Raw **54,619 -> 54,570** at 57,232 B (size unchanged).
+
+Section deltas: `.text` **85,802** differing bytes (size exact, -49); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,499** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 143)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
@@ -37,7 +58,8 @@ Wave-143 lands seven source-level improvements, several of them faithfulness fix
 
 * `LevelScript::process` (w8801/w8802/w8803/w8804): move4b reorder; the case-80 extra
   `setTarget` removed (`setTarget` census now 81=81); case-91 state 6 before 5; the
-  faithful case-125 state-2 ambush RNG order. Raw **54,691 -> 54,619** at 57,232 B.
+  faithful case-125 state-2 ambush RNG order. Raw **54,691 -> 54,619** at 57,232 B
+  (wave-144 later improves this to 54,570).
 * `Radar::draw` (w8807 + w8808): the original guard is `bool otherLock` with one
   `__builtin_expect(A==0 && B==0 && C==0, 0)`, which emits the original `cbnz` chain;
   the campaign block is laid out cold by `expect(...,0)`; the invented post-loop

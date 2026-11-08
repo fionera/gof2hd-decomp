@@ -2597,7 +2597,6 @@ bool LevelScript::process(int delta) {
                     m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
-                    m_pRadar->dockNavPtr = nullptr;
                     player->setComputerControlled(true);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
@@ -2994,6 +2993,7 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                             ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                         }
+                        m_nScriptTimerA = 0;
                         m_pRadar->dockNavPtr = nullptr;
                         m_nState++;
                     }
