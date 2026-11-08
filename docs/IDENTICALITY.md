@@ -4,6 +4,80 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 149)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-149 ran 20 agents (2 on `Radar`, 2 on `Layout`, 3 on `LevelScript`, 2 on
+`createMission`, 2 on `MGame`, 2 on build provenance, the rest on the smaller
+residuals). Six source changes landed:
+
+* `Layout::Layout` (w9504): the `0x184` chain must test `iPad` before `n9`
+  (a genuine semantic bug). A flat fix merges the `iPadLarge`/`iPad` arms and
+  loses 8 B; duplicating the `iPad` test in both `n9` arms keeps the original
+  4-store chain, and two pure statement swaps pay the 8 B back. Raw
+  **5,743 -> 5,768**; **aligned 2,213 -> 2,198**; 7,072 B exact.
+* `HangarWindow::render` (w9514): restore the original asm call order
+  `replaceTextKeepSize -> setSplitText -> draw` (w9016 had `draw` before
+  `setSplitText` as a metric-only swap). Raw **1,967 -> 1,965**;
+  **aligned 301 -> 291**; 9,700 B exact.
+* `MenuTouchWindow::OnTouchBegin` (w9516): the case-15 block reads
+  `Globals::layout` directly for the button-inset/top/left-margin accesses
+  (the original's `Layout*` live range). Raw **28 -> 29**; **aligned 16 -> 15**.
+* `Level::createShip` (w9512): declare `wy` before `wx` so the null-waypoint
+  branch spills `y`'s slot before `x`'s. Raw **1,978** (unchanged);
+  **aligned 486 -> 482**; 2,764 B exact.
+* `Level::createMission` (w9509): name the `MatrixRotateVector` return temp in
+  both turret loops (`Vector p = ...; v = p;`). That restores the pristine
+  pirate-fortress preheader allocation (case4Tail region 196 -> 27) at the
+  cost of the alien tail (17 -> 103). Raw **5,561 -> 5,495**;
+  **aligned 716 -> 731**; 17,172 B exact.
+* `MGame::OnTouchEnd` (w9510): the wave-148 `sepif` restructure is the
+  faithful CFG but costs +4 B; a `__builtin_expect(isDockingToStream(), 1)`
+  branch-weight hint flips the tail-merge ownership enough to absorb the 4 B
+  at the original 8,080 B and the original literal-pool address. Raw
+  **4,127 -> 4,393**; **aligned 906 -> 904**.
+
+Analysis-only passes (notes committed, no source change): w9501 (the
+String-labelCopy 9,908 shape is blocked on a 12 B `.text` shrink that must be
+shift-free), w9503 (Layout ascending tail reaches `0xdf4` but is 268 B
+pool-short), w9505 (LevelScript state-switch weights move `c154` before the
+strong arm but regress both metrics), w9507 (LevelScript case-92 block is
+structurally complete; the faithful prologue accessor order is +72 B), w9508
+(createMission sret-temp hoist not reachable from source), w9511 (Hud fp/r9
+swap root-caused to the `dividerOffset` pivotY anchor), w9513 (extab LP ties
+need `P(autoTurret != nullptr)=0.3125`), w9515 (per-case profile derivation
+reproduces both switch tables at 1,428 B but sinks the entry block), w9517
+(independent flag re-derivation: 104 A/B cells, canonical flag set confirmed),
+w9519 (MGame::OnUpdate 37-byte residual re-derived; no source win), w9520
+(ModStation/drawLounge LP order and pre-RA CMOV copy decoded).
+
+**Aligned total (15 functions): 22,928** (wave-148 base 22,945). Per function:
+Layout 2,198, LevelScript 15,802 (indicative), createShip 482, Status 320,
+Radar 1,657, MGame::OnTouchEnd 904, createMission 731, Gun 57, HangarWindow 291,
+SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,898** (57,232 B), `Radar::draw` **8,712** (9,908 B), `Layout` C1/C2
+**5,768** (7,072 B), `Level::createMission` **5,495** (17,172 B),
+`MGame::OnTouchEnd` **4,393** (8,080 B), `Level::createShip` **1,978** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **445** (1,996 B),
+`SpaceLounge::drawLounge` **176** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **86,449** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
+the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 148)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -12,7 +86,7 @@ imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
 Wave-148 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 2 on `Layout`,
-2 on `createMission`, 3 on the PGO/profile question). Seven source changes landed:
+2 on `createMission`, 3 on the PGO/profile question). Six source changes landed:
 
 * `Radar::draw` (w9402): the station loop reads `stations->data()[i]` first
   (matching `12e474..12e47e`), the enemy `wreck` becomes `bool`, and the
@@ -29,11 +103,6 @@ Wave-148 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 2 on `Layout`,
   `Matrix rotation; Vector v; int k; Vector base;` (the original initialises
   Matrix, then v, then base at `b323c..b3284`). Raw **5,560 -> 5,561**;
   **aligned 728 -> 716**.
-* `Level::createMission` (w9509): name the `MatrixRotateVector` return temp in
-  both turret loops (`Vector p = ...; v = p;`). That restores the pristine
-  pirate-fortress preheader allocation (case4Tail region 196 -> 27) at the
-  cost of the alien tail (17 -> 103). Raw **5,561 -> 5,495**;
-  **aligned 716 -> 731**.
 * `LevelScript::process` (w9406, w9418, w9407): the case-92 state-1 block gets
   the witnessed `field_0x38`/`field_0x128` store order; the mission-0 loop
   calls `setDirection` before `setVisible`; and the case-157 strong arm drops
@@ -54,15 +123,15 @@ per-TU `-fprofile-instr-use` profile can move one hot case to the front of
 1,432). The extab LP-identity ties are frequency-driven: `Radar::Radar`'s 7
 bytes need `P=0.3125/0.125` in the machine-level MBFI domain.
 
-**Aligned total (15 functions): 22,960** (wave-147 base 24,055). Per function:
+**Aligned total (15 functions): 22,945** (wave-147 base 24,055). Per function:
 Layout 2,213, LevelScript 15,802 (indicative), createShip 486, Status 320,
-Radar 1,657, MGame::OnTouchEnd 906, createMission 731, Gun 57, HangarWindow 301,
+Radar 1,657, MGame::OnTouchEnd 906, createMission 716, Gun 57, HangarWindow 301,
 SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
 MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **54,898** (57,232 B), `Radar::draw` **8,712** (9,908 B), `Layout` C1/C2
-**5,743** (7,072 B), `Level::createMission` **5,495** (17,172 B),
+**5,743** (7,072 B), `Level::createMission` **5,561** (17,172 B),
 `MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
 `HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
@@ -71,7 +140,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **28** (1,896 B).
 
-Section deltas: `.text` **86,159** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **86,225** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
