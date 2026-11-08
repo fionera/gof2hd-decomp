@@ -4,6 +4,73 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 157)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-157 ran 20 agents (all on the residual functions plus a build replay).
+Five source changes landed:
+
+* `LevelScript::process` (w10301): in mission-106 state-6, a `Status* st`
+  local is used for the armor-HP store only. Raw **55,095 -> 55,094** (-1),
+  aligned 17,131 (0); 57,232 B exact.
+* `LevelScript::process` (w10303): hoist the mission-0 state-0 `data_` null
+  guard out of the `for` condition into a body `continue`, restoring the
+  original `cmp r5,#3; bne` back-edge. Aligned **17,131 -> 17,129** (-2),
+  raw 55,094 (0); 57,232 B exact.
+* `Radar::draw` (w10305): restore `int alwaysEnemySeen`, make
+  `alwaysEnemy` an `int` so clang coalesces both into the original's
+  `[sp,#80]` word slot, and add a real `plasmaInRange = 0` tail store.
+  Raw **8,320 -> 8,181** (-139), aligned **1,296 -> 1,278** (-18); 9,908 B
+  exact.
+* `Layout::Layout` (w10307): compose the w10208 SLP chunk-boundary fix
+  (`field_0xb0` in the b4..c0 chunk, `marqueeWidth` evicted) with four
+  pure statement moves (`0x7c` after `0x80`, `0xb0` after `0xc4`,
+  `marqueeWidth` after `0xc8`, `0x13c` after `0x14c`). Raw
+  **5,822 -> 5,753** (-69), aligned 1,984 (0); 7,072 B exact.
+* `Generator::createMission` (w10319): `volatile rem` +
+  `bonus -= rem * 2`. Raw **393 -> 300** (-93), aligned 52 -> 59 (+7);
+  1,996 B exact.
+
+Measured and **not landed** (notes kept): w10302 (case-154 graded expect +
+case-14 increment: 55,088/17,135), w10304 (exact w10204+w10206 combination:
+8,437/1,337 but `.ARM.extab` 1,254), w10306 (landmark 68-hoist analysis),
+w10308 (SLP group bases: 5,806/1,999), w10309 (temp=r5 + branch weight:
+6,469/1,230), w10310 (alien-gun branch weight: 5,662/748), w10311 (AND-form
+won guard: 4,379/949 with the PLT slot intact), w10312 (natural arm order:
+4,404/920), w10313 (instrumented profile hits 1,432 B with `.rel.plt` 0
+but raw 1,299 / aligned 583), w10314 (generic PGO harness: all profiles
+regress), w10315 (Hud anchor still unique), w10316 (HangarWindow extab
+1,292 -> 767 at `.text` 86,380), w10317 (createShip no source win),
+w10318 (MenuTouchWindow 29 -> 28 / 15 -> 16), w10320 (per-TU `-Oz`,
+`-mllvm`, unwind and stack-protector replay: still no flag win).
+
+**Aligned total (15 functions): 23,673** (wave-156 base 23,686). Per function:
+Layout 1,984, LevelScript 17,129 (indicative), createShip 452, Status 320,
+Radar 1,278, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 59, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,094** (57,232 B), `Radar::draw` **8,181** (9,908 B), `Layout` C1/C2
+**5,753** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,564** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **300** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **85,529** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,292** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 156)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
