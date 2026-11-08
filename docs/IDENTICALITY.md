@@ -4,6 +4,20 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 154)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+* `Level::createShip` (w10016): split the five-way mission test into
+  `if (mission == 56) { hitpoints = 270; } else if (mission >= 49 &&
+  mission <= 52) { hitpoints = 270; }`. The two-branch form keeps the
+  status-r4 entry map (`status r4 / rnd r5 / nextInt r6`) and the 2,764 B
+  size, and re-aligns the block fall-through: raw **1,577 -> 1,564**,
+  aligned **457 -> 452**; `.text` **-13**, `.ARM.extab` **-1**.
+
 ## Update 2026-11-08 (wave 153)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -62,8 +76,8 @@ source-order jump table is reproduced by a flat `!prof` vector
 `default 1, {167,174,8,0,11,13,14}=4, group2=3, group3=2`: raw 558 / aligned
 47 / 1,432 B — a sample-profile signature, not `handleSwitchExpect`).
 
-**Aligned total (15 functions): 23,978** (wave-152 base 24,116). Per function:
-Layout 2,119, LevelScript 17,185 (indicative), createShip 457, Status 320,
+**Aligned total (15 functions): 23,973** (wave-152 base 24,116). Per function:
+Layout 2,119, LevelScript 17,185 (indicative), createShip 452, Status 320,
 Radar 1,484, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
 291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
 MGame::OnUpdate 19.
@@ -71,7 +85,7 @@ MGame::OnUpdate 19.
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **55,328** (57,232 B), `Radar::draw` **8,577** (9,908 B), `Layout` C1/C2
 **5,830** (7,072 B), `Level::createMission` **5,487** (17,172 B),
-`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,577** (2,764 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,564** (2,764 B),
 `HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
 **463** (1,984 B), `Generator::createMission` **393** (1,996 B),
@@ -79,8 +93,8 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **29** (1,896 B).
 
-Section deltas: `.text` **86,623** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **1,265** (size- and base-exact
+Section deltas: `.text` **86,610** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,264** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
