@@ -343,14 +343,14 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    int missionBlocksPlanets = false;
+    bool missionBlocksPlanets = false;
     int alwaysEnemySeen = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
     }
 
-    int turretMode = this->level->getPlayer()->isInTurretMode();
+    bool turretMode = this->level->getPlayer()->isInTurretMode();
     bool alienOrbit = Globals::status->inAlienOrbit();
     int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
@@ -366,7 +366,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     this->cameraZ = this->transform.m[11];
     this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
 
-    int onPlanetCourse;
+    bool onPlanetCourse;
     if (alienOrbit) {
         onPlanetCourse =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
@@ -407,7 +407,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
-    int otherLockFlag;
+    bool otherLockFlag;
     if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin anchor: Radar::draw
                          this->field_0x1c == nullptr, 0)) {
         otherLockFlag = this->field_0x14 != 0;
@@ -437,7 +437,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
-                    int topOk = top < this->screenY;
+                    bool topOk = top < this->screenY;
                     if (left < this->screenX && this->screenY < top + size + size && topOk &&
                         this->screenX < left + size + size) {
                         if (this->field_0x28 != this->landmarks->data()[i]) {
@@ -530,7 +530,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     if (campaign >= 2 && this->planetTargets != nullptr && !alienOrbit &&
         !this->level->getPlayer()->isDockingToPlanet()) {
         Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
-        int planetHit = false;
+        bool planetHit = false;
         for (uint32_t i = 0; i < this->planetTargets->size(); ++i) {
             if (this->planetTargets->data()[i] == nullptr) {
                 continue;
@@ -554,7 +554,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                  campaignMission->isVisible() &&
                                  (Globals::status->getCurrentCampaignMission() < 148 ||
                                   Globals::status->getCurrentCampaignMission() >= 152), 0)) {
-                int isTarget = campaignMission->getTargetStation() == stations->data()[i];
+                bool isTarget = stations->data()[i] == campaignMission->getTargetStation();
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
@@ -581,7 +581,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 }
             }
             if (freelance != nullptr && !freelance->isEmpty() && freelance->isVisible()) {
-                int isTarget = stations->data()[i] == (freelance->getType() == 14 ? freelance->getAgent()->getStation()
+                bool isTarget = stations->data()[i] == (freelance->getType() == 14 ? freelance->getAgent()->getStation()
                                                                                    : freelance->getTargetStation());
                 if (stationId != currentStation && isTarget) {
                     Globals::Canvas->DrawImage2D(this->image_0xc4, this->screenX + textOffset, this->screenY - 10);
@@ -663,15 +663,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
 enemies:
-    if (__builtin_expect(this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead()), 0)) { // lint: arm_builtin anchor: Radar::draw
+    if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
         this->lockedEnemy = nullptr;
         otherLock = false;
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    int enemyHit = false;
-    if (this->scannerAvailable && __builtin_expect(this->enemies != nullptr, 1)) { // lint: arm_builtin anchor: Radar::draw
-        int alwaysEnemy = false;
+    bool enemyHit = false;
+    if (this->scannerAvailable && this->enemies != nullptr) {
+        bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
             if (!enemy->player->isActive() ||
@@ -783,7 +783,7 @@ enemies:
                     enemy->field_0x73 = 0;
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
-                    int inSight = false;
+                    bool inSight = false;
                     AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
                     if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
                         inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
@@ -857,9 +857,9 @@ enemies:
 
         if (!this->level->getPlayer()->isDockingToAsteroid() &&
             !(this->level->getPlayer()->isDockingToDockingPoint() || turretMode || otherLock)) {
-            int navWreck = this->dockNavPtr != nullptr && this->dockNavPtr->hasCargo &&
+            bool navWreck = this->dockNavPtr != nullptr && this->dockNavPtr->hasCargo &&
                             (this->dockNavPtr->isDead() || this->dockNavPtr->isDying());
-            if (__builtin_expect(this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead()), 0)) { // lint: arm_builtin anchor: Radar::draw
+            if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
                 this->lockedEnemy = nullptr;
             }
             if (enemyHit) {
@@ -949,7 +949,7 @@ enemies:
             if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
                 for (uint32_t s = 0; s < sparks->size(); ++s) {
                     this->update(sparks->data()[s]->getPosition());
-                    int inSight = false;
+                    bool inSight = false;
                     if (this->onScreen) {
                         int size = this->turretScopeHalfWidth;
                         int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
@@ -1066,7 +1066,7 @@ enemies:
     }
 
 asteroids:
-    int hasDockNav = this->dockNavPtr != nullptr;
+    bool hasDockNav = this->dockNavPtr != nullptr;
     for (int i = 0; i != 5; ++i) {
         this->asteroidSlots[i] = -1;
     }
@@ -1189,7 +1189,7 @@ asteroids:
                     }
                     this->lockedAsteroid = nullptr;
                 }
-                int candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
+                bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
                 if (!asteroidHit || this->level->getPlayer()->isDockingToAsteroid()) {
                     if ((candidateWreck ? this->field_0x1c : this->lockedAsteroid) == nullptr) {
@@ -1292,7 +1292,7 @@ asteroids_done:
         this->field_0x54 = 0;
         if (Globals::status->getCurrentCampaignMission() != 145) {
             current = Globals::sound->currentMusicEvent;
-            int ambient;
+            bool ambient;
             switch (current) {
                 case 127: case 128: case 129: case 130: case 134: case 137: case 138: case 139:
                 case 145: case 146: case 147: case 148: case 152:
