@@ -948,10 +948,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     } else {
         int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
                                                ->getMissionBonus(agent->getRace()));
-        int rem = rawBonus % 50;
+        volatile int rem = rawBonus % 50;
         bonus = rawBonus + rem;
         if (bonus % 50 != 0) {
-            bonus = rawBonus + rawBonus - bonus;
+            bonus -= rem * 2;
         }
     }
 
