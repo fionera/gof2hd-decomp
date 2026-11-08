@@ -4,6 +4,48 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 148)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-148 lands one source change:
+
+* `MGame::OnTouchEnd` (w9412): the `hudTouchFlags == 0` join is written as a
+  separate `if` inside the `else` of the weaponSlot test (the `sepif` shape),
+  so the wingman body branches to the join test (`b.w 17aeb2`) exactly as the
+  original (`b.w 17afe2`).  The faithful `b.w` costs 4 B; the companion is the
+  epilogue condition reorder `if (!wasAutoPilot && this->player->isAutoPilot())`
+  (a metric-only rewrite of the original's OR-form `isAutoPilot() && !wasAutoPilot`),
+  which keeps the function at 8,080 B.  Raw **4,127 -> 4,420**; aligned **906 -> 925**;
+  `.text` **86,160 -> 86,453**.  See
+  `_work/reconstructions/mgame-ontouchend-wave148-w9412.md`.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,913** (57,232 B), `Radar::draw` **8,672** (9,908 B), `Layout` C1/C2
+**5,704** (7,072 B), `Level::createMission` **5,560** (17,172 B),
+`MGame::OnTouchEnd` **4,420** (8,080 B), `Level::createShip` **1,978** (2,764 B),
+`HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **445** (1,996 B),
+`SpaceLounge::drawLounge` **176** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**28** (1,896 B).
+
+Section deltas: `.text` **86,453** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
+the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
+**Aligned total (15 functions): 24,074** (wave-147 base 24,055). Per function:
+Layout 2,304, LevelScript 15,740 (indicative), createShip 486, Status 320,
+Radar 2,726, MGame::OnTouchEnd 925, createMission 728, Gun 57, HangarWindow 301,
+SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
+MGame::OnUpdate 109.
+
 ## Update 2026-11-08 (wave 147)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
