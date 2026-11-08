@@ -633,7 +633,8 @@ bool LevelScript::process(int delta) {
             (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
             (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
             // Face them +X with +Y up, and make them visible (0x137f34).
-            for (int i = 0; i < 3 && enemies->data_ != nullptr; ++i) {
+            for (int i = 0; i < 3; ++i) {
+                if (!enemies->data_) continue;
                 KIPlayer *e = (*enemies)[i];
                 e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 e->geometry->setVisible(true);
@@ -1380,9 +1381,10 @@ bool LevelScript::process(int delta) {
             m_nState = 4;
         } else if (m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
             Player *pp = player->player;
+            Status *st = Globals::status;
             Globals::status->field_64 = pp->getHitpoints();
             Globals::status->field_5c = pp->getShieldHP();
-            Globals::status->field_60 = pp->getArmorHP();
+            st->field_60 = pp->getArmorHP();
             Globals::status->field_68 = pp->getGammaHP();
             Globals::status->nextCampaignMission(true);
             Globals::status->nextCampaignMission(true);
