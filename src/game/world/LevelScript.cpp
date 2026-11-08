@@ -4708,7 +4708,7 @@ bool LevelScript::process(int delta) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nState++;
+                        m_nState = 6;
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
@@ -4865,16 +4865,16 @@ bool LevelScript::process(int delta) {
                             destroyed += (*enemies)[i]->isDead();
                         }
                     } else {
-                        m_bCinematicBreak = 1;
+                        destroyed = 0;
                         for (int i = 11; i < 22; i++) {
                             destroyed += (*enemies)[i]->isDead();
                         }
                     }
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerB >= 25001) {
+                        m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
-                        m_pHud->visible = 0;
                     }
                     if ((destroyed >= 9 && m_nScriptTime > 200000)
                         || (*enemies)[fighterIndex]->player->getHitpoints()
@@ -4885,7 +4885,8 @@ bool LevelScript::process(int delta) {
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
                         destroyed = 0;
-                        m_nScriptTimerB = 0;
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         player->player->setVulnerable(false);
                         player->setFreeze(true);
@@ -4893,8 +4894,8 @@ bool LevelScript::process(int delta) {
                         KIPlayer *chaser = (*enemies)[chaserIndex];
                         KIPlayer *stationShip = (*enemies)[stationIndex];
                         m_pCamera->setTarget(chaser->geometry);
-                        m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
                         m_tempVec = stationShip->getPosition();
+                        m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         chaser->setPosition(m_tempVec + Vector{15000.0f, -200.0f, 1000.0f});
                         chaser->geometry->setDirection(
