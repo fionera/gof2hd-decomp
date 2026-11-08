@@ -2470,35 +2470,13 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
+                    break; // -> post-switch tail (0x139abe b.w 0x144e36)
                 }
                 // The original checks state 2 before state 1 (0x13c04e: cmp #2 / beq 0x13ec3c,
-                // then cmp #1).  Keeping that order here reproduces the original block placement;
-                // the state-1 body is a no-op immediately after state 0 (the freshly built route's
-                // first waypoint state is 0), so the fall-through does not change behaviour.
-                if (m_nState == 2) {
-                    // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
-                    // hand control back to the player, restore the HUD/radar, reframe the camera on the
-                    // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
-                    // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
-                    // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        break; // -> post-switch tail (0x144e36)
-                    }
-                    m_pCamera->setLookAtCam(false);
-                    m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
-                    m_pHud->visible = 1;
-                    m_pRadar->enabled = 1;
-                    resetCamera(m_pLevel);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                    Player *lead = (*m_pLevel->getEnemies())[0]->player;
-                    m_nState = 3;
-                    lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
-                    (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
-                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
-                } else if (m_nState == 1) {
+                // then cmp #1) with the state-1 arm as the fall-through (0x13c05a).  Writing the
+                // state-1 arm first makes clang emit exactly that cold-first dispatch; the two arms
+                // are mutually exclusive, so the order is behaviour-neutral.
+                if (m_nState == 1) {
                     // State-1 conclude (0x13c04e): keep the LODs warm; once radio #1 is over commit
                     // enemies[0] (a PlayerFighter) as a permanent enemy -- seed its state fields, drop
                     // its route -- then reframe the camera ahead of it along its own facing and unfreeze
@@ -2524,6 +2502,29 @@ bool LevelScript::process(int delta) {
                         m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
+                } else if (m_nState == 2) {
+                    // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
+                    // hand control back to the player, restore the HUD/radar, reframe the camera on the
+                    // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
+                    // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
+                    // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->enabled = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                    Player *lead = (*m_pLevel->getEnemies())[0]->player;
+                    m_nState = 3;
+                    lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
+                    (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
+                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 }
                 break;
             }
