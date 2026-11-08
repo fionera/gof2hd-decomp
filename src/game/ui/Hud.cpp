@@ -1698,26 +1698,27 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
+            int barYOffset = Globals::layout->field_0x218;
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            int barYOffset = Globals::layout->field_0x218;
-            float filled = progress * (float) halfW;
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int fadeColor = 0xffffffff;
             if (fade < 1.0f)
                 fadeColor = (int) (fade * 255.0f) - 256;
             int top = this->field_0x3e2;
+            int y = barOffset + top * 2;
             Globals::Canvas->SetColor(fadeColor);
-            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, barOffset + top * 2, 0x11, 0x14);
+            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
+            float filled = progress * (float) halfW;
             Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
-                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), barOffset + top * 2 + barYOffset);
+                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, text,
                 (Globals::w >> 1) -
                     (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
-                (int) ((float) (barOffset + top * 2) + (float) barH * 2.5f), false);
+                (int) ((float) y + (float) barH * 2.5f), false);
         }
     }
 
