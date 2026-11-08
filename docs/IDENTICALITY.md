@@ -4,19 +4,88 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-08 (wave 154)
+## Update 2026-11-08 (wave 155)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
-* `Level::createShip` (w10016): split the five-way mission test into
-  `if (mission == 56) { hitpoints = 270; } else if (mission >= 49 &&
-  mission <= 52) { hitpoints = 270; }`. The two-branch form keeps the
-  status-r4 entry map (`status r4 / rnd r5 / nextInt r6`) and the 2,764 B
-  size, and re-aligns the block fall-through: raw **1,577 -> 1,564**,
-  aligned **457 -> 452**; `.text` **-13**, `.ARM.extab` **-1**.
+Wave-155 ran 20 agents (14 on the residual functions, 6 on build-flag
+provenance). Three source changes landed:
+
+* `LevelScript::process` (w10102): the mission-0 state-0 loop now uses
+  `(*enemies)[i]` with a live `enemies->data_` bound and one element local,
+  keeping `enemies` live across the loop like the original. Raw
+  **55,327 -> 55,123** (-204), aligned **17,176 -> 17,180** (+4); 57,232 B exact.
+* `Radar::draw` (w10104): the else-arm `String` copy is now the unscoped
+  `temp; lockLabel = temp; DrawString(temp)` shape, with a tail
+  `Globals::status->getCurrentCampaignMission()` size companion. Raw
+  **8,577 -> 8,490** (-87), aligned **1,484 -> 1,456** (-28); 9,908 B exact;
+  `.ARM.extab` +37 (the new call site).
+* `Layout::Layout` (w10106): five pure statement moves from the w10010 base
+  (`0xc0` after `c8`/`oreLabelYOffset`, the `0x190` iPad/retinaDisplay arms
+  swapped, `0x310` after `0x30c`, `animSpeedScale` before `0xdc`, `0x28c`
+  before `0x140`). Raw **5,849 -> 5,837** (-12), aligned **2,006 -> 1,986**
+  (-20); 7,072 B exact.
+
+Measured and **not landed** (notes kept): w10103 (case-125/42/142
+composition: raw -35 but `.ARM.extab` +104), w10105 (`int marked`:
+8,506 / 1,572), w10107 (temp=r5 alien loop: 6,449 / 1,196, gold pad +0x20),
+w10108 (faithful dock owners: 4,427 / 926), w10109 (HangarWindow block
+move: 7,811 / 842 but `.ARM.extab` 676 -> 296), w10114 (asteroid-lock
+store order: 8,482 / 1,477; combining with w10104 is 4 B short), w10009
+(Layout greedy reorder: raw 5,747 but aligned 2,283), w10110/w10111/w10112
+(no source win), w10113 (per-basic-block map: top cluster is the
+case-106 callee-saved allocation).
+
+Build-provenance research (all gate-neutral, notes + harnesses committed):
+
+* w10115: per-TU `-O1/-O2/-Os/-O3` sweep over all 17 residual TUs plus 4
+  exact controls (85 cells): **`-Oz` is optimal for every residual TU**; no
+  single-TU override makes any residual byte-exact.
+* w10116: targeted `-mllvm` matrix at wave 154 (SLP, loop-sink, tail-merge,
+  inline/unroll thresholds, GVN hoist, load-pre, section-prefix): no knob
+  makes any residual byte-exact and none improves aligned; the original is
+  the stock clang 7.0.2 `-Oz` pipeline.
+* w10117: sample PGO cannot reproduce the flat `Status` switch vector
+  (successor-block weights are 0 for the eight branch-only case blocks);
+  an instrumented flat vector encodes the weights but shrinks the body to
+  1,424 B or hits 1,432 B with the wrong call order (`.rel.plt` 7).
+* w10118: ICF is disproven (112 duplicate bodies at distinct addresses;
+  `--icf=safe` shrinks `.text` by 11,364 B), LTO is disproven (full `-flto`
+  `.text` 0x12d404), `--gc-sections`/`--sort-section=name`/no-`-z now` all
+  regress; the original `.text` rank order is exactly ours (4522/4522).
+* w10119: data/layout flag fingerprints — `-fno-unwind-tables` is the only
+  observable data-shape lever (4507 -> 2878), `-fstack-protector-strong` is
+  uniquely correct, `-fno-common`/`-mfloat-abi=hard` fail to link.
+* w10120: flag-by-flag build archaeology; the NDK r18b clang 7.0.2
+  `-Oz -g2` compile line and the plain-gold link line are proven from the
+  ELF. **PGO is the one open provenance question**: the source-order switch
+  layout needs branch weights, but no `.profraw`/`.profdata` survives.
+
+**Aligned total (15 functions): 23,897** (wave-154 base 23,941). Per function:
+Layout 1,986, LevelScript 17,180 (indicative), createShip 452, Status 320,
+Radar 1,456, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,123** (57,232 B), `Radar::draw` **8,490** (9,908 B), `Layout` C1/C2
+**5,837** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,564** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **393** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **86,044** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,292** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
 ## Update 2026-11-08 (wave 154)
 
