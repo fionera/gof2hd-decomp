@@ -1027,7 +1027,7 @@ bool LevelScript::process(int delta) {
             }
         }
         if (m_nState == 3) {
-            if (!Globals::layout->isFading()) {
+            if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
                 Globals::layout->enableFillScreen(true);
                 Globals::status->nextCampaignMission(true);
                 Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
@@ -1364,7 +1364,7 @@ bool LevelScript::process(int delta) {
         } else if (m_nState == 2) {
             m_nScriptTimerA += delta;
             m_pLevel->lodManager->forceUpdate(0, false);
-            if (m_nScriptTimerA >= 3001) {
+            if (__builtin_expect(m_nScriptTimerA >= 3001, 0)) { // lint: arm_builtin
                 AEGeometry *ship = (*enemies)[0]->geometry;
                 m_pCamera->setPosition(m_tempVec);
                 m_tempVec = ship->getPosition();
@@ -1427,7 +1427,7 @@ bool LevelScript::process(int delta) {
                 m_nState = 1;
             }
         } else if (m_nState == 1) {
-            if (((RadioMessage *) ((*messages)[0]))->isOver()) {
+            if (__builtin_expect(((RadioMessage *) ((*messages)[0]))->isOver(), 1)) { // lint: arm_builtin
                 m_nState = 2;
                 m_nScriptTimerA = 0;
             }
@@ -1523,7 +1523,7 @@ bool LevelScript::process(int delta) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
         // shared exit-wormhole body below (the size/isOver/state gate lives there, once).
         goto wormholeExitBody;
-    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr) {
+    } else if (__builtin_expect(Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr, 1)) { // lint: arm_builtin
         // NB: the mission id is read first here (0x13876e), then the message array is null-tested
         // (0x138776) -- the reverse of the mission-50 branch above.
     wormholeExitBody:
