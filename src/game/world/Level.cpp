@@ -1967,8 +1967,8 @@ void Level::createMission() {
             v = p2;
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = localRace;
+            gun->cargo = nullptr;
         }
     }
     if (pirateFortress) {
