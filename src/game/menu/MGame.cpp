@@ -1561,7 +1561,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(1);
                             return;
-                        } else if (__builtin_expect(mission->isCampaignMission(), 0)) { // lint: arm_builtin
+                        } else if (mission->isCampaignMission()) {
                             Globals::status->nextCampaignMission(true);
                         } else {
                             Globals::status->setFreelanceMission(Mission::empty);
