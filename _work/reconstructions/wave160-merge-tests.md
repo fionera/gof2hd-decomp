@@ -57,3 +57,20 @@ byte_exact 4507/4524.
 | w10617 (Hud::draw sweep) | 1,325 | 249 | 9,332 | no win; `int barH` is the original type but gives 9,324 B |
 | w10619 (small tail full-stream diff) | unchanged | unchanged | exact | no win; ModStation's literal-pool order is a real lever but the register pair still swaps |
 | w10620 (build provenance) | — | — | — | research note: every non-code ELF byte is identical; `.ARM.extab` 1,256 decomposes into 12 functions' LSBAs; 40+ per-TU flag cells tested, none wins |
+
+## Late wave-160 workers (w10606 / w10609 / w10614)
+
+* **w10606** (Layout 0x140 group store-order sweep): no source win; base
+  5,739/1,978/7,072.  Note `Layout-LayoutC1-wave160-w10606.md`.
+* **w10609** (Radar LSDA cleanup-scope enumeration): the landmark else-arm
+  gains a `String` cleanup scope and the tail drops a non-original
+  `plasmaInRange = 0` store plus one dead getter; size 9,908 B exact, but
+  raw **8,124 -> 8,495** (+371) and aligned **1,320 -> 1,321** (+1); the
+  Radar LSDA record diff improves 50 -> 49.  Not landed.
+* **w10614** (createShip type-switch body order `0x31,0x2c,0x33`): raw
+  **1,563 -> 1,560** (-3), aligned **449 -> 460** (+11), 2,764 B exact.
+  Same trade as w10517; the base keeps the better aligned number, so not
+  landed.  New evidence: the mission bitmask
+  `if ((unsigned)(mission - 49) < 4u || mission == 56)` is byte-identical
+  but lands 4 B early; the waypoint arm's null-store order is `wz,wx,wy`
+  vs the original's `wy,wx,wz`.
