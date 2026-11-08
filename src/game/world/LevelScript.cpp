@@ -1379,7 +1379,20 @@ bool LevelScript::process(int delta) {
             }
         } else if (m_nState == 3 && ((RadioMessage *) ((*messages)[4]))->isTriggered()) {
             m_nState = 4;
-        } else if (m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
+        }
+        if (m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()) {
+            m_pCamera->setFixed(true);
+            ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
+            m_nState = 5;
+            (*enemies)[0]->player->setHitpoints(0);
+            m_nScriptTimerA = 0;
+        } else if (m_nState == 5) {
+            m_nScriptTimerA += delta;
+            if (m_nScriptTimerA >= 3001) {
+                m_nState++;
+            }
+        }
+        if (m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
             Player *pp = player->player;
             Status *st = Globals::status;
             Globals::status->field_64 = pp->getHitpoints();
@@ -1393,18 +1406,6 @@ bool LevelScript::process(int delta) {
             Globals::switch_to_target_setting = 1;
             Level::initStreamOutPosition = 1;
             Globals::appManager->SetCurrentApplicationModule(2);
-        }
-        if (m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()) {
-            m_pCamera->setFixed(true);
-            ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
-            m_nState = 5;
-            (*enemies)[0]->player->setHitpoints(0);
-            m_nScriptTimerA = 0;
-        } else if (m_nState == 5) {
-            m_nScriptTimerA += delta;
-            if (m_nScriptTimerA >= 3001) {
-                m_nState++;
-            }
         }
         if (m_nState >= 2 && m_nState <= 4) {
             (*enemies)[0]->geometry->moveForward((float) delta);
