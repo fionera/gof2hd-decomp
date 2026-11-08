@@ -4,6 +4,70 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 158)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-158 ran 20 agents (all on the residual functions plus a build replay).
+Five source changes landed:
+
+* `Layout::Layout` (w10408): move `field_0x128` after `field_0x108`.
+  Raw **5,753 -> 5,745** (-8), aligned **1,984 -> 1,982** (-2); 7,072 B exact.
+* `Layout::Layout` (w10407): move `field_0x110_strip58` up between
+  `0x12c`/`0x2b8` and `rewardBoxY` after the `rewardBoxY2` chain. Combined
+  with w10408: raw **5,745 -> 5,739** (-6), aligned **1,982 -> 1,978** (-4).
+* `MGame::OnTouchEnd` (w10411): fold the dead `hudTouchFlags == 0` block
+  into the wingman `else-if` chain. Raw **4,391 -> 4,387** (-4), aligned
+  **903 -> 901** (-2); 8,080 B exact; the `dockToStream` PLT slot is
+  byte-identical.
+* `Level::createShip` (w10417): waypoint null check as `if/else` with
+  declarations in `wy, wx, wz` order. Raw **1,564 -> 1,563** (-1), aligned
+  **452 -> 449** (-3); 2,764 B exact.
+* `Generator::createMission` (w10419): an `Item*` temp removes the
+  redundant `ldr r5` reload. Raw **300 -> 162** (-138), aligned 59 -> 64
+  (+5); 1,996 B exact.
+
+Measured and **not landed** (notes kept): w10401 (prologue r4 sweep: the
+all-local shape is -108 B, the best aligned shape is 16,956 at +52 B),
+w10402 (case-154/16 expect + `m_nState++`: 55,087/17,133), w10403 (first
+size-exact `this=sl` prologue: 55,334/21,573; the `messages,status,enemies,
+player` reorder is -172/-116 at +60 B, and a -8 B cold companion would
+land it), w10404 (scoped else arm on w10305 flags: 8,391/1,320, extab
+1,254), w10405 (68/campaign register analysis), w10406 (direct lockLabel:
+8,236/1,368, extab 1,253), w10409 (temp=r5 + raid-decl: 6,466/1,230),
+w10410 (KVBR alien decl order: 5,485/795), w10412 (fold + AND form:
+4,375/956), w10413 (no source-level plateau; IR plateau re-confirmed at
+558/47/1,432), w10414 (generic PGO: every profile worse), w10415 (Hud
+anchor still unique), w10416 (HangarWindow extab 767 at `.text` 86,078),
+w10418 (small tail no win), w10420 (per-TU `-Oz`, `-mllvm`, unwind and
+stack-protector replay: still no flag win).
+
+**Aligned total (15 functions): 23,667** (wave-157 base 23,673). Per function:
+Layout 1,978, LevelScript 17,129 (indicative), createShip 449, Status 320,
+Radar 1,278, MGame::OnTouchEnd 901, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 64, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,094** (57,232 B), `Radar::draw` **8,181** (9,908 B), `Layout` C1/C2
+**5,739** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,387** (8,080 B), `Level::createShip` **1,563** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **162** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **85,372** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,284** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 157)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
