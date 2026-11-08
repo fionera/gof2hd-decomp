@@ -4,6 +4,45 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 141)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-141 lands nine source-level improvements (plus eleven note-only research commits):
+
+* `LevelScript::process` (w8601): case-40 cold-chain nest + s4gp receiver spelling; raw
+  **54,138 -> 54,034** at 57,232 B.
+* `LevelScript::process` (w8603): third missing `getEnemies()` loop condition (case-16
+  state 4), semantic and size-neutral; the restored call re-rolls the following blocks, so
+  the combined raw is 54,034 -> 54,110.
+* `LevelScript::process` (w8604): mission-0 state-0 body sweep; raw 54,110 -> 54,108.
+* `LevelScript::process` (w8606): case-105 state 7/9/12 audit (faithful posdir and
+  cached-geometry spellings); byte-neutral.
+* `Layout::Layout` (w8607): whole-constructor move climb; raw **5,759 -> 5,728** at 7,072 B.
+* `Radar::draw` (w8610): `expect(A,0) && expect(B,1) && expect(C,1)` guard, campaign
+  `isTarget` operand swap (`stations` stays in sl), `bool wreck`; raw **8,279 -> 8,106**.
+  w8609's `int bossSeen/inSight/asteroidHit` variant is 8,244 alone but 8,566 combined, so
+  the merged tree keeps w8610 only.
+* `MGame::OnTouchEnd` (w8614): 96/127 merge; raw **5,816 -> 4,464** at 8,080 B.
+* `HangarWindow::render` (w8616): credit-loop `Layout*` local frees sl; raw **2,059 ->
+  1,740** at 9,700 B.
+* `Hud::draw` (w8617): faithful short `barH` + dock2 `String`-first LSDA proof; byte-neutral
+  (raw stays 1,362).
+
+Note-only: w8602 (w8506 case-125 re-measure), w8605 (exact LSDA call-site table), w8611 /
+w8612 (createMission alien/tail blocks and escort-hoist RNG order), w8613 (OnTouchEnd block
+map), w8615 (Status `.profdata` + createShip forms), w8618 (near-miss probes), w8619
+(codegen flag fingerprint), w8620 (long tail), w8621 (APK/toolchain forensics), w8622
+(linker matrix).
+
+Section deltas: `.text` **84,567** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 140)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
