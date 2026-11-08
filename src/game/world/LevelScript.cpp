@@ -633,10 +633,10 @@ bool LevelScript::process(int delta) {
             (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
             (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
             // Face them +X with +Y up, and make them visible (0x137f34).
-            for (int i = 0; i < 3; ++i) {
-                KIPlayer **enemyData = enemies->data_;
-                enemyData[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
-                enemyData[i]->geometry->setVisible(true);
+            for (int i = 0; i < 3 && enemies->data_ != nullptr; ++i) {
+                KIPlayer *e = (*enemies)[i];
+                e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                e->geometry->setVisible(true);
             }
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
