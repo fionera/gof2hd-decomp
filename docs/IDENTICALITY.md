@@ -4,6 +4,42 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 142)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-142 lands five source-level improvements plus a call-census milestone:
+
+* `LevelScript::process` (w8702): independent-call reorders (case-91 `setName` before
+  `setActive`; case-125 `setActive` before `setName`); raw 54,108 -> 54,102.
+* `LevelScript::process` (w8704): state-4/5 translate swap (state 4 uses the
+  `25000/-200/-1000` literals, state 5 the delta-based translate); raw unchanged.
+* `LevelScript::process` (w8703 + merge fix): case-157 tail call sharing plus the two
+  missing `getEnemies()` loop-condition re-fetches. The original's case-144 block is
+  `nextCampaignMission(true); setStation(getStation()); departStation(...)`, so the
+  `setStation` is restored. The call census now matches exactly: `getEnemies` 34=34,
+  `getPlayer` 23=23, `setStation` 6=6, `nextCampaignMission` 10=10 (`setTarget` 82 vs 81
+  and `setStanding` 2 vs 1 remain). Size 57,232 B; raw 54,102 -> 54,691 (faithfulness
+  over layout).
+* `Layout::Layout` (w8709 + w8708): the `eventBannerScale`/`field_0x98` swap and the
+  move climb compose; raw **5,728 -> 5,704** at 7,072 B.
+* `Level::createMission` (w8712): case-183 default store order; raw **5,763 -> 5,756**.
+
+Metric-only or gate-breaking (notes only): w8705 (state-4 `getEnemies` revert; the
+original has the call), w8713 (escort hoist; the original RNG order is
+jitter,sign,jitter,sign,jitter,sign), w8714 (`draw()`-first; the original asm order is
+`setPosition, replaceTextKeepSize, setSplitText, draw`), w8715 (dock2 `String`-first;
+`.ARM.extab` 156,312 -> 156,316 and byte_exact 4507 -> 4044), w8706 (`cbnz` chain is
+bool-only), w8711 / w8716 / w8717 / w8718 / w8719 / w8720 research notes.
+
+Section deltas: `.text` **85,119** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 141)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
