@@ -107,7 +107,7 @@ void Mission::setWon(bool won) {
     this->won = won ? 1 : 0;
 }
 
-unsigned char Mission::hasWon() { return this->won; }
+bool Mission::hasWon() { return this->won; }
 
 void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsA = a;
