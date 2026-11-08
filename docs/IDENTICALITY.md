@@ -53,7 +53,10 @@ need `P(autoTurret != nullptr)=0.3125`), w9515 (per-case profile derivation
 reproduces both switch tables at 1,428 B but sinks the entry block), w9517
 (independent flag re-derivation: 104 A/B cells, canonical flag set confirmed),
 w9519 (MGame::OnUpdate 37-byte residual re-derived; no source win), w9520
-(ModStation/drawLounge LP order and pre-RA CMOV copy decoded).
+(ModStation/drawLounge LP order and pre-RA CMOV copy decoded), w9518
+(PGO mechanism sweep: `-profile-guided-section-prefix` is ON by default in
+clang 7.0.2, so any profile replay must disable it; a full-TU profile can
+reach 1,432 B but not the source-order switch layout).
 
 **Aligned total (15 functions): 22,928** (wave-148 base 22,945). Per function:
 Layout 2,198, LevelScript 15,802 (indicative), createShip 482, Status 320,
