@@ -83,3 +83,28 @@ post-w10502 tree the same reorder is **-8 B** (57,224) and therefore
 gate-fatal.  w10501's 120-cell permutation sweep (24 declaration orders x 5
 `st->` receiver masks) found only size-exact cells that are *worse* than the
 base in raw bytes (best 55,207 vs base 55,062), so no reorder landed.
+
+## w10501 (late landing) does not combine with w10502
+
+w10501's branch (based on `cfde1f5f2`) lands the w10403 declaration reorder
+(`messages,status,enemies,player`) + all eight mission-106 state-6
+`Globals::status` uses through `st` + two genuine 64-bit timer-zero restores
+(`m_nScriptTimerB = 0` in c106 states 1 and 4).  On its own base that is
+size-exact 57,232 with raw **55,094 -> 55,043** (-51) but aligned
+**17,129 -> 17,873** (+744, the prologue re-colours `this` fp->r6 and spills
+`&Globals::status`).
+
+On the post-w10502/w10503 base the same shape is **57,276 (+44)** and
+therefore gate-fatal.  Partial shapes on the current base:
+
+| shape | raw | aligned | size |
+|---|---:|---:|---:|
+| reorder + all-8 `st` + timerB (w10501) | 54,387 | 16,920 | **57,276** |
+| reorder + all-8 `st` + timerB, w10503 reverted | 54,385 | 16,916 | **57,276** |
+| original decl order + all-8 `st` + timerB | 55,216 | 17,047 | **57,216** |
+| original decl order + original `st` mask + timerB | 55,224 | 17,053 | **57,240** |
+
+So the timerB restores alone cost +8 B on the current base; the reorder costs
++44 B.  Neither has a size-exact companion, and the reorder's aligned cost
+(+744) is much larger than w10502's gain (-74).  Kept w10502; w10501's note is
+`levelscript-process-prologue-sl-wave158-w10501.md`.
