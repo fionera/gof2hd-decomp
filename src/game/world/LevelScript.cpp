@@ -4666,7 +4666,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (m_nScriptTimerA >= 2001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 2001, 1)) { // lint: arm_builtin
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*enemies)[i];
                             if (ship->shipGroup == 9) {
@@ -4852,7 +4852,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 5) {
                     int destroyed;
-                    if (Globals::isRunningHDonWeakDevice) {
+                    if (__builtin_expect(Globals::isRunningHDonWeakDevice, 1)) { // lint: arm_builtin
                         destroyed = 5;
                         for (int i = 6; i < 12; i++) {
                             destroyed += (*enemies)[i]->isDead();
@@ -4864,7 +4864,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nScriptTimerB += delta;
-                    if (m_nScriptTimerB >= 25001) {
+                    if (__builtin_expect(m_nScriptTimerB >= 25001, 1)) { // lint: arm_builtin
                         m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
