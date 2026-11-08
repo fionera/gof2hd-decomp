@@ -407,15 +407,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
-    int otherLock;
-    if (__builtin_expect(this->lockedAsteroid == nullptr, 0) && // lint: arm_builtin anchor: Radar::draw
-        __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
-        __builtin_expect(this->field_0x1c == nullptr, 1)) { // lint: arm_builtin anchor: Radar::draw
-        otherLock = this->field_0x14 != 0;
+    bool otherLockFlag;
+    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin anchor: Radar::draw
+                         this->field_0x1c == nullptr, 0)) {
+        otherLockFlag = this->field_0x14 != 0;
     } else {
-        otherLock = 1;
+        otherLockFlag = 1;
     }
-    bool landmarkHit = false;
+    int otherLock = otherLockFlag;
+    int landmarkHit = false;
     int notOtherLock = !otherLock;
     int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
@@ -1090,7 +1090,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
