@@ -331,7 +331,7 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2]);
-    MatrixSetRotation(farKey, yaw, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
+    MatrixSetRotation(farKey, pitch, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     this->cameraTween = new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
     Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), nearKey);

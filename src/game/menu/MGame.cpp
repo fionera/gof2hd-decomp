@@ -2764,10 +2764,9 @@ void MGame::OnUpdate() {
         if (this->elapsedTime > 5000) {
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
                 // Story contacts that call in when the player idles for an hour.
-                Status *st = Globals::status;
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
                     Globals::status->getMission()->isEmpty() &&
-                    st->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
+                    Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                     3600000) {
                     this->pauseOpen = 1;
                     pauseSounds();
@@ -2809,10 +2808,11 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
+                    Status *st = Globals::status;
                     int radioIndex = Globals::rnd->nextInt(2);
-                    int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
+                    int radioBase = st->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     this->level->createRadioMessage(28, radioIndex + radioBase);
-                    reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
+                    reinterpret_cast<long long &>(Globals::status->field_0x100) = st->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            12000 &&
