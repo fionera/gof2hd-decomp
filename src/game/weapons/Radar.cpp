@@ -344,7 +344,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     Mission *mission = Globals::status->getMission();
     bool missionBlocksPlanets = false;
-    int alwaysEnemySeen = false;
+    bool alwaysEnemySeen = false;
+    bool alwaysEnemy = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
@@ -518,8 +519,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             } else {
                 if (this->lockedStation == nullptr) {
                     this->field_0x28 = 0;
+                    this->stationLockTimer = 0;
+                } else {
+                    this->stationLockTimer = 0;
                 }
-                this->stationLockTimer = 0;
             }
         }
     }
@@ -670,7 +673,6 @@ enemies:
     bool bossSeen = false;
     bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
-        int alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
             if (!enemy->player->isActive() ||
@@ -1253,7 +1255,7 @@ asteroids_done:
     if (current == 143) {
         return;
     }
-    if (this->field_0x1bc >= 1) {
+    if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
             (current != 151 && alwaysEnemySeen)) {
@@ -1334,7 +1336,7 @@ asteroids_done:
     }
     this->field_0x1bc = 0;
     this->plasmaInRange = 0;
-    Globals::status->getCurrentCampaignMission();
+    this->field_0x28 = 0;
     Globals::status->getCurrentCampaignMission();
 }
 int Radar::getPlanetDockIndex() {
