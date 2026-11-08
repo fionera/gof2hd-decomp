@@ -746,10 +746,11 @@ void HangarWindow::render() {
                                 this->progressBarHeight, 0.0f, 0, 0,
                                 this->hintOffsetX + textX + 3 + Globals::layout->buttonInsetX,
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2);
+                            int borderX = this->hintOffsetX +
+                                          (textX + 5 + Globals::layout->buttonInsetX +
+                                           (int) (rate * (float) (this->progressBarWidth - 4)));
                             Globals::Canvas->DrawImage2D(
-                                this->progressBarBorderImage,
-                                this->hintOffsetX + (textX + 5 + Globals::layout->buttonInsetX +
-                                                     (int) (rate * (float) (this->progressBarWidth - 4))),
+                                this->progressBarBorderImage, borderX,
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
                             Globals::Canvas->SetColor(0x777777ffu);
                             String progress = String((int) (rate * 100.0f)) + String("%  (") +
@@ -910,7 +911,7 @@ void HangarWindow::render() {
         HangarAppData *data = (HangarAppData *) Globals::appManager->GetApplicationData();
         int count;
         if (this->listModeFlag) {
-            for (count = 0; count <= 4; count++) {
+            for (count = 0; __builtin_expect(count <= 4, 1); count++) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint, plain form 9700 -> 9696
                 String description("");
                 String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
@@ -953,9 +954,10 @@ void HangarWindow::render() {
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - lay->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
-                    int iconX = (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth);
-                    int iconY = (int) ((float) y - (float) this->gridButtonHeight * 0.1f);
-                    Globals::Canvas->DrawImage2D(this->scrollHintImageA, iconX, iconY, 17, 17);
+                    Globals::Canvas->DrawImage2D(
+                        this->scrollHintImageA,
+                        (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
+                        (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
                 }
             }
         } else {
