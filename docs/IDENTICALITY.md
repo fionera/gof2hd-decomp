@@ -64,8 +64,9 @@ Wave-143 lands seven source-level improvements, several of them faithfulness fix
   `__builtin_expect(A==0 && B==0 && C==0, 0)`, which emits the original `cbnz` chain;
   the campaign block is laid out cold by `expect(...,0)`; the invented post-loop
   `onPlanetCourse` recompute is removed and the landmark label uses `this->lockLabel`.
-  Raw 8,106 -> 8,613 (faithfulness over layout; the int enemy-loop `wreck` spelling is
-  the 4 B companion that keeps 9,908 B); `.ARM.extab` 1,395 -> 1,499.
+  Raw 8,106 -> 8,471 (faithfulness over layout; the int enemy-loop `wreck` spelling is
+  the 4 B companion that keeps 9,908 B, and `int enemyHit` is the witnessed word-typed
+  flag, -142 raw at the same size); `.ARM.extab` 1,395 -> 1,499.
 * `MGame::OnTouchEnd` (w8810): the flat `flags == 0` shape flips the join test to the
   original's `cbz`; raw **4,464 -> 4,399** at 8,080 B.
 * `Level::createMission` (w8812): raid-gun rematerialisation and a faithful tail loop;
@@ -83,7 +84,7 @@ alignment), w8809 (`goingToWaypoint() == 1`; the original emits `cbz r0`), w8811
 w8817 (Gun/Generator/SpaceLounge RA probes), w8818 (extab ownership + build-id), w8820
 (Status 4:3:2:1 family).
 
-Section deltas: `.text` **85,851** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **85,709** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,499** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).

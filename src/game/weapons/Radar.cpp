@@ -668,7 +668,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    bool enemyHit = false;
+    int enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         int alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
