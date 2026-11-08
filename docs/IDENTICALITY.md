@@ -4,6 +4,73 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 163)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-163 ran 20 agents on the worst residual functions plus build-provenance
+round 4.  Three source changes landed:
+
+* `LevelScript::process` (w10901): a +24 B companion for the `L1364:0` /
+  `L1389:1` cells (`expect(m_nState == 2, 0)`, `expect(m_nState == 5, 1)`,
+  `m_bCinematicBreak = 0`, setTarget-first).  Raw **54,698 -> 54,541**
+  (-157), aligned **17,456 -> 17,427** (-29); 57,232 B exact,
+  `.rel.plt` byte-identical.
+* `Hud::draw` (w10917): volatile `Globals::status` reload in the damage
+  block, drop the block-4 null test.  Raw **1,227 -> 1,015** (-212),
+  aligned **248 -> 229** (-19); 9,332 B exact.
+* `MGame::OnUpdate` (w10919): a `Level *level = this->level` local forces
+  the GOT base into r9.  Raw **37 -> 16** (-21), aligned **109 -> 6**
+  (-103); 11,440 B exact.
+
+Measured and **not landed** (notes kept): w10902 (LevelScript mission-0
+`4,3,5` swap: 54,977/17,608), w10903 (second `0.8f` load PLT-safe: size
+57,264, needs a -32 B companion), w10906 (Layout first-two-field chain:
+claimed 5,695 but measured 5,705; reverted), w10907 (Layout `0x8c..0xa8`
+run: no win), w10908 (Radar 4 B tail: claimed 7,584 but measured 8,124;
+reverted), w10909 (Radar `campaign`->`sl`: 9,611, `.text` 86,529),
+w10910 (MGame::OnTouchEnd cold `initHudMenu`: 4,575/1,373), w10911 (`bool
+Mission::hasWon`: 5,742/1,109; reverted), w10912 (createMission
+`Reassociate` sweep), w10913 (createMission frame map), w10914 (createShip
+case order: 1,560/460), w10915 (Status 4/3/2 from source), w10916
+(HangarWindow size-exact `cbz`: `.ARM.extab` 725 -> 1,250; reverted),
+w10918 (small tail, no win), w10920 (build provenance round 4).
+
+**Aligned total (15 functions): 24,200** (wave-162 base 24,351). Per
+function: Layout 2,082, LevelScript 17,427 (indicative), createShip 449,
+Status 320, Radar 1,320, MGame::OnTouchEnd 906, createMission 786, Gun 57,
+HangarWindow 485, SpaceLounge 41, Hud 229, Generator 64, MenuTouchWindow 16,
+ModStation 12, MGame::OnUpdate 6.  Total differing bytes fall
+**85,787 -> 85,397** (-390) and `.text` **85,042 -> 84,652** (-390).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,541** (57,232 B), `Radar::draw` **8,124** (9,908 B), `Layout` C1/C2
+**5,705** (7,072 B), `Level::createMission` **5,454** (17,172 B),
+`MGame::OnTouchEnd` **4,127** (8,080 B), `HangarWindow::render` **2,514**
+(9,700 B), `Level::createShip` **1,563** (2,764 B), `Hud::draw` **1,015**
+(9,332 B), `Status::missionCompleted` **722** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
+**175** (1,948 B), `Generator::createMission` **162** (1,996 B),
+`ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B), `MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **84,652** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **725** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
+Build provenance round 4 (w10920) confirmed that at `-Oz` the sample
+profile loader ignores `BranchInst`, so the empty-`br` successors of the
+Status cases 0/11/13 (and 156/164/165/169/171) cannot be weighted by line
+samples: the original's 4/3/2 plateau is unreachable from a real sample
+profile, and an instrumented profile also weights every other branch and
+moves the non-switch layout away.  See
+`_work/reconstructions/build-provenance-round4-w10920.md`.
+
 ## Update 2026-11-08 (wave 162)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
