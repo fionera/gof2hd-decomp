@@ -82,17 +82,17 @@ Layout::Layout() {
     this->ringNearMidThreshold = Globals::iPadHD ? 40 * 1.40625f : (Globals::n9 ? 60 : (Globals::retinaDisplay ? 80 : 40));
     this->field_0xcc = Globals::iPadHD ? 180 * 1.40625f : (Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180));
     this->field_0xc4 = Globals::iPadHD ? 8 * 1.40625f : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 8));
-    this->field_0xc0 = Globals::iPadHD ? 9 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6));
     this->field_0xc8 = Globals::iPadHD ? 4 * 1.40625f : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 4));
     this->oreLabelYOffset = Globals::iPadHD ? 2 * 1.40625f : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 4 : 2));
+    this->field_0xc0 = Globals::iPadHD ? 9 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6));
     this->field_0x294_buttonWidth = Globals::iPadHD ? 281 : (Globals::n9 ? 360 : (Globals::retinaDisplay ? 400 : 200));
     this->driftSpeedDivisor = Globals::iPadHD ? 20.0f * 1.40625f : (Globals::n9 ? 12.0f : (Globals::retinaDisplay ? 10.0f : 20.0f));
     this->field_0x2a0_listRowGap = Globals::iPadHD ? 12 * 1.40625f : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 24 : 12));
     this->field_0x29c_buttonRowGap = Globals::iPadHD ? 12 * 1.40625f : (Globals::n9 ? 8 : (Globals::retinaDisplay ? 24 : 12));
+    this->animSpeedScale = Globals::iPadHD ? 1.40625f : (Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f));
     this->field_0xdc = Globals::iPadHD ? 10.0f * 1.40625f : (Globals::n9 ? 15.0f : (Globals::retinaDisplay ? 20.0f : 10.0f));
     this->field_0xf0 = Globals::iPadHD ? 80 * 1.40625f : (Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80));
     this->field_0x298_buttonYBias = Globals::iPadHD ? 84 * 1.40625f : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 168 : 84));
-    this->animSpeedScale = Globals::iPadHD ? 1.40625f : (Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f));
     this->field_0x2a8_metricB = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
     this->field_0x2ac_metricC = Globals::iPadHD ? 147 : (Globals::n9 ? 189 : (Globals::retinaDisplay ? 210 : 105));
     this->ringMidFarThreshold = Globals::iPadHD ? 200 * 1.40625f : (Globals::n9 ? 300 : (Globals::retinaDisplay ? 400 : 200));
@@ -159,10 +159,10 @@ Layout::Layout() {
         this->field_0x190 = -8;
     } else if (Globals::n9) {
         this->field_0x190 = -4;
-    } else if (Globals::iPad) {
-        this->field_0x190 = -4;
     } else if (Globals::retinaDisplay) {
         this->field_0x190 = -2;
+    } else if (Globals::iPad) {
+        this->field_0x190 = -4;
     } else {
         this->field_0x190 = -1;
     }
@@ -283,7 +283,6 @@ Layout::Layout() {
     this->field_0x1f0 = Globals::iPadHD ? 19 * 1.40625f : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
     this->field_0x144 = Globals::iPadHD ? 13 * 1.40625f : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13));
     this->footerButtonOffset = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
-    this->field_0x28c = Globals::n9 ? -19 : 0;
     this->rewardBoxY = Globals::iPadHD ? 55 * 1.40625f : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
     if (Globals::iPadHD)
         this->rewardBoxY2 = 132;
@@ -292,6 +291,7 @@ Layout::Layout() {
     else
         this->rewardBoxY2 = (this->rewardBoxY + 17) << Globals::retinaDisplay;
     this->field_0x1f8 = Globals::iPadHD ? 2 : (Globals::retinaDisplay ? (Globals::iPad ? 4 : 2) : 2);
+    this->field_0x28c = Globals::n9 ? -19 : 0;
     this->field_0x140 = Globals::iPadHD ? 15 : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 22 : 11));
     this->field_0x286 = Globals::n9 ? 0 : 1;
     this->field_0x288 = Globals::n9 ? 20 : 0;
@@ -303,8 +303,8 @@ Layout::Layout() {
     this->field_0x304 = Globals::iPadHD ? 350 * 1.40625f : (Globals::iPadLarge ? 700 : 350);
     this->choiceWindowTitleHeight = Globals::iPadHD ? 250 * 1.40625f : (Globals::iPadLarge ? 500 : 250);
     this->field_0x284_sliderSlot5Enabled = Globals::n9 ? 0 : 1;
-    this->field_0x310 = Globals::iPadLarge ? -24 : (Globals::iPad ? -12 : (Globals::n9 ? -8 : (Globals::retinaDisplay ? -9 : -5)));
     this->field_0x30c = Globals::iPadLarge ? 6 : (Globals::iPad ? 3 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3)));
+    this->field_0x310 = Globals::iPadLarge ? -24 : (Globals::iPad ? -12 : (Globals::n9 ? -8 : (Globals::retinaDisplay ? -9 : -5)));
     this->field_0x314 = Globals::iPadLarge ? -10 : (Globals::iPad ? -5 : (Globals::n9 ? -8 : (Globals::retinaDisplay ? -8 : -5)));
     this->field_0x318 = Globals::iPadLarge ? 8 : (Globals::iPad ? 4 : 0);
     this->helpWindowX = Globals::iPadHD ? 331 : (Globals::iPadLarge ? 472 : ((Globals::retinaDisplay || Globals::n9 || Globals::iPad) ? 236 : 118));
