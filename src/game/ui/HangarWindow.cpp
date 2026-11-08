@@ -948,8 +948,8 @@ void HangarWindow::render() {
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
-                (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
+                (*this->buttons)[12 + count]->setSplitText(price);
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - lay->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
