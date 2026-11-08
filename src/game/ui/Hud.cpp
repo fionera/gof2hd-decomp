@@ -1259,15 +1259,17 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         this->field_0x4b0 -= dt;
     }
     if (this->field_0x4b4 >= 1) {
+        // The original reloads `&Globals::status` inside the damage-indicator blocks
+        // (dead loads at 0x164176/0x164210, live at 0x16436e) and has no null test on
+        // the field_0x4b8 guard.  A volatile re-read here reproduces the reload without
+        // introducing the 4-byte `cmp/beq` test, keeping the function at 9,332 B.
+        (void) *(Status * volatile *) &Globals::status;
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b4 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      0x11, 0x14);
         this->field_0x4b4 -= dt;
     }
-    // The null test is a codegen anchor: the original has no test here, but the extra
-    // load/compare re-colours the shield/armour block and keeps the function at its
-    // original 9332-byte size (see hud-draw-wave117-w6516.md).
-    if (Globals::status && this->field_0x4b8 >= 1) {
+    if (this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
