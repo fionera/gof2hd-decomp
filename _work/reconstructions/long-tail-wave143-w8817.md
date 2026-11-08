@@ -171,3 +171,11 @@ Generator addendum: `faithful + cached race` (`getMissionBonus(race)`) is
 still wins on raw.
 
 SpaceLounge: unchanged, 175 / 1948.
+
+SpaceLounge addendum: `short pad3` + `int boxW = pad*2 + width` (used in both
+`drawBox` and `DrawRectangle`) = **1824 / 1964 B, frame 128** — the whole
+packing still rotates (`Globals::layout` moves `r5`->`sl`, `sub sp,#128` vs
+`#120`), so it does not reach the 1948 B target.  `int pad2 = pad+pad` reused
+in `top`/clamp/box = 445 / 1948 (pad still `fp`).  HEAD (175 / 1948) remains
+best; its residual is the `pad` register (`fp` vs shipped `r9`) plus the
+`short pad3` 16-bit-sign-extend clamp form vs the shipped `sl = pad*2` reuse.
