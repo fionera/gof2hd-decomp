@@ -123,7 +123,20 @@ Measured on the real TU (raw diff / size):
 
 So the 16 B is now *identified* (`?:` min-clamp), but the guard build still
 wins on the raw same-address metric (1411 vs 2055): the guard's 16 B happen to
-restore the original's code addresses even though its code is wrong.  The
+restore the original's code addresses even though its code is wrong.
+
+**The master guard is METRIC-ONLY.**  The original has no
+`Globals::status == nullptr` check: after `setEmpData` it goes straight to
+`mov.w r9,#0; cmp r6,#0; beq …` (`0xc03f2`).  The guard is a 16-byte
+placeholder that happens to restore the size/addresses; the faithful 16 bytes
+are the `?:` min-clamp's two extra `getLevel()` calls.  The faithful form
+(`?:`, no guard) is 2764 B — size-exact — but raw 2055.  Additional faithful
+variants measured: `x,y,z` declaration order x→y→z 2056, moving the
+`race==9` check before the shipClass branch 2055.  The `?:` form's empPoints
+region now matches the original exactly through
+`str.w r9,[sp,#52]; cmp r1,#1` (this spilled at the same point); the remaining
+swap is `type` (ours: kept in `sl`; original: spilled to `[sp,#52]`) vs
+`shipClass` (ours: `[sp,#60]`; original: `r5`).  The
 remaining faithful-form gap is register allocation: the original keeps
 `race=[sp,#60]`, `this=r9`, `type=fp`, `shipClass=r5` (one spill); both the
 faithful and the `?:` forms spill *two* of `{race, shipClass}`
