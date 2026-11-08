@@ -11,16 +11,8 @@
 #include "engine/render/PaintCanvas.h"
 
 Layout::Layout() {
-    if (Globals::iPadHD) {
-        this->field_0x4 = 15 * 1.40625f;
-        this->footerTextInset = 22 * 1.40625f;
-    } else if (Globals::n9) {
-        this->field_0x4 = 22;
-        this->footerTextInset = 37;
-    } else {
-        this->field_0x4 = Globals::retinaDisplay ? 30 : 15;
-        this->footerTextInset = Globals::retinaDisplay ? 50 : 22;
-    }
+    this->field_0x4 = Globals::iPadHD ? 15 * 1.40625f : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15));
+    this->footerTextInset = Globals::iPadHD ? 22 * 1.40625f : (Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22));
     this->field_0x10_rightMargin = Globals::iPadHD ? 52 : (Globals::n9 ? 58 : (Globals::retinaDisplay ? 74 : 37));
     this->field_0x1c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->field_0xc_leftMargin = Globals::iPadHD ? 40 : (Globals::n9 ? 51 : (Globals::retinaDisplay ? 58 : 29));
