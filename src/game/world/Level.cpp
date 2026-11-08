@@ -5177,14 +5177,13 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wz = waypoint != nullptr ? waypoint->z : 0;
-    int wy = waypoint != nullptr ? waypoint->y : 0;
     int wx = waypoint != nullptr ? waypoint->x : 0;
+    int wy = waypoint != nullptr ? waypoint->y : 0;
+    int wz = waypoint != nullptr ? waypoint->z : 0;
     int jitterX = Globals::rnd->nextInt(40000);
-    int jitterZ = Globals::rnd->nextInt(40000);
     int jitterY = Globals::rnd->nextInt(40000);
-    int level = Globals::status->getLevel();
-    if (level > 20) level = 20;
+    int jitterZ = Globals::rnd->nextInt(40000);
+    int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
     switch (type) {
         case 0x2c:
@@ -5200,8 +5199,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = Globals::status->getLevel();
-    if (empPoints > 20) empPoints = 20;
+    int empPoints = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     empPoints = empPoints * 5 + 40;
     int empTime;
     if (shipClass == 1) {
@@ -5222,7 +5220,6 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int x = wx + jitterX - 20000;
     player->setEmpData(empPoints, empTime);
 
-    if (Globals::status == nullptr) return nullptr;
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
         PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
