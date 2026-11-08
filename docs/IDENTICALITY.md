@@ -4,6 +4,80 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 151)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-151 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 3 on `Layout`,
+2 on `createMission`, 2 on `MGame`, 2 on the small tail, the rest on
+extab/PGO). Three source changes landed:
+
+* `LevelScript::process` (w9707): the faithful `messages, player, enemies`
+  prologue accessor order (only +4 B on the wave-150 base) plus three genuine
+  faithfulness fixes that net -4 B: the case-92 3-call `getPosition` shape
+  (+8), the case-144 duplicate `setStation` removal (-16), and the case-154
+  state-9 completion `m_nState++` (+4). Raw **54,792 -> 55,320**;
+  **aligned 17,605 -> 17,244**; 57,232 B exact.
+* `Radar::draw` (w9703): the asteroid loop's `wreck` becomes the witnessed
+  `bool` and `marked` becomes `int`. Raw **8,739 -> 8,620**;
+  aligned 1,483 -> 1,530; 9,908 B exact.
+* `SpaceLounge::drawLounge` (w9718): associate the right-edge clamp as
+  `+(-width - pad - pad)` so the preceding sum is `(pad + x) + width`,
+  matching the original's `add.w r1,r9,r5; add r1,r6` order. Raw
+  **176 -> 175**; **aligned 42 -> 41**; 1,948 B exact.
+
+Measured and **not landed** (notes kept): w9704 (`m_nState++` alone is
+57,232 B with raw 54,809 / aligned 17,600, but does not compose with w9707:
+57,228 B); w9705 (c154->strong adjacency is 57,232 B but aligned 22,383);
+w9706 (case-125 state-0/1 else-if is 57,232 B but aligned 17,638 and does not
+compose with w9707); w9709 (Layout `0x148` SLP move is 7,072 B but raw 5,828 /
+aligned 2,276); w9711 (createMission sret temp r5 lands 17,172 B but raw
+6,335 / aligned 1,203); w9714 (MGame branch-hint move is 8,080 B but raw
+4,400 / aligned 923); w9716 (createShip status r4 is 2,764 B but raw 2,146 /
+aligned 501).
+
+Analysis-only passes: w9701 (the 467 gold Thumb->ARM veneers are identical to
+the original; removing one is not byte_exact-neutral, minimum cost 2), w9702
+(the `.text` tail pad is Android gold's `stub_group_auto_padding`,
+`pad = min(veneer_bytes * 0.02, 0x40)`; forcing the cap to 0x30 links the
+String-labelCopy shape at `.text 0x1337b8` with byte_exact 4507), w9708 (the
+44 missing Layout literal words are in the `0x2c4/0x2f4/0x7c` device groups;
+`0x2f4` is the only pool-growing rewrite), w9710 (the original `Layout` is a
+device-major constructor, not a flat ternary chain; the ascending tail hits
+`0x164@0xdf4` but is 184 B pool-short), w9712 (the p2 alien-loop map is a
+one-register rotation of the original), w9713 (the mining guard `cmp #0` is an
+LSR flip; every `!= 0` spelling re-lays to 8,060 B), w9715 (the Hud 224-byte
+frame slot is `Globals::w`, not `this`), w9717 (Gun/Generator/MGame residuals
+are allocator ties), w9719 (the Radar extab tie is a tail-frequency lever),
+w9720 (the Status 1,432 B downstream diffs are a 5-entry `.rel.plt`
+permutation, not a literal-pool artefact).
+
+**Aligned total (15 functions): 24,124** (wave-150 base 24,439). Per function:
+Layout 2,189, LevelScript 17,244 (indicative), createShip 480, Status 320,
+Radar 1,530, MGame::OnTouchEnd 904, createMission 714, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 59, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 19.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,320** (57,232 B), `Radar::draw` **8,620** (9,908 B), `Layout` C1/C2
+**5,741** (7,072 B), `Level::createMission` **5,657** (17,172 B),
+`MGame::OnTouchEnd` **4,392** (8,080 B), `Level::createShip` **2,056** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **445** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **87,271** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,327** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 150)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
