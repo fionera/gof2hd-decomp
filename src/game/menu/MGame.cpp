@@ -1513,8 +1513,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->pauseOpen = 0;
                 resumeSounds();
                 this->cutsceneActive = 0;
-                bool failed = Globals::status->getMission()->hasFailed();
-                if (failed) {
+                int failed = Globals::status->getMission()->hasFailed();
+                if (failed == 1) {
                     if (Globals::status->getMission()->isCampaignMission() ||
                         Globals::status->getCurrentCampaignMission() == 42) {
                         Globals::globals->playMusicAndFadeOutCurrent(2);
