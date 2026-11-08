@@ -1,4 +1,5 @@
 #include "game/world/Level.h"
+#include <cstring>
 #include "engine/core/ArrayReleaseClasses.h"
 
 #include "game/mission/Mission.h"
@@ -162,7 +163,7 @@ static unsigned int g_level_texOutScratch;
 
 static inline float bitsToFloat(int bits) {
     float f;
-    __builtin_memcpy(&f, &bits, sizeof(f));
+    memcpy(&f, &bits, sizeof(f));
     return f;
 }
 
@@ -1621,7 +1622,7 @@ void Level::createMission() {
         this->hostileCount = 0;
     }
     unsigned blueprint = Globals::status->getStation()->stationHasHiddenBlueprint(true);
-    if ((Level::comingFromAlienWorld || Globals::status->getStation()->isAttackedByAliens()) &&
+    if ((__builtin_expect(Level::comingFromAlienWorld, 0) || Globals::status->getStation()->isAttackedByAliens()) &&
         Globals::status->getCurrentCampaignMission() != 42) {
         this->field_168 = this->field_168 <= 2 ? 2 : this->field_168;
         this->hostileCount = Globals::rnd->nextInt(4) + 2;
