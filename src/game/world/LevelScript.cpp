@@ -2817,6 +2817,26 @@ bool LevelScript::process(int delta) {
                            && !m_pLevel->getPlayer()->isDockedToDockingPoint()) {
                     m_nScriptTimerA = 0;
                     m_nState = 5;
+                } else if (m_nState == 6) {
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 2001) {
+                        int speedBits = player->getSpeed();
+                        if (reinterpret_cast<float &>(speedBits) < 100.0f) {
+                            speedBits = player->getSpeed();
+                        }
+                        if (m_nScriptTimerA >= 8001) {
+                            Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
+                            player->setSpeed(reinterpret_cast<float &>(speedBits) * 1.05f);
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->field_64 = player->player->getHitpoints();
+                            Globals::status->field_5c = player->player->getShieldHP();
+                            Globals::status->field_60 = player->player->getArmorHP();
+                            Globals::status->field_68 = player->player->getGammaHP();
+                            Globals::appManager->SetCurrentApplicationModule(2);
+                        }
+                    }
                 } else if (m_nState == 5) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 3001) {
@@ -2856,26 +2876,6 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         m_nState = 6;
                         m_pCamera->setTarget(player->geometry);
-                    }
-                } else if (m_nState == 6) {
-                    m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 2001) {
-                        int speedBits = player->getSpeed();
-                        if (reinterpret_cast<float &>(speedBits) < 100.0f) {
-                            speedBits = player->getSpeed();
-                        }
-                        if (m_nScriptTimerA >= 8001) {
-                            Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
-                            player->setSpeed(reinterpret_cast<float &>(speedBits) * 1.05f);
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
-                            Level::initStreamOutPosition = 1;
-                            Globals::status->field_64 = player->player->getHitpoints();
-                            Globals::status->field_5c = player->player->getShieldHP();
-                            Globals::status->field_60 = player->player->getArmorHP();
-                            Globals::status->field_68 = player->player->getGammaHP();
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                        }
                     }
                 }
                 Vector zero{0.0f, 0.0f, 0.0f};
