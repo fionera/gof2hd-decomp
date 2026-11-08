@@ -26,6 +26,46 @@ extra tail scope, not gated); `.rodata` **0** (byte-identical); `.rel.plt` **0**
 (byte-identical, 29,392 B); `.data` **0**; `.bss` **0**; `.note.gnu.build-id` **20**.
 File size is exact (2,187,328 B).
 
+## Update 2026-11-08 (wave 143)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-143 lands seven source-level improvements, several of them faithfulness fixes:
+
+* `LevelScript::process` (w8801/w8802/w8803/w8804): move4b reorder; the case-80 extra
+  `setTarget` removed (`setTarget` census now 81=81); case-91 state 6 before 5; the
+  faithful case-125 state-2 ambush RNG order. Raw **54,691 -> 54,619** at 57,232 B.
+* `Radar::draw` (w8807 + w8808): the original guard is `bool otherLock` with one
+  `__builtin_expect(A==0 && B==0 && C==0, 0)`, which emits the original `cbnz` chain;
+  the campaign block is laid out cold by `expect(...,0)`; the invented post-loop
+  `onPlanetCourse` recompute is removed and the landmark label uses `this->lockLabel`.
+  Raw 8,106 -> 8,613 (faithfulness over layout; the int enemy-loop `wreck` spelling is
+  the 4 B companion that keeps 9,908 B); `.ARM.extab` 1,395 -> 1,499.
+* `MGame::OnTouchEnd` (w8810): the flat `flags == 0` shape flips the join test to the
+  original's `cbz`; raw **4,464 -> 4,399** at 8,080 B.
+* `Level::createMission` (w8812): raid-gun rematerialisation and a faithful tail loop;
+  raw **5,756 -> 5,597** at 17,172 B.
+* `HangarWindow::render` (w8813): free-credits declaration order; raw **1,740 -> 1,731**.
+* `Hud::draw` (w8814): dock2 YBTH order; raw **1,362 -> 1,325** with `.ARM.extab` exact.
+* `Level::createShip` (w8819): the missing 16 B is the double `getLevel()` clamp (four
+  witnessed `blx Status::getLevel` sites), plus x,y,z waypoint reads, X,Y,Z jitter
+  declarations and no bogus `status == nullptr` guard. Raw 1,411 -> 1,978
+  (faithfulness over layout; the register allocator moves `Globals::status` r4 -> r6).
+
+Metric-only / note-only: w8805 (vbsl select is contiguous-ternary SLP), w8806 (literal-pool
+alignment), w8809 (`goingToWaypoint() == 1`; the original emits `cbz r0`), w8811
+(alien-gun-loop anatomy), w8815 (near-miss trio), w8816 (Status fold / createShip 16 B),
+w8817 (Gun/Generator/SpaceLounge RA probes), w8818 (extab ownership + build-id), w8820
+(Status 4:3:2:1 family).
+
+Section deltas: `.text` **85,851** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,499** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 142)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
