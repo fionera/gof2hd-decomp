@@ -1992,9 +1992,9 @@ void Level::createMission() {
     }
     if (raid) {
         Status *status = Globals::status;
-        int guns = alienGuns + fortressGuns;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
         bool hard = status->hardCoreMode();
+        int guns = alienGuns + fortressGuns;
         if (raidRace == 8 && Level::initStreamOutPosition &&
             Globals::rnd->nextInt(100) < (hard ? 40 : 20) + status->getLevel()) {
             this->spawnPosition = this->player->getPosition() / 3.0f;
