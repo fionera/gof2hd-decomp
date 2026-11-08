@@ -951,7 +951,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         int rem = rawBonus % 50;
         bonus = rawBonus + rem;
         if (bonus % 50 != 0) {
-            bonus -= rem * 2;
+            bonus = rawBonus + rawBonus - bonus;
         }
     }
 
