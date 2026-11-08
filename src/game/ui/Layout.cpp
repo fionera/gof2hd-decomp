@@ -152,8 +152,8 @@ Layout::Layout() {
     this->field_0x170 = Globals::iPadHD ? 174 : (Globals::iPadLarge ? 248 : (Globals::iPad ? 124 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 128 : 64))));
     this->field_0x17c = Globals::iPadHD ? 155 * 1.40625f : (Globals::iPadLarge ? 310 : (Globals::iPad ? 155 : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 170 : 85))));
     this->field_0x194 = Globals::iPadHD ? 8 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6));
-    this->field_0x184 = Globals::iPadHD ? 163 : (Globals::iPadLarge ? 346 : (Globals::n9 ? 210 : (Globals::iPad ? 173 : (Globals::retinaDisplay ? 232 : 116))));
-    this->field_0x1a4 = Globals::iPadHD ? 22 : (Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16));
+    this->field_0x184 = Globals::iPadHD ? 163 : (Globals::iPadLarge ? 346 : (Globals::n9 ? (Globals::iPad ? 173 : 210) : (Globals::iPad ? 173 : (Globals::retinaDisplay ? 232 : 116))));
+    this->field_0x188 = Globals::iPadHD ? 23.0f : (Globals::n9 ? 30.0f : (Globals::retinaDisplay ? 34.0f : 17.0f));
     if (Globals::iPadHD) {
         this->field_0x190 = -6;
     } else if (Globals::iPadLarge) {
@@ -167,7 +167,7 @@ Layout::Layout() {
     } else {
         this->field_0x190 = -1;
     }
-    this->field_0x188 = Globals::iPadHD ? 23.0f : (Globals::n9 ? 30.0f : (Globals::retinaDisplay ? 34.0f : 17.0f));
+    this->field_0x1a4 = Globals::iPadHD ? 22 : (Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16));
     this->field_0x180 = Globals::iPadHD ? 23 : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 34 : 17));
     this->field_0x19c = Globals::iPadHD ? 90 : (Globals::iPadLarge ? 128 : (Globals::iPad ? 64 : (Globals::n9 ? 54 : (Globals::retinaDisplay ? 90 : 45))));
     this->field_0x18c = Globals::iPadHD ? 244.0f : (Globals::iPadLarge ? 446 : (Globals::iPad ? 223 : (Globals::n9 ? 320 : (Globals::retinaDisplay ? 348 : 174))));
@@ -180,8 +180,8 @@ Layout::Layout() {
     this->field_0x1b8 = Globals::iPadHD ? 46 : (Globals::n9 ? 40 : (Globals::retinaDisplay ? 66 : 33));
     this->field_0x1b4 = Globals::iPadHD ? 42 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30));
     this->field_0x1c4 = Globals::iPadHD ? 19 * 1.40625f : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
-    this->field_0x1d8 = Globals::iPadHD ? 4 * 1.40625f : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x1c8 = Globals::iPadHD ? 29 * 1.40625f : (Globals::n9 ? 43 : (Globals::retinaDisplay ? 58 : 29));
+    this->field_0x1d8 = Globals::iPadHD ? 4 * 1.40625f : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x2c0 = Globals::iPadHD ? -2 : (Globals::n9 ? -3 : (Globals::retinaDisplay ? -4 : -2));
     this->field_0x1d0 = Globals::iPadHD ? 5 * 1.40625f : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
     if (Globals::iPadHD)
