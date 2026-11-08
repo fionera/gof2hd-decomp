@@ -943,17 +943,18 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
-    int bonus;
+    volatile int bonus;
     if ((type | 4) == 12) {
         bonus = 0;
     } else {
         int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
                                                ->getMissionBonus(agent->getRace()));
         volatile int rem = rawBonus % 50;
-        bonus = rawBonus + rem;
-        if (bonus % 50 != 0) {
-            bonus -= rem * 2;
+        int b = rawBonus + rem;
+        if (b % 50 != 0) {
+            b = rawBonus - rem;
         }
+        bonus = b;
     }
 
     float rem = (float) ((int) reward % 50);
