@@ -4,6 +4,73 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 161)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-161 ran 20 agents on the worst residual functions plus build-provenance
+round 2.  Six source changes landed:
+
+* `LevelScript::process` (w10702): mission-89 case-4 double `getStarSystem()`
+  plus the missing `m_nScriptTimerA >= 8000 -> m_nState = 5` tail,
+  compensated by dropping the non-original `if (!enemies->data_) continue;`
+  in the mission-0 loop. Raw **55,048 -> 55,013** (-35), aligned
+  **17,049 -> 17,308** (+259); 57,232 B exact.
+* `Layout::Layout` (w10707): `field_0x34` before `field_0x30_rowHeight` and
+  `field_0x19c` before `field_0x18c`. Raw **5,733 -> 5,722** (-11), aligned
+  **1,978 -> 2,015** (+37); 7,072 B exact.
+* `MGame::OnTouchEnd` (w10710): drop the stale
+  `__builtin_expect(isDockingToStream(), 1)` hint. Raw **4,387 -> 4,125**
+  (-262), aligned **901 -> 905** (+4); `.rel.plt` stays byte-identical.
+* `MGame::OnTouchEnd` (w10711): mining-refine check `count > 0` instead of
+  `count != 0` (the original skips on `amount == 0`). Raw **4,125 -> 4,127**
+  (+2), aligned **905 -> 906** (+1).
+* `MGame::OnUpdate` (w10718): m122 `radioBase` via the live `st`. Raw
+  **318 -> 37** (-281), aligned **19 -> 109** (+90); 11,440 B exact.
+* `HangarWindow::render` (w10716): row-39 `getCredits()` + `volatile` pad
+  shapes. Raw **1,965 -> 2,514** (+549), aligned **291 -> 485** (+194), but
+  `.ARM.extab` **1,258 -> 725** (-533) with the 948 B / 156-row record
+  intact.
+
+Measured and **not landed** (notes kept): w10701 (`Status *&status` reorder:
+55,061/17,051; the plain reorder is 54,929/16,920 but +60 B), w10703
+(state-3 else-if chain), w10704 (the extra 13-entry `tbh` is the mission-0
+dispatch), w10708 (Radar faithful tail: 8,367/1,333), w10712 (createMission
+register map: no win), w10713 (case-183 default 2,0,1: 5,454/786), w10714
+(createShip 1,560/460), w10715 (Status: the 1,432-B weight cell accepts a
+4/3/2 arithmetic progression), w10719 (MenuTouchWindow 28/16), w10720
+(build provenance round 2: `-g`/`-g2`/`-g3=limited`, flag order, response
+file and debug flags are all neutral).
+
+**Aligned total (15 functions): 24,131** (wave-160 base 23,546). Per function:
+Layout 2,015, LevelScript 17,308 (indicative), createShip 449, Status 320,
+Radar 1,320, MGame::OnTouchEnd 906, createMission 781, Gun 57, HangarWindow
+485, SpaceLounge 41, Hud 249, Generator 64, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.  The aligned rise is the price of real bug fixes
+(mission-89 transition, mining-refine) and the HangarWindow extab win; total
+differing bytes fall **86,796 -> 86,224** (-572), `.text` **85,518 -> 85,480**
+(-38) and `.ARM.extab` **1,258 -> 725** (-533).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,013** (57,232 B), `Radar::draw` **8,124** (9,908 B), `Layout` C1/C2
+**5,722** (7,072 B), `Level::createMission` **5,461** (17,172 B),
+`MGame::OnTouchEnd` **4,127** (8,080 B), `HangarWindow::render` **2,514**
+(9,700 B), `Level::createShip` **1,563** (2,764 B), `Hud::draw` **1,325**
+(9,332 B), `Status::missionCompleted` **722** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `Generator::createMission`
+**162** (1,996 B), `SpaceLounge::drawLounge` **175** (1,948 B), `ModStation`
+C1/C2 **43** (1,008 B), `MGame::OnUpdate` **37** (11,440 B),
+`MenuTouchWindow::OnTouchBegin` **29** (1,896 B).
+
+Section deltas: `.text` **85,480** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **725** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **19**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 160)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
