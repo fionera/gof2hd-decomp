@@ -1990,7 +1990,7 @@ void Level::createMission() {
         }
     }
     if (raid) {
-        Status *status = Globals::status;
+        Status *status = *(Status *volatile *) &Globals::status;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
         bool hard = status->hardCoreMode();
         int guns = alienGuns + fortressGuns;
