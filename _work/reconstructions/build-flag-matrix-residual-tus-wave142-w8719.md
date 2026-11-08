@@ -1,0 +1,296 @@
+# Per-TU build-flag matrix on the wave-141 residual TUs (wave 142, w8719)
+
+Status: **note-only research commit**, 2026-11-08. Worktree
+`/home/debian/GalaxyOnFire2/wt/w8719`, base `1d10d0694` ("Wave 141 docs:
+record w8608 as note-only"). Scratch: `/dev/shm/w8719`. No `src/`, `tools/`,
+`CMakeLists.txt`, baseline, allowlist or doc change is landed. This note is
+the only commit.
+
+Gate at the base (fresh `cmake --build cmake-build-match --target check -j6`):
+
+```text
+verify: byte 4507/4524  linked 4507/4524  size 4524/4524  avg 99.93
+data:   exact 843/843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0  imports 207
+symbol parity 5370/5370 (0 extra / 0 missing)
+lint CLEAN ✓   drift 0
+RATCHET PASS
+```
+
+Section deltas (fresh byte comparison of the canonical build):
+
+| section | size | differing bytes |
+|---|---:|---:|
+| `.text` | 1,259,464 | **84,567** |
+| `.ARM.extab` | 156,312 | **1,395** |
+| `.note.gnu.build-id` | 36 | **20** |
+| all other 24 sections | exact | **0** |
+
+The per-function raw-diff sum over the 17 non-exact symbols is **90,306**;
+the difference from the 84,567 `.text` bytes is the two C1/C2 alias pairs
+(`Layout::Layout` 5,728 + `ModStation::ModStation` 11 = 5,739), which are
+counted twice by a per-symbol scorer.
+
+## 0. Bottom line
+
+1. **The compile flag set is exactly the NDK r18b CMake toolchain Release
+   default set.** Compiling `ModStation.cpp` and `Layout.cpp` with our exact
+   command line and with the r18b `android.toolchain.cmake` Release line
+   (`ANDROID_ABI=armeabi-v7a`, `ANDROID_PLATFORM=android-16`,
+   `ANDROID_STL=c++_static`, `ANDROID_ARM_NEON=ON`, `ANDROID_ARM_MODE=thumb`,
+   `CMAKE_BUILD_TYPE=Release`, `ANDROID_CPP_FEATURES="rtti exceptions"`)
+   produces **byte-identical allocatable sections** (all `.text.*`,
+   `.rodata*`, `.data*`, `.bss*`, `.ARM.*`: 0 differing bytes). The
+   codegen-relevant flag sets are therefore equivalent, not merely similar.
+2. **The targeted per-TU matrix is a clean negative.** 156 cells on the 13
+   residual TUs (12 flags each) plus 42 extra cells on the 3 smallest
+   residuals: **no cell keeps `byte_exact` at the baseline and lowers the raw
+   diff.** Every cell that keeps `byte_exact` at baseline is byte-identical
+   (raw diff 90,306, no residual byte changes); every cell that changes a
+   residual byte also changes at least one previously exact function.
+3. **The residual diffs are register allocation / IR shape, not flag
+   selection.** The three smallest residuals are pure register-name and
+   load/store-order differences (`ModStation::ModStation` 11 B,
+   `MenuTouchWindow::OnTouchBegin` 28 B, `MGame::OnUpdate` 41 B); no flag in
+   the matrix changes them without breaking a neighbour.
+
+## 1. Method
+
+`/dev/shm/w8719/launch.sh` is a compiler launcher that appends
+`$GOF2_TU_FLAGS` only when one of the compiler arguments has basename
+`$GOF2_TU`:
+
+```sh
+#!/bin/sh
+if [ -n "$GOF2_TU" ]; then
+  for a in "$@"; do
+    case "$a" in
+      */"$GOF2_TU") exec "$@" $GOF2_TU_FLAGS ;;
+    esac
+  done
+fi
+exec "$@"
+```
+
+A scratch build `/dev/shm/w8719/b` is configured once with this launcher
+(`-DCMAKE_C_COMPILER_LAUNCHER` and `-DCMAKE_CXX_COMPILER_LAUNCHER`). Each
+cell deletes only `CMakeFiles/gof2.dir/**/<TU>.obj`, rebuilds `link_so`, and
+scores. After each TU the object is rebuilt with no extra flags, so every
+cell is measured against the neutral build of all other TUs.
+
+`/dev/shm/w8719/score.py` reads `.dynsym` (`objdump -T`) and `.text`
+(`objdump -h`) of both `.so`s and reports:
+
+* `byte_exact` over all symbols with `size > 0` — this is the official
+  `byte_exact` minus the two zero-size exports (`AbyssEngine::getAppVersion`,
+  `__cxa_end_cleanup`), i.e. **4,505/4,522 = the official 4,507/4,524**;
+* `rawdiff` — the sum of same-address differing bytes over the non-exact
+  symbols (90,306 at baseline; see §0);
+* the same two numbers for the residual function(s) of the TU under test.
+
+The official verifier was run on the canonical build before and after the
+matrix; the scratch build reproduces `4505/4522, rawdiff 90306` exactly.
+
+## 2. Compile-line provenance: our flags == r18b CMake toolchain Release
+
+The two commands compared (both compile the same source with the same
+project `-I` paths):
+
+**Ours** (`cmake-build-match/build.ninja`, `Layout.cpp`):
+
+```text
+clang++ -target armv7-none-linux-androideabi16
+  -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
+  -std=c++11 -fPIC -frtti -fstack-protector-strong -Oz -g -stdlib=libc++
+  -isystem <ndk>/sources/cxx-stl/llvm-libc++/include
+  -isystem <ndk>/sources/cxx-stl/llvm-libc++abi/include
+  -isystem <ndk>/sources/android/support/include
+  --sysroot=<ndk>/sysroot
+  -isystem <ndk>/sysroot/usr/include
+  -isystem <ndk>/sysroot/usr/include/arm-linux-androideabi
+  -D__ANDROID_API__=16 -DANDROID -DNDEBUG
+  -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast
+  -I<project>/src ... -ffunction-sections -funwind-tables
+```
+
+**NDK r18b CMake toolchain** (generated by a probe project using
+`android.toolchain.cmake` with the variables above):
+
+```text
+clang++ --target=armv7-none-linux-androideabi16
+  --gcc-toolchain=<ndk>/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64
+  --sysroot=<ndk>/sysroot
+  -isystem <ndk>/sources/cxx-stl/llvm-libc++/include
+  -isystem <ndk>/sources/android/support/include
+  -isystem <ndk>/sources/cxx-stl/llvm-libc++abi/include
+  -isystem <ndk>/sysroot/usr/include/arm-linux-androideabi
+  -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong
+  -no-canonical-prefixes
+  -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -mfpu=neon
+  -Wa,--noexecstack -Wformat -Werror=format-security
+  -std=c++11 -frtti -fexceptions -Oz -DNDEBUG -fPIC
+```
+
+Flag-by-flag:
+
+| NDK toolchain | ours | codegen effect |
+|---|---|---|
+| `--target=armv7-none-linux-androideabi16` | `-target armv7-none-linux-androideabi16` | same triple |
+| `--gcc-toolchain=…` | absent | libgcc search path only |
+| `--sysroot=…` | `--sysroot=…` | same |
+| `-g` | `-g` | same (`-g` = `-g2`) |
+| `-DANDROID`, `-DNDEBUG` | same | same |
+| `-ffunction-sections`, `-funwind-tables` | same | same |
+| `-fstack-protector-strong` | same | same (678 canaries / 787 sites match) |
+| `-no-canonical-prefixes` | absent | `__FILE__`/DWARF path spelling only; stripped |
+| `-march=armv7-a`, `-mfloat-abi=softfp`, `-mthumb` | same | same |
+| `-mfpu=vfpv3-d16 -mfpu=neon` | `-mfpu=neon` | last `-mfpu` wins → identical |
+| `-Wa,--noexecstack` | absent | clang already emits a non-exec stack; `PT_GNU_STACK` RW matches |
+| `-Wformat -Werror=format-security` | absent | diagnostics only |
+| `-std=c++11`, `-frtti` | same | same |
+| `-fexceptions` | absent | clang C++ default; our cc1 line carries `-fcxx-exceptions -fexceptions` |
+| `-Oz` | `-Oz` | same |
+| `-fPIC` | `-fPIC` | same |
+| — | `-stdlib=libc++` | same headers as the toolchain's `-isystem` list |
+| — | `-D__ANDROID_API__=16` | the toolchain encodes API 16 in the triple |
+| — | `-Wno-int-to-pointer-cast`, `-Wno-int-to-void-pointer-cast` | diagnostics only |
+| — | `-I<project>/…` | app headers only |
+
+The empirical proof is stronger than the table: compiling `ModStation.cpp`
+and `Layout.cpp` with the two command lines and comparing every `SHF_ALLOC`
+section gives **0 differing bytes** on both TUs. The only remaining
+difference is in `.debug_*` (different build directory), which is stripped
+before shipping.
+
+## 3. Matrix 1: the mission's 12 flags × 13 residual TUs
+
+Cell notation: `=` means the cell is **byte-identical to the neutral build**
+(`byte_exact 4505/4522`, `rawdiff 90,306`, residual bytes unchanged);
+`<byte>/<raw>` is a non-neutral cell; `F` is a compile failure.
+
+| TU | -fno-slp-vectorize | -fno-vectorize | -arm-load-store-opt=false | -enable-unsafe-fp-math | -ffast-math | -fno-strict-aliasing | -fwrapv | -disable-cgp-branch-opts | -arm-force-fast-isel | -tail-merge-size=5 | -fno-threadsafe-statics | -fno-rtti |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Layout.cpp | 2453/169630 | = | 2452/141517 | F | 3258/131036 | = | = | = | = | = | = | = |
+| LevelScript.cpp | 2739/58377 | = | 2056/84103 | F | 2832/63519 | 2739/60724 | = | = | = | 2735/58543 | = | = |
+| Level.cpp | 2356/141547 | = | 1853/183146 | F | 2356/148643 | 2358/160974 | 2356/145577 | = | = | 2357/142046 | = | = |
+| Status.cpp | = | = | 1959/187732 | F | 2473/140261 | 2312/146011 | 4477/90743 | = | = | 2312/156741 | = | = |
+| Radar.cpp | = | = | 2688/114877 | F | 4501/90417 | 2702/107999 | = | = | = | 2702/105552 | = | = |
+| MGame.cpp | 4274/92990 | = | 3119/98873 | F | 3097/101510 | 3101/94242 | 4499/86663 | = | = | 3102/95066 | = | 2927/99591 |
+| Gun.cpp | = | = | 2889/111425 | F | 3804/102347 | 2809/108456 | = | = | = | = | = | = |
+| HangarWindow.cpp | = | = | 2829/115601 | F | 3737/105521 | 2769/110954 | 1385/154600 | = | = | 2773/109478 | = | = |
+| SpaceLounge.cpp | 2980/104678 | = | 3029/107811 | F | 2980/101747 | 2980/101772 | 4118/94801 | = | = | 4503/91266 | = | = |
+| Hud.cpp | 4017/99551 | = | 4016/97770 | F | 2941/103672 | 2936/105470 | 2941/104362 | = | = | 4503/90318 | = | = |
+| Generator.cpp | = | = | 2033/162871 | F | 2033/149412 | 2613/143602 | 2033/150390 | = | = | = | = | = |
+| MenuTouchWindow.cpp | 2673/115581 | = | 2768/133306 | F | 3612/110328 | 2766/115638 | 3593/110661 | = | = | 4462/91848 | = | = |
+| ModStation.cpp | 2603/134316 | = | 2477/150615 | F | 2479/135029 | 2479/135460 | 4504/90382 | = | = | 2484/133022 | = | = |
+
+Notes:
+
+* `-mllvm -enable-unsafe-fp-math` is **not an LLVM option in clang 7.0.2**
+  (`Unknown command line argument`); the front-end spelling is `-ffast-math`,
+  which is the `-ffast-math` column. There is no `-mllvm` spelling of it in
+  this toolchain (`-unsafe-fp-math` is also unknown).
+* `-fno-vectorize` is neutral on **all 13 TUs** (the loop vectorizer is off
+  at `-Oz`, as w8619 recorded).
+* `-fno-threadsafe-statics` is neutral on **all 13 TUs**.
+* `-mllvm -disable-cgp-branch-opts` and `-mllvm -arm-force-fast-isel` are
+  neutral on **all 13 TUs**. (Whole-build `-disable-cgp-branch-opts` is
+  4,506 because it breaks `AbyssEngine::Engine::SetUVMatrix`, outside these
+  TUs.)
+* `-fwrapv` is neutral on `Layout`, `LevelScript`, `Radar`, `Gun`; negative
+  everywhere else. `MGame.cpp -fwrapv` has the lowest raw diff in the whole
+  matrix (86,663) but `byte_exact` falls to 4,499 because
+  `MGame::OnTouchEnd` changes size (8,080 → 8,076).
+* `-fno-slp-vectorize` is the most destructive flag: SLP is on and
+  load-bearing (`Layout::Layout` shrinks 7,072 → 5,988, `Level` 17,172 →
+  17,116, `ModStation` 1,008 → 972).
+* `-mllvm -arm-load-store-opt=false` is negative on all 13 TUs.
+
+## 4. Matrix 2: 14 extra flags on the 3 smallest residuals
+
+Same notation. These are the residuals where a flag change has the best
+chance of being observable (`ModStation` 11 B, `MenuTouchWindow` 28 B,
+`MGame::OnUpdate` 41 B).
+
+| TU | -fno-unroll-loops | -fno-jump-tables | -mno-unaligned-access | -fomit-frame-pointer | -disable-postra-machine-sink | -enable-misched | -misched-postra | -pre-RA-sched=source | -enable-gvn-hoist | -enable-gvn-sink | -enable-early-cse-memssa | -disable-licm-promotion | -tail-dup-size=0 | -tail-dup-placement-threshold=0 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ModStation.cpp | = | 2487/132833 | 2479/132851 | 2468/174160 | 2479/133158 | 2603/132933 | 4500/90526 | 2475/143785 | 2615/131542 | 2470/138804 | F | = | = | = |
+| MenuTouchWindow.cpp | = | 2690/128939 | 1376/160400 | 2665/137078 | 2673/115852 | 2673/134691 | 4495/91115 | 2765/129520 | 2672/118350 | 3593/111145 | F | = | 3618/109249 | = |
+| MGame.cpp | = | 3105/98635 | 3091/99971 | 3082/110070 | 4505/90331 | 3090/97443 | 4492/90491 | 3092/96348 | 3095/93747 | 3095/97538 | F | = | = | = |
+
+`-mllvm -enable-early-cse-memssa` is not an LLVM option in clang 7.0.2
+(build failure). The closest cell to a win is `MGame.cpp
+-disable-postra-machine-sink`: `byte_exact` stays at baseline but the raw
+diff rises 90,306 → 90,331 (`OnTouchEnd` 4,464 → 4,478, `OnUpdate` 41 → 52).
+
+## 5. Why the smallest residuals are not flag-sensitive
+
+The three smallest residuals are register-allocation differences between
+semantically identical instruction streams:
+
+* **`ModStation::ModStation` (11 B).** The original loads
+  `ldr.w r3, [r0, r8, lsl #2]` before `str.w r8, [sp, #184]` and moves
+  `r4, r2` after the argument setup; ours stores first, loads into `r4`, and
+  inserts `mov r3, r4` before the `MatrixSetRotation` call. Same instructions,
+  different registers/order.
+* **`MenuTouchWindow::OnTouchBegin` (28 B).** Only register names differ
+  (`ip` vs `r4`, `r3`/`r6` vs `r2`/`r3`, `r5` vs `r4`/`r6`); the opcode
+  sequence is identical.
+* **`MGame::OnUpdate` (41 B).** The original re-loads `[r9]` into `r0` before
+  each of two calls; ours caches it in `r5` and re-uses it (`ldr r5, [r9];
+  mov r0, r5` once, `mov r0, r5` later). This is a source-level CSE of a
+  global/member load across a call, not a flag.
+
+No flag in either matrix changes any of these three without also changing a
+previously exact function in the same TU.
+
+## 6. Verdict
+
+The original's compile configuration is exactly the r18b CMake toolchain
+Release default set, proven by byte-identical allocatable sections on two
+TUs. The targeted per-TU flag space on the 13 residual TUs is exhausted:
+**no cell keeps `byte_exact 4507` and lowers the raw diff**. The remaining
+84,567 `.text` bytes are source shape (block order, receiver caching,
+register allocation, literal-pool rotation), not build configuration.
+
+## 7. Reproduction
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w8719
+cmake --preset default \
+  -DGOF2_ORIGINAL_SO=/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so \
+  -DGOF2_FMOD_LIBDIR=/home/debian/GalaxyOnFire2/_work/bins/apk_libs
+cmake --build cmake-build-match --target check -j6
+
+# scratch build with the per-TU launcher
+cmake -S . -B /dev/shm/w8719/b -G Ninja \
+  -DGOF2_ORIGINAL_SO=/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so \
+  -DGOF2_FMOD_LIBDIR=/home/debian/GalaxyOnFire2/_work/bins/apk_libs \
+  -DGOF2_MATCH_OPT=-Oz \
+  -DCMAKE_C_COMPILER_LAUNCHER=/dev/shm/w8719/launch.sh \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=/dev/shm/w8719/launch.sh
+cmake --build /dev/shm/w8719/b --target link_so -j6
+
+# one cell
+find /dev/shm/w8719/b/CMakeFiles/gof2.dir -name 'Layout.cpp.obj' -delete
+GOF2_TU=Layout.cpp GOF2_TU_FLAGS='-fwrapv' \
+  cmake --build /dev/shm/w8719/b --target link_so -j6
+python3 /dev/shm/w8719/score.py /dev/shm/w8719/b/libgof2hdaa.so _ZN6LayoutC1Ev
+
+# compile-line equivalence: compile ModStation.cpp with the r18b CMake
+# toolchain Release line (see §2) and compare SHF_ALLOC sections
+python3 /dev/shm/w8719/elfalloc.py /dev/shm/w8719/a.o /dev/shm/w8719/b.o
+```
+
+Scratch (not committed): `/dev/shm/w8719/` — `launch.sh`, `score.py`,
+`fdiff2.py`, `elfalloc.py`, `sec.py`, `matrix.sh`, `matrix2.sh`,
+`matrix.log`, `matrix2.log`, `a.o`, `b.o`, `la.o`, `lb.o`, `b/`, `ndkprobe/`.
+
+## 8. What would falsify this note
+
+* A per-TU cell with `byte_exact 4507` and `rawdiff < 90,306`. None of the
+  198 cells in this pass does.
+* A compile-line difference between our build and the r18b CMake toolchain
+  Release line that changes an allocatable section. Two TUs show 0 bytes.
+* A residual function whose diff is a flag artifact rather than register
+  allocation. The three smallest are pure register/order differences.
