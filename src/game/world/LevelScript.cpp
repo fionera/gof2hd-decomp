@@ -2907,8 +2907,8 @@ bool LevelScript::process(int delta) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
                         Vector ref = (*enemies)[3]->getPosition();
+                        (*enemies)[1]->setPosition(ref + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
-                        (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
@@ -2931,7 +2931,7 @@ bool LevelScript::process(int delta) {
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
-                        m_pHud->visible = 0;
+                        m_nScriptTimerA = 0;
                         m_pRadar->enabled = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
@@ -2945,8 +2945,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
-                        m_nScriptTimerA = 0;
                         m_nState++;
+                        m_pHud->visible = 0;
                     }
                 } else if (m_nState == 2) {
                     for (int i = 0; i < 3; i++) {
@@ -3935,7 +3935,8 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                if (m_nState == 2) {
+                switch (m_nState) {
+                case 2: {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
@@ -3983,31 +3984,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
+                    break;
                 }
-                if (m_nState >= 4 && m_nState <= 6) {
-                    if (player->isDockedToDockingPoint() && player->hackingWon()
-                           && player->getHackingGameDockIndex() >= 0) {
-                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
-                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
-                                ->setName(String("", false));
-                        ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
-                        player->deleteHackingGame();
-                        m_nState++;
-                        if (m_nState == 6) {
-                            int xOff = 25000;
-                            int yOff = 2300;
-                            for (int i = 6; i < 8; i++) {
-                                (*enemies)[i]->awake();
-                                KIPlayer *guard = (*enemies)[i];
-                                guard->setPosition(player->getPosition()
-                                                   + Vector{(float) xOff, (float) yOff, 25000.0f});
-                                xOff += 1000;
-                                yOff += 50;
-                            }
-                        }
-                    }
-                }
-                if (m_nState == 3) {
+                case 3: {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -4040,6 +4019,32 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
+                    break;
+                }
+                default: {
+                    if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                           && player->getHackingGameDockIndex() >= 0) {
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                                ->setName(String("", false));
+                        ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
+                        player->deleteHackingGame();
+                        m_nState++;
+                        if (m_nState == 6) {
+                            int xOff = 25000;
+                            int yOff = 2300;
+                            for (int i = 6; i < 8; i++) {
+                                (*enemies)[i]->awake();
+                                KIPlayer *guard = (*enemies)[i];
+                                guard->setPosition(player->getPosition()
+                                                   + Vector{(float) xOff, (float) yOff, 25000.0f});
+                                xOff += 1000;
+                                yOff += 50;
+                            }
+                        }
+                    }
+                    break;
+                }
                 }
                 break;
             }
