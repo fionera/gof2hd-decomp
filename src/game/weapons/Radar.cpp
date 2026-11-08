@@ -415,7 +415,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         otherLockFlag = 1;
     }
     int otherLock = otherLockFlag;
-    int landmarkHit = false;
+    bool landmarkHit = false;
     int notOtherLock = !otherLock;
     int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
@@ -470,9 +470,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + rowHeight * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
-                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                             this->cameraX, this->cameraY,
-                                                             this->cameraZ);
+                        {
+                            String labelCopy2 = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                                   this->cameraX, this->cameraY,
+                                                                   this->cameraZ);
+                            this->lockLabel = labelCopy2;
+                        }
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
                                                     this->screenY + rowHeight, false);
                     }
@@ -549,7 +552,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            int marked = false;
+            bool marked = false;
             if (__builtin_expect(campaignMission != nullptr && !campaignMission->isEmpty() && // lint: arm_builtin anchor: Radar::draw
                                  campaignMission->isVisible() &&
                                  (Globals::status->getCurrentCampaignMission() < 148 ||
@@ -669,7 +672,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    bool enemyHit = false;
+    int enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -1088,7 +1091,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {

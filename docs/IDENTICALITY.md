@@ -60,14 +60,14 @@ residuals are Greedy-RA/scheduler ties), w9820 (a shifted-rank Status profile
 restores the canonical `.rel.plt` but is 1,388-1,404 B; the original is the
 unprofiled body with only the switch reordered).
 
-**Aligned total (15 functions): 24,116** (wave-151 base 24,124). Per function:
+**Aligned total (15 functions): 24,070** (wave-151 base 24,124). Per function:
 Layout 2,148, LevelScript 17,223 (indicative), createShip 480, Status 320,
-Radar 1,530, MGame::OnTouchEnd 903, createMission 776, Gun 57, HangarWindow
+Radar 1,484, MGame::OnTouchEnd 903, createMission 776, Gun 57, HangarWindow
 291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
 MGame::OnUpdate 19.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**55,347** (57,232 B), `Radar::draw` **8,620** (9,908 B), `Layout` C1/C2
+**55,347** (57,232 B), `Radar::draw` **8,577** (9,908 B), `Layout` C1/C2
 **5,800** (7,072 B), `Level::createMission` **5,484** (17,172 B),
 `MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **2,056** (2,764 B),
 `HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
@@ -77,8 +77,8 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **29** (1,896 B).
 
-Section deltas: `.text` **87,131** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **1,324** (size- and base-exact
+Section deltas: `.text` **87,088** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,286** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
