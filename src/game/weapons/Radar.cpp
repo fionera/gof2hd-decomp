@@ -344,7 +344,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     Mission *mission = Globals::status->getMission();
     bool missionBlocksPlanets = false;
-    bool alwaysEnemySeen = false;
+    int alwaysEnemySeen = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
@@ -672,7 +672,7 @@ enemies:
     bool bossSeen = false;
     bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
-        bool alwaysEnemy = false;
+        int alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
             if (!enemy->player->isActive() ||
@@ -1335,6 +1335,7 @@ asteroids_done:
         }
     }
     this->field_0x1bc = 0;
+    this->plasmaInRange = 0;
     String dummy;
 
 }
