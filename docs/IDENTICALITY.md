@@ -11,41 +11,66 @@ linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
-Wave-147 lands one source change:
+Wave-147 ran 20 agents (4 on `LevelScript::process`, 3 on `Layout`, 2 on `Radar`,
+2 on `createMission`, 3 on the `!prof`/branch-weight question, the rest on the
+smaller residuals). Four source changes landed:
 
-* `SpaceLounge::drawLounge`: the `__builtin_expect(agent->isKnown(), 1)` guard is
-  reverted to the plain `if (agent->isKnown())`. **METRIC-ONLY (aligned)**: the
-  instruction-index alignment improves **57 -> 47** and our instruction count now
-  equals the original's (741 vs 741), but raw same-address diff **175 -> 265**,
-  `.text` **85,928 -> 86,018** and `.ARM.extab` **1,393 -> 1,396**. Size stays
-  1948 B. The old comment ("plain form grows body 1948 -> 1952") was stale. See
-  `_work/reconstructions/expect-sweep-wave147-w9318.md`.
+* `Radar::draw` (w9308): `int rowHeight = Globals::layout->field_0x4` after the
+  first landmark `DrawString` breaks clang's tail merge of the two lockLabel
+  draws, so the landmark loop emits the original's **9** `DrawString` calls at
+  exactly 9,908 B. `enemyHit` and the asteroid `wreck` are switched to `bool`
+  (witnessed by the `and r1,#1` / `eors.w r0,sl,#1` widenings); enemy `wreck`
+  stays `int` (word store `12ed82`). Raw **8,733 -> 8,672**; aligned 2,712 -> 2,726.
+* `HangarWindow::render` (w9313): the `borderX` local splits the blueprint
+  rows 19/20, inlining `iconX`/`iconY` removes the free-credits lifetime-marker
+  EH scope, and `__builtin_expect(count <= 4, 1)` restores the original block
+  placement, so the credit LSDA row merges at exactly 9,700 B. The extab record
+  diff drops **762 -> 676** (section **1,393 -> 1,309**) and the alignment
+  **480 -> 301**; raw same-address **1,719 -> 1,967** (instruction shifts).
+* `SpaceLounge::drawLounge` (w9316): the right-edge clamp uses the int
+  `pad + pad` instead of the `short pad3` sign-extend workaround, matching the
+  original's reuse of the `pad*2` kept in `sl`. Raw **175 -> 176**; aligned
+  **57 -> 42**; size 1,948 B exact.
+* `LevelScript::process` (w9320): the case-92 state-1 block is reconstructed
+  from `0x13a036..0x13a2c6` — `setPosition` order `[0],[1],[2]`, `m_pHud->visible = 0`
+  between `m_bCinematicBreak` and `m_pRadar->enabled`, `m_nScriptTimerA = 0`
+  after `setName()`. Raw **54,869 -> 54,913** (address shift); block-local
+  alignment 0.6471 -> 0.6757.
 
-The wave-147 `__builtin_expect` sweep found that the six smallest residuals
-(MenuTouchWindow, ModStation, Gun, Generator, SpaceLounge, MGame::OnUpdate) are
-register-allocation/jump-threading residuals and do not respond to branch-weight
-hints. `__builtin_expect_with_probability` does not exist in clang 7.0.2.
+Measured and **reverted** (notes kept): w9301 makes `.rel.plt` byte-identical
+but costs +358 raw text and +2,167 aligned instructions; w9309 is -2 raw but
++32 aligned; w9311 is +32 raw; w9318 is +90 raw (w9316 is the better
+SpaceLounge shape).
 
-Aligned total (15 functions, measured on this tree): **24,222** (wave-146
-measured: 24,232; the wave-146 doc figure 24,443 used a stale `Hud::draw` 460,
-current measured `Hud::draw` is 249). Per function: Layout 2,304, LevelScript
-15,737 (indicative), createShip 486, Status 320, Radar 2,712, MGame::OnTouchEnd
-906, createMission 728, Gun 57, HangarWindow 480, SpaceLounge **47**, Hud 249,
-Generator 59, MenuTouchWindow 16, ModStation 12, MGame::OnUpdate 109.
+**Branch-weight / `!prof` research (w9304/w9305/w9319).** The wave-146 finding
+that `Status::missionCompleted`'s case blocks are laid out in *source* order
+(only reproducible with `!prof` weights) was followed up: a flat PGO profile is
+**falsified** (it breaks 1,274/4,524 functions), and clang 7's only source-level
+switch-weight producer is `handleSwitchExpect` (which requires
+`__builtin_expect` on a `switch` scrutinee comparison). The single-hot vector is
+outside the winning family. A separate strong lead: on `Radar::draw`,
+`__builtin_expect(enemies != nullptr, 1)` drops the alignment **2,712 -> 1,963**
+but shrinks the function to 9,800 B — the missing ~108 B is the next step.
+
+**Aligned total (15 functions): 24,055** (wave-146 base 24,232). Per function:
+Layout 2,304, LevelScript 15,740 (indicative), createShip 486, Status 320,
+Radar 2,726, MGame::OnTouchEnd 906, createMission 728, Gun 57, HangarWindow 301,
+SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
+MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,869** (57,232 B), `Radar::draw` **8,733** (9,908 B), `Layout` C1/C2
+**54,913** (57,232 B), `Radar::draw` **8,672** (9,908 B), `Layout` C1/C2
 **5,704** (7,072 B), `Level::createMission` **5,560** (17,172 B),
 `MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
-`HangarWindow::render` **1,719** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
 **463** (1,984 B), `Generator::createMission` **445** (1,996 B),
-`SpaceLounge::drawLounge` **265** (1,948 B), `ModStation` C1/C2 **43**
+`SpaceLounge::drawLounge` **176** (1,948 B), `ModStation` C1/C2 **43**
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **28** (1,896 B).
 
-Section deltas: `.text` **86,018** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **1,396** (size- and base-exact
+Section deltas: `.text` **86,160** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
