@@ -2907,8 +2907,8 @@ bool LevelScript::process(int delta) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
                         Vector ref = (*enemies)[3]->getPosition();
-                        (*enemies)[1]->setPosition(ref + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
+                        (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
@@ -2931,7 +2931,7 @@ bool LevelScript::process(int delta) {
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
-                        m_nScriptTimerA = 0;
+                        m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
@@ -2945,8 +2945,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
+                        m_nScriptTimerA = 0;
                         m_nState++;
-                        m_pHud->visible = 0;
                     }
                 } else if (m_nState == 2) {
                     for (int i = 0; i < 3; i++) {

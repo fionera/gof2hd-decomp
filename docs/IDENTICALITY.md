@@ -91,7 +91,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process` **
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B).
 
-Section deltas: `.text` **85,928** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **85,972** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,393** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B; the
 `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
