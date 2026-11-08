@@ -11,22 +11,54 @@ linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
-Wave-148 lands one source change:
+Wave-148 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 2 on `Layout`,
+2 on `createMission`, 3 on the PGO/profile question). Six source changes landed:
 
-* `MGame::OnTouchEnd` (w9412): the `hudTouchFlags == 0` join is written as a
-  separate `if` inside the `else` of the weaponSlot test (the `sepif` shape),
-  so the wingman body branches to the join test (`b.w 17aeb2`) exactly as the
-  original (`b.w 17afe2`).  The faithful `b.w` costs 4 B; the companion is the
-  epilogue condition reorder `if (!wasAutoPilot && this->player->isAutoPilot())`
-  (a metric-only rewrite of the original's OR-form `isAutoPilot() && !wasAutoPilot`),
-  which keeps the function at 8,080 B.  Raw **4,127 -> 4,420**; aligned **906 -> 925**;
-  `.text` **86,160 -> 86,453**.  See
-  `_work/reconstructions/mgame-ontouchend-wave148-w9412.md`.
+* `Radar::draw` (w9402): the station loop reads `stations->data()[i]` first
+  (matching `12e474..12e47e`), the enemy `wreck` becomes `bool`, and the
+  asteroid `marked` becomes `bool`. That flips the greedy allocator to the
+  original's **frame 296** (`sub sp,#296`; ours was 304) and merges the
+  146/147 music tail so we emit **7** `FModSound::play` calls like the original.
+  Raw **8,672 -> 8,712**; **aligned 2,726 -> 1,657** (the largest single
+  structural win so far).
+* `Layout::Layout` (w9408): six adjacent statement reorderings
+  (`centerYBase<->marqueeWidth`, `0x238.b<->0x120`, `0x198<->0x1a8`,
+  `0x1c8<->0x1d8`, `0x1c0<->0x1d4`, `orbitInfoSecurityY<->0x214`).
+  Raw **5,704 -> 5,743**; **aligned 2,304 -> 2,213**; 7,072 B exact.
+* `Level::createMission` (w9411): the alien-gun preheader declares
+  `Matrix rotation; Vector v; int k; Vector base;` (the original initialises
+  Matrix, then v, then base at `b323c..b3284`). Raw **5,560 -> 5,561**;
+  **aligned 728 -> 716**.
+* `LevelScript::process` (w9406, w9418, w9407): the case-92 state-1 block gets
+  the witnessed `field_0x38`/`field_0x128` store order; the mission-0 loop
+  calls `setDirection` before `setVisible`; and the case-157 strong arm drops
+  its `m_bCinematicBreak = 1` (adds `destroyed = 0`, `m_nState = 6`). Raw
+  **54,913 -> 54,898**; 57,232 B exact.
+
+Measured and **reverted** (notes kept): w9401 (Radar `expect(enemies)`+bool→int
+shape lands 9,908 B alone at aligned 2,127 but composes with w9402 to 9,920 B);
+w9404 (LevelScript timer/destroyed order is -4 B); w9409 (Layout 0x184
+iPad-before-n9 fix composes with w9408 to 7,112 B); w9410 (`v`/`rotation`
+declaration order); w9412 (MGame `sepif` CFG costs +293 raw, +19 aligned);
+w9413 (Hud anchor removal costs +5,640 raw, +700 aligned).
+
+**Profile research (w9415/w9416/w9419/w9420).** No `.profraw`/`.profdata` is
+shipped in any APK or sibling build; sample-PGO replay is falsified. A graded
+per-TU `-fprofile-instr-use` profile can move one hot case to the front of
+`Status::missionCompleted` but the remaining cases stay numeric (1,392 B, not
+1,432). The extab LP-identity ties are frequency-driven: `Radar::Radar`'s 7
+bytes need `P=0.3125/0.125` in the machine-level MBFI domain.
+
+**Aligned total (15 functions): 22,945** (wave-147 base 24,055). Per function:
+Layout 2,213, LevelScript 15,802 (indicative), createShip 486, Status 320,
+Radar 1,657, MGame::OnTouchEnd 906, createMission 716, Gun 57, HangarWindow 301,
+SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
+MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,913** (57,232 B), `Radar::draw` **8,672** (9,908 B), `Layout` C1/C2
-**5,704** (7,072 B), `Level::createMission` **5,560** (17,172 B),
-`MGame::OnTouchEnd` **4,420** (8,080 B), `Level::createShip` **1,978** (2,764 B),
+**54,898** (57,232 B), `Radar::draw` **8,712** (9,908 B), `Layout` C1/C2
+**5,743** (7,072 B), `Level::createMission` **5,561** (17,172 B),
+`MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
 `HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
 **463** (1,984 B), `Generator::createMission` **445** (1,996 B),
@@ -34,17 +66,11 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **28** (1,896 B).
 
-Section deltas: `.text` **86,453** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **86,225** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
-
-**Aligned total (15 functions): 24,074** (wave-147 base 24,055). Per function:
-Layout 2,304, LevelScript 15,740 (indicative), createShip 486, Status 320,
-Radar 2,726, MGame::OnTouchEnd 925, createMission 728, Gun 57, HangarWindow 301,
-SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
-MGame::OnUpdate 109.
+`.note.gnu.build-id` **19**. File size is exact (2,187,328 B).
 
 ## Update 2026-11-08 (wave 147)
 
