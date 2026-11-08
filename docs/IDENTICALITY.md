@@ -37,6 +37,76 @@ Section deltas: `.text` **85,598** differing bytes (size exact); `.ARM.exidx` **
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+## Update 2026-11-08 (wave 146)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.93%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-146 ran 20 agents (16 on the worst functions, 4 on build provenance). Landed source
+changes:
+
+* `Level::createMission` (w9208): the wave-144 `basefirst`+`cachedgun`+`status` tree now
+  composes at the exact 17,172 B, and the +4 B companion is dropping the tail
+  `AERandom *rnd` local (clang CSEs `Globals::rnd` itself after `cachedgun`). Raw
+  **5,592 -> 5,560**.
+* `MGame::OnTouchEnd` (w9210): the `hudTouchFlags` join is the `else` of the
+  weaponSlot/wingman chain; the join and tail are reconstructed from the original
+  `0x17afd8..0x17b04e`. Raw **4,180 -> 4,127**.
+* `MGame::OnUpdate` (w9220): the `Status *st` alias moves back to the mission-122 radio
+  block, so the mission-23 idle block reloads `Globals::status` like the original
+  `0x17e0b8`. Raw **41 -> 37**.
+* `ModStation` C1/C2 (w9216/w9220): the far `MatrixSetRotation` x argument is `pitch`,
+  not `yaw` (the original preserves `r2 = gHangarCamPitch[race]` in `r4` across the first
+  call). This is a **faithfulness fix**: raw **11 -> 43**, same 1,008 B. The 11-byte
+  `yaw` form was metric-only.
+* `Radar::draw` (w9206): the enemy loop now has the original's single `DrawImage2D` tail
+  merge with the witnessed `bool alwaysEnemy` / `bool asteroidHit` (`and #1` widening at
+  `0x12f3ba`). Same 9,908 B; raw **8,373 -> 8,733** but the instruction-index alignment
+  improves **2,819 -> 2,712** non-matching instructions.
+* `LevelScript::process` (w9203): the case-125 state-1 body is lifted into a contiguous
+  `if (m_nState == 1)` block (S1SEP) matching the original `0x13b43e..0x13b516`, at the
+  exact 0x144 LSDA table. Raw **54,895 -> 54,869**; `.ARM.extab` diff 1,370 -> 1,399 and
+  `.rel.plt` 0 -> 4 (the `setVisible`/`deleteHackingGame` PLT order swap is still open).
+
+`Hud::draw` (w9213) was reverted after measurement: its iconX/iconY + inline-`y` shape
+matches the original's dock2 LSDA `(4,4,0xcc)` but costs +899 raw text bytes, +37 extab
+bytes and +211 aligned instructions; the note is kept.
+
+**New shared metric.** `_work/reconstructions/align_diff.py` (from w9220) aligns the two
+instruction streams by target-instruction index and counts non-matching instructions.
+Wave-146 baseline total: **24,443** (wave-145 base: **24,302**). Per function: Layout
+2,304, LevelScript 15,737 (indicative only), createShip 486, Status 320, Radar 2,712,
+MGame::OnTouchEnd 906, createMission 728, Gun 57, HangarWindow 480, SpaceLounge 57, Hud
+460, Generator 59, MenuTouchWindow 16, ModStation 12, MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process` **54,869**
+(57,232 B), `Radar::draw` **8,733** (9,908 B), `Layout` C1/C2 **5,704** (7,072 B),
+`Level::createMission` **5,560** (17,172 B), `MGame::OnTouchEnd` **4,127** (8,080 B),
+`Level::createShip` **1,978** (2,764 B), `HangarWindow::render` **1,719** (9,700 B),
+`Hud::draw` **1,325** (9,332 B), `Status::missionCompleted` **722** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `Generator::createMission` **445**
+(1,996 B), `SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B).
+
+Section deltas: `.text` **85,928** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,393** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B; the
+`setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
+**Build provenance (w9217/w9218).** An independent full-build A/B of 28 single-flag
+variants confirms the canonical set (`-Oz -g -std=c++11 -fPIC -frtti -fexceptions
+-fstack-protector-strong -funwind-tables -ffunction-sections`, NDK r18b clang 7.0.2,
+GNU strip, gold link): no flag raises `byte_exact`, and the `-O2/-Os/-O1/-O3`, `-g0/-g3`,
+`-fno-stack-protector`, `-fno-rtti`, `-fno-exceptions`, `-march=armv7ve`,
+`-mfpu=neon-vfpv4`, `-mtune=cortex-a8`, `-fwrapv` and `-fno-vectorize` cells are all
+worse or neutral. The `.comment` string (`Android (4751641 based on r328903) clang
+version 7.0.2`, `GCC: (GNU) 4.9.x 20150123`) and the 156,312-byte `.ARM.extab` census
+confirm the recipe.
+
 ## Update 2026-11-08 (wave 145, final)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
