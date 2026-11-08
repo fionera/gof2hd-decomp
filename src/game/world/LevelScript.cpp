@@ -1772,7 +1772,7 @@ bool LevelScript::process(int delta) {
                     for (int j = 1; j != 4; ++j) {
                         (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
                     }
-                    m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
+                    m_nState++; // shared tail 0x13aba4 -> 0x13edde
                 }
                 break;
             }
@@ -4024,8 +4024,8 @@ bool LevelScript::process(int delta) {
                     }
                 }
                 if (m_nState >= 4 && m_nState <= 6) {
-                    if (__builtin_expect(player->isDockedToDockingPoint() && player->hackingWon() // lint: arm_builtin anchor: LevelScript::process hacking hot path
-                           && player->getHackingGameDockIndex() >= 0, 1)) {
+                    if (player->isDockedToDockingPoint() && player->hackingWon()
+                           && player->getHackingGameDockIndex() >= 0) {
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setName(String("", false));
@@ -5283,7 +5283,7 @@ bool LevelScript::process(int delta) {
                     }
                 }
                 Array<int> *stationList = Globals::status->field_90;
-                for (unsigned int i = 0; i < stationList->count; ++i) {
+                for (unsigned int i = 0; i < Globals::status->field_90->count; ++i) {
                     if ((*stationList)[i] == Globals::status->getStation()->getIndex()) {
                         (*stationList)[i] = -1;
                     }
