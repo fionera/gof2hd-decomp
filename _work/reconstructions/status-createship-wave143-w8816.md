@@ -76,6 +76,15 @@ always 2000 or 6000/8000, never 4.  A 5-level if-chain of
 (`[250000000, -1290465046, …, 1501500, 1001000250, …]`) and overflows 32 bits
 before `FitWeights` can bring it down to small integers.
 
+A fold on the *real* `missionCompleted` source is also blocked by the double
+`m->getType()` call: `FoldValueComparisonIntoPredecessors` requires the
+predicate and the switch to compare the *same SSA value*, so
+`if (__builtin_expect(m->getType()==167,0)) … else switch(m->getType())` does
+not fold (two distinct `getType()` calls; emitted as two branches with
+`[1,2000]`/`[2000,1]`, raw 1198 / 1456, and the `==167||==174` form 1194 / 1444).
+Only a local `int shipType = m->getType();` folds (wave 142's 4-level nest),
+and that emits geometric weights.
+
 **Conclusion:** the 4:3:2:1 vector cannot be produced by a
 `FoldValueComparisonIntoPredecessors` fold at clang's default
 `-likely-branch-weight=2000`.  It needs either a small likely weight
