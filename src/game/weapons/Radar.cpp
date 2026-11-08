@@ -549,12 +549,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            int marked = false;
+            bool marked = false;
             if (__builtin_expect(campaignMission != nullptr && !campaignMission->isEmpty() && // lint: arm_builtin anchor: Radar::draw
                                  campaignMission->isVisible() &&
                                  (Globals::status->getCurrentCampaignMission() < 148 ||
                                   Globals::status->getCurrentCampaignMission() >= 152), 0)) {
-                bool isTarget = campaignMission->getTargetStation() == stations->data()[i];
+                bool isTarget = stations->data()[i] == campaignMission->getTargetStation();
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
@@ -683,7 +683,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -1080,7 +1080,7 @@ asteroids:
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
             }
             int slotCount = 0;
-            bool asteroidHit = false;
+            int asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
                 if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
@@ -1088,7 +1088,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
