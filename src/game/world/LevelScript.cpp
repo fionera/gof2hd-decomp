@@ -634,7 +634,6 @@ bool LevelScript::process(int delta) {
             (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
             // Face them +X with +Y up, and make them visible (0x137f34).
             for (int i = 0; i < 3; ++i) {
-                if (!enemies->data_) continue;
                 KIPlayer *e = (*enemies)[i];
                 e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 e->geometry->setVisible(true);
@@ -1321,14 +1320,15 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 4: {
-                StarSystem *stars4 = m_pLevel->getStarSystem();
-                stars4->scaleSunDuringSupernovaIntro(delta);
-                stars4->updateSupernova(delta);
+                m_pLevel->getStarSystem()->scaleSunDuringSupernovaIntro(delta);
+                m_pLevel->getStarSystem()->updateSupernova(delta);
                 if (m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000) {
                     Globals::layout->startFade(true, 255, delta + 1000);
-                    m_nState = 4;
                 }
                 m_nScriptTimerA += delta;
+                if (m_nScriptTimerA >= 8000) {
+                    m_nState = 5;
+                }
                 break;
             }
             case 5:
