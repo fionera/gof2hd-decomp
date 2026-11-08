@@ -108,7 +108,7 @@ exact at 948 B. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (86,225), `.ARM.extab` (1,309) and
+section bytes are `.text` (86,159), `.ARM.extab` (1,309) and
 `.note.gnu.build-id` (20). `.rel.plt` is size- and base-exact but **4 bytes differ** (entries
 2835/2836 swap `PlayerEgo::deleteHackingGame` and `PlayerStation::setVisible`): the wave-145
 inline case-125 state-1 body moves the case-125 `default` block ahead of the case-42 state-7

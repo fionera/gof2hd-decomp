@@ -12,7 +12,7 @@ imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
 Wave-148 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 2 on `Layout`,
-2 on `createMission`, 3 on the PGO/profile question). Six source changes landed:
+2 on `createMission`, 3 on the PGO/profile question). Seven source changes landed:
 
 * `Radar::draw` (w9402): the station loop reads `stations->data()[i]` first
   (matching `12e474..12e47e`), the enemy `wreck` becomes `bool`, and the
@@ -29,6 +29,11 @@ Wave-148 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 2 on `Layout`,
   `Matrix rotation; Vector v; int k; Vector base;` (the original initialises
   Matrix, then v, then base at `b323c..b3284`). Raw **5,560 -> 5,561**;
   **aligned 728 -> 716**.
+* `Level::createMission` (w9509): name the `MatrixRotateVector` return temp in
+  both turret loops (`Vector p = ...; v = p;`). That restores the pristine
+  pirate-fortress preheader allocation (case4Tail region 196 -> 27) at the
+  cost of the alien tail (17 -> 103). Raw **5,561 -> 5,495**;
+  **aligned 716 -> 731**.
 * `LevelScript::process` (w9406, w9418, w9407): the case-92 state-1 block gets
   the witnessed `field_0x38`/`field_0x128` store order; the mission-0 loop
   calls `setDirection` before `setVisible`; and the case-157 strong arm drops
@@ -49,15 +54,15 @@ per-TU `-fprofile-instr-use` profile can move one hot case to the front of
 1,432). The extab LP-identity ties are frequency-driven: `Radar::Radar`'s 7
 bytes need `P=0.3125/0.125` in the machine-level MBFI domain.
 
-**Aligned total (15 functions): 22,945** (wave-147 base 24,055). Per function:
+**Aligned total (15 functions): 22,960** (wave-147 base 24,055). Per function:
 Layout 2,213, LevelScript 15,802 (indicative), createShip 486, Status 320,
-Radar 1,657, MGame::OnTouchEnd 906, createMission 716, Gun 57, HangarWindow 301,
+Radar 1,657, MGame::OnTouchEnd 906, createMission 731, Gun 57, HangarWindow 301,
 SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
 MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **54,898** (57,232 B), `Radar::draw` **8,712** (9,908 B), `Layout` C1/C2
-**5,743** (7,072 B), `Level::createMission` **5,561** (17,172 B),
+**5,743** (7,072 B), `Level::createMission` **5,495** (17,172 B),
 `MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
 `HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
@@ -66,7 +71,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **28** (1,896 B).
 
-Section deltas: `.text` **86,225** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **86,159** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
