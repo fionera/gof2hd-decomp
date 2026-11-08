@@ -1950,22 +1950,28 @@ void Level::createMission() {
     }
     if (alienGuns != 0) {
         Matrix rotation;
-        Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         Vector v = {0.0f, 0.0f, 0.0f};
+        Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         int k = 0;
         for (int i = this->friendCount + this->field_164 + this->field_168;
              i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
+            // `i < 0` is always false here (i is a non-negative index); it is a
+            // codegen anchor that keeps the table select inside the loop, matching the
+            // original's in-loop `cbz` and restoring the raid block placement.
             const float (*t)[6] = (bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
+            // The turret scaling is issued through a fresh `(*enemies)[i]` load
+            // rather than the cached `gun`; this keeps the register allocation
+            // around the table select in the original's shape.
+            ((PlayerTurret *) (*this->enemies)[i])->setScaling(6.0f);
             gun->geometry->setRotation(v);
-            ((PlayerTurret *) gun)->setScaling(6.0f);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
-            gun->cargo = nullptr;
             gun->shipGroup = localRace;
+            gun->cargo = nullptr;
         }
     }
     if (pirateFortress) {
@@ -1989,12 +1995,11 @@ void Level::createMission() {
         }
     }
     if (raid) {
-        Status *status = Globals::status;
         int guns = alienGuns + fortressGuns;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
-        bool hard = status->hardCoreMode();
+        bool hard = Globals::status->hardCoreMode();
         if (raidRace == 8 && Level::initStreamOutPosition &&
-            Globals::rnd->nextInt(100) < (hard ? 40 : 20) + status->getLevel()) {
+            Globals::rnd->nextInt(100) < (hard ? 40 : 20) + Globals::status->getLevel()) {
             this->spawnPosition = this->player->getPosition() / 3.0f;
             this->field_180->setNewCoords(this->spawnPosition);
         }
@@ -2117,10 +2122,11 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
+    AERandom *rnd = Globals::rnd;
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         KIPlayer *ship = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
+                this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i] = ship;
         ship->setToSleep();
     }
