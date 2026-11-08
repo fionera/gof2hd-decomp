@@ -719,7 +719,7 @@ bool LevelScript::process(int delta) {
             player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
             speedBits = player->getSpeed();
             if (((RadioMessage *) ((*messages)[13]))->isOver()) {
-                m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
+                m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
             }
             if (((RadioMessage *) ((*messages)[14]))->isTriggered()) {
                 m_nScriptTimerA = 0;
@@ -745,7 +745,7 @@ bool LevelScript::process(int delta) {
                 player->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
                 Vector playerPos = player->geometry->getPosition();
                 m_pCamera->setPosition(playerPos);
-                m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
+                m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
                 m_nState = 5;
             }
             // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
