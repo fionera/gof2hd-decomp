@@ -717,7 +717,6 @@ bool LevelScript::process(int delta) {
             Vector zero161{0.0f, 0.0f, 0.0f};
             Globals::sound->updateEvent3DAttributes(161, &pos, &zero161, false);
             player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
-            speedBits = player->getSpeed();
             if (((RadioMessage *) ((*messages)[13]))->isOver()) {
                 m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
             }
