@@ -18,6 +18,80 @@ imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
   size, and re-aligns the block fall-through: raw **1,577 -> 1,564**,
   aligned **457 -> 452**; `.text` **-13**, `.ARM.extab` **-1**.
 
+## Update 2026-11-08 (wave 154)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-154 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 3 on `Layout`,
+2 on `createMission`, 2 on `MGame`, the rest on the small tail/extab/PGO).
+Four source changes landed:
+
+* `LevelScript::process` (w10007): a `Status*` local makes clang CSE the
+  vtable load across the two dispatch blocks, putting it in `r4`. Raw
+  **55,328 -> 55,327**; **aligned 17,185 -> 17,176**; 57,232 B exact.
+* `Layout::Layout` (w10010): a five-move statement reorder
+  (`0x184` before `0x1a0`, `marqueeWidth` before `oreTextYOffset`, `0x284`
+  before `0x310`, `0x2c` before `0x38`, `0x40` after `buttonInsetX`).
+  Raw **5,830 -> 5,849**; **aligned 2,119 -> 2,006**; 7,072 B exact.
+* `Level::createShip` (w10016): split the five-way mission test into
+  `if (mission == 56) ... else if (mission >= 49 && mission <= 52) ...`.
+  Raw **1,577 -> 1,564**; **aligned 457 -> 452**; 2,764 B exact.
+* `MGame::OnUpdate` (w10017): the mission-122 `radioBase` reads
+  `st->getCurrentCampaignMission()` so the `Status` value stays live and
+  `&Globals::status` stays in `r9`; the whole 11,440-byte function is now
+  byte-identical except two `mov r0,r5` sites. Raw **318 -> 37**;
+  aligned 19 -> 109 (literal-pool/branch shifts); 11,440 B exact.
+
+Measured and **not landed** (notes kept): w10001 (the 0x30 gold pad + composed
+else-arm String copy is raw 8,570 / aligned 1,345 but shifts the
+`.ARM.exidx`/`.ARM.extab` bases by -16, exploding their content diffs to
+4,665 / 22,589; reverted), w10004 (faithful mission-0 loop: aligned 21,871),
+w10005 (case-125 else-if: aligned 17,304), w10006 (c154->strong adjacency:
+aligned 17,363), w10008 (Layout SLP group offsets: raw 5,781 but aligned
+2,128; w10010 alone is better), w10011 (temp=r5 alien loop: raw 6,449 /
+aligned 1,210), w10012 (alien-gun branch weight: raw 5,662 / aligned 748),
+w10014 (initHudMenu(2) owner: raw 4,427 / aligned 926).
+
+Analysis-only passes: w10002 (`otherLock` is `int` at [sp,#144]; `campaign`
+owns `sl`; `bool otherLock` reproduces the prologue map but is 120 B short),
+w10003 (the original else arm is exactly w9902's scoped copy; every shape
+that improves both metrics is 4-8 B short of 9,908), w10009 (clang-7 SLP
+16-store chunking is the group-base lever; every group fix removes ~120 B of
+code but adds no pool words), w10013 (`won` guard is a bool-return-type
+artifact; `(hasWon() & 1) != 0` improves raw but breaks `MGame::dockEvent`),
+w10015 (the Hud `pivotY = dividerOffset` anchor remains the unique 9,332 B /
+224-frame shape), w10018 (MenuTouchWindow's case-15 test is all-direct but
+removing the reference shifts the tail by 4 B), w10019 (HangarWindow row
+39/40 is `getShip`'s landing pad), w10020 (sample-profile text uses relative
+line offsets; `-fprofile-sample-use` always sets `function_entry_count`, so
+LoopSink fires and the body grows to 1,440 B).
+
+**Aligned total (15 functions): 23,941** (wave-153 base 23,978). Per function:
+Layout 2,006, LevelScript 17,176 (indicative), createShip 452, Status 320,
+Radar 1,484, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,327** (57,232 B), `Radar::draw` **8,577** (9,908 B), `Layout` C1/C2
+**5,849** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,564** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **393** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **86,347** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,255** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 153)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
