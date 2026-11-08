@@ -8,7 +8,7 @@ using AbyssEngine::String;
 
 class Mission {
 public:
-    uint8_t failed;
+    bool failed;
     uint8_t won;
     Agent *agent;
     int id;
@@ -118,7 +118,7 @@ public:
 
     int getTargetStation();
 
-    unsigned char hasFailed();
+    bool hasFailed();
 
     void setFailed(bool failed);
 

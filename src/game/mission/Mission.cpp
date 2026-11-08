@@ -98,10 +98,10 @@ bool Mission::isVisible() {
 }
 
 void Mission::setFailed(bool failed) {
-    this->failed = failed ? 1 : 0;
+    this->failed = failed;
 }
 
-unsigned char Mission::hasFailed() { return this->failed; }
+bool Mission::hasFailed() { return this->failed; }
 
 void Mission::setWon(bool won) {
     this->won = won ? 1 : 0;
