@@ -25,6 +25,41 @@ Section deltas: `.text` **85,802** differing bytes (size exact, -49); `.ARM.exid
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+## Update 2026-11-08 (wave 144)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-144 lands three source-level improvements, all faithfulness-first:
+
+* `LevelScript::process` (w8901/w8902/w8904/w8905): drop the dead state-5 `getSpeed`
+  re-read; add the real case-70 `break` (original `0x139abe b.w` post-switch tail) and
+  write the state-1 arm before state-2 so the cold-first dispatch matches; the case-91
+  nested test lands the **exact 0x144 LSDA call-site table**; restore the genuine
+  case-91 state-3 `m_nScriptTimerA = 0` store and drop the case-80 metric store. Raw
+  **54,619 -> 54,909** (faithfulness over layout); `.ARM.extab` diff **1,499 -> 1,370**
+  at the exact 156,312 B size.
+* `Radar::draw` (w8906): `int enemyHit` is the witnessed word-typed flag (the original
+  loads it as a word); raw **8,613 -> 8,471** at 9,908 B. w8907's faithful enemy-loop
+  tail merge / dead-local drop / `hasCargo`-first reorder is note-only: it needs a
+  +4 B companion on top of w8906.
+* `Level::createMission` (w8913): the pirate-fortress gun loop keeps the hardpoint
+  table as a loop-carried pointer (`const float *t = kBaseTurrets[0]; ... t += 6;`),
+  matching the original's `r6` base + `adds r6,#24`; raw **5,597 -> 5,592**.
+
+Note-only: w8903 (setStanding PLT-window sweep), w8908 (vbsl decode), w8909 (clz mask),
+w8910 (cargo deferral), w8911 (survivor/branch width), w8912 (ARM `-Oz` if-conversion),
+w8914 (HangarWindow r5/r6 + credit-loop LSDA), w8915 (Hud THBY rematerialisation),
+w8916 (createShip coordinate type: `iif` reaches raw 1,647 but 2,768 B), w8917 (Status
+group arm), w8918 (near-miss trio), w8919 (long tail), w8920 (extab splits).
+
+Section deltas: `.text` **85,994** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,370** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 143)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
