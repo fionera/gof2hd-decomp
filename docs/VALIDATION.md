@@ -48,11 +48,9 @@ post-processing step; `tools/reorder_shstrtab.py` merely restores gold's own `.s
 no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The
 source tree reproduces the original TU membership and within-TU function order, so the plain
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
-its original address.  `.text` is base-exact but 16 B shorter since wave 154 (the `Radar::draw`
-0x30 gold stub-table pad, `GOF2_GOLD_PAD_CAP`); `.ARM.exidx` is size-exact / base-shifted -16 and
-`.ARM.extab` is +12 B / base-shifted -16 for the same reason.  `.rodata`, `.data`, `.bss`, `.got`,
+its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are present. `.rodata` is now
+content is byte-identical, and all 27 original section headers are exact. `.rodata` is now
 byte-identical too: the former `Status::missionCompleted` rank table was removed in wave 121
 and the switch is a plain `switch (m->getType())` (see below).
 The link order is a static source
@@ -95,21 +93,14 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-08, wave 154, w10001)
+### Current state — ELF sections (2026-11-08, wave 153)
 All **27 original section headers are present**, with no extra section and an
-**exact file size** (2,187,328 B). `.text` is base-exact but 16 B shorter
-(`0x1337b8` vs `0x1337c8`) because of the wave-154 `Radar::draw` 0x30 gold
-stub-table pad (`GOF2_GOLD_PAD_CAP`); `.rodata` (prefix), `.data`, `.bss`, `.got`,
-`.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
-`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.dynamic`,
-`.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`,
-`.note.gnu.gold-version` and `.ARM.attributes` content is byte-identical.
-`.ARM.exidx` is size-exact but base-shifted -16 (it follows `.text`).
-`.ARM.extab` is **12 B larger and base-shifted -16** (`0x262a4` @ `0x1a3b68`)
-because the composed `Radar::draw` LSDA is 144 B / 21 rows (the wave-154
-literal else-arm copy adds two cleanup rows); the 4 B alignment gap before
-`.rodata` absorbs the -16/+12 pair, so `.rodata` keeps its original base.
-`Level::createShip` is the faithful 336 B real-`new` cleanup-only
+**exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
+`.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
+`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
+`.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
+and `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size- and base-exact**
+(`0x26298` @ `0x1a3b78`): `Level::createShip` is the faithful 336 B real-`new` cleanup-only
 record (57 rows, `ttype 0xff`); the wave-131 `try`/`catch` body (328 B record) was reverted in
 wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
 `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is
