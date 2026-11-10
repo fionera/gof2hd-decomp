@@ -1468,7 +1468,8 @@ bool LevelScript::process(int delta) {
 
         field_0x24 += delta; // passedTime += delta
         if (m_pLevel->getPlayer() != 0 &&
-            Globals::status->getCurrentCampaignMission() >= 2 &&
+            __builtin_expect(Globals::status->getCurrentCampaignMission() >= 2, 1) // lint: arm_builtin
+ &&
             field_0x24 >= 7001) {
             field_0x24 = 0;
             m_bStartSequence = 0;    // active = false
@@ -1687,7 +1688,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
                     m_nState = 3;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
-                } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
+                } else if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isTriggered(), 1) && m_nState == 3) { // lint: arm_builtin
                     m_nState = 4;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     (*m_pLevel->getLandmarks())[3]->setVisible(true);
@@ -2267,7 +2268,7 @@ bool LevelScript::process(int delta) {
                         }
                         m_nState = 2;
                     }
-                } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isTriggered()) {
+                } else if (__builtin_expect(m_nState == 2, 1) && ((RadioMessage *) ((*messages)[5]))->isTriggered()) { // lint: arm_builtin
                     (*enemies)[0]->field_0x24 = 0;
                     int routePoints[3] = {500000, 500000, 500000};
                     Route *route = new Route(routePoints, 3);
@@ -3119,7 +3120,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
-                } else if (m_nState == 9 || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
+                } else if (__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false);
@@ -3465,7 +3466,7 @@ bool LevelScript::process(int delta) {
                                     target = k;
                                 }
                             }
-                            (*enemies)[i]->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
+                            (*enemies)[i]->player->setEnemy(__builtin_expect(target == -1, 1) ? player->player : (*enemies)[target]->player); // lint: arm_builtin
                         }
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
@@ -4682,7 +4683,7 @@ bool LevelScript::process(int delta) {
                                 ship->setActive(true);
                                 (*enemies)[i]->setVisible(true);
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                                (*enemies)[i]->player->setEnemy(i % 3 == 0 ? (*enemies)[0]->player : player->player);
+                                (*enemies)[i]->player->setEnemy(__builtin_expect(i % 3 == 0, 1) ? (*enemies)[0]->player : player->player); // lint: arm_builtin
                             }
                         }
                         (*m_pLevel->getEnemies())[1]->shipGroup = 8;
