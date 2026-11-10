@@ -4917,7 +4917,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     KIPlayer *chaser = (*enemies)[chaserIndex];
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x) {
+                    if (__builtin_expect(chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x, 1)) { // lint: arm_builtin
                         chaser->geometry->moveForward((float) (delta * 3));
                     }
                     if (((RadioMessage *) ((*messages)[10]))->isTriggered()) {
