@@ -3119,7 +3119,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
-                } else if (m_nState == 9 || m_nState == 10) {
+                } else if (m_nState == 9 || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false);
