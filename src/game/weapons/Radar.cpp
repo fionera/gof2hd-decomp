@@ -558,7 +558,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                   Globals::status->getCurrentCampaignMission() >= 152), 0)) {
                 bool isTarget = stations->data()[i] == campaignMission->getTargetStation();
                 if (stationId != currentStation && isTarget) {
-                    if (Globals::status->getCurrentCampaignMission() != 120) {
+                    if (__builtin_expect(Globals::status->getCurrentCampaignMission() != 120, 1)) { // lint: arm_builtin anchor: Radar::draw
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
                         marked = true;
                     }
