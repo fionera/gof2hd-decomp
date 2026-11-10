@@ -4623,7 +4623,7 @@ bool LevelScript::process(int delta) {
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            if ((*enemies)[i]->shipGroup == 9) {
+                            if (__builtin_expect((*enemies)[i]->shipGroup == 9, 0)) { // lint: arm_builtin
                                 (*enemies)[i]->setActive(false);
                                 (*enemies)[i]->player->setVulnerable(true);
                             }
