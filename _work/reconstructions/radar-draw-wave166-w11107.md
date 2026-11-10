@@ -51,6 +51,25 @@ Exit: raw **7,490**, aligned **1,431**, size **9,908**, `.text` **83,088**,
 `.ARM.extab` **658**, `.rel.plt` **0**. `check` = RATCHET PASS (byte 4507,
 linked 4507, size 4524, data 843, imports 207, lint CLEAN, parity 5370).
 
+## 1b. Landed: declaration order of `notTurretMode` / `notOtherLock`
+
+Swapping the two declarations so `notTurretMode` is computed before
+`notOtherLock` reorders two `str`/`eor` sequences around the `sp+116`
+store and saves one byte of encoding (`str` instead of `str.w`):
+
+```cpp
+    int otherLock = otherLockFlag;
+    bool landmarkHit = false;
+    int notTurretMode = !turretMode;
+    int notOtherLock = !otherLock;
+```
+
+raw **7,490 -> 7,489** (-1), aligned 1,431 (unchanged), size 9,908,
+`.text` 83,088 -> **83,087**, `.ARM.extab` 658, `.rel.plt` 0.
+All four line-order permutations that put `notTurretMode` before
+`notOtherLock` measure 7,489; putting `notOtherLock` first measures 7,490.
+`check` = RATCHET PASS.
+
 ## 2. Rejected variants (entry shape, all measured)
 
 | variant | raw | aligned | size |
@@ -67,6 +86,15 @@ linked 4507, size 4524, data 843, imports 207, lint CLEAN, parity 5370).
 | `expect(bossSeen,1)` in `>=5` arm only | 7,510 (no change) | 1,424 | 9,904 |
 | reorder `!landmarkHit && notOtherLock && i != 3 && notTurretMode` | 8,447 | 1,419 | 9,912 |
 | nested `if (!landmarkHit && notOtherLock) { if (i != 3 && notTurretMode) }` | 9,423 | 1,557 | 9,884 |
+| `int alwaysEnemySeen` (on landed shape) | 8,622 | 2,092 | 9,900 |
+| `int alwaysEnemy` (on landed shape) | 8,593 | 1,472 | 9,916 |
+| `int missionBlocksPlanets` | 7,701 | 1,487 | 9,912 |
+| `int turretMode` | 9,216 | 1,907 | 9,852 |
+| `int landmarkHit` | 8,658 | 1,555 | 9,936 |
+| `int otherLockFlag` | 9,249 | 1,517 | 9,868 |
+| `expect(!ambient, 0/1)` | 7,489 (no change) | 1,431 | 9,908 |
+| `expect(getCurrentCampaignMission() == 1, 0/1)` | 8,201 / 8,174 | 1,450 / 1,455 | 9,904 |
+| swap `alwaysEnemy`/`alwaysEnemySeen` declarations | 7,489 (no change) | 1,431 | 9,908 |
 
 ## 3. Residual 4 B / cleanup pads
 
