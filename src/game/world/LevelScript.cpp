@@ -4547,7 +4547,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
                     m_pCamera->setLocal(local);
-                    if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 0)) { // lint: arm_builtin
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
@@ -4610,7 +4610,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[5]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (m_nScriptTimerA >= 1001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 1001, 0)) { // lint: arm_builtin
                         player->setSpeed(0.02f);
                         m_pCamera->setTarget(player->geometry);
                         m_tempVec = player->getPosition();
