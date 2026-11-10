@@ -5228,8 +5228,8 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerA >= 4001) {
                         m_nScriptTimerA = 0;
-                        if (AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition())
-                            < 25000.0f && Globals::rnd->nextInt(100) >= 61) {
+                        if (__builtin_expect(AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition()) // lint: arm_builtin
+                            < 25000.0f && Globals::rnd->nextInt(100) >= 61, 1)) {
                             for (unsigned int i = 1; i <= 3; i++) {
                                 if (!(*enemies)[i]->player->isActive()) {
                                     (*enemies)[i]->revive();
