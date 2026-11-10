@@ -274,12 +274,10 @@ Layout::Layout() {
     this->field_0x274 = Globals::iPadHD ? 97 * 1.40625f : (Globals::n9 ? 145 : (Globals::retinaDisplay ? 194 : 97));
     if (Globals::iPadHD)
         this->field_0x280 = 0;
-    else if (Globals::n9)
-        this->field_0x280 = 4;
-    else if (Globals::retinaDisplay)
-        this->field_0x280 = 5;
+    else if (!Globals::n9)
+        this->field_0x280 = Globals::retinaDisplay ? 5 : 0;
     else
-        this->field_0x280 = 0;
+        this->field_0x280 = 4;
     this->scrollBarInset = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x285 = 1;
     this->scrollBarHandle = Globals::iPadHD ? 0.0f : (Globals::n9 ? 1 : Globals::retinaDisplay);
