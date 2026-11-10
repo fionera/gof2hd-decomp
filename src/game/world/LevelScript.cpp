@@ -3748,7 +3748,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 9) {
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 110001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 110001, 1)) { // lint: arm_builtin
                         m_nScriptTimerA = 0;
                         Vector lightDir = AbyssEngine::AEMath::VectorNormalize(
                                 m_pLevel->getStarSystem()->getLightDirection());
@@ -4623,7 +4623,7 @@ bool LevelScript::process(int delta) {
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            if (__builtin_expect((*enemies)[i]->shipGroup == 9, 0)) { // lint: arm_builtin
+                            if (__builtin_expect((*enemies)[i]->shipGroup == 9, 1)) { // lint: arm_builtin
                                 (*enemies)[i]->setActive(false);
                                 (*enemies)[i]->player->setVulnerable(true);
                             }
