@@ -2212,7 +2212,7 @@ bool LevelScript::process(int delta) {
                     if (player->player->getArmorHP() <= 0) {
                         if (enemies != nullptr) {
                             for (unsigned int i = 0; i < enemies->count; i++) {
-                                if ((*enemies)[i]->player->isAlwaysFriend()) {
+                                if (__builtin_expect((*enemies)[i]->player->isAlwaysFriend(), 0)) { // lint: arm_builtin
                                     (*enemies)[i]->player->setShootingEnabled(true);
                                 }
                             }
@@ -3699,7 +3699,7 @@ bool LevelScript::process(int delta) {
                         // products and selects among the converted floats with a compare ladder.
                         if (i == 2) {
                             (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.5));
-                        } else if (i == 3) {
+                        } else if (__builtin_expect(i == 3, 1)) { // lint: arm_builtin
                             (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.4));
                         } else {
                             (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.3));
