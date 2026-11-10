@@ -2909,7 +2909,7 @@ bool LevelScript::process(int delta) {
                     m_nState++;
                 }
                 if (m_nState == 1) {
-                    if (Globals::status->field_178 == 0) {
+                    if (__builtin_expect(Globals::status->field_178 == 0, 1)) { // lint: arm_builtin
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
                         Vector ref = (*enemies)[3]->getPosition();
@@ -3313,7 +3313,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 2) {
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 30001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 30001, 1)) { // lint: arm_builtin
                         Vector playerPos = player->getPosition();
                         int leader = -1;
                         for (unsigned int i = 0; i < enemies->count; i++) {
@@ -4806,7 +4806,7 @@ bool LevelScript::process(int delta) {
                         m_nState = 4;
                     }
                 } else if (m_nState == 4) {
-                    if (m_nScriptTimerB <= 6999) {
+                    if (__builtin_expect(m_nScriptTimerB <= 6999, 1)) { // lint: arm_builtin
                         m_nScriptTimerB += delta;
                     }
                     m_nScriptTimerA += delta;
@@ -5030,7 +5030,7 @@ bool LevelScript::process(int delta) {
                                                 Vector{0.0f, 0.0f, 0.0f});
                         }
                     }
-                    if (((RadioMessage *) ((*messages)[14]))->isOver()) {
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)) { // lint: arm_builtin
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
                         m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
                         m_nScriptTimerA = 0;
@@ -5108,7 +5108,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA < 5000) {
                         m_pGeometry4->moveForward((float) (35 * delta));
                     }
-                    if (m_nScriptTimerA < 6000) {
+                    if (__builtin_expect(m_nScriptTimerA < 6000, 1)) { // lint: arm_builtin
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
                                 ->Update((long long) delta, true);
                     }
