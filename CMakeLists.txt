@@ -103,7 +103,7 @@ endif()
 # cells); it is the only size-exact, byte_exact-neutral raw win in that sweep.  See
 # _work/reconstructions/build-provenance-round5-flags.md.
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-sink;-mllvm;-machine-sink-split-probability-threshold=0")
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-sink")
 
 # Radar.cpp: PostRA machine LICM is a matching knob.  Disabling it leaves Radar::draw's size
 # (9,908 B) and every gate count unchanged, moves 4 text bytes into agreement and 2 out, for a
