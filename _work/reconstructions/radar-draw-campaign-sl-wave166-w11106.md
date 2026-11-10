@@ -70,3 +70,22 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Radar4drawE
 cmake --build cmake-build-match --target check -j2
 # scratch: /dev/shm/w11106/{sweep.py,sweep_expect.py,sweep_b1cold.py,combo*.py}
 ```
+
+## 5. Measured, not landed (next wave)
+
+* **Landmark `!lockConfirmed` expected 0** (`if (__builtin_expect(!this->lockConfirmed, 0))`
+  in the landmark station-lock block, not the planet block): raw **7,522**
+  (-27 vs base) but size **9,916** (+8).  The block itself becomes
+  byte-identical to the original at `0x12f85a`–`0x12f89a`; the +8 is the
+  extra `sp+220` `String` destructor site in the exception cleanup tail
+  (ours has 7 sites, the original 6).  Removing that site costs 20 B
+  (`String(String(tecLevel))` -> 9,888), so it is not a simple swap.
+  `lock_land_0 + expect(isDockingToPlanet(), 1)` is 7,520 raw / 9,916 B.
+* `expect(stationId != currentStation && isTarget, 0)` on body1 gives the
+  original block order (mission chain at `0x12e620`, body1 inline) but
+  9,924 B (+16) / raw 8,548.  The +16 is the landmark block's extra
+  `marked` zero-init and the tail; companion cells tried (exit, freelance,
+  125, landmarks, route, onScreen) miss 9,908 or worsen raw.
+* Removing the campaign-guard `expect(..., 0)` gives inline body1 but the
+  chain also becomes inline: 9,976 B (+68) / raw 8,838.
+* `!lockConfirmed` in the *planet* block expected 0: 7,564 raw / 9,912 B.
