@@ -639,7 +639,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if (!missionBlocksPlanets && this->planetLockTimer >= 1) {
+                if (__builtin_expect(!missionBlocksPlanets && this->planetLockTimer >= 1, 1)) { // lint: arm_builtin anchor: Radar::draw
                     int frame;
                     if (this->field_0x18 != 0 && this->field_0x18 != this->field_0x14) {
                         frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
