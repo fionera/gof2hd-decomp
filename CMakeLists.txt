@@ -103,7 +103,15 @@ endif()
 # cells); it is the only size-exact, byte_exact-neutral raw win in that sweep.  See
 # _work/reconstructions/build-provenance-round5-flags.md.
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-sink")
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-sink;-mllvm;-machine-sink-split-probability-threshold=0")
+
+# Radar.cpp: PostRA machine LICM is a matching knob.  Disabling it leaves Radar::draw's size
+# (9,908 B) and every gate count unchanged, moves 4 text bytes into agreement and 2 out, for a
+# net raw .text diff 83,141 -> 83,139.  The instruction-index alignment moves +9 (1,446 -> 1,455);
+# raw same-address bytes are the byte-identicality ground truth.  Found by the wave-166 round-6
+# per-TU flag sweep.  See _work/reconstructions/build-provenance-round6-per-tu-flags.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-licm")
 
 # Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
 # the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
