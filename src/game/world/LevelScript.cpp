@@ -766,7 +766,7 @@ bool LevelScript::process(int delta) {
                         rumble = 1.0f;
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
-                    if (((RadioMessage *) ((*messages)[15]))->isOver()) {
+                    if (__builtin_expect((((RadioMessage *) ((*messages)[15]))->isOver()), 1)) { // lint: arm_builtin
                         m_nState = 7;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -814,7 +814,6 @@ bool LevelScript::process(int delta) {
                         m_nState = 9;
                         m_nScriptTimerA = 0;
                         wcamera->setRumblePercentage(0.0f, 0);
-                        m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -1114,7 +1113,7 @@ bool LevelScript::process(int delta) {
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
                 (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (m_nScriptTimerA >= 1100 - delta) { // lint: arm_builtin
+                if (__builtin_expect((m_nScriptTimerA >= 1100 - delta), 0)) { // lint: arm_builtin
                     m_nState = 7;
                     m_nScriptTimerA = 0;
                 }
@@ -1292,7 +1291,7 @@ bool LevelScript::process(int delta) {
                 m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                 ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                         ->Update((long long) ((float) delta * 0.5f), false);
-                if (m_nScriptTime >= 38001) {
+                if (__builtin_expect((m_nScriptTime >= 38001), 1)) { // lint: arm_builtin
                     if (m_nScriptTime - delta <= 38000) {
                         Globals::sound->play(2248, nullptr, nullptr, 0.0f);
                     }
@@ -2449,7 +2448,7 @@ bool LevelScript::process(int delta) {
                     // player, then put enemies[0] to sleep and park it far off-screen. FP immediate
                     // from the .rodata pool: @0x13c188 = -5000000.0f (parked-position z).
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                    if (__builtin_expect((((RadioMessage *) ((*messages)[1]))->isOver()), 0)) { // lint: arm_builtin
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -2537,7 +2536,7 @@ bool LevelScript::process(int delta) {
                     // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
                     // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
+                    if (__builtin_expect((!((RadioMessage *) ((*messages)[2]))->isOver()), 0)) { // lint: arm_builtin
                         break; // -> post-switch tail (0x144e36)
                     }
                     m_pCamera->setLookAtCam(false);
@@ -2639,7 +2638,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 1) {
                     AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 3001) {
+                    if (__builtin_expect((m_nScriptTimerA >= 3001), 1)) { // lint: arm_builtin
                         m_nState = 2;
                         m_nScriptTimerA = 0;
                     }
@@ -4186,7 +4185,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
                     m_pCamera->setLocal(local);
-                    if (((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    if (__builtin_expect((((RadioMessage *) ((*messages)[0]))->isOver()), 1)) { // lint: arm_builtin
                         player->player->setVulnerable(true);
                         player->setCollide(true);
                         player->setComputerControlled(false);
@@ -4242,8 +4241,8 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
-                        player->getHackingGameDockIndex() >= 0) {
+                    if (__builtin_expect((player->isDockedToDockingPoint() && player->hackingWon() && // lint: arm_builtin
+                        player->getHackingGameDockIndex() >= 0), 1)) {
                         PlayerFixedObject *target =
                             (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
                         if (target->getDockingType() == 3 && dockingCount == 1) {
