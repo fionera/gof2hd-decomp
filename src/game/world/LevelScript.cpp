@@ -3110,7 +3110,7 @@ bool LevelScript::process(int delta) {
                 } else if (__builtin_expect(m_nState == 8, 0)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
-                    if (m_nScriptTimerA >= 8001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 8001, 1)) { // lint: arm_builtin
                         m_pCamera->setTarget((*enemies)[3]->geometry);
                         resetCamera(m_pLevel);
                         m_dirVec = (*enemies)[3]->geometry->getDirection();
@@ -4870,7 +4870,7 @@ bool LevelScript::process(int delta) {
                         }
                     } else {
                         destroyed = 0;
-                        for (int i = 11; i < 22; i++) {
+                        for (int i = 11; __builtin_expect(i < 22, 1); i++) { // lint: arm_builtin
                             destroyed += (*enemies)[i]->isDead();
                         }
                     }
@@ -5131,7 +5131,7 @@ bool LevelScript::process(int delta) {
                         Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
                         Globals::sound->play(2248, nullptr, nullptr, 0.0f);
                     }
-                    if (m_nScriptTimerA >= 5500) {
+                    if (__builtin_expect(m_nScriptTimerA >= 5500, 0)) { // lint: arm_builtin
                         m_pExplosion->update(delta, nullptr);
                     }
                     if (m_nScriptTimerA > 5000 && m_nScriptTimerA < 6000) {
