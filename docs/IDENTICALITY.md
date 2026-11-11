@@ -69,18 +69,18 @@ weights), w11117/w11217 (small tail), w11206/w11207/w11208/w11209 (Radar
 and Layout block maps), w11118/w11119/w11218/w11219/w11220 (build provenance
 rounds 6-7).
 
-**Aligned total (15 functions): 25,713** (wave-164 base 24,608). Per
+**Aligned total (15 functions): 25,387** (wave-164 base 24,608). Per
 function: Layout 2,283, LevelScript 17,788 (indicative), createShip 455,
 Status 320, Radar 1,454, MGame::OnTouchEnd 1,454, createMission 767, Gun 57,
-HangarWindow 620, SpaceLounge 41, Hud 228, Generator 107, MenuTouchWindow 16,
+HangarWindow 294, SpaceLounge 41, Hud 228, Generator 107, MenuTouchWindow 16,
 ModStation 12, MGame::OnUpdate 111.  Total differing bytes fall
-**85,397 -> 83,015** (-2,382) and `.text` **84,652 -> 82,327** (-2,325);
-`.ARM.extab` **725 -> 668** (-57).
+**85,397 -> 83,319** (-2,078) and `.text` **84,652 -> 82,052** (-2,600);
+`.ARM.extab` **725 -> 1,247** (+522).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **54,015** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
 **5,656** (7,072 B), `Level::createMission` **5,435** (17,172 B),
-`MGame::OnTouchEnd` **3,775** (8,080 B), `HangarWindow::render` **2,245**
+`MGame::OnTouchEnd` **3,775** (8,080 B), `HangarWindow::render` **1,970**
 (9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **582**
 (9,332 B), `Status::missionCompleted` **722** (1,432 B),
 `Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
@@ -88,8 +88,8 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 `ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **15** (11,440 B).
 
-Section deltas: `.text` **82,327** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **668** (size- and base-exact
+Section deltas: `.text` **82,052** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,247** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).

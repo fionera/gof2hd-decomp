@@ -809,27 +809,23 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // Volatile read of scrollOffset: the original's ship
-                            // branch reloads this field before the tab dispatch, and
-                            // the read keeps the 156-row / 948-byte .ARM.extab record
-                            // while aligning the cleanup landing pads with it.
-                            (void) *(volatile int*)&this->scrollOffset;
-                            if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
-                                if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
-                                    volatile int padX[1];
-                                    (*this->buttons)[1]->setPosition(
-                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                        this->field_0x114 + y, 18);
-                                    (*this->buttons)[1]->setVisible(true);
-                                    (*this->buttons)[1]->draw();
-                                    buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                    if (this->upgradeMode && tab == 1) {
-                                        (*this->buttons)[2]->setVisible(true);
-                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                          this->field_0x114 + y, 17);
-                                        (*this->buttons)[10]->setVisible(true);
-                                        (*this->buttons)[10]->draw();
-                                    }
+                            // Snapshot the tab: the original's ship branch reloads it
+                            // from the stack before the upgrade check, so the two
+                            // reads are distinct values to the register allocator.
+                            int upgTab = tab;
+                            if (tab != 0 && !(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
+                                (*this->buttons)[1]->setPosition(
+                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                if (upgTab == 1 && this->upgradeMode) {
+                                    (*this->buttons)[2]->setVisible(true);
+                                    (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                      this->field_0x114 + y, 17);
+                                    (*this->buttons)[10]->setVisible(true);
+                                    (*this->buttons)[10]->draw();
                                 }
                             }
                         } else {
