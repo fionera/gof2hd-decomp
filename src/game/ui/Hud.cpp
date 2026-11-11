@@ -1696,9 +1696,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
+            int barYOffset = Globals::layout->field_0x218;
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
-            int barYOffset = Globals::layout->field_0x218;
             // Size anchor: with int barH (the original's type) the jump-drive block is 8 bytes
             // short; this volatile re-read of the bar top restores exactly those 8 bytes and
             // keeps Hud::draw at its original 9332-byte size without adding an .ARM.extab entry.

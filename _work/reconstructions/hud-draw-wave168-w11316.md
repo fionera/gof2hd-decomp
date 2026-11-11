@@ -5,10 +5,10 @@ original **9,332 B**, VMA `0x163b90`.
 
 | metric | entry (wave 167) | landed |
 |---|---:|---:|
-| raw same-address diff | **762** | **585** |
+| raw same-address diff | **762** | **582** |
 | aligned (instruction-index) diff | **222** | **228** |
 | size | 9,332 | 9,332 |
-| `.text` diff bytes | 82,526 | **82,349** |
+| `.text` diff bytes | 82,526 | **82,346** |
 | `.rel.plt` diff | 0 | 0 |
 
 Gate after the change: `check` PASS — byte_exact 4507/4524,
@@ -29,7 +29,15 @@ unsigned int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
 short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
 ```
 
-This is the only source change; everything else is untouched.
+and in the show block `int barYOffset = Globals::layout->field_0x218;` was
+moved above `int barH = ...` (582 vs 585 raw; the wave-164 order was
+`barH, text, barYOffset, dummy, halfW`).  Everything else is untouched.
+
+Measured show-block declaration orders with the landed dock types (all
+9,332 B): `barYOffset, barH, text, dummy, halfW` **582** (landed);
+`barH, text, barYOffset, dummy, halfW` 585; `barH, barYOffset, text, ...`
+582 (aligned 236); `barYOffset, dummy, barH, text, ...` 585;
+`dummy, barYOffset, barH, text, ...` 585.
 
 ### Why this shape
 
@@ -63,12 +71,12 @@ fully faithful show order is 8 bytes short (9,324).
 | `unsigned int barW; int barH` | 1,565 | 226 | 9,328 |
 | `int barW; short barH` | 1,598 | 237 | 9,336 |
 | `short barW; int barH` | 647 | 218 | 9,332 |
-| **`unsigned int barW; short barH` (landed)** | **585** | **228** | **9,332** |
+| **`unsigned int barW; short barH` (landed, + barYOffset move)** | **582** | **228** | **9,332** |
 | `unsigned int barW; unsigned short barH` | 586 | 229 | 9,332 |
 
-Show-block `barH` type: `int` 585, `unsigned int` 585, `short` 3,061 (9,324).
+Show-block `barH` type: `int` 582, `unsigned int` 582, `short` 3,061 (9,324).
 
-## Remaining diff (585 raw)
+## Remaining diff (582 raw)
 
 The dock/show register swap is unchanged: original `barW`=`r8`, `barH`=`fp`,
 Canvas moves `fp -> r5`; ours `barW`=`r5`, `barH`=`r8`, Canvas stays `fp`.
