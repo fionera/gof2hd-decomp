@@ -4086,12 +4086,12 @@ bool LevelScript::process(int delta) {
                     // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
                     // group-8 escort into a widening formation ahead of the player, re-aim it at the
                     // player and wipe its cargo list.
-                    if (player->isDockedToDockingPoint() ||
-                        m_nScriptTime >= 60001) {
+                    if (__builtin_expect((player->isDockedToDockingPoint() || // lint: arm_builtin
+                        m_nScriptTime >= 60001), 1)) {
                         m_nState = 1;
                         int xOff = 25000;
                         for (unsigned int i = 0; i < enemies->count; ++i) {
-                            if ((*enemies)[i]->shipGroup == 8) {
+                            if (__builtin_expect(((*enemies)[i]->shipGroup == 8), 0)) { // lint: arm_builtin
                                 Vector playerPos = player->getPosition();
                                 (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                                 (*enemies)[i]->awake();       // vtable+0xc
@@ -4111,7 +4111,7 @@ bool LevelScript::process(int delta) {
                 }
                 // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
                 m_nScriptTimerA += delta;
-                if (m_nState == 1) {
+                if (__builtin_expect((m_nState == 1), 1)) { // lint: arm_builtin
                     // Advance once the mission's production quota is at least half filled.
                     int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
                     int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
@@ -5057,7 +5057,7 @@ bool LevelScript::process(int delta) {
                     if (m_pExplosion != nullptr) {
                         m_pExplosion->update(delta, nullptr);
                         m_nScriptTimerA += delta;
-                        if (m_nScriptTimerA >= 6001) {
+                        if (__builtin_expect((m_nScriptTimerA >= 6001), 0)) { // lint: arm_builtin
                             m_nScriptTimerA = -2000;
                             Globals::sound->play(2244, nullptr, nullptr, 0.0f);
                             m_pExplosion->start((*enemies)[stationIndex]->getPosition()
@@ -5138,7 +5138,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA < 3000) {
                         m_pCamera->translate((float) (-20 * delta), 0.0f, (float) (-20 * delta));
-                    } else if (m_nScriptTimerA < 7000) {
+                    } else if (__builtin_expect((m_nScriptTimerA < 7000), 0)) { // lint: arm_builtin
                         m_pCamera->translate((float) (-3 * delta), 0.0f, (float) (-10 * delta));
                     }
                     if (m_nScriptTimerA < 5000) {
