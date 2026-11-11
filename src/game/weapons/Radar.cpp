@@ -993,7 +993,7 @@ enemies:
                 Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
                                              this->screenY, 17, 68);
                 cloud->field_0x73 = 0;
-                if (cloud == locked) {
+                if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
                                                          this->cameraX, this->cameraY, this->cameraZ);
                     Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
