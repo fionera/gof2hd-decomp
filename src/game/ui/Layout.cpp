@@ -229,7 +229,6 @@ Layout::Layout() {
         this->orbitInfoTextX = 12;
     else
         this->orbitInfoTextX = 6;
-    this->orbitInfoSystemY = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->field_0x234 = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x214 = Globals::iPadHD ? 1 : (Globals::n9 ? -2 : (Globals::retinaDisplay ? -2 : 1));
     if (Globals::iPadHD)
@@ -248,6 +247,7 @@ Layout::Layout() {
         this->field_0x218 = 10;
     else
         this->field_0x218 = 5;
+    this->orbitInfoSystemY = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->quickMenuHeaderLift = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
     this->field_0x254 = Globals::iPadHD ? 5 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x238_blk16.c = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
