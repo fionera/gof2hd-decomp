@@ -902,8 +902,8 @@ enemies:
                     }
                     this->enemyLockTimer = 0;
                 }
-                if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) &&
-                    this->dockNavPtr != nullptr) {
+                if (__builtin_expect(this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) && // lint: arm_builtin anchor: Radar::draw
+                    this->dockNavPtr != nullptr, 1)) {
                     KIPlayer *current = (navWreck || this->dockNavPtr->field_0x24) ? this->field_0x1c : this->lockedEnemy;
                     if (__builtin_expect(this->dockNavPtr != current, 1)) { // lint: arm_builtin anchor: Radar::draw
                         Sprite *blip = this->blipSprite;
