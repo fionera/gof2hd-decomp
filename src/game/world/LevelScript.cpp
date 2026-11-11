@@ -1629,15 +1629,16 @@ bool LevelScript::process(int delta) {
                     player->geometry->rotate(0.0f, step / 10000.0f, 0.0f);
                     m_pCamera->translate(0.0f, 0.0f, step);
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        TargetFollowCamera *cam = m_pCamera;
                         player->setVisible(false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x130, false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x134, false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, false);
                         KIPlayer *tug = (*m_pLevel->getEnemies())[m_pLevel->getEnemies()->count - 1];
                         ((PlayerFixedObject *) tug)->setMoving(true);
-                        m_pCamera->setTarget(tug->geometry);
-                        m_pCamera->setPosition(tug->getPosition());
-                        m_pCamera->translate(-10000.0f, -200.0f, 5000.0f);
+                        cam->setTarget(tug->geometry);
+                        cam->setPosition(tug->getPosition());
+                        cam->translate(-10000.0f, -200.0f, 5000.0f);
                         m_nState = 3;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                     }
@@ -3839,9 +3840,10 @@ bool LevelScript::process(int delta) {
                             marker->setPosition(player->geometry->getPosition());
                             marker->setDirection(player->geometry->getDirection(),
                                                  Vector{0.0f, 1.0f, 0.0f});
-                            m_pCamera->setTarget(marker);
+                            TargetFollowCamera *cam = m_pCamera;
+                            cam->setTarget(marker);
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
-                            Vector camPos = *m_pCamera->getPosition();
+                            Vector camPos = *cam->getPosition();
                             Vector zero{0.0f, 0.0f, 0.0f};
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                         }
