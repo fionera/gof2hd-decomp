@@ -4,6 +4,86 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 174)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 174 ran 20 agents on the same worst functions. Landed changes:
+
+* `LevelScript::process` (w11906): the shared-tail deactivation block drops
+  the `mission >= 2` expect hint (restoring the original's separate
+  `cmp`/`blt` shape) and uses a block-scoped `Level *lvl = m_pLevel` alias
+  for the two `getPlayer()` calls. Raw **53,711 -> 53,678** (-33),
+  aligned 18,228 -> 18,230; 57,232 B exact, `.rel.plt` byte-identical.
+* `LevelScript::process` (w11904): state-5 `self` and state-6 galaxy aliases.
+  On top of w11906 this takes raw **53,678 -> 53,673** (-5), aligned
+  18,230 -> 18,226; 57,232 B exact. w11902's state-8 duplicate removal +
+  branch-weight companion was measured and reverted: it is a win on the
+  wave-173 base but interacts with w11906 (raw 53,861), so only its note
+  is kept.
+* `Radar::draw` (w11908): the lock-image chain tests
+  `carriesFriendCargoFlag` before `enemyFlagsLo` (friend-first), and the
+  off-screen "far plain" image chain is emitted else-branch first, friend
+  second, enemy last (permutation 210). Raw **6,849 -> 6,833** (-16),
+  aligned 1,577 -> 1,611; 9,908 B exact, `.rel.plt` byte-identical. The
+  reorder is semantics-preserving because the two flags are mutually
+  exclusive (`Standing::isEnemy`/`isFriend` are disjoint and every writer
+  sets at most one). See
+  `_work/reconstructions/radar-draw-wave174-w11908.md`.
+* `Radar::draw` (w11909): frame-blip locals, the planet-lock
+  `__builtin_expect(!lockConfirmed, 0)` hint, and `int missionBlocksPlanets`.
+  On top of w11908 this takes raw **6,833 -> 6,817** (-16), aligned
+  1,611 -> 1,602; 9,908 B exact, `.rel.plt` byte-identical.
+* `Level::createShip` (w11915): a cleanup-only 336 B LSDA (57 rows,
+  `ttype 0xff`) with an `EmpGuard` RAII barrier around `setEmpData` replaces
+  the wave-173 catch-all record; the invoke barrier keeps the coordinate
+  block above the call. Raw **1,560 -> 1,232** (-328), aligned 530 -> 422;
+  2,764 B exact. `.ARM.extab` stays size- and base-exact (156,312 B at
+  `0x1a3b78`); its differing bytes rise 675 -> 749.
+* `Hud::draw` (w11917): dock-block type/order shape (armor-regen pivotY 0,
+  `short frameH`/`short textH`, `barH` before `barW`, `top`/`barYOffset`
+  before the fade math). Raw **223 -> 168** (-55), aligned 183 -> 146;
+  9,332 B exact.
+* `HangarWindow::render` (w11916): ship-compare operand flip
+  (`Globals::status->getShip() == this->selectedItem->ship`). Raw
+  **2,244 -> 2,242** (-2), aligned 382 -> 621; 9,700 B exact. The aligned
+  regression is the one extra `ldr`/`ldr` pair; the `.ARM.extab` record
+  moves 90 -> 91, still under the record gate.
+* `MGame::OnTouchEnd` (w11919): `hudTouchFlags == 0` body store order.
+  Raw **3,773 -> 3,771** (-2), aligned 1,453 unchanged; 8,080 B exact.
+* `Status::missionCompleted` (w11918): the single `switch (m->getType())`
+  is split into an outer switch for the low/typed cases and a nested
+  `default:` switch for the 150+ cases. Raw **722 -> 721** (-1), aligned
+  320 -> 333; 1,432 B exact.
+
+**Aligned total (15 functions): 26,185** (wave-173 base 26,055). Per
+function: Layout 2,290, LevelScript 18,226, createShip 422, Status 333,
+Radar 1,602, MGame::OnTouchEnd 1,453, createMission 940, Gun 57,
+HangarWindow 621, SpaceLounge 41, Hud 146, Generator 21, MenuTouchWindow 16,
+ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
+**81,592 -> 81,209** (-383) and `.text` **80,897 -> 80,439** (-458);
+`.ARM.extab` rises **675 -> 750** (+75) but remains size- and base-exact.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,673** (57,232 B), `Radar::draw` **6,817** (9,908 B), `Layout` C1/C2
+**5,633** (7,072 B), `Level::createMission` **5,421** (17,172 B),
+`MGame::OnTouchEnd` **3,771** (8,080 B), `HangarWindow::render` **2,242**
+(9,700 B), `Level::createShip` **1,232** (2,764 B), `Hud::draw` **168**
+(9,332 B), `Status::missionCompleted` **721** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
+**175** (1,948 B), `Generator::createMission` **40** (1,996 B),
+`ModStation` C1/C2 **39** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B), `MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **80,439** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **750** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 173)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -43,27 +123,27 @@ w11810/w11811/w11815/w11819 notes, w11817 (`createShip` exact prologue via
 the `setEmpData` invoke barrier: raw 1,199 but `.ARM.extab` 8 B short),
 w11813 (`createMission` bool/order: size-fatal 17,184).
 
-**Aligned total (15 functions): 26,055** (wave-172 base 25,911). Per
+**Aligned total (15 functions): 26,018** (wave-172 base 25,911). Per
 function: Layout 2,290, LevelScript 18,228, createShip 530, Status 320,
 Radar 1,577, MGame::OnTouchEnd 1,453, createMission 940, Gun 57,
-HangarWindow 382, SpaceLounge 41, Hud 183, Generator 21, MenuTouchWindow 16,
+HangarWindow 382, SpaceLounge 41, Hud 146, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**82,234 -> 81,592** (-642) and `.text` **81,503 -> 80,897** (-606);
-`.ARM.extab` **711 -> 675** (-36).
+**82,234 -> 81,540** (-694) and `.text` **81,503 -> 80,842** (-661);
+`.ARM.extab` **711 -> 678** (-33).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **53,711** (57,232 B), `Radar::draw` **6,849** (9,908 B), `Layout` C1/C2
 **5,633** (7,072 B), `Level::createMission` **5,421** (17,172 B),
 `MGame::OnTouchEnd` **3,773** (8,080 B), `HangarWindow::render` **2,244**
-(9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **223**
+(9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **168**
 (9,332 B), `Status::missionCompleted` **722** (1,432 B),
 `Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
 **175** (1,948 B), `Generator::createMission` **40** (1,996 B),
 `ModStation` C1/C2 **39** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **80,897** differing bytes (size exact); `.ARM.exidx`
-**0** (byte-identical); `.ARM.extab` **675** (size- and base-exact
+Section deltas: `.text` **80,842** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **678** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
