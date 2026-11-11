@@ -1443,7 +1443,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (m_nState == 2 && m_nScriptTimerA >= 2000) {
+        if (__builtin_expect((m_nState == 2 && m_nScriptTimerA >= 2000), 0)) { // lint: arm_builtin
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
@@ -3153,7 +3153,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
-                } else if (__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
+                } else if (__builtin_expect((__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)), 0)) { // lint: arm_builtin
                     Level *lvl = m_pLevel;
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
@@ -5170,7 +5170,7 @@ bool LevelScript::process(int delta) {
                                             - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
                                             Vector{0.0f, 0.0f, 0.0f});
                     }
-                    if (m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700) {
+                    if (__builtin_expect((m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700), 0)) { // lint: arm_builtin
                         m_pGeometry1->setVisible(false);
                         (*enemies)[stationIndex]->setVisible(false);
                         Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
