@@ -15,6 +15,11 @@ Waves 165-167 ran 20 agents each (wave 165 was interrupted twice by a host
 OOM; its work was re-run as wave 166 with `-j2` builds and a 12 GB per-agent
 `ulimit -v`).  Landed changes:
 
+* `LevelScript::process` (w11304, wave 168): four cached-`Status` alias
+  placements in consecutive `Globals::status->` write runs (mission-106
+  gamma, mission-113 shield+gamma, mission-5 station-attacked).  Raw
+  **54,031 -> 54,018** (-13), aligned 17,764 unchanged; 57,232 B exact,
+  `.rel.plt` byte-identical, `.ARM.extab` unchanged.
 * `LevelScript::process` (w11201, wave 167): 11 more `__builtin_expect`
   cells from a 498-cell operand sweep, 772-cell full-if sweep and 486-cell
   re-sweep.  Raw **54,095 -> 54,031** (-64), aligned **17,621 -> 17,764**
@@ -62,7 +67,7 @@ ModStation 12, MGame::OnUpdate 111.  Total differing bytes fall
 `.ARM.extab` **725 -> 670** (-55).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,031** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
+**54,018** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
 **5,658** (7,072 B), `Level::createMission` **5,435** (17,172 B),
 `MGame::OnTouchEnd` **3,775** (8,080 B), `HangarWindow::render` **2,245**
 (9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **762**
@@ -72,7 +77,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 `ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **15** (11,440 B).
 
-Section deltas: `.text` **82,526** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **82,513** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **670** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
