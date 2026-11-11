@@ -1149,12 +1149,13 @@ bool LevelScript::process(int delta) {
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (__builtin_expect(m_nScriptTimerA >= 6001, 0)) { // lint: arm_builtin
-                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
+                    AEGeometry *wgeometry5 = m_pGeometry5;
+                    wgeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
                     AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                            Globals::Canvas->TransformGetTransform(wgeometry5->transform);
                     t->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                            Globals::Canvas->TransformGetTransform(wgeometry5->transform);
                     t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
@@ -2606,6 +2607,7 @@ bool LevelScript::process(int delta) {
             case 80: {
                 // The capital ship destroys the pirate base, then the player is towed into the dock.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    AEGeometry *wgeometry1 = m_pGeometry1;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
@@ -2618,8 +2620,8 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(m_pGeometry1);
-                    m_tempVec = m_pGeometry1->getPosition();
+                    m_pCamera->setTarget(wgeometry1);
+                    m_tempVec = wgeometry1->getPosition();
                     m_tempVec += Vector{-20000.0f, 5000.0f, -35000.0f};
                     m_pCamera->setPosition(m_tempVec);
                     m_nScriptTimerA = 0;
@@ -4778,6 +4780,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 1;
                 }
                 if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    AEGeometry *wgeometry4 = m_pGeometry4;
                     if (player->isInRocketControl()) {
                         resetCamera(m_pLevel);
                         player->setRocketControl(nullptr, nullptr);
@@ -4788,8 +4791,8 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(m_pGeometry4);
-                    m_pCamera->setPosition(m_pGeometry4->getPosition());
+                    m_pCamera->setTarget(wgeometry4);
+                    m_pCamera->setPosition(wgeometry4->getPosition());
                     m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
                     player->player->setVulnerable(false);
                     player->setFreeze(true);
