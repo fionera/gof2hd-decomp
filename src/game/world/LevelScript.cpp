@@ -4598,7 +4598,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (__builtin_expect(m_nScriptTimerA >= 1001, 0)) { // lint: arm_builtin
+                    if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);

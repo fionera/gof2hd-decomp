@@ -57,6 +57,33 @@ orig / ours size         57232 / 57232      (size-exact)
 RATCHET PASS (byte 4507 / linked 4507 / size 4524 / data 843 / imports 207 / lint CLEAN)
 ```
 
+## Second commit: remove a stale expect (removal sweep)
+
+The 55 existing `__builtin_expect` sites in `process` were also swept in the
+opposite direction (strip the wrapper, keep the condition).  33 of the 55
+removals stay at 57,232 B; all 33 were linked and raw-measured.  One win:
+
+| line | removed expect | raw | aligned | rel.plt |
+|---|---|---:|---:|---|
+| 4601 | `__builtin_expect(m_nScriptTimerA >= 1001, 0)` (mission-106 state-4 arm) | **53,984** | 17,797 | identical |
+
+It is the only removal below 53,999 (next best: line 1030 `!isFading()`
+neutral at 53,999; line 4371 `>= 1001` neutral; line 4629 `shipGroup == 9`
+neutral; line 4680 `>= 2001` 53,999).  Adding any other removal on top of it
+does not improve it (53,984/53,985).
+
+Cumulative after both commits:
+
+```
+process raw diffbytes    54,015 -> 53,984   (-31)
+process aligned insns    17,788 -> 17,797   (+9)
+orig / ours size         57232 / 57232      (size-exact)
+.text diffbytes          82,327 -> 82,296   (-31)
+.ARM.extab diffbytes     668 -> 669         (+1)
+.rel.plt                 0                  (BYTE-IDENTICAL)
+RATCHET PASS (byte 4507 / linked 4507 / size 4524 / data 843 / imports 207 / lint CLEAN)
+```
+
 ## Cell table — all size-exact cells that change object bytes (203)
 
 Baseline raw 54,015 / aligned 17,788.  Only the cells at or below baseline are
