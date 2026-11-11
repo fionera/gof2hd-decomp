@@ -113,6 +113,16 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-licm")
 
+# Level.cpp: EarlyCSE's MemorySSA mode is a matching knob.  Disabling it
+# (-mllvm -enable-earlycse-memssa=false) leaves every function size, every
+# non-target function and every alloc section unchanged; it moves one more
+# text byte into agreement in Level::createMission (raw 5,436 -> 5,435) and
+# takes the whole-.text diff 82,898 -> 82,897.  Found by the wave-167 round-7
+# per-TU flag sweep.  See
+# _work/reconstructions/build-provenance-round7-per-tu-flags.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/Level.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-enable-earlycse-memssa=false")
+
 # Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
 # the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
 # (`__builtin_expect(onScreen,1) && __builtin_expect(screenX > centerX - field_0x128,1) && ...`),
