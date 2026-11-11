@@ -4,6 +4,24 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 174)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 174 landed the mission-0 state-8 duplicate removal in
+`LevelScript::process` (w11902), with a companion set of eight branch-weight
+hints. The duplicate was a real extra
+`AEGeometry::setPosition`/`PlayerEgo::getPosition` pair; removing it makes
+both call counts exactly match the original (23/41). Raw **53,711 ->
+53,894** (+183), aligned 18,228 -> 18,317 (+89); 57,232 B exact,
+`.rel.plt` byte-identical. The raw increase is the tail shift left by the
+removal; the companion hints recover 804 B from the removal-only shape
+(54,698 -> 53,894). Total differing bytes rise **81,592 -> 81,775** and
+`.text` **80,897 -> 81,080**.
+
 ## Update 2026-11-11 (wave 173)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -37,7 +55,7 @@ Wave 173 ran 20 agents on the same worst functions. Landed changes:
 
 Measured and **not landed** (notes kept): w11801 (1,240-cell expect sweep;
 one -1 cell, dropped because it interacts with w11805: 57,232 -> 57,240),
-w11802 (state-8 duplicate removal: call parity exact 23/41 but raw 54,376),
+w11802 (state-8 duplicate removal: call parity exact 23/41, raw 54,376; landed in wave 174 with a companion shape),
 w11803 (first literal pool move: `.text` 82,884), w11806/w11807/w11808/
 w11810/w11811/w11815/w11819 notes, w11817 (`createShip` exact prologue via
 the `setEmpData` invoke barrier: raw 1,199 but `.ARM.extab` 8 B short),
