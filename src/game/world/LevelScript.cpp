@@ -2916,7 +2916,7 @@ bool LevelScript::process(int delta) {
                     m_nState++;
                 }
                 if (m_nState == 1) {
-                    if (__builtin_expect(Globals::status->field_178 == 0, 1)) { // lint: arm_builtin
+                    if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
                         Vector ref = (*enemies)[3]->getPosition();
