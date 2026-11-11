@@ -3074,7 +3074,7 @@ bool LevelScript::process(int delta) {
                         m_nState = 7;
                     }
                 } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
-                    if (player->isDockedToDockingPoint()) {
+                    if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
                         Level *self = m_pLevel;
                         self->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
