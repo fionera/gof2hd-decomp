@@ -16,7 +16,7 @@ size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,570** | 21,834 | 57,232 |
+| `LevelScript::process` | **52,523** | 22,148 | 57,232 |
 | `Radar::draw` | **6,339** | 1,757 | 9,908 |
 | `Layout` C1/C2 | **5,391** | 2,520 | 7,072 |
 | `Level::createMission` | **3,647** | 956 | 17,172 |
@@ -34,9 +34,9 @@ size; all size-exact):
 
 Landed changes:
 
-* `LevelScript::process` (w12503): five successive sweeps -- 70 non-adjacent
-  moves, two K=2 passes, a distance-3 pass (28 moves) and a distance-4 pass
-  (10 moves). Raw **52,818 -> 52,570** (-248), aligned 20,109 -> 21,834.
+* `LevelScript::process` (w12503): nine successive sweeps -- 70 non-adjacent
+  moves, two K=2 passes, and distance-3/4/5/6/7/8 passes (61 more moves).
+  Raw **52,818 -> 52,523** (-295), aligned 20,109 -> 22,148.
   w12504's declaration/operand chain (52,764 alone) and w12505's nine
   store-rotation commits (52,652 alone) do not compose with this body and are
   recorded as superseded notes.
@@ -58,12 +58,12 @@ Landed changes:
   drop the redundant `setLevel` guard. Raw **1,214 -> 1,213** (-1) and
   `.ARM.extab` content **709 -> 655** (-54, size/base unchanged).
 
-Section deltas: `.text` **75,412** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **75,365** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **655** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **76,087**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **76,040**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 180)
