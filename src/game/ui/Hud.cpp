@@ -1657,14 +1657,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(reversed ? 3204 : 3205) + String(" ");
-            // Codegen anchor: caching the image id in a local makes clang load
-            // this->image_0x37c once for the two GetImage2D queries (the field is
-            // not written between them), which lands one more byte of the shipped
-            // dock-transfer block.  Semantically identical; raw diff 148 -> 147 at
-            // the same 9,332 B.
-            unsigned int img = this->image_0x37c;
-            int barH = Globals::Canvas->GetImage2DHeight(img);
-            int barW = Globals::Canvas->GetImage2DWidth(img);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int top = this->field_0x3e2;
             int y = top * 2;
             unsigned int barYOffset = Globals::layout->field_0x218;
