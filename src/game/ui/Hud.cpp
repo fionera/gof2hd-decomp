@@ -1239,7 +1239,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (hitFlags & 2)
         this->field_0x4b0 = 300;
     if (hitFlags & 0x24)
-        (void) *(Status * volatile *) &Globals::status;
+        Status **volatile p = &Globals::status;
         this->field_0x4b8 = 300;
     if (hitFlags & 0x18)
         this->field_0x4b4 = 300;
