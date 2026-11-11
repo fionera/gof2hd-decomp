@@ -504,7 +504,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 }
                 if (this->stationLockTimer > 0) {
                     int frame;
-                    if (this->field_0x28 != 0 && this->field_0x28 != this->lockedStation) {
+                    if (__builtin_expect(this->field_0x28 != 0, 1) && this->field_0x28 != this->lockedStation) {  // lint: arm_builtin
                         frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
                                        ((float) this->stationLockTimer / (float) this->field_0x1b8));
                     } else {
@@ -773,7 +773,7 @@ enemies:
                         } else {
                             image = this->image_0x84;
                         }
-                    } else if (enemy->player->enemyFlagsLo) {
+                    } else if (__builtin_expect(enemy->player->enemyFlagsLo, 1)) {  // lint: arm_builtin
                         image = this->image_0x60;
                     } else if (enemy->player->carriesFriendCargoFlag) {
                         image = this->image_0x68;
