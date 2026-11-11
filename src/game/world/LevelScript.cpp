@@ -1861,9 +1861,10 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    m_pCamera->setLookAtCam(true);
+                    TargetFollowCamera *cam = m_pCamera;
+                    cam->setLookAtCam(true);
                     player->setComputerControlled(true);
-                    m_pCamera->setPosition(player->geometry->getPosition());
+                    cam->setPosition(player->geometry->getPosition());
                     Vector *frame = &m_tempVec; // LevelScript tempVec @0x28
                     *frame = player->geometry->getDirection();
                     *frame *= 25000.0f;
@@ -1875,7 +1876,7 @@ bool LevelScript::process(int delta) {
                     tmp *= 1000.0f;
                     *frame += tmp;
                     *frame += player->geometry->getPosition();
-                    m_pCamera->setPosition(frame->x, frame->y, frame->z);
+                    cam->setPosition(frame->x, frame->y, frame->z);
                     AEGeometry *intro = new AEGeometry(0x37d2, Globals::Canvas, false);
                     m_pGeometry6 = intro;
                     m_pGeometry6->setPosition(player->geometry->getPosition());
