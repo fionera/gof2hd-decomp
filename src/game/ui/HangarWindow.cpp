@@ -809,30 +809,26 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // The original's ship branch keeps the getShip() check in
-                            // the outer cleanup scope and the buttons/upgrade body in
-                            // an inner one: row 39 of the 948-byte .ARM.extab record
-                            // spans the getShip() call, row 40 the body.  The nested
-                            // guard plus the tab snapshot keep that 150-byte row-39
-                            // span and the 9,700 B size; the inner branch weight also
-                            // orders the EH landing-pad thunks closer to the original.
-                            if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
-                                if (__builtin_expect(!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship), 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
-                                    int upgTab = tab;
-                                    (*this->buttons)[1]->setPosition(
-                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                        this->field_0x114 + y, 18);
-                                    (*this->buttons)[1]->setVisible(true);
-                                    (*this->buttons)[1]->draw();
-                                    buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                    if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
-                                        (*this->buttons)[2]->setVisible(true);
-                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                          this->field_0x114 + y, 17);
-                                        (*this->buttons)[10]->setVisible(true);
-                                        (*this->buttons)[10]->draw();
-                                    }
-                                }
+                            // Original guard order: tab == 0 skips straight to the
+                            // upgrade check, and a tab == 3 ship match skips the
+                            // body.  The tab snapshot reproduces the original's
+                            // reload of tab at the upgrade check and keeps the
+                            // function at 9,700 B.
+                            int upgTab = tab;
+                            if (tab != 0 && (tab != 3 || Globals::status->getShip() != this->selectedItem->ship)) {
+                                (*this->buttons)[1]->setPosition(
+                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            }
+                            if (this->upgradeMode && upgTab == 1) {
+                                (*this->buttons)[2]->setVisible(true);
+                                (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                  this->field_0x114 + y, 17);
+                                (*this->buttons)[10]->setVisible(true);
+                                (*this->buttons)[10]->draw();
                             }
                         } else {
                             // The original dispatches the two selected-item button
