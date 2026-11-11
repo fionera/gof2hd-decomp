@@ -1965,7 +1965,7 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
-            const float (*t)[6] = (bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
+            const float (*t)[6] = (bigAlienWave + 2 * (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
@@ -2204,13 +2204,13 @@ case4Tail:
                             break;
                         case 1:
                             offset[1] = -7000.0f;
-                            offset[0] = 10000.0f;
                             offset[2] = -30000.0f;
+                            offset[0] = 10000.0f;
                             break;
                         case 2:
-                            offset[2] = -36000.0f;
-                            offset[1] = 0.0f;
                             offset[0] = 25000.0f;
+                            offset[1] = 0.0f;
+                            offset[2] = -36000.0f;
                             break;
                         default:
                             offset[2] = -45000.0f;

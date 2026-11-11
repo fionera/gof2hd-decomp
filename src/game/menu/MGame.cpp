@@ -1559,8 +1559,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         if (mission->isCampaignMission()) {
                             Globals::status->nextCampaignMission(true);
                         } else if (!mission->isInstantActionMission()) {
-                            Globals::status->setFreelanceMission(Mission::empty);
                             Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                            Globals::status->setFreelanceMission(Mission::empty);
                         } else {
                             Globals::switch_to_target_setting = 2;
                             this->active = 0;
@@ -1607,8 +1607,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
-                            Level::initStreamOutPosition = 1;
                             FileRead *reader = new FileRead();
+                            Level::initStreamOutPosition = 1;
                             Globals::status->departStation(reader->loadStation(100));
                             delete reader;
                             this->active = 0;
@@ -1630,8 +1630,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                     Globals::status->getCurrentCampaignMission() == 127)) {
                             Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
-                            Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
@@ -1639,8 +1639,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
-                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
@@ -1752,8 +1752,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     finishMission:
                         if (!keepObjectives) {
                             this->level->removeObjectives();
-                            Globals::status->setMission(Mission::empty);
                             this->player->setRoute(nullptr);
+                            Globals::status->setMission(Mission::empty);
                             if (this->player->goingToWaypoint()) {
                                 this->player->setAutoPilot(nullptr);
                             }
@@ -1762,8 +1762,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         }
                         if (!mission->isCampaignMission() && mission->getType() == 183) {
                             // Escort job handed out right after the previous one.
-                            this->field_0x1e0 = this->level->killCountB;
                             Item *escortItem = (*Globals::items)[216]->makeItem(10);
+                            this->field_0x1e0 = this->level->killCountB;
                             Globals::status->getShip()->setEquipment(escortItem, 0);
                             Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
                                                           0, Globals::status->getStation()->getIndex(), 1);
@@ -1845,8 +1845,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                 break;
                             case 1:
                                 Globals::switch_to_target_setting = 0;
-                                this->active = 0;
                                 Globals::appManager->SetCurrentApplicationModule(5);
+                                this->active = 0;
                                 break;
                             case 0:
                                 Globals::status->nextCampaignMission(true);
@@ -1863,8 +1863,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->freeCamMode = 0;
                 }
                 if (!this->freeCamMode && this->menuWindow->inCinematicMode()) {
-                    setCinematicMode(true);
                     this->hudTouchFlags = 0;
+                    setCinematicMode(true);
                     this->level->getStarSystem()->initLight();
                     return;
                 }
@@ -1988,8 +1988,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             } else if (this->_bc8) {
                 this->hudMenuOpen = 0;
                 this->_bc8 = 0;
-                this->pauseOpen = 0;
                 resumeSounds();
+                this->pauseOpen = 0;
                 this->hud->closeHudMenu();
                 if (this->player != nullptr) {
                     this->player->resetGunDelay();
@@ -2093,8 +2093,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
             this->hudMenuOpen = 0;
-            this->hud->closeHudMenu();
             resumeSounds();
+            this->hud->closeHudMenu();
             this->pauseOpen = 0;
         } else {
             if (wingmanCommand >= 0) {
