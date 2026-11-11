@@ -953,7 +953,7 @@ void HangarWindow::render() {
                 }
                 int row = (unsigned char) count / 3;
                 int col = (unsigned char) count % 3;
-                int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * col;
+                int x = (this->gridSpacingX + this->buttonWidth) * col - this->buttonWidth - this->gridSpacingX + Globals::w / 2;
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * lay->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
@@ -1040,13 +1040,21 @@ void HangarWindow::render() {
         }
     } else if (this->freeCreditsActive) {
         int baseX = this->dialog->x + Globals::layout->buttonInsetX;
-        int baseY = Globals::layout->windowTopInset + this->dialog->y + Globals::layout->field_0x2c_rowHeight * 2;
+        int baseY = Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->windowTopInset + this->dialog->y;
         int row = 0;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; __builtin_expect(i < 5, 1); i++) { // lint: arm_builtin
             TouchButton *button = (*this->buttons)[18 + i];
-            bool visible = !(i == 0 || (Globals::options[73] && i == 1) ||
-                             (Globals::options[74] && i == 2) || (Globals::options[75] && i == 3)) &&
-                           (i != 4 || !Globals::options[76]);
+            bool visible = true;
+            if (__builtin_expect(i == 0, 0)) // lint: arm_builtin
+                visible = false;
+            else if (i == 1 && Globals::options[73])
+                visible = false;
+            else if (i == 2 && Globals::options[74])
+                visible = false;
+            else if (i == 3 && Globals::options[75])
+                visible = false;
+            else if (i == 4 && Globals::options[76])
+                visible = false;
             button->setVisible(visible);
             int y = (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * row + baseY;
             button->setPosition(baseX, y);

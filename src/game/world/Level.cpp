@@ -1969,9 +1969,9 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
+            gun->cargo = nullptr;
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = localRace;
         }
     }
@@ -2009,10 +2009,10 @@ void Level::createMission() {
              i < guns + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(raidRace, 0, raidType, this->field_180->getWaypoint(), true, false);
             if (Globals::status->inPirateLootOrbit()) {
-                Player *p = (*this->enemies)[i]->player;
-                p->setHitpoints(p->getMaxHitpoints() * 2);
                 (*this->enemies)[i]->setSpeed(3.5f);
                 ((PlayerFighter *) (*this->enemies)[i])->setRotate(3);
+                Player *p = (*this->enemies)[i]->player;
+                p->setHitpoints(p->getMaxHitpoints() * 2);
                 this->spawnPosition = this->player->getPosition();
                 this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
                 this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
@@ -2222,8 +2222,8 @@ case4Tail:
                     }
                     this->player->setPosition(-30000.0f, 5000.0f, -100000.0f);
                     this->stationPosition = this->player->getPosition();
-                    this->timeLimit = 181000;
                     this->objectivesA = new Objective(3, 181000, this);
+                    this->timeLimit = 181000;
                     return;
                 }
                 case 3:
@@ -2299,8 +2299,8 @@ case4Tail:
                         (*this->enemies)[convoyEnd + j] = this->createShip(
                                 localRace, 0, Globals::globals->getRandomEnemyFighter(localRace), nullptr, true, false);
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
-                        (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
+                        (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                         Array<KIPlayer *> *enemies = this->enemies;
                         KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
                         convoyShip->cargo = nullptr;
@@ -2310,8 +2310,8 @@ case4Tail:
                         (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                     }
-                    this->objectivesA = new Objective(18, 0, convoyEnd, this);
                     this->objectivesB = new Objective(18, convoyEnd, total, this);
+                    this->objectivesA = new Objective(18, 0, convoyEnd, this);
                     return;
                 }
                 case 6: {
@@ -2385,8 +2385,8 @@ case4Tail:
                     }
                     (*this->enemies)[attackerCount]->setPosition(-2500.0f, -300.0f, 27000.0f);
                     (*this->enemies)[attackerCount + 1]->setPosition(6500.0f, 3000.0f, 24000.0f);
-                    (*this->enemies)[attackerCount + 2]->setPosition(-4000.0f, -2000.0f, 19000.0f);
                     (*this->enemies)[attackerCount + 3]->setPosition(9000.0f, -6000.0f, 17000.0f);
+                    (*this->enemies)[attackerCount + 2]->setPosition(-4000.0f, -2000.0f, 19000.0f);
                     (*this->enemies)[attackerCount + 4]->setPosition(3000.0f, 7000.0f, 15000.0f);
                     this->objectivesA = new Objective(18, 0, attackerCount, this);
                     this->objectivesB = new Objective(18, attackerCount, total, this);
