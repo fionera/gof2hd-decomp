@@ -1073,10 +1073,11 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 2: { // s2 @0x13ba5c: pan the camera in; once counter>=7001 reframe it.
-                m_pCamera->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
+                TargetFollowCamera *camera2 = m_pCamera;
+                camera2->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
                 if (m_nScriptTime >= 7001) {
                     m_nState = 3;
-                    m_pCamera->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
+                    camera2->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
                 }
                 break;
             }
@@ -1165,13 +1166,14 @@ bool LevelScript::process(int delta) {
             case 10: { // s10 @0x13b948: pan the camera further, ramp the rumble DOWN over the frame
                        // timer, re-aim the docking model along the current camera direction, then at
                        // timer>=4001 advance to s11 and clear the rumble.
-                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
+                TargetFollowCamera *camera10 = m_pCamera;
+                camera10->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 4000.0f; // @0x13b930
                 if (!(rumble < 1.0f)) {
                     rumble = 1.0f;
                 }
-                m_pCamera->setRumblePercentage(1.0f - rumble, 100);
+                camera10->setRumblePercentage(1.0f - rumble, 100);
                 AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                 Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
                         *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
@@ -1989,17 +1991,18 @@ bool LevelScript::process(int delta) {
             case 41: {
                 // The freighter escape: escorts jump in, the freighter powers up and leaves.
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
+                    TargetFollowCamera *camera41 = m_pCamera;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
+                    camera41->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     player->freeze = 1;
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_bCinematicBreak = 1;
-                    m_pCamera->setLookAtCam(true);
+                    camera41->setLookAtCam(true);
                     player->setComputerControlled(true);
                     player->player->setVulnerable(false);
                     for (int i = 1; i < 4; i++) {
