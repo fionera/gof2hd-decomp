@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,413** | 22,055 | 57,232 |
+| `LevelScript::process` | **52,412** | 22,050 | 57,232 |
 | `Radar::draw` | **6,322** | 1,782 | 9,908 |
 | `Layout` C1/C2 | **5,385** | 2,562 | 7,072 |
 | `Level::createMission` | **3,630** | 1,127 | 17,172 |
@@ -36,8 +36,8 @@ Landed changes:
 
 * `LevelScript::process` (w12607 + w12604 + w12605): alias/partial-receiver
   sweep, four data-flow cells, and two rounds of K=1..3 window +
-  distance-9..12 sweeps. Raw **52,523 -> 52,413** (-110), aligned
-  22,148 -> 22,055.
+  distance-9..12 sweeps. Raw **52,523 -> 52,412** (-111), aligned
+  22,148 -> 22,050.
 * `Hud::draw` (w12620): dock-transfer register rotation. Raw **148 -> 32**
   (-116), aligned 147 -> 21, `.ARM.extab` **655 -> 651**.
 * `HangarWindow::render` (w12617): free-credits `textY` before `SetColor`,
@@ -58,12 +58,12 @@ Landed changes:
 * `MGame::OnTouchEnd` (w12616): campaign-chain 15/43 swap. Raw unchanged at
   3,034 but aligned 1,445 -> 1,416 (kept as a shape improvement).
 
-Section deltas: `.text` **75,016** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **75,015** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,682**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,680**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 181)

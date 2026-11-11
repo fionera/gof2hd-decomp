@@ -18,14 +18,14 @@ compile+gold-link measurement).
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    52,523           52,413     (-110)
-process aligned insns    22,148           22,055     (-93)
+process raw diffbytes    52,523           52,412     (-111)
+process aligned insns    22,148           22,050     (-98)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,730  20,830 / 20,728
-.text diffbytes          75,365           75,255     (-110)
+.text diffbytes          75,365           75,254     (-111)
 .ARM.extab diffbytes     655              656        (+1; size/base exact)
 .note.gnu.build-id       20               20         (unchanged)
-total differing bytes    76,040           75,931     (-109)
+total differing bytes    76,040           75,930     (-110)
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -190,10 +190,18 @@ Move 8 is the semantics-preserving `MatrixGetPosition`-before-`GetDirVector`
 order that w12506 identified as the original order at `0x142f9a`/`0x142fb6`
 (the `0.008f` term must use the direction vector).
 
+### Third pass (landed)
+
+A third K=1..3 sweep on the 52,413 tree (5,175 candidates) found one winner:
+`player->setSpeed(0.0f);` hoisted above `m_pCamera->setFixed(true);` and the
+`enemies4568` declaration (base line 4582 -> before 4580).  Raw
+**52,413 -> 52,412** (-1), aligned 22,055 -> 22,050.  A distance-9..12
+re-sweep on the 52,413 tree (834 candidates) found no winner.
+
 ### Cumulative result (wave 182 / w12605)
 
-`process` raw **52,523 -> 52,413** (-110) over the two passes; `.text`
-**75,365 -> 75,255**; `.ARM.extab` unchanged at 656; `.rel.plt` byte-identical;
+`process` raw **52,523 -> 52,412** (-111) over the three passes; `.text`
+**75,365 -> 75,254**; `.ARM.extab` unchanged at 656; `.rel.plt` byte-identical;
 size 57,232 exact; all gate counts unchanged (`byte_exact` 4507,
 `linked_exact` 4507, size-exact 4524/4524, data 843/843, imports 207, lint
 CLEAN, drift 0, parity 5370/5370).
