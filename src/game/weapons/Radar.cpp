@@ -477,7 +477,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + rowHeight, false);
                     }
                 }
-            } else if ((i & 0x7fffffff) == 3) {
+            } else if (__builtin_expect((i & 0x7fffffff) == 3, 1)) { // lint: arm_builtin anchor: Radar::draw
                 Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
             } else if ((i & 0x7fffffff) == 1) {
                 Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
