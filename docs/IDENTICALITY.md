@@ -4,6 +4,48 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 177)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 177 landed one change:
+
+* `Level::createShip` (w12117): the fixed-branch tail store order moves
+  `fixed->setBV(volumes)` from before `fixed->setShipGroup(...)` to after
+  `fixed->field_0x40 = 1;` (last of the five tail statements before
+  `ship = fixed;`).  Raw **1,229 -> 1,225** (-4), aligned 380 -> 383;
+  2,764 B exact, `.rel.plt` byte-identical, `.ARM.extab` stays the
+  original 336 B / 57-row cleanup-only record (size- and base-exact).
+  See `_work/reconstructions/level-createship-wave177-w12117.md`.
+
+**Aligned total (15 functions): 26,036** (wave-176 base 26,033). Per
+function: LevelScript 18,498, Layout 2,334, Radar 1,734, MGame::OnTouchEnd
+1,205, createMission 963, createShip 383, Status 327, HangarWindow 291,
+Hud 143, Gun 63, SpaceLounge 41, Generator 21, MenuTouchWindow 16,
+ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
+**80,932 -> 80,927** (-5): `.text` **79,591 -> 79,587** (-4) and
+`.note.gnu.build-id` 20 -> 19; `.ARM.extab` stays **1,321**.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,568** (57,232 B), `Radar::draw` **6,713** (9,908 B), `Layout` C1/C2
+**5,611** (7,072 B), `Level::createMission` **5,257** (17,172 B),
+`MGame::OnTouchEnd` **3,621** (8,080 B), `HangarWindow::render` **1,965**
+(9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
+**721** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `Hud::draw` **150** (9,332 B),
+`Generator::createMission` **40** (1,996 B), `ModStation` C1/C2 **39**
+(1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
+`MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **79,587** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **1,321** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
+**`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **19**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 176)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
