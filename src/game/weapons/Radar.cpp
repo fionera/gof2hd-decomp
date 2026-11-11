@@ -812,7 +812,7 @@ enemies:
                         image = this->image_0xa8;
                     }
                 } else {
-                    if (enemy->player->enemyFlagsLo) {
+                    if (__builtin_expect(enemy->player->enemyFlagsLo, 0)) { // lint: arm_builtin anchor: Radar::draw
                         image = enemy == locked ? this->image_0x90 : this->image_0x60;
                     } else if (enemy->player->carriesFriendCargoFlag) {
                         image = enemy == locked ? this->image_0x94 : this->image_0x68;
