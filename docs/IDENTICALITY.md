@@ -16,11 +16,11 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,039** | 20,207 | 57,232 |
+| `LevelScript::process` | **52,926** | 20,010 | 57,232 |
 | `Radar::draw` | **6,407** | 1,806 | 9,908 |
 | `Layout` C1/C2 | **5,569** | 2,434 | 7,072 |
 | `Level::createMission` | **3,832** | 977 | 17,172 |
-| `MGame::OnTouchEnd` | **3,259** | 1,183 | 8,080 |
+| `MGame::OnTouchEnd` | **3,049** | 1,407 | 8,080 |
 | `HangarWindow::render` | **2,242** | 390 | 9,700 |
 | `Level::createShip` | **1,221** | 394 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -48,8 +48,14 @@ Landed changes:
   (w12302 alone 53,060, w12305 alone 53,061).
 * `Layout::Layout` (w12311): move `field_0x2c_rowHeight` after `field_0x38`.
   Raw **5,576 -> 5,569**.
-* `MGame::OnTouchEnd` (w12315): `MenuTouchWindow::OnTouchEnd` returns `bool`.
-  Raw **3,261 -> 3,259**.
+* `MGame::OnTouchEnd` (w12315 + w12314): `MenuTouchWindow::OnTouchEnd` returns
+  `bool`, then the w12314 chain-unit permutation and campaign expect.
+  Combined raw **3,261 -> 3,049** (w12315 alone 3,259; w12314 on the base
+  3,051). Size 8,080 exact; `.ARM.extab` size exact but content diff
+  **694 -> 709**.
+* `LevelScript::process` (w12303, recovered after timeout): greedy statement
+  reorder. Combined with w12302/w12305, raw **53,039 -> 52,926**
+  (w12303 alone 52,961). Size 57,232 exact.
 * `Level::createShip` (w12317): fighter LOD branch layout.
   Raw **1,225 -> 1,221**.
 * `HangarWindow::render` (w12316): draw-first upgrade block.
@@ -60,12 +66,12 @@ Landed changes:
 * Note-only: w12318 (Status chain-fold weights are post-MBP-canonicalised),
   w12320 (build provenance / Status TBH audit).
 
-Section deltas: `.text` **77,193** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **694** (size- and
+Section deltas: `.text` **76,870** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **709** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **77,907**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **77,598**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 178)
@@ -3536,7 +3542,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,193 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 76,870 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
 | **.rodata** | 269,159 | 269,351 | **+192** | base `0x1c9e10` exact and the original 269,159 B content is **byte-identical**; wave 178 restored the 192 B `Status::missionCompleted` rank table at `0x20b977` (in the gap before `.fini_array`), so the section is 0x41c27. Wave 121 had removed it for an exact-size `.rodata`; the +192 B buys -272 `.text` bytes (raw 721 -> 449). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
