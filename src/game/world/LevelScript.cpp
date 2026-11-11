@@ -734,6 +734,7 @@ bool LevelScript::process(int delta) {
                 m_nState = 6;
             }
         } else if (m_nState == 3) {
+            Radar *wradar = m_pRadar;
             // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
             // message #8 finishes hand control back to the player and reframe onto the player ship.
             // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
@@ -743,7 +744,7 @@ bool LevelScript::process(int delta) {
                 m_nState = 4;
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
-                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                wradar->enabled = 1; // disasm stores wradar+0x48 (same field the siblings exit)
                 m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
@@ -2157,10 +2158,11 @@ bool LevelScript::process(int delta) {
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
                     m_nState = 1;
                 } else if (m_nState == 7) {
+                    AEGeometry *wparticlegeom0 = m_pParticleGeom0;
                     m_pCamera->setRumblePercentage(100.0f, 30);
                     m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
                     if (m_bRenderParticles) {
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(wparticlegeom0->transform))
                                 ->Update((long long) delta, false);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom1->transform))
                                 ->Update((long long) delta, false);
@@ -2172,7 +2174,7 @@ bool LevelScript::process(int delta) {
                         m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_nScriptTimerA += delta;
-                        if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
+                        if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(wparticlegeom0->transform))
                                     ->currentTime >= 4001) {
                             ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                         }
@@ -3080,13 +3082,14 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
                     if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
+                        Radar *wradar = m_pRadar;
                         Level *self = m_pLevel;
                         self->getPlayer()->setAutoPilot(nullptr);
-                        m_pRadar->lockedEnemy = nullptr;
-                        m_pRadar->dockNavPtr = nullptr;
+                        wradar->lockedEnemy = nullptr;
+                        wradar->dockNavPtr = nullptr;
                         self->getPlayer()->resetGunDelay();
                         m_nScriptTimerA = 0;
-                        self->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
+                        self->getPlayer()->dockToDockingPoint(nullptr, wradar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
                     }
