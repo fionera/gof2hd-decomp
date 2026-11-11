@@ -632,29 +632,31 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
+                    if (!this->lockConfirmed) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
                     this->field_0x14 = this->field_0x18;
-                    if (this->field_0x1a8) {
+                    if (__builtin_expect(this->field_0x1a8, 0)) {  // lint: arm_builtin
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if (this->planetLockTimer < 1 || missionBlocksPlanets) {
+                if ((this->planetLockTimer < 1) | (missionBlocksPlanets != 0)) {
                     goto enemies;
                 }
-                Sprite *blip = this->blipSprite;
+                Sprite *blip;
                 int frame;
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
+                    blip = this->blipSprite;
                     frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
                     if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
-                    frame = this->blipSprite->getRawFrameCount() - 1;
+                    blip = this->blipSprite;
+                    frame = blip->getRawFrameCount() - 1;
                 }
-                this->blipSprite->setFrame(frame);
+                blip->setFrame(frame);
                 this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                       (int) PlayerEgo::crosshairPos.y);
                 this->blipSprite->draw(1.0f, 1.0f);
@@ -682,12 +684,12 @@ enemies:
                 ((enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74)) {
                 if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
                     this->field_0x1bc++;
-                    bossSeen = true;
+                    bossSeen = enemy->shipGroup == 10;
                 }
                 continue;
             }
             this->update(enemy);
-            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;

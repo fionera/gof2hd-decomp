@@ -4,6 +4,69 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 175)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 175 ran 20 agents on the same worst functions. Landed changes:
+
+* `Radar::draw` (w11906): the skip-branch shipGroup re-test is restored and
+  the wreck flag is a bool. Raw **6,817 -> 6,804**.
+* `Radar::draw` (w11907): the wave-174 planet-lock `expect(!lockConfirmed, 0)`
+  is removed (restoring the original inline `cbnz` sound body) and the +8 B
+  landing-pad site moves to the rare `field_0x1a8` dock guard; the planet-lock
+  guard uses `|` instead of `||` and the planet sprite local is assigned in
+  both arms. Raw **6,804 -> 6,785**; 9,908 B exact, `.rel.plt`
+  byte-identical. See `_work/reconstructions/radar-draw-wave175-w11907.md`.
+* `Status::missionCompleted` (w11918): case-158 order. Raw **721** unchanged,
+  aligned 333 -> **329**; 1,432 B exact.
+* `Hud::draw` (w11917): cache `top * 2` as `y`. Raw **168 -> 156**, aligned
+  146 -> **145**.
+* `Layout::Layout` (w11911): `field_0x17c` stored before `field_0x158`. Raw
+  **5,633 -> 5,624**.
+* `Layout::Layout` (w11910): tail store order `0x214 <-> 0x200`. Raw
+  **5,624 -> 5,620**.
+* `LevelScript::process` (w11904): additive block-scope aliases. Raw
+  **53,673 -> 53,651**.
+* `Level::createMission` (w11914): faithful bool/order plus globals/rnd/enemies
+  hoists. Raw **5,421 -> 5,285**; `.ARM.extab` 750 -> **748**.
+* `LevelScript::process` (w11901): five `expect` hints. Raw **53,651 ->
+  53,593** on the combined tree.
+
+Notes-only (no code): w11905, w11902, w11903, w11908, w11909, w11913,
+w11915, w11916, w11919, w11920. Code that interacted badly with other merged
+wins was reverted and kept as notes: w11908 (Radar expect+alias), w11915
+(createShip try/catch, `.ARM.extab` 8 B short), w11902 and w11903
+(LevelScript).
+
+**Aligned total (15 functions): 26,502** (wave-174 base 26,185). Per
+function: Layout 2,289, LevelScript 18,476, createShip 422, Status 329,
+Radar 1,657, MGame::OnTouchEnd 1,453, createMission 958, Gun 57,
+HangarWindow 621, SpaceLounge 41, Hud 145, Generator 21, MenuTouchWindow 16,
+ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
+**81,209 -> 80,932** (-277) and `.text` **80,439 -> 80,166** (-273);
+`.ARM.extab` **750 -> 746** (size- and base-exact).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,593** (57,232 B), `Radar::draw` **6,785** (9,908 B), `Layout` C1/C2
+**5,620** (7,072 B), `Level::createMission` **5,285** (17,172 B),
+`MGame::OnTouchEnd` **3,771** (8,080 B), `HangarWindow::render` **2,242**
+(9,700 B), `Level::createShip` **1,232** (2,764 B), `Hud::draw` **156**
+(9,332 B), `Status::missionCompleted` **721** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
+**175** (1,948 B), `Generator::createMission` **40** (1,996 B),
+`ModStation` C1/C2 **39** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B), `MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **80,166** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **746** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 174)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -57,10 +120,13 @@ Wave 174 ran 20 agents on the same worst functions. Landed changes:
 * `Status::missionCompleted` (w11918): the single `switch (m->getType())`
   is split into an outer switch for the low/typed cases and a nested
   `default:` switch for the 150+ cases. Raw **722 -> 721** (-1), aligned
-  320 -> 333; 1,432 B exact.
+  320 -> 333; 1,432 B exact.  Wave 175 (w11918): the nested switch's
+  `case 158` moves from last to after `case 162` (raw unchanged **721**,
+  aligned 333 -> **329**); the grouped-weight source producer remains
+  unfound (see `_work/reconstructions/status-432-producers-wave175-w11918.md`).
 
-**Aligned total (15 functions): 26,185** (wave-173 base 26,055). Per
-function: Layout 2,290, LevelScript 18,226, createShip 422, Status 333,
+**Aligned total (15 functions): 26,181** (wave-173 base 26,055). Per
+function: Layout 2,290, LevelScript 18,226, createShip 422, Status 329,
 Radar 1,602, MGame::OnTouchEnd 1,453, createMission 940, Gun 57,
 HangarWindow 621, SpaceLounge 41, Hud 146, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall

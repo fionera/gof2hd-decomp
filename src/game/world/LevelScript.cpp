@@ -2774,13 +2774,14 @@ bool LevelScript::process(int delta) {
                         m_nState = 13;
                     }
                 } else if (m_nState == 13) {
+                    AEGeometry *geom5 = m_pGeometry5;
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f, (float) -delta * 4.0f);
                     m_nScriptTimerA += delta;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                    geom5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                             Vector{0.0f, 1.0f, 0.0f});
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom5->transform))
                             ->Update((long long) delta, false);
                     float rumble = (float) m_nScriptTimerA / 10000.0f;
                     if (!(rumble < 1.0f)) {
@@ -3148,6 +3149,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
                 } else if (__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
+                    Level *lvl = m_pLevel;
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false);
@@ -3155,18 +3157,19 @@ bool LevelScript::process(int delta) {
                     m_tempVec.x += (float) delta * 0.006f;
                     (*enemies)[3]->geometry->moveForward(m_tempVec.x * (float) delta);
                     if (m_nScriptTimerA >= 2001) {
+                        TargetFollowCamera *cam = m_pCamera;
                         if (m_nState == 9) {
                             m_nState = 10;
                         }
                         if (m_nScriptTimerA >= 7001) {
-                            m_pCamera->setFixed(false);
-                            m_pCamera->setTarget(player->geometry);
-                            m_pCamera->setLookAtCam(false);
-                            m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                            cam->setFixed(false);
+                            cam->setTarget(player->geometry);
+                            cam->setLookAtCam(false);
+                            cam->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                             m_pHud->visible = 1;
-                            resetCamera(m_pLevel);
+                            resetCamera(lvl);
                             m_pRadar->enabled = 1;
-                            m_pLevel->lodManager->forceUpdate(delta, false);
+                            lvl->lodManager->forceUpdate(delta, false);
                             player->setComputerControlled(false);
                             m_bCinematicBreak = 0;
                             player->player->setVulnerable(true);
@@ -4086,12 +4089,12 @@ bool LevelScript::process(int delta) {
                     // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
                     // group-8 escort into a widening formation ahead of the player, re-aim it at the
                     // player and wipe its cargo list.
-                    if (player->isDockedToDockingPoint() ||
-                        m_nScriptTime >= 60001) {
+                    if (__builtin_expect((player->isDockedToDockingPoint() || // lint: arm_builtin
+                        m_nScriptTime >= 60001), 1)) {
                         m_nState = 1;
                         int xOff = 25000;
                         for (unsigned int i = 0; i < enemies->count; ++i) {
-                            if ((*enemies)[i]->shipGroup == 8) {
+                            if (__builtin_expect(((*enemies)[i]->shipGroup == 8), 0)) { // lint: arm_builtin
                                 Vector playerPos = player->getPosition();
                                 (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                                 (*enemies)[i]->awake();       // vtable+0xc
@@ -4111,7 +4114,7 @@ bool LevelScript::process(int delta) {
                 }
                 // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
                 m_nScriptTimerA += delta;
-                if (m_nState == 1) {
+                if (__builtin_expect((m_nState == 1), 1)) { // lint: arm_builtin
                     // Advance once the mission's production quota is at least half filled.
                     int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
                     int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
@@ -4628,10 +4631,11 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
+                        Level *lvl = m_pLevel;
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
-                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*lvl->getEnemies())[1]->geometry);
+                        m_tempVec = (*lvl->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
@@ -5057,7 +5061,7 @@ bool LevelScript::process(int delta) {
                     if (m_pExplosion != nullptr) {
                         m_pExplosion->update(delta, nullptr);
                         m_nScriptTimerA += delta;
-                        if (m_nScriptTimerA >= 6001) {
+                        if (__builtin_expect((m_nScriptTimerA >= 6001), 0)) { // lint: arm_builtin
                             m_nScriptTimerA = -2000;
                             Globals::sound->play(2244, nullptr, nullptr, 0.0f);
                             m_pExplosion->start((*enemies)[stationIndex]->getPosition()
@@ -5138,7 +5142,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA < 3000) {
                         m_pCamera->translate((float) (-20 * delta), 0.0f, (float) (-20 * delta));
-                    } else if (m_nScriptTimerA < 7000) {
+                    } else if (__builtin_expect((m_nScriptTimerA < 7000), 0)) { // lint: arm_builtin
                         m_pCamera->translate((float) (-3 * delta), 0.0f, (float) (-10 * delta));
                     }
                     if (m_nScriptTimerA < 5000) {
