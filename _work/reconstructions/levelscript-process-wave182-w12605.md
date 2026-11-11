@@ -18,14 +18,14 @@ compile+gold-link measurement).
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    52,523           52,446     (-77)
-process aligned insns    22,148           22,057     (-91)
+process raw diffbytes    52,523           52,413     (-110)
+process aligned insns    22,148           22,055     (-93)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,730  20,830 / 20,728
-.text diffbytes          75,365           75,288     (-77)
+.text diffbytes          75,365           75,255     (-110)
 .ARM.extab diffbytes     655              656        (+1; size/base exact)
 .note.gnu.build-id       20               20         (unchanged)
-total differing bytes    76,040           75,964     (-76)
+total differing bytes    76,040           75,931     (-109)
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -149,6 +149,54 @@ The distance-9..12 winner that landed is #11 (`m_pCamera->setFixed(true)`
 hoisted to the top of the case-158 state-2 block, base line 4593 -> before
 4581); the other distance-9..12 winner (`m_nState++`, 2988 -> 2979) did not
 compose with the K=1..3 body and was dropped by the greedy re-measurement.
+
+## Second pass on the improved tree (landed)
+
+The same K=1..3 generator/sweep was re-run on the 52,446 tree (5,184
+candidates, ~31 min).  It found **20** size-exact, `.rel.plt`-identical raw
+winners (best single move -14).  Greedy accepted **10** and reached raw
+**52,413**.
+
+```
+                         after pass 1     after pass 2
+process raw diffbytes    52,446           52,413     (-33)
+process aligned insns    22,057           22,055     (-2)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          75,288           75,255     (-33)
+.ARM.extab diffbytes     656              656        (unchanged)
+.note.gnu.build-id       20               20         (unchanged)
+total differing bytes    75,964           75,931     (-33)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Line numbers are from the pass-1 tree (`ba2415432`); all are K=1..3 moves
+and all were individually size-exact + `.rel.plt`-identical.
+
+| # | base line | dir | moved statement |
+|---:|---:|---|---|
+| 1 | 2112 | down | `delete m_pLevel->objectivesB;` |
+| 2 | 2837 | down | `m_nScriptTimerB = 0;` |
+| 3 | 2357 | up | `m_bCinematicBreak = 0;` |
+| 4 | 2331 | down | `m_pHud->visible = 0;` |
+| 5 | 2461 | up | `player->setComputerControlled(false);` |
+| 6 | 3407 | up | `m_pRadar->enabled = 0;` |
+| 7 | 4580 | down | `Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();` |
+| 8 | 4588 | down | `m_dirVec = player->GetDirVector();` |
+| 9 | 4886 | up | `resetCamera(m_pLevel);` |
+| 10 | 5263 | up | `m_bCinematicBreak = 0;` |
+
+Move 8 is the semantics-preserving `MatrixGetPosition`-before-`GetDirVector`
+order that w12506 identified as the original order at `0x142f9a`/`0x142fb6`
+(the `0.008f` term must use the direction vector).
+
+### Cumulative result (wave 182 / w12605)
+
+`process` raw **52,523 -> 52,413** (-110) over the two passes; `.text`
+**75,365 -> 75,255**; `.ARM.extab` unchanged at 656; `.rel.plt` byte-identical;
+size 57,232 exact; all gate counts unchanged (`byte_exact` 4507,
+`linked_exact` 4507, size-exact 4524/4524, data 843/843, imports 207, lint
+CLEAN, drift 0, parity 5370/5370).
 
 ## Reproduction
 

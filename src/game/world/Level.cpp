@@ -2274,10 +2274,10 @@ case4Tail:
                 case 2: {
                     int coords[6] = {(int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
                                      (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0, 0, 0};
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     this->enemyRoute = new Route(coords, 6);
-                    int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
                     int goods = mission->getProductionGoodAmount();
+                    int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int convoyEnd = escorts + 2;
                     this->enemies = new Array<KIPlayer *>();
                     int total = convoyEnd + goods;

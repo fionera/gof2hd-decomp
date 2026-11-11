@@ -16,10 +16,10 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,446** | 22,057 | 57,232 |
+| `LevelScript::process` | **52,413** | 22,055 | 57,232 |
 | `Radar::draw` | **6,322** | 1,782 | 9,908 |
-| `Layout` C1/C2 | **5,391** | 2,520 | 7,072 |
-| `Level::createMission` | **3,645** | 1,135 | 17,172 |
+| `Layout` C1/C2 | **5,385** | 2,562 | 7,072 |
+| `Level::createMission` | **3,630** | 1,127 | 17,172 |
 | `MGame::OnTouchEnd` | **3,034** | 1,416 | 8,080 |
 | `HangarWindow::render` | **1,523** | 681 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
@@ -35,8 +35,9 @@ aligned / size; all size-exact):
 Landed changes:
 
 * `LevelScript::process` (w12607 + w12604 + w12605): alias/partial-receiver
-  sweep, four data-flow cells, and K=1..3 window + distance-9..12 sweeps.
-  Raw **52,523 -> 52,446** (-77), aligned 22,148 -> 22,057.
+  sweep, four data-flow cells, and two rounds of K=1..3 window +
+  distance-9..12 sweeps. Raw **52,523 -> 52,413** (-110), aligned
+  22,148 -> 22,055.
 * `Hud::draw` (w12620): dock-transfer register rotation. Raw **148 -> 32**
   (-116), aligned 147 -> 21, `.ARM.extab` **655 -> 651**.
 * `HangarWindow::render` (w12617): free-credits `textY` before `SetColor`,
@@ -47,19 +48,22 @@ Landed changes:
   sound-guard expect, campaign-145 expect dropped, per-site `radarFont()`
   hoists, enemy-tail `lockedEnemy` order, and the `hasTractor13` if/else
   inversion. Raw **6,339 -> 6,322** (-17), aligned 1,757 -> 1,782.
+* `Level::createMission` (w12614 + w12615): case-2 declaration reorder,
+  raid-loop `setRotate`/`setSpeed` order, and alien-turret `v`/`cargo`
+  order. Raw **3,647 -> 3,630** (-17), aligned 956 -> 1,127.
+* `Layout::Layout` (w12612): `orbitInfoSystemY` move. Raw **5,391 -> 5,385**
+  (-6), aligned 2,520 -> 2,562.
 * `ModStation::ModStation` (w12619): pitch/yaw reinterpret swap. Raw
   **39 -> 27** (-12), aligned 11 -> 15.
-* `Level::createMission` (w12615): raid-loop `setRotate`/`setSpeed` order and
-  alien-turret `v`/`cargo` order. Raw **3,647 -> 3,645** (-2).
 * `MGame::OnTouchEnd` (w12616): campaign-chain 15/43 swap. Raw unchanged at
   3,034 but aligned 1,445 -> 1,416 (kept as a shape improvement).
 
-Section deltas: `.text` **75,070** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **644** (size- and
+Section deltas: `.text` **75,016** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,734**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,682**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 181)

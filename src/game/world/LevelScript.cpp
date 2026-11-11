@@ -2109,8 +2109,8 @@ bool LevelScript::process(int delta) {
                 if (messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()) {
                     m_nScriptTime = 0;
                     Globals::sound->play(153, nullptr, nullptr, 0.0f);
-                    delete m_pLevel->objectivesB;
                     m_nScriptTimerA = 0;
+                    delete m_pLevel->objectivesB;
                     delete m_pLevel->objectivesA;
                     m_pLevel->objectivesB = nullptr;
                     m_pLevel->objectivesA = nullptr;
@@ -2328,9 +2328,9 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     m_pCamera->setLookAtCam(true);
                     player->stopShooting(0);
-                    m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
+                    m_pHud->visible = 0;
                     m_pCamera->setActive(true);
                     m_bCinematicBreak = 1;
                     m_pCamera->setTarget((*enemies)[10]->geometry);
@@ -2352,9 +2352,9 @@ bool LevelScript::process(int delta) {
                         (*enemies)[10]->setActive(false);
                         m_pCamera->setTarget(player->geometry);
                         (*enemies)[10]->setPosition(500000.0f, 500000.0f, 500000.0f);
+                        m_bCinematicBreak = 0;
                         (*enemies)[10]->setVisible(false);
                         m_nState = 3;
-                        m_bCinematicBreak = 0;
                     }
                 } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
                     player->player->setVulnerable(true);
@@ -2456,9 +2456,9 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        player->setComputerControlled(false);
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
-                        player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
@@ -2834,9 +2834,9 @@ bool LevelScript::process(int delta) {
                 // Escorting the defector freighter to the station, then flying away with it.
                 if (m_nState == 0) {
                     if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
-                        m_nScriptTimerB = 0;
                         m_nState = 1;
                         (*enemies)[0]->setActive(true);
+                        m_nScriptTimerB = 0;
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
                                 ->setName(String(*Globals::gameText->getText(3211), false));
                     }
@@ -3402,9 +3402,9 @@ bool LevelScript::process(int delta) {
                             player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
+                        m_pRadar->enabled = 0;
                         player->setFreeLookMode(false);
                         player->hideShipForFirstPersonCameraView(false);
-                        m_pRadar->enabled = 0;
                         player->stopShooting(0);
                         m_pHud->visible = 0;
                         AEGeometry *leaderShip = (*enemies)[leader]->geometry;
@@ -4577,16 +4577,16 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
-                    Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
                     m_pCamera->setFixed(true);
+                    Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
                     player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.25f;
                     (*enemies)[0]->geometry->moveForward(step);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    m_dirVec = player->GetDirVector();
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    m_dirVec = player->GetDirVector();
                     m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
@@ -4881,9 +4881,9 @@ bool LevelScript::process(int delta) {
                         player->setVisible(true);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
                         m_pLevel->getPlayer()->resetGunDelay();
                         player->player->setVulnerable(true);
-                        resetCamera(m_pLevel);
                         m_bCinematicBreak = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroupFlag == 49 || (*enemies)[i]->shipGroupFlag == 44) {
@@ -5258,9 +5258,9 @@ bool LevelScript::process(int delta) {
                         player->setVisible(true);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
+                        m_bCinematicBreak = 0;
                         resetCamera(m_pLevel);
                         player->player->setVulnerable(true);
-                        m_bCinematicBreak = 0;
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
