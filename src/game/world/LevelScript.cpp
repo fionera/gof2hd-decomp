@@ -804,16 +804,17 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 8: {
+                    TargetFollowCamera *wcamera = m_pCamera;
                     m_nScriptTimerA += delta;
                     float rumble = (float) m_nScriptTimerA / -3000.0f + 1.0f;
                     if (rumble < 0.0f) {
                         rumble = 0.0f;
                     }
-                    m_pCamera->setRumblePercentage(rumble, 20);
+                    wcamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
                         m_nState = 9;
                         m_nScriptTimerA = 0;
-                        m_pCamera->setRumblePercentage(0.0f, 0);
+                        wcamera->setRumblePercentage(0.0f, 0);
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
@@ -1631,15 +1632,16 @@ bool LevelScript::process(int delta) {
                     player->geometry->rotate(0.0f, step / 10000.0f, 0.0f);
                     m_pCamera->translate(0.0f, 0.0f, step);
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        TargetFollowCamera *wcamera = m_pCamera;
                         player->setVisible(false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x130, false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x134, false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, false);
                         KIPlayer *tug = (*m_pLevel->getEnemies())[m_pLevel->getEnemies()->count - 1];
                         ((PlayerFixedObject *) tug)->setMoving(true);
-                        m_pCamera->setTarget(tug->geometry);
-                        m_pCamera->setPosition(tug->getPosition());
-                        m_pCamera->translate(-10000.0f, -200.0f, 5000.0f);
+                        wcamera->setTarget(tug->geometry);
+                        wcamera->setPosition(tug->getPosition());
+                        wcamera->translate(-10000.0f, -200.0f, 5000.0f);
                         m_nState = 3;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                     }
@@ -2688,6 +2690,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate((float) -delta, (float) delta, (float) (-12 * delta));
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 8001) {
+                        TargetFollowCamera *wcamera = m_pCamera;
                         AEGeometry *root = ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry;
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(root->transform))
                                 ->Update(((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(root->transform))
@@ -2703,8 +2706,8 @@ bool LevelScript::process(int delta) {
                                                   root->parentTransform))
                                                  ->animationLength,
                                          false);
-                        m_pCamera->setLookAtCam(false);
-                        m_pCamera->setTarget(player->geometry);
+                        wcamera->setLookAtCam(false);
+                        wcamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->freeze = 0;
                         m_nState = 2;
