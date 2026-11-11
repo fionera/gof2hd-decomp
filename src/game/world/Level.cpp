@@ -2115,12 +2115,14 @@ case4Else:
     }
 case4Tail:
     {
+    // Hoisted before the hunter-count block: the RNG pointer is loop-invariant,
+    // and this placement reproduces the original's literal-pool/RA shape.
+    AERandom *rnd = Globals::rnd;
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
     Globals *globals = Globals::globals;
-    AERandom *rnd = Globals::rnd;
     Array<KIPlayer *> *enemies = this->enemies;
     for (unsigned i = 0; i < enemies->size(); i++) {
         KIPlayer *ship = this->createShip(
