@@ -4240,9 +4240,9 @@ bool LevelScript::process(int delta) {
             case 142: {
                 // Collect the plot cargo from a sparking gas cloud while the freighter waits.
                 if (m_nState < 2) {
-                    if (AbyssEngine::AEMath::VectorLength(
+                    if (__builtin_expect((AbyssEngine::AEMath::VectorLength( // lint: arm_builtin
                                 (*enemies)[0]->getPosition() - (*enemies)[0]->getRoute()->getWaypoint(0)->getPosition())
-                        < 3000.0f) {
+                        < 3000.0f), 1)) {
                         (*enemies)[0]->setSpeed(0.0f);
                     }
                     if (m_nState == 0) {
