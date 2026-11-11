@@ -1,0 +1,1566 @@
+sweep	site	line	variant	kind_or_op	expr	raw_or_status	text_diff	rel_plt
+expect	0	615	0	if	status->getCurrentCampaignMission() == 0	size	57476	
+expect	0	615	1	if	status->getCurrentCampaignMission() == 0	size	57416	
+expect	2	636	0	for	i < 3	size	57304	
+expect	2	636	1	for	i < 3	size	57356	
+expect	4	646	0	for	i < 3	size	57252	
+expect	4	646	1	for	i < 3	size	57392	
+expect	6	652	0	if	msg6->isOver()	size	57240	
+expect	6	652	1	if	msg6->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	8	664	0	if	!Globals::sound->isPlaying(142)	size	57244	
+expect	8	664	1	if	!Globals::sound->isPlaying(142)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	10	671	0	for	i < 3	size	57240	
+expect	10	671	1	for	i < 3	size	57356	
+expect	12	686	0	if	((RadioMessage *) ((*messages)[10]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	12	686	1	if	((RadioMessage *) ((*messages)[10]))->isOver()	54063	81956	289b2a069f8504d1e8a3919e43915e04
+expect	14	714	0	if	reinterpret_cast<float &>(speedBits) == 2.0f	size	57236	
+expect	14	714	1	if	reinterpret_cast<float &>(speedBits) == 2.0f	size	57244	
+expect	16	731	0	if	((RadioMessage *) ((*messages)[14]))->isTriggered()	linkfail		
+expect	16	731	1	if	((RadioMessage *) ((*messages)[14]))->isTriggered()	linkfail		
+expect	18	740	0	if	((RadioMessage *) ((*messages)[8]))->isOver()	linkfail		
+expect	18	740	1	if	((RadioMessage *) ((*messages)[8]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	20	768	0	if	((RadioMessage *) ((*messages)[15]))->isOver()	size	57256	
+expect	20	768	1	if	((RadioMessage *) ((*messages)[15]))->isOver()	54063	81956	289b2a069f8504d1e8a3919e43915e04
+expect	22	795	0	if	!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))                           	size	57236	
+expect	22	795	1	if	!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))                           	size	57244	
+expect	24	811	0	if	m_nScriptTimerA >= 4001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	24	811	1	if	m_nScriptTimerA >= 4001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	26	845	0	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	26	845	1	if	m_nScriptTimerA >= 2001	linkfail		
+expect	28	868	0	if	m_nScriptTimerA >= 2501	linkfail		
+expect	28	868	1	if	m_nScriptTimerA >= 2501	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	30	898	0	if	m_nScriptTimerA >= 6001	size	57244	
+expect	30	898	1	if	m_nScriptTimerA >= 6001	size	57248	
+expect	32	922	0	if	((RadioMessage *) ((*messages)[22]))->isOver()	size	57248	
+expect	32	922	1	if	((RadioMessage *) ((*messages)[22]))->isOver()	size	57236	
+expect	34	933	0	if	!Globals::layout->isFading()	size	57248	
+expect	34	933	1	if	!Globals::layout->isFading()	size	57252	
+expect	36	957	0	if	!(depth < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	36	957	1	if	!(depth < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	38	968	0	if	m_nState == 1 && !Globals::layout->isFading()	size	57252	
+expect	38	968	1	if	m_nState == 1 && !Globals::layout->isFading()	size	57568	
+expect	40	985	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	40	985	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	42	1006	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	42	1006	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	44	1019	0	if	m_nScriptTime >= 12001	size	57236	
+expect	44	1019	1	if	m_nScriptTime >= 12001	linkfail		
+expect	46	1026	0	if	((RadioMessage *) ((*messages)[3]))->isOver()	size	57240	
+expect	46	1026	1	if	((RadioMessage *) ((*messages)[3]))->isOver()	size	57240	
+expect	48	1033	0	if	__builtin_expect(!Globals::layout->isFading(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	48	1033	1	if	__builtin_expect(!Globals::layout->isFading(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	50	1053	0	if	m_nScriptTime >= 7901	size	57236	
+expect	50	1053	1	if	m_nScriptTime >= 7901	linkfail		
+expect	52	1082	0	if	m_nScriptTime >= 7901	53944	81837	289b2a069f8504d1e8a3919e43915e04
+expect	52	1082	1	if	m_nScriptTime >= 7901	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	54	1086	0	if	__builtin_expect(m_nScriptTime >= 9001, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	54	1086	1	if	__builtin_expect(m_nScriptTime >= 9001, 0)	size	57240	
+expect	56	1102	0	if	m_nScriptTime >= 18001	size	57240	
+expect	56	1102	1	if	m_nScriptTime >= 18001	size	57200	
+expect	58	1121	0	if	m_nScriptTime >= 27001	53934	81827	289b2a069f8504d1e8a3919e43915e04
+expect	58	1121	1	if	m_nScriptTime >= 27001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	60	1133	0	if	m_nScriptTimerA >= 2001	54088	81981	289b2a069f8504d1e8a3919e43915e04
+expect	60	1133	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	62	1149	0	if	m_nScriptTimerA >= 6001	linkfail		
+expect	62	1149	1	if	m_nScriptTimerA >= 6001	size	57252	
+expect	64	1180	0	if	m_nScriptTimerA >= 4001	size	57240	
+expect	64	1180	1	if	m_nScriptTimerA >= 4001	linkfail		
+expect	66	1199	0	if	m_nScriptTimerA >= 5001	size	57240	
+expect	66	1199	1	if	m_nScriptTimerA >= 5001	linkfail		
+expect	68	1227	0	for	i < enemies->count	size	57216	
+expect	68	1227	1	for	i < enemies->count	compilefail		
+expect	70	1246	0	if	Globals::status->getCurrentCampaignMission() == 89	size	57224	
+expect	70	1246	1	if	Globals::status->getCurrentCampaignMission() == 89	size	57288	
+expect	72	1261	0	if	m_nScriptTime >= 30001	compilefail		
+expect	72	1261	1	if	m_nScriptTime >= 30001	size	57252	
+expect	74	1285	0	if	distance < 200000.0f	size	57240	
+expect	74	1285	1	if	distance < 200000.0f	compilefail		
+expect	76	1292	0	if	m_nScriptTime - delta <= 38000	compilefail		
+expect	76	1292	1	if	m_nScriptTime - delta <= 38000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	78	1308	0	if	fading	size	57240	
+expect	78	1308	1	if	fading	linkfail		
+expect	80	1318	0	for	i < enemies->count	compilefail		
+expect	80	1318	1	for	i < enemies->count	size	57244	
+expect	82	1332	0	if	m_nScriptTimerA >= 8000	size	57248	
+expect	82	1332	1	if	m_nScriptTimerA >= 8000	size	57244	
+expect	84	1353	0	if	Globals::status->getCurrentCampaignMission() == 106	compilefail		
+expect	84	1353	1	if	Globals::status->getCurrentCampaignMission() == 106	55099	82992	289b2a069f8504d1e8a3919e43915e04
+expect	86	1360	0	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	57240	
+expect	86	1360	1	if	((RadioMessage *) ((*messages)[2]))->isOver()	linkfail		
+expect	88	1371	0	if	__builtin_expect(m_nScriptTimerA >= 3001, 0)	size	57228	
+expect	88	1371	1	if	__builtin_expect(m_nScriptTimerA >= 3001, 0)	linkfail		
+expect	90	1388	0	if	m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()	size	57244	
+expect	90	1388	1	if	m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()	size	57248	
+expect	92	1396	0	if	m_nScriptTimerA >= 3001	size	57244	
+expect	92	1396	1	if	m_nScriptTimerA >= 3001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	94	1415	0	if	m_nState >= 2 && m_nState <= 4	size	57244	
+expect	94	1415	1	if	m_nState >= 2 && m_nState <= 4	size	57240	
+expect	96	1430	0	if	m_nState == 0	54825	82718	289b2a069f8504d1e8a3919e43915e04
+expect	96	1430	1	if	m_nState == 0	size	57228	
+expect	98	1434	0	if	m_nState == 1	54925	82818	289b2a069f8504d1e8a3919e43915e04
+expect	98	1434	1	if	m_nState == 1	54033	81926	289b2a069f8504d1e8a3919e43915e04
+expect	100	1440	0	if	__builtin_expect(m_nState == 2, 0) && m_nScriptTimerA >= 2000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	100	1440	1	if	__builtin_expect(m_nState == 2, 0) && m_nScriptTimerA >= 2000	53928	81821	289b2a069f8504d1e8a3919e43915e04
+expect	102	1463	0	if	Globals::status->getWingmen() != 0	size	57252	
+expect	102	1463	1	if	Globals::status->getWingmen() != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	104	1467	0	if	__builtin_expect(wingman->isWingMan(), 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	104	1467	1	if	__builtin_expect(wingman->isWingMan(), 0)	53947	81840	289b2a069f8504d1e8a3919e43915e04
+expect	106	1486	0	if	Level::programmedStation != 0	size	57252	
+expect	106	1486	1	if	Level::programmedStation != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	108	1493	0	if	Level::doInstantJump == 0	size	57244	
+expect	108	1493	1	if	Level::doInstantJump == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	110	1499	0	for	i < wingmen->count	linkfail		
+expect	110	1499	1	for	i < wingmen->count	linkfail		
+expect	112	1511	0	if	Globals::status->getCurrentCampaignMission() == 5	size	57272	
+expect	112	1511	1	if	Globals::status->getCurrentCampaignMission() == 5	size	57436	
+expect	114	1521	0	if	Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()	size	57240	
+expect	114	1521	1	if	Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()	size	57428	
+expect	116	1528	0	if	messages != nullptr && Globals::status->getCurrentCampaignMission() == 50	size	57236	
+expect	116	1528	1	if	messages != nullptr && Globals::status->getCurrentCampaignMission() == 50	size	57252	
+expect	118	1538	0	if	((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && m_nState == 0	size	57236	
+expect	118	1538	1	if	((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && m_nState == 0	size	57236	
+expect	120	1540	0	if	!(*enemies)[i]->isWingMan()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	120	1540	1	if	!(*enemies)[i]->isWingMan()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	122	1571	0	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	size	57292	
+expect	122	1571	1	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	size	57220	
+expect	124	1609	0	for	i < m_pLevel->getEnemies()->count	size	57252	
+expect	124	1609	1	for	i < m_pLevel->getEnemies()->count	size	57288	
+expect	126	1617	0	if	m_nState == 2	size	57228	
+expect	126	1617	1	if	m_nState == 2	size	57252	
+expect	128	1643	0	if	m_nState == 4 && m_nScriptTime >= m_nScriptTimerA + 4000	54071	81964	289b2a069f8504d1e8a3919e43915e04
+expect	128	1643	1	if	m_nState == 4 && m_nScriptTime >= m_nScriptTimerA + 4000	size	57252	
+expect	130	1659	0	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57244	
+expect	130	1659	1	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57240	
+expect	132	1682	0	if	((RadioMessage *) ((*messages)[1]))->isOver()	53936	81829	289b2a069f8504d1e8a3919e43915e04
+expect	132	1682	1	if	((RadioMessage *) ((*messages)[1]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	134	1696	0	if	__builtin_expect(((RadioMessage *) ((*messages)[2]))->isTriggered(), 1) && m_nState == 3	size	57224	
+expect	134	1696	1	if	__builtin_expect(((RadioMessage *) ((*messages)[2]))->isTriggered(), 1) && m_nState == 3	size	57244	
+expect	136	1723	0	if	ship != nullptr && ship->shipGroup == 9	size	57204	
+expect	136	1723	1	if	ship != nullptr && ship->shipGroup == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	138	1737	0	if	((RadioMessage *) ((*messages)[3]))->isOver()	size	57236	
+expect	138	1737	1	if	((RadioMessage *) ((*messages)[3]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	140	1741	0	if	ship != nullptr && ship->shipGroup == 9	size	57236	
+expect	140	1741	1	if	ship != nullptr && ship->shipGroup == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	142	1766	0	if	m_nState == 0	size	57244	
+expect	142	1766	1	if	m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	144	1770	0	if	ship->enemyFlagsLo != 0	size	57244	
+expect	144	1770	1	if	ship->enemyFlagsLo != 0	linkfail		
+expect	146	1779	0	if	((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 0	size	57224	
+expect	146	1779	1	if	((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 0	size	57268	
+expect	148	1788	0	if	((RadioMessage *) ((*messages)[3]))->isTriggered() && m_nState == 0	size	57224	
+expect	148	1788	1	if	((RadioMessage *) ((*messages)[3]))->isTriggered() && m_nState == 0	size	57268	
+expect	150	1818	0	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1	linkfail		
+expect	150	1818	1	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1	compilefail		
+expect	152	1845	0	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	linkfail		
+expect	152	1845	1	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57276	
+expect	154	1901	0	if	m_pGeometry6 != nullptr	size	57244	
+expect	154	1901	1	if	m_pGeometry6 != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	156	1917	0	if	m_nState == 0	size	57224	
+expect	156	1917	1	if	m_nState == 0	size	57268	
+expect	158	1944	0	if	m_nState == 1	size	57224	
+expect	158	1944	1	if	m_nState == 1	size	57268	
+expect	160	1957	0	if	m_nState == 2 && (*enemies)[0]->getPosition().z >= 90000.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	160	1957	1	if	m_nState == 2 && (*enemies)[0]->getPosition().z >= 90000.0f	size	57240	
+expect	162	1971	0	if	m_nState == 3                            && (*enemies)[0]->getPosition().z >= (*m_pLevel->getLandmarks())[3]->getPositio	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	162	1971	1	if	m_nState == 3                            && (*enemies)[0]->getPosition().z >= (*m_pLevel->getLandmarks())[3]->getPositio	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	164	1978	0	if	(*enemies)[0]->getPosition().z > 500000.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	164	1978	1	if	(*enemies)[0]->getPosition().z > 500000.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	166	2002	0	for	i < 4	size	57236	
+expect	166	2002	1	for	i < 4	size	57376	
+expect	168	2029	0	if	delta == 0x7d	size	57244	
+expect	168	2029	1	if	delta == 0x7d	linkfail		
+expect	170	2051	0	if	__builtin_expect(m_nScriptTimerA >= 15001, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	170	2051	1	if	__builtin_expect(m_nScriptTimerA >= 15001, 0)	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	172	2063	0	for	i < enemies->count	linkfail		
+expect	172	2063	1	for	i < enemies->count	size	57320	
+expect	174	2071	0	if	m_nState == 4	size	57240	
+expect	174	2071	1	if	m_nState == 4	size	57240	
+expect	176	2096	0	if	messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()	size	57256	
+expect	176	2096	1	if	messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()	size	57248	
+expect	178	2122	0	if	player->isInWormhole()	size	57224	
+expect	178	2122	1	if	player->isInWormhole()	54101	81994	289b2a069f8504d1e8a3919e43915e04
+expect	180	2157	0	if	m_nState == 7	size	57240	
+expect	180	2157	1	if	m_nState == 7	size	57228	
+expect	182	2173	0	if	((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))                        	size	57240	
+expect	182	2173	1	if	((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))                        	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	184	2185	0	if	!Globals::layout->isFading() || m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	184	2185	1	if	!Globals::layout->isFading() || m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	186	2210	0	if	enemies != nullptr	size	57236	
+expect	186	2210	1	if	enemies != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	188	2212	0	if	(*enemies)[i]->player->isAlwaysFriend()	size	57248	
+expect	188	2212	1	if	(*enemies)[i]->player->isAlwaysFriend()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	190	2219	0	if	player->player->getArmorHP() <= 0	size	57240	
+expect	190	2219	1	if	player->player->getArmorHP() <= 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	192	2221	0	for	i < enemies->count	size	57248	
+expect	192	2221	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	194	2234	0	if	m_nState == 2	compilefail		
+expect	194	2234	1	if	m_nState == 2	size	57256	
+expect	196	2259	0	if	m_nState == 1	linkfail		
+expect	196	2259	1	if	m_nState == 1	compilefail		
+expect	198	2272	0	for	i < enemies->count	compilefail		
+expect	198	2272	1	for	i < enemies->count	compilefail		
+expect	200	2281	0	for	i < enemies->count	size	57364	
+expect	200	2281	1	for	i < enemies->count	size	57224	
+expect	202	2289	0	if	m_nState == 3 && ((RadioMessage *) ((*messages)[6]))->isOver()	compilefail		
+expect	202	2289	1	if	m_nState == 3 && ((RadioMessage *) ((*messages)[6]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	204	2300	0	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	size	57212	
+expect	204	2300	1	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	size	57320	
+expect	206	2325	0	if	m_nState == 2	size	57256	
+expect	206	2325	1	if	m_nState == 2	54830	82723	289b2a069f8504d1e8a3919e43915e04
+expect	208	2343	0	if	((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5	size	57244	
+expect	208	2343	1	if	((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5	size	57240	
+expect	210	2387	0	if	((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 3	size	57244	
+expect	210	2387	1	if	((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 3	size	57364	
+expect	212	2399	0	if	__builtin_expect(((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6, 1)	size	57224	
+expect	212	2399	1	if	__builtin_expect(((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	214	2434	0	if	m_nState == 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	214	2434	1	if	m_nState == 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	216	2463	0	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57228	
+expect	216	2463	1	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57224	
+expect	218	2500	0	if	__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	218	2500	1	if	__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)	size	57240	
+expect	220	2526	0	if	!((RadioMessage *) ((*messages)[2]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	220	2526	1	if	!((RadioMessage *) ((*messages)[2]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	222	2558	0	for	i < enemies->count	54688	82581	289b2a069f8504d1e8a3919e43915e04
+expect	222	2558	1	for	i < enemies->count	size	57228	
+expect	224	2568	0	for	i < enemies->count	54765	82658	289b2a069f8504d1e8a3919e43915e04
+expect	224	2568	1	for	i < enemies->count	54625	82518	289b2a069f8504d1e8a3919e43915e04
+expect	226	2570	0	for	j < enemies->count	54127	82020	289b2a069f8504d1e8a3919e43915e04
+expect	226	2570	1	for	j < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	228	2584	0	if	((RadioMessage *) ((*messages)[7]))->isTriggered()	compilefail		
+expect	228	2584	1	if	((RadioMessage *) ((*messages)[7]))->isTriggered()	compilefail		
+expect	230	2604	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isOver()	size	57240	
+expect	230	2604	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isOver()	size	57292	
+expect	232	2627	0	if	m_nScriptTimerA >= 3001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	232	2627	1	if	m_nScriptTimerA >= 3001	size	57224	
+expect	234	2636	0	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	234	2636	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	236	2657	0	if	m_nState == 7	size	57244	
+expect	236	2657	1	if	m_nState == 7	size	57244	
+expect	238	2663	0	if	m_nState == 8	size	57220	
+expect	238	2663	1	if	m_nState == 8	size	57244	
+expect	240	2679	0	if	m_nState == 9	size	57240	
+expect	240	2679	1	if	m_nState == 9	size	57260	
+expect	242	2712	0	if	m_nState == 10 && ((RadioMessage *) ((*messages)[9]))->isOver()	size	57236	
+expect	242	2712	1	if	m_nState == 10 && ((RadioMessage *) ((*messages)[9]))->isOver()	size	57260	
+expect	244	2734	0	if	m_nScriptTimerA >= 4001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	244	2734	1	if	m_nScriptTimerA >= 4001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	246	2746	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	246	2746	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	248	2760	0	if	m_nState == 13	size	57236	
+expect	248	2760	1	if	m_nState == 13	size	57236	
+expect	250	2774	0	if	m_nScriptTimerA >= 2151	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	250	2774	1	if	m_nScriptTimerA >= 2151	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	252	2793	0	if	m_nState >= 7 && m_nState <= 9	size	57240	
+expect	252	2793	1	if	m_nState >= 7 && m_nState <= 9	compilefail		
+expect	254	2811	0	if	m_nState == 0	size	57256	
+expect	254	2811	1	if	m_nState == 0	size	57240	
+expect	256	2819	0	if	m_nState == 1 && player->isDockedToDockingPoint()	linkfail		
+expect	256	2819	1	if	m_nState == 1 && player->isDockedToDockingPoint()	size	57248	
+expect	258	2823	0	if	player->isDockedToDockingPoint()	size	57228	
+expect	258	2823	1	if	player->isDockedToDockingPoint()	53928	81821	289b2a069f8504d1e8a3919e43915e04
+expect	260	2831	0	if	m_nState == 4 && ((RadioMessage *) ((*messages)[6]))->isOver()                            && !m_pLevel->getPlayer()->isD	size	57224	
+expect	260	2831	1	if	m_nState == 4 && ((RadioMessage *) ((*messages)[6]))->isOver()                            && !m_pLevel->getPlayer()->isD	size	57224	
+expect	262	2837	0	if	m_nScriptTimerA >= 2001	size	57240	
+expect	262	2837	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	264	2842	0	if	m_nScriptTimerA >= 8001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	264	2842	1	if	m_nScriptTimerA >= 8001	53960	81853	289b2a069f8504d1e8a3919e43915e04
+expect	266	2858	0	if	__builtin_expect((m_nScriptTimerA >= 3001), 0)	linkfail		
+expect	266	2858	1	if	__builtin_expect((m_nScriptTimerA >= 3001), 0)	linkfail		
+expect	268	2901	0	if	Globals::status->field_178 > 7 && m_nScriptTime <= 179999	size	57220	
+expect	268	2901	1	if	Globals::status->field_178 > 7 && m_nScriptTime <= 179999	size	57308	
+expect	270	2917	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[2]))->isTriggered()	size	57244	
+expect	270	2917	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[2]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	272	2921	0	if	Globals::status->field_178 == 0	size	57228	
+expect	272	2921	1	if	Globals::status->field_178 == 0	53935	81828	289b2a069f8504d1e8a3919e43915e04
+expect	274	2938	0	if	player->isInRocketControl()	compilefail		
+expect	274	2938	1	if	player->isInRocketControl()	linkfail		
+expect	276	2967	0	for	i < 3	linkfail		
+expect	276	2967	1	for	i < 3	size	57320	
+expect	278	2987	0	if	m_nState == 3	size	57272	
+expect	278	2987	1	if	m_nState == 3	size	57372	
+expect	280	3007	0	if	((RadioMessage *) ((*messages)[5]))->isOver()	size	57240	
+expect	280	3007	1	if	((RadioMessage *) ((*messages)[5]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	282	3015	0	if	m_nState == 4	54865	82758	289b2a069f8504d1e8a3919e43915e04
+expect	282	3015	1	if	m_nState == 4	size	57212	
+expect	284	3036	0	if	m_nScriptTimerA > 2000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	284	3036	1	if	m_nScriptTimerA > 2000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	286	3042	0	for	i < 3	54914	82807	289b2a069f8504d1e8a3919e43915e04
+expect	286	3042	1	for	i < 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	288	3047	0	for	i < 3	size	57220	
+expect	288	3047	1	for	i < 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	290	3060	0	if	field_0xab	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	290	3060	1	if	field_0xab	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	292	3075	0	if	m_nScriptTimerA >= 3001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	292	3075	1	if	m_nScriptTimerA >= 3001	size	57224	
+expect	294	3079	0	if	__builtin_expect(player->isDockedToDockingPoint(), 1)	size	57236	
+expect	294	3079	1	if	__builtin_expect(player->isDockedToDockingPoint(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	296	3117	0	if	__builtin_expect(m_nState == 8, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	296	3117	1	if	__builtin_expect(m_nState == 8, 0)	size	57224	
+expect	298	3132	0	if	__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)	53975	81868	289b2a069f8504d1e8a3919e43915e04
+expect	298	3132	1	if	__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)	53975	81868	289b2a069f8504d1e8a3919e43915e04
+expect	300	3140	0	if	m_nState == 9	55015	82908	289b2a069f8504d1e8a3919e43915e04
+expect	300	3140	1	if	m_nState == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	302	3160	0	if	__builtin_expect((m_nState == 11), 1)	size	57236	
+expect	302	3160	1	if	__builtin_expect((m_nState == 11), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	304	3171	0	for	i != 2	size	57224	
+expect	304	3171	1	for	i != 2	size	57388	
+expect	306	3210	0	for	i != 2	compilefail		
+expect	306	3210	1	for	i != 2	compilefail		
+expect	308	3214	0	for	i != 2	linkfail		
+expect	308	3214	1	for	i != 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	310	3225	0	if	field_0xab	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	310	3225	1	if	field_0xab	size	57220	
+expect	312	3246	0	for	i != 4	size	57220	
+expect	312	3246	1	for	i != 4	size	57380	
+expect	314	3261	0	for	i != 6	size	57240	
+expect	314	3261	1	for	i != 6	size	57380	
+expect	316	3279	0	if	player->isInRocketControl()	size	57240	
+expect	316	3279	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	318	3303	0	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	57228	
+expect	318	3303	1	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	57236	
+expect	320	3324	0	if	m_nState == 2	size	57224	
+expect	320	3324	1	if	m_nState == 2	size	57220	
+expect	322	3329	0	for	i < enemies->count	size	57220	
+expect	322	3329	1	for	i < enemies->count	linkfail		
+expect	324	3334	0	if	leader == -1	linkfail		
+expect	324	3334	1	if	leader == -1	compilefail		
+expect	326	3341	0	if	i == (unsigned int) (leader + 1)	size	57264	
+expect	326	3341	1	if	i == (unsigned int) (leader + 1)	size	57208	
+expect	328	3371	0	if	player->isInRocketControl()	size	57240	
+expect	328	3371	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	330	3405	0	for	i < enemies->count	size	57244	
+expect	330	3405	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	332	3408	0	if	leader == -1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	332	3408	1	if	leader == -1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	334	3431	0	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	334	3431	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	336	3433	0	if	(*enemies)[i]->shipGroup == 10	size	57240	
+expect	336	3433	1	if	(*enemies)[i]->shipGroup == 10	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	338	3453	0	if	m_nScriptTimerA > 60000	size	57300	
+expect	338	3453	1	if	m_nScriptTimerA > 60000	size	57224	
+expect	340	3456	0	if	(*enemies)[i]->shipGroup == 10 && (*enemies)[i]->isDead()	size	57240	
+expect	340	3456	1	if	(*enemies)[i]->shipGroup == 10 && (*enemies)[i]->isDead()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	342	3471	0	if	(*enemies)[i]->shipGroup == 10 && (*enemies)[i]->player->getEnemy(0)->isDead()	size	57240	
+expect	342	3471	1	if	(*enemies)[i]->shipGroup == 10 && (*enemies)[i]->player->getEnemy(0)->isDead()	size	57256	
+expect	344	3474	0	if	!(*enemies)[k]->isDead()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	344	3474	1	if	!(*enemies)[k]->isDead()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	346	3486	0	if	player->isInRocketControl()	size	57240	
+expect	346	3486	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	348	3511	0	if	m_nState == 5	size	57220	
+expect	348	3511	1	if	m_nState == 5	size	57224	
+expect	350	3522	0	if	m_nState == 6	size	57240	
+expect	350	3522	1	if	m_nState == 6	54129	82022	289b2a069f8504d1e8a3919e43915e04
+expect	352	3549	0	if	m_nState <= 2	size	57244	
+expect	352	3549	1	if	m_nState <= 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	354	3555	0	if	m_nState <= 4	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	354	3555	1	if	m_nState <= 4	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	356	3563	0	if	m_nScriptTimerA >= 13001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	356	3563	1	if	m_nScriptTimerA >= 13001	53946	81839	289b2a069f8504d1e8a3919e43915e04
+expect	358	3571	0	if	__builtin_expect((((RadioMessage *) ((*messages)[1]))->isOver()), 1)	size	57240	
+expect	358	3571	1	if	__builtin_expect((((RadioMessage *) ((*messages)[1]))->isOver()), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	360	3595	0	if	m_nState == 3	size	57304	
+expect	360	3595	1	if	m_nState == 3	compilefail		
+expect	362	3603	0	if	m_nScriptTimerA > 3000	compilefail		
+expect	362	3603	1	if	m_nScriptTimerA > 3000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	364	3612	0	for	i < 2	linkfail		
+expect	364	3612	1	for	i < 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	366	3624	0	for	i < 2	size	57240	
+expect	366	3624	1	for	i < 2	linkfail		
+expect	368	3632	0	if	m_nScriptTimerA >= 10001	size	57236	
+expect	368	3632	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	370	3640	0	if	m_nState == 6	size	57264	
+expect	370	3640	1	if	m_nState == 6	size	57288	
+expect	372	3647	0	for	i < 5	size	57244	
+expect	372	3647	1	for	i < 5	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	374	3673	0	if	player->isInRocketControl()	size	57240	
+expect	374	3673	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	376	3707	0	for	i != 5	size	57236	
+expect	376	3707	1	for	i != 5	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	378	3712	0	if	__builtin_expect(i == 3, 1)	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	378	3712	1	if	__builtin_expect(i == 3, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	380	3736	0	for	i < 5	size	57240	
+expect	380	3736	1	for	i < 5	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	382	3756	0	if	m_nScriptTimerA >= 60001	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	382	3756	1	if	m_nScriptTimerA >= 60001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	384	3761	0	if	__builtin_expect(m_nScriptTimerA >= 110001, 1)	size	57248	
+expect	384	3761	1	if	__builtin_expect(m_nScriptTimerA >= 110001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	386	3768	0	if	(*enemies)[i]->isDead()	54943	82836	289b2a069f8504d1e8a3919e43915e04
+expect	386	3768	1	if	(*enemies)[i]->isDead()	size	57240	
+expect	388	3793	0	if	m_nState == 10 && ((RadioMessage *) ((*messages)[7]))->isOver()	linkfail		
+expect	388	3793	1	if	m_nState == 10 && ((RadioMessage *) ((*messages)[7]))->isOver()	size	57268	
+expect	390	3830	0	if	m_nState == 11	size	57240	
+expect	390	3830	1	if	m_nState == 11	size	57240	
+expect	392	3833	0	if	m_pGeometry6 == nullptr	size	57244	
+expect	392	3833	1	if	m_pGeometry6 == nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	394	3846	0	if	m_nScriptTimerA - delta <= 9000	size	57240	
+expect	394	3846	1	if	m_nScriptTimerA - delta <= 9000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	396	3860	0	if	m_nState == 12	54520	82415	058f698968d98ba3d70eca1ac63dd331
+expect	396	3860	1	if	m_nState == 12	size	57220	
+expect	398	3868	0	if	mover != nullptr && mover->shipGroup == 10	size	57236	
+expect	398	3868	1	if	mover != nullptr && mover->shipGroup == 10	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	400	3878	0	if	m_pGeometry6 != nullptr	size	57240	
+expect	400	3878	1	if	m_pGeometry6 != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	402	3892	0	if	m_nScriptTimerA >= 6001	size	57412	
+expect	402	3892	1	if	m_nScriptTimerA >= 6001	size	57108	
+expect	404	3911	0	if	m_nState != 0	size	57356	
+expect	404	3911	1	if	m_nState != 0	size	57212	
+expect	406	3917	0	if	e->shipGroup == 8 && e->player->isActive()	size	57236	
+expect	406	3917	1	if	e->shipGroup == 8 && e->player->isActive()	linkfail		
+expect	408	3920	0	if	member->shipGroup == 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	408	3920	1	if	member->shipGroup == 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	410	3941	0	if	m_nState == 1	size	57316	
+expect	410	3941	1	if	m_nState == 1	size	57288	
+expect	412	3943	0	if	(uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state	compilefail		
+expect	412	3943	1	if	(uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state	compilefail		
+expect	414	3954	0	if	m_nState == 2	size	57412	
+expect	414	3954	1	if	m_nState == 2	size	57108	
+expect	416	3957	0	for	i < 6	size	57356	
+expect	416	3957	1	for	i < 6	size	57212	
+expect	418	4003	0	if	__builtin_expect(m_nState == 3, 1)	size	57236	
+expect	418	4003	1	if	__builtin_expect(m_nState == 3, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	420	4009	0	if	m_nScriptTimerA >= 7001	size	57228	
+expect	420	4009	1	if	m_nScriptTimerA >= 7001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	422	4017	0	if	!m_pLevel->getPlayer()->isDockedToDockingPoint()	size	57236	
+expect	422	4017	1	if	!m_pLevel->getPlayer()->isDockedToDockingPoint()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	424	4038	0	if	player->isDockedToDockingPoint() && player->hackingWon()                            && player->getHackingGameDockIndex()	size	57228	
+expect	424	4038	1	if	player->isDockedToDockingPoint() && player->hackingWon()                            && player->getHackingGameDockIndex()	53936	81829	289b2a069f8504d1e8a3919e43915e04
+expect	426	4049	0	for	i < 8	size	57236	
+expect	426	4049	1	for	i < 8	size	57380	
+expect	428	4068	0	if	player->isDockedToDockingPoint() ||                         m_nScriptTime >= 60001	size	57244	
+expect	428	4068	1	if	player->isDockedToDockingPoint() ||                         m_nScriptTime >= 60001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	430	4073	0	if	(*enemies)[i]->shipGroup == 8	size	57224	
+expect	430	4073	1	if	(*enemies)[i]->shipGroup == 8	size	57376	
+expect	432	4093	0	if	m_nState == 1	size	57220	
+expect	432	4093	1	if	m_nState == 1	linkfail		
+expect	434	4101	0	if	m_nScriptTimerA < 75001	compilefail		
+expect	434	4101	1	if	m_nScriptTimerA < 75001	compilefail		
+expect	436	4110	0	for	i < enemies->count	55121	83014	289b2a069f8504d1e8a3919e43915e04
+expect	436	4110	1	for	i < enemies->count	compilefail		
+expect	438	4127	0	if	m_nState == 1	linkfail		
+expect	438	4127	1	if	m_nState == 1	size	57248	
+expect	440	4149	0	if	m_nState == 2	size	57240	
+expect	440	4149	1	if	m_nState == 2	size	57412	
+expect	442	4194	0	for	i < 2	size	57224	
+expect	442	4194	1	for	i < 2	size	57376	
+expect	444	4199	0	if	m_nState == 0	size	57220	
+expect	444	4199	1	if	m_nState == 0	54127	82023	3df2b170ce333c6a84de6cae97105ace
+expect	446	4215	0	if	m_nState == 1	compilefail		
+expect	446	4215	1	if	m_nState == 1	54030	81923	289b2a069f8504d1e8a3919e43915e04
+expect	448	4219	0	for	i < m_pLevel->getEnemies()->count	size	57252	
+expect	448	4219	1	for	i < m_pLevel->getEnemies()->count	size	57264	
+expect	450	4225	0	if	player->isDockedToDockingPoint() && player->hackingWon() &&                         player->getHackingGameDockIndex() >=	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	450	4225	1	if	player->isDockedToDockingPoint() && player->hackingWon() &&                         player->getHackingGameDockIndex() >=	size	57256	
+expect	452	4242	0	if	m_nState < 2	size	57228	
+expect	452	4242	1	if	m_nState < 2	size	57264	
+expect	454	4248	0	if	m_nState == 0	54827	82720	289b2a069f8504d1e8a3919e43915e04
+expect	454	4248	1	if	m_nState == 0	size	57240	
+expect	456	4255	0	if	m_nState == 1	size	57236	
+expect	456	4255	1	if	m_nState == 1	size	57252	
+expect	458	4257	0	for	i < m_pLevel->getGasClouds()->count	size	57236	
+expect	458	4257	1	for	i < m_pLevel->getGasClouds()->count	size	57276	
+expect	460	4266	0	if	m_nState == 2	53924	81817	289b2a069f8504d1e8a3919e43915e04
+expect	460	4266	1	if	m_nState == 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	462	4283	0	if	m_nState == 1	54115	82008	289b2a069f8504d1e8a3919e43915e04
+expect	462	4283	1	if	m_nState == 1	size	57228	
+expect	464	4288	0	if	((RadioMessage *) ((*messages)[3]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	464	4288	1	if	((RadioMessage *) ((*messages)[3]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	466	4294	0	for	i < enemies->count	size	57236	
+expect	466	4294	1	for	i < enemies->count	size	57376	
+expect	468	4296	0	if	__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 1)	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	468	4296	1	if	__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	470	4305	0	if	m_nScriptTimerA >= 7001	54401	82294	289b2a069f8504d1e8a3919e43915e04
+expect	470	4305	1	if	m_nScriptTimerA >= 7001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	472	4323	0	for	i < 13	size	57244	
+expect	472	4323	1	for	i < 13	size	57208	
+expect	474	4326	0	if	m_nState != 4 || m_nScriptTimerA <= 1000	size	57228	
+expect	474	4326	1	if	m_nState != 4 || m_nScriptTimerA <= 1000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	476	4345	0	if	!((RadioMessage *) ((*messages)[0]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	476	4345	1	if	!((RadioMessage *) ((*messages)[0]))->isOver()	size	57240	
+expect	478	4379	0	if	__builtin_expect(m_nScriptTimerA >= 1001, 1)	size	57220	
+expect	478	4379	1	if	__builtin_expect(m_nScriptTimerA >= 1001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	480	4410	0	if	__builtin_expect(m_nScriptTimerA >= 324, 0)	compilefail		
+expect	480	4410	1	if	__builtin_expect(m_nScriptTimerA >= 324, 0)	compilefail		
+expect	482	4433	0	if	m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000	compilefail		
+expect	482	4433	1	if	m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000	53930	81823	289b2a069f8504d1e8a3919e43915e04
+expect	484	4445	0	for	i < 13	compilefail		
+expect	484	4445	1	for	i < 13	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	486	4475	0	if	player->isInRocketControl()	compilefail		
+expect	486	4475	1	if	player->isInRocketControl()	linkfail		
+expect	488	4502	0	for	i < enemies->count	size	57404	
+expect	488	4502	1	for	i < enemies->count	compilefail		
+expect	490	4516	0	if	m_nState == 1	size	57212	
+expect	490	4516	1	if	m_nState == 1	size	57204	
+expect	492	4521	0	if	(*enemies)[i]->shipGroup == 9	size	57248	
+expect	492	4521	1	if	(*enemies)[i]->shipGroup == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	494	4528	0	if	m_nScriptTimerA >= 1501	size	57240	
+expect	494	4528	1	if	m_nScriptTimerA >= 1501	54885	82778	289b2a069f8504d1e8a3919e43915e04
+expect	496	4530	0	if	(*enemies)[i]->shipGroup == 9	size	57252	
+expect	496	4530	1	if	(*enemies)[i]->shipGroup == 9	size	57228	
+expect	498	4561	0	if	__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	498	4561	1	if	__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 0)	size	57248	
+expect	500	4575	0	if	m_nState == 3	size	57228	
+expect	500	4575	1	if	m_nState == 3	size	57200	
+expect	502	4580	0	if	m_nScriptTimerA >= 1001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	502	4580	1	if	m_nScriptTimerA >= 1001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	504	4606	0	if	((RadioMessage *) ((*messages)[4]))->isOver()	53995	81888	289b2a069f8504d1e8a3919e43915e04
+expect	504	4606	1	if	((RadioMessage *) ((*messages)[4]))->isOver()	size	57252	
+expect	506	4619	0	if	m_nState == 5	size	57208	
+expect	506	4619	1	if	m_nState == 5	size	57212	
+expect	508	4624	0	if	__builtin_expect(m_nScriptTimerA >= 1001, 0)	size	57240	
+expect	508	4624	1	if	__builtin_expect(m_nScriptTimerA >= 1001, 0)	size	57200	
+expect	510	4637	0	if	__builtin_expect((*enemies)[i]->shipGroup == 9, 1)	linkfail		
+expect	510	4637	1	if	__builtin_expect((*enemies)[i]->shipGroup == 9, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	512	4659	0	if	((RadioMessage *) ((*messages)[6]))->isOver()	size	57236	
+expect	512	4659	1	if	((RadioMessage *) ((*messages)[6]))->isOver()	compilefail		
+expect	514	4673	0	if	m_nState == 7	size	57248	
+expect	514	4673	1	if	m_nState == 7	size	57216	
+expect	516	4678	0	if	m_nState == 8	size	57252	
+expect	516	4678	1	if	m_nState == 8	size	57208	
+expect	518	4684	0	if	m_nState == 9	size	57212	
+expect	518	4684	1	if	m_nState == 9	size	57240	
+expect	520	4688	0	if	__builtin_expect(m_nScriptTimerA >= 2001, 1)	size	57200	
+expect	520	4688	1	if	__builtin_expect(m_nScriptTimerA >= 2001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	522	4691	0	if	ship->shipGroup == 9	size	57200	
+expect	522	4691	1	if	ship->shipGroup == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	524	4725	0	if	m_nState == 10	55044	82937	289b2a069f8504d1e8a3919e43915e04
+expect	524	4725	1	if	m_nState == 10	size	57244	
+expect	526	4731	0	if	player->isDockedToDockingPoint() && player->hackingWon()	size	57240	
+expect	526	4731	1	if	player->isDockedToDockingPoint() && player->hackingWon()	linkfail		
+expect	528	4735	0	if	(*enemies)[i]->shipGroup == 9	size	57236	
+expect	528	4735	1	if	(*enemies)[i]->shipGroup == 9	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	530	4755	0	if	m_pGeometry2->isVisible()	size	57228	
+expect	530	4755	1	if	m_pGeometry2->isVisible()	54163	82056	289b2a069f8504d1e8a3919e43915e04
+expect	532	4765	0	if	m_nState == 0	size	57260	
+expect	532	4765	1	if	m_nState == 0	size	57236	
+expect	534	4772	0	if	player->isInRocketControl()	size	57244	
+expect	534	4772	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	536	4793	0	if	m_nScriptTimerA >= 16001	size	57236	
+expect	536	4793	1	if	m_nScriptTimerA >= 16001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	538	4797	0	if	ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	538	4797	1	if	ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	540	4811	0	if	lift < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	540	4811	1	if	lift < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	542	4819	0	if	m_nState == 4	size	57212	
+expect	542	4819	1	if	m_nState == 4	size	57216	
+expect	544	4825	0	if	lift < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	544	4825	1	if	lift < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	546	4831	0	if	ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	546	4831	1	if	ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	548	4848	0	for	i < enemies->count	size	57228	
+expect	548	4848	1	for	i < enemies->count	size	57224	
+expect	550	4855	0	if	(*enemies)[i]->shipGroupFlag == 44	size	57224	
+expect	550	4855	1	if	(*enemies)[i]->shipGroupFlag == 44	54078	81971	289b2a069f8504d1e8a3919e43915e04
+expect	552	4874	0	if	__builtin_expect(Globals::isRunningHDonWeakDevice, 1)	size	57236	
+expect	552	4874	1	if	__builtin_expect(Globals::isRunningHDonWeakDevice, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	554	4881	0	for	__builtin_expect(i < 22, 1)	53976	81869	289b2a069f8504d1e8a3919e43915e04
+expect	554	4881	1	for	__builtin_expect(i < 22, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	556	4891	0	if	(destroyed >= 9 && m_nScriptTime > 200000)                         || (*enemies)[fighterIndex]->player->getHitpoints()  	size	57240	
+expect	556	4891	1	if	(destroyed >= 9 && m_nScriptTime > 200000)                         || (*enemies)[fighterIndex]->player->getHitpoints()  	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	558	4926	0	if	m_nState == 6	size	57248	
+expect	558	4926	1	if	m_nState == 6	size	57252	
+expect	560	4934	0	if	((RadioMessage *) ((*messages)[10]))->isTriggered()	size	57240	
+expect	560	4934	1	if	((RadioMessage *) ((*messages)[10]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	562	4947	0	if	__builtin_expect(m_nScriptTimerA <= 9999, 1)	size	57248	
+expect	562	4947	1	if	__builtin_expect(m_nScriptTimerA <= 9999, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	564	4971	0	if	m_nState == 8	size	57228	
+expect	564	4971	1	if	m_nState == 8	size	57248	
+expect	566	4993	0	if	m_nState == 9	size	57260	
+expect	566	4993	1	if	m_nState == 9	size	57248	
+expect	568	5011	0	if	((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr	size	57240	
+expect	568	5011	1	if	((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr	size	57260	
+expect	570	5023	0	if	m_nFlashCountdown <= 0	size	57248	
+expect	570	5023	1	if	m_nFlashCountdown <= 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	572	5036	0	if	m_nScriptTimerA >= 6001	size	57248	
+expect	572	5036	1	if	m_nScriptTimerA >= 6001	size	57236	
+expect	574	5059	0	if	m_nState == 10	size	57272	
+expect	574	5059	1	if	m_nState == 10	size	57240	
+expect	576	5075	0	if	__builtin_expect((((RadioMessage *) ((*messages)[15]))->isOver()), 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	576	5075	1	if	__builtin_expect((((RadioMessage *) ((*messages)[15]))->isOver()), 0)	53939	81832	289b2a069f8504d1e8a3919e43915e04
+expect	578	5090	0	if	m_nState == 11	size	57244	
+expect	578	5090	1	if	m_nState == 11	size	57224	
+expect	580	5094	0	if	m_nScriptTimerA - delta <= 6000	size	57244	
+expect	580	5094	1	if	m_nScriptTimerA - delta <= 6000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	582	5112	0	if	m_nState == 12	54865	82758	289b2a069f8504d1e8a3919e43915e04
+expect	582	5112	1	if	m_nState == 12	size	57236	
+expect	584	5116	0	if	m_nScriptTimerA < 7000	size	57240	
+expect	584	5116	1	if	m_nScriptTimerA < 7000	size	57236	
+expect	586	5122	0	if	__builtin_expect(m_nScriptTimerA < 6000, 1)	size	57236	
+expect	586	5122	1	if	__builtin_expect(m_nScriptTimerA < 6000, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	588	5130	0	if	m_nScriptTimerA >= 5500 && m_nScriptTimerA - delta < 5500	size	57228	
+expect	588	5130	1	if	m_nScriptTimerA >= 5500 && m_nScriptTimerA - delta < 5500	53934	81827	289b2a069f8504d1e8a3919e43915e04
+expect	590	5142	0	if	__builtin_expect(m_nScriptTimerA >= 5500, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	590	5142	1	if	__builtin_expect(m_nScriptTimerA >= 5500, 0)	size	57236	
+expect	592	5147	0	if	m_nScriptTimerA < 5500	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	592	5147	1	if	m_nScriptTimerA < 5500	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	594	5172	0	if	m_nState == 1	size	57228	
+expect	594	5172	1	if	m_nState == 1	size	57240	
+expect	596	5185	0	if	m_nScriptTimerA > 25000	compilefail		
+expect	596	5185	1	if	m_nScriptTimerA > 25000	compilefail		
+expect	598	5194	0	if	m_nScriptTimerA >= 20000	size	57240	
+expect	598	5194	1	if	m_nScriptTimerA >= 20000	53945	81838	289b2a069f8504d1e8a3919e43915e04
+expect	600	5203	0	if	m_nState == 2	size	57256	
+expect	600	5203	1	if	m_nState == 2	size	57240	
+expect	602	5210	0	if	m_nScriptTimerB >= 12001 && ((RadioMessage *) ((*messages)[2]))->isOver()	size	57236	
+expect	602	5210	1	if	m_nScriptTimerB >= 12001 && ((RadioMessage *) ((*messages)[2]))->isOver()	size	57316	
+expect	604	5240	0	if	m_nScriptTimerA >= 4001	size	57240	
+expect	604	5240	1	if	m_nScriptTimerA >= 4001	size	57240	
+expect	606	5244	0	for	i <= 3	size	57356	
+expect	606	5244	1	for	i <= 3	size	57332	
+expect	608	5255	0	if	m_nScriptTimerB >= 25001	linkfail		
+expect	608	5255	1	if	m_nScriptTimerB >= 25001	size	57236	
+expect	610	5270	0	if	m_nState == 0	size	57248	
+expect	610	5270	1	if	m_nState == 0	size	57256	
+expect	612	5278	0	for	i < enemies->count	size	57240	
+expect	612	5278	1	for	i < enemies->count	size	57236	
+expect	614	5287	0	if	m_nState <= 1	size	57316	
+expect	614	5287	1	if	m_nState <= 1	size	57240	
+expect	616	5292	0	for	i < enemies->count	size	57240	
+expect	616	5292	1	for	i < enemies->count	size	57356	
+expect	618	5298	0	for	i < Globals::status->field_90->count	size	57332	
+expect	618	5298	1	for	i < Globals::status->field_90->count	55010	82903	289b2a069f8504d1e8a3919e43915e04
+expect	608	5255	1	if	m_nScriptTimerB >= 25001	size	57236	
+expect	610	5270	0	if	m_nState == 0	size	57248	
+expect	610	5270	1	if	m_nState == 0	size	57256	
+expect	612	5278	0	for	i < enemies->count	size	57240	
+expect	612	5278	1	for	i < enemies->count	size	57236	
+expect	614	5287	0	if	m_nState <= 1	size	57316	
+expect	614	5287	1	if	m_nState <= 1	size	57240	
+expect	616	5292	0	for	i < enemies->count	size	57240	
+expect	616	5292	1	for	i < enemies->count	size	57356	
+expect	618	5298	0	for	i < Globals::status->field_90->count	size	57332	
+expect	618	5298	1	for	i < Globals::status->field_90->count	55010	82903	289b2a069f8504d1e8a3919e43915e04
+expect	1	620	0	if	introMsg->isOver() && m_nState == 0	size	57464	
+expect	1	620	1	if	introMsg->isOver() && m_nState == 0	size	57428	
+expect	3	643	0	if	m_nState <= 2	size	57240	
+expect	3	643	1	if	m_nState <= 2	size	57368	
+expect	5	649	0	if	m_nState == 1	size	57240	
+expect	5	649	1	if	m_nState == 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	7	658	0	if	m_nState == 2	size	57220	
+expect	7	658	1	if	m_nState == 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	9	669	0	if	((RadioMessage *) ((*messages)[7]))->isOver()	size	57236	
+expect	9	669	1	if	((RadioMessage *) ((*messages)[7]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	11	680	0	if	m_nState == 4	size	57248	
+expect	11	680	1	if	m_nState == 4	size	57416	
+expect	13	709	0	if	m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()	size	57252	
+expect	13	709	1	if	m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()	size	57452	
+expect	15	728	0	if	((RadioMessage *) ((*messages)[13]))->isOver()	size	57240	
+expect	15	728	1	if	((RadioMessage *) ((*messages)[13]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	17	735	0	if	m_nState == 3	size	57256	
+expect	17	735	1	if	m_nState == 3	size	57452	
+expect	19	764	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	19	764	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	21	790	0	if	m_nScriptTimerA >= 2001	size	57236	
+expect	21	790	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	23	807	0	if	rumble < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	23	807	1	if	rumble < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	25	841	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	25	841	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	27	858	0	if	rumble < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	27	858	1	if	rumble < 0.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	29	885	0	if	((RadioMessage *) ((*messages)[17]))->isOver()	size	57236	
+expect	29	885	1	if	((RadioMessage *) ((*messages)[17]))->isOver()	size	57216	
+expect	31	912	0	if	m_nScriptTimerA >= 12001	size	57264	
+expect	31	912	1	if	m_nScriptTimerA >= 12001	size	57248	
+expect	33	932	0	if	m_nState == 16	size	57244	
+expect	33	932	1	if	m_nState == 16	size	57248	
+expect	35	943	0	if	status->getCurrentCampaignMission() == 1	size	57432	
+expect	35	943	1	if	status->getCurrentCampaignMission() == 1	size	57592	
+expect	37	964	0	if	msg2->isOver() && m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	37	964	1	if	msg2->isOver() && m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	39	975	0	if	Globals::status->getCurrentCampaignMission() == 0x51 && Globals::status->inAlienOrbit()	size	57212	
+expect	39	975	1	if	Globals::status->getCurrentCampaignMission() == 0x51 && Globals::status->inAlienOrbit()	size	57448	
+expect	41	989	0	if	m_nScriptTime >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	41	989	1	if	m_nScriptTime >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	43	1016	0	if	m_nScriptTime >= 14001	size	57240	
+expect	43	1016	1	if	m_nScriptTime >= 14001	size	57244	
+expect	45	1025	0	if	m_nState == 2	size	57256	
+expect	45	1025	1	if	m_nState == 2	size	57236	
+expect	47	1032	0	if	m_nState == 3	54946	82839	289b2a069f8504d1e8a3919e43915e04
+expect	47	1032	1	if	m_nState == 3	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	49	1046	0	if	Globals::status->getCurrentCampaignMission() == 0x4e	size	57352	
+expect	49	1046	1	if	Globals::status->getCurrentCampaignMission() == 0x4e	size	57360	
+expect	51	1075	0	if	m_nScriptTime >= 7001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	51	1075	1	if	m_nScriptTime >= 7001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	53	1083	0	if	!Globals::sound->isPlaying(1122)	size	57248	
+expect	53	1083	1	if	!Globals::sound->isPlaying(1122)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	55	1093	0	if	m_nScriptTime >= 18001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	55	1093	1	if	m_nScriptTime >= 18001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	57	1114	0	if	__builtin_expect(m_nScriptTimerA >= 1100 - delta, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	57	1114	1	if	__builtin_expect(m_nScriptTimerA >= 1100 - delta, 0)	54128	82021	289b2a069f8504d1e8a3919e43915e04
+expect	59	1130	0	if	m_nScriptTimerA < 1100 - delta	size	57236	
+expect	59	1130	1	if	m_nScriptTimerA < 1100 - delta	54726	82619	289b2a069f8504d1e8a3919e43915e04
+expect	61	1145	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	61	1145	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	63	1169	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	63	1169	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	65	1184	0	if	m_nScriptTimerA >= 2151	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	65	1184	1	if	m_nScriptTimerA >= 2151	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	67	1223	0	if	m_nScriptTimerA < 3001	size	57240	
+expect	67	1223	1	if	m_nScriptTimerA < 3001	size	57228	
+expect	69	1242	0	if	m_nState >= 5 && m_nState <= 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	69	1242	1	if	m_nState >= 5 && m_nState <= 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	71	1251	0	if	m_nState <= 2	size	57252	
+expect	71	1251	1	if	m_nState <= 2	size	57248	
+expect	73	1281	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	73	1281	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	75	1291	0	if	m_nScriptTime >= 38001	size	57248	
+expect	75	1291	1	if	m_nScriptTime >= 38001	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	77	1297	0	if	m_nScriptTime >= 39001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	77	1297	1	if	m_nScriptTime >= 39001	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	79	1310	0	if	planet->getScaling().x < 10.0f	size	57236	
+expect	79	1310	1	if	planet->getScaling().x < 10.0f	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	81	1328	0	if	m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000	size	57220	
+expect	81	1328	1	if	m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000	size	57216	
+expect	83	1338	0	if	__builtin_expect(!Globals::layout->isFading(), 1)	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	83	1338	1	if	__builtin_expect(!Globals::layout->isFading(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	85	1358	0	if	m_nState == 1	size	57244	
+expect	85	1358	1	if	m_nState == 1	size	57272	
+expect	87	1368	0	if	__builtin_expect(m_nState == 2, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	87	1368	1	if	__builtin_expect(m_nState == 2, 0)	size	57276	
+expect	89	1385	0	if	m_nState == 3 && ((RadioMessage *) ((*messages)[4]))->isTriggered()	size	57244	
+expect	89	1385	1	if	m_nState == 3 && ((RadioMessage *) ((*messages)[4]))->isTriggered()	size	57252	
+expect	91	1394	0	if	__builtin_expect(m_nState == 5, 1)	size	57248	
+expect	91	1394	1	if	__builtin_expect(m_nState == 5, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	93	1400	0	if	m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()	size	57244	
+expect	93	1400	1	if	m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	95	1420	0	if	Globals::status->getCurrentCampaignMission() == 95 || Globals::status->getCurrentCampaignMission() == 99                	size	57248	
+expect	95	1420	1	if	Globals::status->getCurrentCampaignMission() == 95 || Globals::status->getCurrentCampaignMission() == 99                	54348	82241	289b2a069f8504d1e8a3919e43915e04
+expect	97	1431	0	if	m_nScriptTimerA >= 2000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	97	1431	1	if	m_nScriptTimerA >= 2000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	99	1435	0	if	__builtin_expect(((RadioMessage *) ((*messages)[0]))->isOver(), 1)	54913	82806	289b2a069f8504d1e8a3919e43915e04
+expect	99	1435	1	if	__builtin_expect(((RadioMessage *) ((*messages)[0]))->isOver(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	101	1460	0	if	m_bStartSequence != 0	size	57268	
+expect	101	1460	1	if	m_bStartSequence != 0	size	57420	
+expect	103	1465	0	for	i < wingmen->count	size	57244	
+expect	103	1465	1	for	i < wingmen->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	105	1474	0	if	m_pLevel->getPlayer() != 0 &&             __builtin_expect(Globals::status->getCurrentCampaignMission() >= 2, 1) // lint	size	57280	
+expect	105	1474	1	if	m_pLevel->getPlayer() != 0 &&             __builtin_expect(Globals::status->getCurrentCampaignMission() >= 2, 1) // lint	size	57236	
+expect	107	1487	0	if	!Level::programmedStation->equals(Globals::status->getStation())	size	57244	
+expect	107	1487	1	if	!Level::programmedStation->equals(Globals::status->getStation())	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	109	1497	0	if	Globals::status->getWingmen() != 0	size	57280	
+expect	109	1497	1	if	Globals::status->getWingmen() != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	111	1501	0	if	wingman->isWingMan()	size	57240	
+expect	111	1501	1	if	wingman->isWingMan()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	113	1513	0	if	m_nState == 0	54352	82263	e0ea831c9dba1d6c969779f3234556f7
+expect	113	1513	1	if	m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	115	1523	0	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	115	1523	1	if	((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	117	1532	0	if	__builtin_expect(Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr, 1)	size	57256	
+expect	117	1532	1	if	__builtin_expect(Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	119	1539	0	for	i < enemies->count	size	57244	
+expect	119	1539	1	for	i < enemies->count	size	57376	
+expect	121	1562	0	if	(Globals::status->getMission()->isCampaignMission() &&          !Globals::status->getMission()->isEmpty()) ||         Gl	size	57084	
+expect	121	1562	1	if	(Globals::status->getMission()->isCampaignMission() &&          !Globals::status->getMission()->isEmpty()) ||         Gl	size	57524	
+expect	123	1588	0	if	((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1	size	57252	
+expect	123	1588	1	if	((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1	size	57228	
+expect	125	1610	0	if	(*m_pLevel->getEnemies())[i]->shipGroup == 8	size	57240	
+expect	125	1610	1	if	(*m_pLevel->getEnemies())[i]->shipGroup == 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	127	1630	0	if	((RadioMessage *) ((*messages)[3]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	127	1630	1	if	((RadioMessage *) ((*messages)[3]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	129	1650	0	if	((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	129	1650	1	if	((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	131	1678	0	if	m_nState == 1	size	57248	
+expect	131	1678	1	if	m_nState == 1	size	57224	
+expect	133	1693	0	if	m_nState == 2 && m_nScriptTime >= 20001	size	57240	
+expect	133	1693	1	if	m_nState == 2 && m_nScriptTime >= 20001	size	57220	
+expect	135	1721	0	for	i < m_pLevel->getEnemies()->count	size	57224	
+expect	135	1721	1	for	i < m_pLevel->getEnemies()->count	size	57284	
+expect	137	1735	0	if	m_nState == 4	size	57248	
+expect	137	1735	1	if	m_nState == 4	54673	82566	289b2a069f8504d1e8a3919e43915e04
+expect	139	1739	0	for	i < m_pLevel->getEnemies()->count	size	57236	
+expect	139	1739	1	for	i < m_pLevel->getEnemies()->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	141	1749	0	if	((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 5	54587	82480	289b2a069f8504d1e8a3919e43915e04
+expect	141	1749	1	if	((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 5	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	143	1767	0	for	i <= 3	54905	82798	289b2a069f8504d1e8a3919e43915e04
+expect	143	1767	1	for	i <= 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	145	1771	0	for	j != 4	54911	82804	289b2a069f8504d1e8a3919e43915e04
+expect	145	1771	1	for	j != 4	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	147	1780	0	for	j != 4	size	57240	
+expect	147	1780	1	for	j != 4	size	57228	
+expect	149	1810	0	for	j < m_pLevel->getEnemies()->count	size	57256	
+expect	149	1810	1	for	j < m_pLevel->getEnemies()->count	size	57312	
+expect	151	1830	0	if	m_nState == 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	151	1830	1	if	m_nState == 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	153	1890	0	if	((RadioMessage *) ((*messages)[2]))->isOver() && __builtin_expect(m_nState == 1, 1)	55042	82935	289b2a069f8504d1e8a3919e43915e04
+expect	153	1890	1	if	((RadioMessage *) ((*messages)[2]))->isOver() && __builtin_expect(m_nState == 1, 1)	size	57240	
+expect	155	1910	0	if	m_pGeometry6 != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	155	1910	1	if	m_pGeometry6 != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	157	1918	0	if	((RadioMessage *) ((*messages)[3]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	157	1918	1	if	((RadioMessage *) ((*messages)[3]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	159	1947	0	if	((RadioMessage *) ((*messages)[4]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	159	1947	1	if	((RadioMessage *) ((*messages)[4]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	161	1959	0	for	i < enemies->count	54895	82788	289b2a069f8504d1e8a3919e43915e04
+expect	161	1959	1	for	i < enemies->count	size	57340	
+expect	163	1974	0	if	m_nState == 4	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	163	1974	1	if	m_nState == 4	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	165	1988	0	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0	size	57248	
+expect	165	1988	1	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0	size	57252	
+expect	167	2025	0	if	((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1	size	57204	
+expect	167	2025	1	if	((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1	size	57244	
+expect	169	2045	0	if	m_nState == 2	size	57224	
+expect	169	2045	1	if	m_nState == 2	size	57244	
+expect	171	2054	0	if	m_nState == 3	size	57236	
+expect	171	2054	1	if	m_nState == 3	55000	82893	289b2a069f8504d1e8a3919e43915e04
+expect	173	2065	0	if	__builtin_expect(ship != nullptr && ship->shipGroup == 9, 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	173	2065	1	if	__builtin_expect(ship != nullptr && ship->shipGroup == 9, 0)	54097	81990	289b2a069f8504d1e8a3919e43915e04
+expect	175	2075	0	if	m_nScriptTimerA >= 15001	54658	82551	289b2a069f8504d1e8a3919e43915e04
+expect	175	2075	1	if	m_nScriptTimerA >= 15001	54587	82480	289b2a069f8504d1e8a3919e43915e04
+expect	177	2115	0	if	m_nState == 6	size	57236	
+expect	177	2115	1	if	m_nState == 6	size	57248	
+expect	179	2154	0	if	m_nState == 0 && !Globals::status->inAlienOrbit()	54808	82706	aae515a057ec88cbce23b90bdc4eb0a3
+expect	179	2154	1	if	m_nState == 0 && !Globals::status->inAlienOrbit()	size	57244	
+expect	181	2160	0	if	m_bRenderParticles	size	57220	
+expect	181	2160	1	if	m_bRenderParticles	54088	81985	06e76096d84925b042d44c8c112915e4
+expect	183	2178	0	if	m_nScriptTimerA >= 15001	53934	81827	289b2a069f8504d1e8a3919e43915e04
+expect	183	2178	1	if	m_nScriptTimerA >= 15001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	185	2209	0	if	m_nState == 0	size	57240	
+expect	185	2209	1	if	m_nState == 0	size	57244	
+expect	187	2211	0	for	i < enemies->count	size	57248	
+expect	187	2211	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	189	2218	0	if	m_nState == 1	size	57248	
+expect	189	2218	1	if	m_nState == 1	size	57240	
+expect	191	2220	0	if	enemies != nullptr	size	57236	
+expect	191	2220	1	if	enemies != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	193	2222	0	if	__builtin_expect((*enemies)[i]->player->isAlwaysFriend(), 0)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	193	2222	1	if	__builtin_expect((*enemies)[i]->player->isAlwaysFriend(), 0)	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	195	2237	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57236	
+expect	195	2237	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57252	
+expect	197	2262	0	if	((RadioMessage *) ((*messages)[2]))->isTriggered()	size	57236	
+expect	197	2262	1	if	((RadioMessage *) ((*messages)[2]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	199	2277	0	if	__builtin_expect(m_nState == 2, 1) && ((RadioMessage *) ((*messages)[5]))->isTriggered()	size	57220	
+expect	199	2277	1	if	__builtin_expect(m_nState == 2, 1) && ((RadioMessage *) ((*messages)[5]))->isTriggered()	54554	82447	289b2a069f8504d1e8a3919e43915e04
+expect	201	2282	0	if	!(*enemies)[i]->isWingMan()	size	57180	
+expect	201	2282	1	if	!(*enemies)[i]->isWingMan()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	203	2290	0	for	i < enemies->count	size	57236	
+expect	203	2290	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	205	2305	0	if	((RadioMessage *) ((*messages)[3]))->isOver() && m_nState == 1	size	57244	
+expect	205	2305	1	if	((RadioMessage *) ((*messages)[3]))->isOver() && m_nState == 1	size	57292	
+expect	207	2326	0	if	((RadioMessage *) ((*messages)[4]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	207	2326	1	if	((RadioMessage *) ((*messages)[4]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	209	2357	0	if	((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4	size	57204	
+expect	209	2357	1	if	((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4	size	57324	
+expect	211	2389	0	for	i != 9	size	57256	
+expect	211	2389	1	for	i != 9	size	57364	
+expect	213	2411	0	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57240	
+expect	213	2411	1	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	57236	
+expect	215	2440	0	if	((RadioMessage *) ((*messages)[1]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	215	2440	1	if	((RadioMessage *) ((*messages)[1]))->isOver()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	217	2493	0	if	m_nState == 1	size	57216	
+expect	217	2493	1	if	m_nState == 1	size	57220	
+expect	219	2519	0	if	m_nState == 2	size	57224	
+expect	219	2519	1	if	m_nState == 2	size	57224	
+expect	221	2551	0	if	(int) AbyssEngine::AEMath::VectorLength(playerPos - enemyPos) <= 49999	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	221	2551	1	if	(int) AbyssEngine::AEMath::VectorLength(playerPos - enemyPos) <= 49999	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	223	2559	0	if	(*enemies)[i]->field_0x40 != 0 &&                                 (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]-	size	57236	
+expect	223	2559	1	if	(*enemies)[i]->field_0x40 != 0 &&                                 (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]-	size	57228	
+expect	225	2569	0	if	(*enemies)[i]->field_0x40 != 0 && (*enemies)[i]->player->empDisabledByte != 0	54190	82083	289b2a069f8504d1e8a3919e43915e04
+expect	225	2569	1	if	(*enemies)[i]->field_0x40 != 0 && (*enemies)[i]->player->empDisabledByte != 0	size	57236	
+expect	227	2571	0	if	(*enemies)[j]->field_0x40 != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	227	2571	1	if	(*enemies)[j]->field_0x40 != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	229	2586	0	for	i != 8	size	57252	
+expect	229	2586	1	for	i != 8	size	57356	
+expect	231	2624	0	if	m_nState == 1	size	57220	
+expect	231	2624	1	if	m_nState == 1	size	57236	
+expect	233	2631	0	if	m_nState == 2	size	57220	
+expect	233	2631	1	if	m_nState == 2	size	57228	
+expect	235	2641	0	if	m_nState == 6	size	57256	
+expect	235	2641	1	if	m_nState == 6	size	57248	
+expect	237	2659	0	if	m_nScriptTimerA >= 801	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	237	2659	1	if	m_nScriptTimerA >= 801	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	239	2665	0	if	m_nScriptTimerA >= 801	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	239	2665	1	if	m_nScriptTimerA >= 801	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	241	2684	0	if	m_nScriptTimerA >= 8001	size	57224	
+expect	241	2684	1	if	m_nScriptTimerA >= 8001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	243	2731	0	if	m_nState == 11	size	57244	
+expect	243	2731	1	if	m_nState == 11	size	57240	
+expect	245	2741	0	if	m_nState == 12	size	57224	
+expect	245	2741	1	if	m_nState == 12	size	57228	
+expect	247	2750	0	if	m_nScriptTimerA >= 8001	size	57228	
+expect	247	2750	1	if	m_nScriptTimerA >= 8001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	249	2770	0	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	249	2770	1	if	!(rumble < 1.0f)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	251	2777	0	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	251	2777	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	253	2795	0	if	m_nState >= 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	253	2795	1	if	m_nState >= 8	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	255	2812	0	if	((RadioMessage *) ((*messages)[3]))->isTriggered()	size	57236	
+expect	255	2812	1	if	((RadioMessage *) ((*messages)[3]))->isTriggered()	53933	81826	289b2a069f8504d1e8a3919e43915e04
+expect	257	2821	0	if	m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()	size	57236	
+expect	257	2821	1	if	m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()	size	57260	
+expect	259	2827	0	if	m_nState == 3 && Globals::status->field_178 >= 10	size	57240	
+expect	259	2827	1	if	m_nState == 3 && Globals::status->field_178 >= 10	size	57268	
+expect	261	2835	0	if	m_nState == 6	size	57236	
+expect	261	2835	1	if	m_nState == 6	size	57240	
+expect	263	2839	0	if	reinterpret_cast<float &>(speedBits) < 100.0f	size	57236	
+expect	263	2839	1	if	reinterpret_cast<float &>(speedBits) < 100.0f	53940	81833	289b2a069f8504d1e8a3919e43915e04
+expect	265	2856	0	if	__builtin_expect(m_nState == 5, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	265	2856	1	if	__builtin_expect(m_nState == 5, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	267	2864	0	if	player->isInRocketControl()	size	57240	
+expect	267	2864	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	269	2902	0	if	m_nScriptTimerB == 0	size	57240	
+expect	269	2902	1	if	m_nScriptTimerB == 0	size	57300	
+expect	271	2920	0	if	m_nState == 1	size	57236	
+expect	271	2920	1	if	m_nState == 1	size	57240	
+expect	273	2928	0	for	i < 3	size	57240	
+expect	273	2928	1	for	i < 3	size	57248	
+expect	275	2966	0	if	m_nState == 2	size	57264	
+expect	275	2966	1	if	m_nState == 2	size	57228	
+expect	277	2971	0	if	((RadioMessage *) ((*messages)[5]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	277	2971	1	if	((RadioMessage *) ((*messages)[5]))->isTriggered()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	279	3003	0	for	i < 3	size	57228	
+expect	279	3003	1	for	i < 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	281	3008	0	for	i < 3	size	57236	
+expect	281	3008	1	for	i < 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	283	3032	0	for	i < 3	size	57228	
+expect	283	3032	1	for	i < 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	285	3040	0	if	m_nState == 5	size	57224	
+expect	285	3040	1	if	m_nState == 5	size	57220	
+expect	287	3046	0	if	m_nScriptTimerA >= 2001	54956	82849	289b2a069f8504d1e8a3919e43915e04
+expect	287	3046	1	if	m_nScriptTimerA >= 2001	size	57240	
+expect	289	3056	0	if	docked	size	57236	
+expect	289	3056	1	if	docked	size	57240	
+expect	291	3073	0	if	m_nState == 6	size	57248	
+expect	291	3073	1	if	m_nState == 6	size	57228	
+expect	293	3078	0	if	__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)	size	57224	
+expect	293	3078	1	if	__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	295	3092	0	if	player->isInRocketControl()	size	57240	
+expect	295	3092	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	297	3120	0	if	__builtin_expect(m_nScriptTimerA >= 8001, 1)	size	57228	
+expect	297	3120	1	if	__builtin_expect(m_nScriptTimerA >= 8001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	299	3139	0	if	m_nScriptTimerA >= 2001	size	57228	
+expect	299	3139	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	301	3143	0	if	m_nScriptTimerA >= 7001	size	57228	
+expect	301	3143	1	if	m_nScriptTimerA >= 7001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	303	3170	0	if	Globals::status->field_178 > 6 || m_nScriptTime >= 60001	size	57256	
+expect	303	3170	1	if	Globals::status->field_178 > 6 || m_nScriptTime >= 60001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	305	3181	0	if	player->isInRocketControl()	size	57240	
+expect	305	3181	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	307	3213	0	if	m_nScriptTimerA >= 6001	size	57228	
+expect	307	3213	1	if	m_nScriptTimerA >= 6001	54675	82568	289b2a069f8504d1e8a3919e43915e04
+expect	309	3222	0	if	docked	size	57228	
+expect	309	3222	1	if	docked	size	57220	
+expect	311	3243	0	if	m_nScriptTimerA > 100000	54749	82642	289b2a069f8504d1e8a3919e43915e04
+expect	311	3243	1	if	m_nScriptTimerA > 100000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	313	3258	0	if	m_nScriptTimerA > 100000	54748	82641	289b2a069f8504d1e8a3919e43915e04
+expect	313	3258	1	if	m_nScriptTimerA > 100000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	315	3276	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57224	
+expect	315	3276	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57188	
+expect	317	3301	0	if	m_nState == 1	size	57228	
+expect	317	3301	1	if	m_nState == 1	size	57204	
+expect	319	3306	0	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	319	3306	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	321	3326	0	if	__builtin_expect(m_nScriptTimerA >= 30001, 1)	size	57236	
+expect	321	3326	1	if	__builtin_expect(m_nScriptTimerA >= 30001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	323	3332	0	if	ship->shipGroup == 10	size	57192	
+expect	323	3332	1	if	ship->shipGroup == 10	size	57256	
+expect	325	3337	0	if	i == (unsigned int) leader	size	57240	
+expect	325	3337	1	if	i == (unsigned int) leader	size	57256	
+expect	327	3360	0	if	ship->shipGroupFlag == 51	54120	82013	289b2a069f8504d1e8a3919e43915e04
+expect	327	3360	1	if	ship->shipGroupFlag == 51	size	57240	
+expect	329	3397	0	if	m_nState == 3	size	57228	
+expect	329	3397	1	if	m_nState == 3	size	57228	
+expect	331	3407	0	if	ship->shipGroup == 10	size	57240	
+expect	331	3407	1	if	ship->shipGroup == 10	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	333	3411	0	if	i == (unsigned int) leader	54127	82020	289b2a069f8504d1e8a3919e43915e04
+expect	333	3411	1	if	i == (unsigned int) leader	54128	82021	289b2a069f8504d1e8a3919e43915e04
+expect	335	3432	0	for	i < enemies->count	size	57244	
+expect	335	3432	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	337	3451	0	if	m_nState == 4	size	57228	
+expect	337	3451	1	if	m_nState == 4	size	57240	
+expect	339	3455	0	for	i < enemies->count	size	57252	
+expect	339	3455	1	for	i < enemies->count	size	57376	
+expect	341	3470	0	for	i < enemies->count	size	57236	
+expect	341	3470	1	for	i < enemies->count	size	57256	
+expect	343	3473	0	for	k <= 5 && target == -1	size	57236	
+expect	343	3473	1	for	k <= 5 && target == -1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	345	3481	0	if	((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10	size	57240	
+expect	345	3481	1	if	((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	347	3505	0	for	k != 10	size	57236	
+expect	347	3505	1	for	k != 10	size	57236	
+expect	349	3518	0	if	m_nScriptTimerA >= 8001	size	57224	
+expect	349	3518	1	if	m_nScriptTimerA >= 8001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	351	3528	0	if	m_nScriptTimerA >= 4001	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	351	3528	1	if	m_nScriptTimerA >= 4001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	353	3551	0	for	i != 2	size	57208	
+expect	353	3551	1	for	i != 2	size	57320	
+expect	355	3558	0	if	m_nState == 1	size	57296	
+expect	355	3558	1	if	m_nState == 1	size	57300	
+expect	357	3567	0	if	m_nState == 2	size	57300	
+expect	357	3567	1	if	m_nState == 2	size	57280	
+expect	359	3588	0	for	i < 2	size	57248	
+expect	359	3588	1	for	i < 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	361	3600	0	for	i < 2	size	57236	
+expect	361	3600	1	for	i < 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	363	3607	0	if	m_nState == 4	size	57280	
+expect	363	3607	1	if	m_nState == 4	size	57272	
+expect	365	3615	0	if	m_nScriptTimerA > 3000	size	57220	
+expect	365	3615	1	if	m_nScriptTimerA > 3000	53944	81837	289b2a069f8504d1e8a3919e43915e04
+expect	367	3630	0	if	m_nState == 5	size	57292	
+expect	367	3630	1	if	m_nState == 5	size	57264	
+expect	369	3633	0	for	i < 2	54426	82319	289b2a069f8504d1e8a3919e43915e04
+expect	369	3633	1	for	i < 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	371	3642	0	if	m_nScriptTimerA >= 24001	size	57224	
+expect	371	3642	1	if	m_nScriptTimerA >= 24001	size	57224	
+expect	373	3665	0	for	i < 5	54417	82310	289b2a069f8504d1e8a3919e43915e04
+expect	373	3665	1	for	i < 5	size	57324	
+expect	375	3702	0	if	m_nState == 7	size	57292	
+expect	375	3702	1	if	m_nState == 7	size	57260	
+expect	377	3710	0	if	i == 2	size	57228	
+expect	377	3710	1	if	i == 2	size	57236	
+expect	379	3735	0	if	m_nScriptTimerA >= 10001	size	57240	
+expect	379	3735	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	381	3754	0	if	m_nState == 8	size	57264	
+expect	381	3754	1	if	m_nState == 8	size	57244	
+expect	383	3759	0	if	m_nState == 9	size	57272	
+expect	383	3759	1	if	m_nState == 9	size	57228	
+expect	385	3767	0	for	i < 5	size	57240	
+expect	385	3767	1	for	i < 5	size	57296	
+expect	387	3785	0	if	__builtin_expect(player->getHitpoints() >= 1 && // lint: arm_builtin                         reinterpret_cast<Route *>(p	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	387	3785	1	if	__builtin_expect(player->getHitpoints() >= 1 && // lint: arm_builtin                         reinterpret_cast<Route *>(p	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	389	3796	0	if	player->isInRocketControl()	size	57240	
+expect	389	3796	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	391	3832	0	if	m_nScriptTimerA >= 2501	size	57240	
+expect	391	3832	1	if	m_nScriptTimerA >= 2501	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	393	3845	0	if	m_nScriptTimerA >= 9001	size	57236	
+expect	393	3845	1	if	m_nScriptTimerA >= 9001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	395	3853	0	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	395	3853	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	397	3866	0	for	i < enemies->count	size	57244	
+expect	397	3866	1	for	i < enemies->count	size	57236	
+expect	399	3872	0	if	!Globals::layout->isFading()	size	57228	
+expect	399	3872	1	if	!Globals::layout->isFading()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	401	3886	0	if	m_nState == 13	size	57208	
+expect	401	3886	1	if	m_nState == 13	size	57208	
+expect	403	3905	0	if	m_pGeometry6 != nullptr	size	57236	
+expect	403	3905	1	if	m_pGeometry6 != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	405	3915	0	for	i < enemies->count	size	57240	
+expect	405	3915	1	for	i < enemies->count	54149	82042	289b2a069f8504d1e8a3919e43915e04
+expect	407	3918	0	for	k < enemies->count	size	57252	
+expect	407	3918	1	for	k < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	409	3933	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[1]))->isTriggered()	size	57236	
+expect	409	3933	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[1]))->isTriggered()	size	57256	
+expect	411	3942	0	if	player->getRoute() != 0	size	57288	
+expect	411	3942	1	if	player->getRoute() != 0	size	57296	
+expect	413	3945	0	for	i <= 10	size	57284	
+expect	413	3945	1	for	i <= 10	size	57240	
+expect	415	3955	0	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	57396	
+expect	415	3955	1	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	57108	
+expect	417	3977	0	if	player->isInRocketControl()	size	57248	
+expect	417	3977	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	419	4005	0	for	i < 6	size	57216	
+expect	419	4005	1	for	i < 6	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	421	4010	0	for	i < 6	size	57208	
+expect	421	4010	1	for	i < 6	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	423	4037	0	if	m_nState >= 4 && m_nState <= 6	size	57236	
+expect	423	4037	1	if	m_nState >= 4 && m_nState <= 6	53936	81829	289b2a069f8504d1e8a3919e43915e04
+expect	425	4046	0	if	m_nState == 6	size	57228	
+expect	425	4046	1	if	m_nState == 6	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	427	4063	0	if	m_nState == 0	size	57236	
+expect	427	4063	1	if	m_nState == 0	size	57244	
+expect	429	4072	0	for	i < enemies->count	size	57248	
+expect	429	4072	1	for	i < enemies->count	size	57456	
+expect	431	4088	0	if	m_nState < 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	431	4088	1	if	m_nState < 1	size	57240	
+expect	433	4097	0	if	statusValue >= amount / 2	size	57244	
+expect	433	4097	1	if	statusValue >= amount / 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	435	4104	0	if	m_nState == 2	size	57244	
+expect	435	4104	1	if	m_nState == 2	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	437	4112	0	if	enemy->shipGroup == 8 && enemy->isDead()	54134	82027	289b2a069f8504d1e8a3919e43915e04
+expect	437	4112	1	if	enemy->shipGroup == 8 && enemy->isDead()	54220	82113	289b2a069f8504d1e8a3919e43915e04
+expect	439	4145	0	if	__builtin_expect(*counter >= 3001, 1)	53989	81882	289b2a069f8504d1e8a3919e43915e04
+expect	439	4145	1	if	__builtin_expect(*counter >= 3001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	441	4169	0	if	((RadioMessage *) ((*messages)[0]))->isOver()	size	57240	
+expect	441	4169	1	if	((RadioMessage *) ((*messages)[0]))->isOver()	53939	81832	289b2a069f8504d1e8a3919e43915e04
+expect	443	4195	0	if	((PlayerFixedObject *) (*enemies)[i])->getDockingType() != 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	443	4195	1	if	((PlayerFixedObject *) (*enemies)[i])->getDockingType() != 3	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	445	4203	0	if	player->hackingWon() && player->isDockedToDockingPoint() &&                         player->getHackingGameDockIndex() >=	size	57204	
+expect	445	4203	1	if	player->hackingWon() && player->isDockedToDockingPoint() &&                         player->getHackingGameDockIndex() >=	size	57248	
+expect	447	4216	0	if	!(*enemies)[0]->player->isAlwaysEnemy() &&                         ((RadioMessage *) ((*messages)[1]))->isTriggered()	size	57248	
+expect	447	4216	1	if	!(*enemies)[0]->player->isAlwaysEnemy() &&                         ((RadioMessage *) ((*messages)[1]))->isTriggered()	size	57256	
+expect	449	4220	0	if	!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0	53934	81827	289b2a069f8504d1e8a3919e43915e04
+expect	449	4220	1	if	!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	451	4229	0	if	target->getDockingType() == 3 && dockingCount == 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	451	4229	1	if	target->getDockingType() == 3 && dockingCount == 1	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	453	4243	0	if	AbyssEngine::AEMath::VectorLength(                                 (*enemies)[0]->getPosition() - (*enemies)[0]->getRout	size	57244	
+expect	453	4243	1	if	AbyssEngine::AEMath::VectorLength(                                 (*enemies)[0]->getPosition() - (*enemies)[0]->getRout	size	57236	
+expect	455	4249	0	if	player->getRoute() != 0                             && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(	size	57224	
+expect	455	4249	1	if	player->getRoute() != 0                             && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(	size	57248	
+expect	457	4256	0	if	m_pLevel->getGasClouds() != nullptr	size	57236	
+expect	457	4256	1	if	m_pLevel->getGasClouds() != nullptr	size	57248	
+expect	459	4258	0	if	((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr	size	57224	
+expect	459	4258	1	if	((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	461	4267	0	if	Globals::status->getShip()->hasCargo(201, 1)                         || Globals::status->getShip()->hasCargo(202, 1)    	53924	81817	289b2a069f8504d1e8a3919e43915e04
+expect	461	4267	1	if	Globals::status->getShip()->hasCargo(201, 1)                         || Globals::status->getShip()->hasCargo(202, 1)    	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	463	4287	0	if	m_nState == 2	54137	82030	289b2a069f8504d1e8a3919e43915e04
+expect	463	4287	1	if	m_nState == 2	size	57236	
+expect	465	4292	0	if	m_nState == 3	size	57228	
+expect	465	4292	1	if	m_nState == 3	size	57240	
+expect	467	4295	0	if	(*enemies)[i]->shipGroupFlag == 44	53937	81830	289b2a069f8504d1e8a3919e43915e04
+expect	467	4295	1	if	(*enemies)[i]->shipGroupFlag == 44	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	469	4303	0	if	m_nScriptTimerA > 4000	54401	82294	289b2a069f8504d1e8a3919e43915e04
+expect	469	4303	1	if	m_nScriptTimerA > 4000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	471	4310	0	if	Level::initStreamOutPositionAfterCutscene	size	57236	
+expect	471	4310	1	if	Level::initStreamOutPositionAfterCutscene	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	473	4325	0	if	i != 0 && m_nState >= 2	size	57248	
+expect	473	4325	1	if	i != 0 && m_nState >= 2	size	57256	
+expect	475	4333	0	for	i < 13	size	57216	
+expect	475	4333	1	for	i < 13	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	477	4349	0	if	player->isInRocketControl()	size	57240	
+expect	477	4349	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	479	4397	0	if	m_nScriptTimerA >= 5001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	479	4397	1	if	m_nScriptTimerA >= 5001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	481	4430	0	for	i < 13	size	57308	
+expect	481	4430	1	for	i < 13	size	57300	
+expect	483	4443	0	if	m_nScriptTimerA > 10000	size	57212	
+expect	483	4443	1	if	m_nScriptTimerA > 10000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	485	4474	0	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57396	
+expect	485	4474	1	if	m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()	size	57328	
+expect	487	4490	0	if	field_0xaa	size	57236	
+expect	487	4490	1	if	field_0xaa	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	489	4503	0	if	(*enemies)[i]->shipGroup == 9	size	57404	
+expect	489	4503	1	if	(*enemies)[i]->shipGroup == 9	size	57308	
+expect	491	4520	0	for	i < enemies->count	size	57236	
+expect	491	4520	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	493	4525	0	if	((RadioMessage *) ((*messages)[1]))->isOver()	size	57248	
+expect	493	4525	1	if	((RadioMessage *) ((*messages)[1]))->isOver()	size	57244	
+expect	495	4529	0	for	i < enemies->count	size	57248	
+expect	495	4529	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	497	4544	0	if	m_nState == 2	size	57240	
+expect	497	4544	1	if	m_nState == 2	size	57220	
+expect	499	4564	0	if	m_nScriptTimerA >= 1001	size	57248	
+expect	499	4564	1	if	m_nScriptTimerA >= 1001	size	57240	
+expect	501	4576	0	if	((RadioMessage *) ((*messages)[3]))->isOver()	size	57240	
+expect	501	4576	1	if	((RadioMessage *) ((*messages)[3]))->isOver()	size	57240	
+expect	503	4591	0	if	m_nState == 4	size	57216	
+expect	503	4591	1	if	m_nState == 4	size	57208	
+expect	505	4609	0	if	m_nScriptTimerA >= 1001	53947	81840	289b2a069f8504d1e8a3919e43915e04
+expect	505	4609	1	if	m_nScriptTimerA >= 1001	size	57212	
+expect	507	4621	0	if	((RadioMessage *) ((*messages)[5]))->isOver()	size	57244	
+expect	507	4621	1	if	((RadioMessage *) ((*messages)[5]))->isOver()	size	57240	
+expect	509	4636	0	for	i < enemies->count	53934	81827	289b2a069f8504d1e8a3919e43915e04
+expect	509	4636	1	for	i < enemies->count	size	57220	
+expect	511	4644	0	if	m_nState == 6	size	57272	
+expect	511	4644	1	if	m_nState == 6	size	57204	
+expect	513	4662	0	if	m_nScriptTimerA >= 1001	size	57244	
+expect	513	4662	1	if	m_nScriptTimerA >= 1001	size	57224	
+expect	515	4674	0	if	(*enemies)[0]->isDocked()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	515	4674	1	if	(*enemies)[0]->isDocked()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	517	4680	0	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	517	4680	1	if	m_nScriptTimerA >= 2001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	519	4685	0	if	((RadioMessage *) ((*messages)[7]))->isOver()	54020	81913	289b2a069f8504d1e8a3919e43915e04
+expect	519	4685	1	if	((RadioMessage *) ((*messages)[7]))->isOver()	54017	81910	289b2a069f8504d1e8a3919e43915e04
+expect	521	4689	0	for	i < enemies->count	size	57204	
+expect	521	4689	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	523	4719	0	if	field_0xaa	size	57240	
+expect	523	4719	1	if	field_0xaa	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	525	4726	0	if	((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0	size	57224	
+expect	525	4726	1	if	((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0	size	57224	
+expect	527	4734	0	for	i < enemies->count	size	57236	
+expect	527	4734	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	529	4750	0	if	!Globals::isRunningHDonWeakDevice	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	529	4750	1	if	!Globals::isRunningHDonWeakDevice	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	531	4760	0	if	m_pGeometry3->isVisible()	size	57248	
+expect	531	4760	1	if	m_pGeometry3->isVisible()	54163	82056	289b2a069f8504d1e8a3919e43915e04
+expect	533	4771	0	if	m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()	size	57208	
+expect	533	4771	1	if	m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()	size	57236	
+expect	535	4789	0	if	m_nState == 2	55034	82927	289b2a069f8504d1e8a3919e43915e04
+expect	535	4789	1	if	m_nState == 2	size	57176	
+expect	537	4795	0	for	i < enemies->count	55007	82900	289b2a069f8504d1e8a3919e43915e04
+expect	537	4795	1	for	i < enemies->count	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	539	4808	0	if	m_nState == 3	55053	82946	289b2a069f8504d1e8a3919e43915e04
+expect	539	4808	1	if	m_nState == 3	size	57228	
+expect	541	4815	0	if	m_nScriptTimerA >= 8001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	541	4815	1	if	m_nScriptTimerA >= 8001	53940	81833	289b2a069f8504d1e8a3919e43915e04
+expect	543	4820	0	if	__builtin_expect(m_nScriptTimerB <= 6999, 1)	size	57240	
+expect	543	4820	1	if	__builtin_expect(m_nScriptTimerB <= 6999, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	545	4829	0	for	i < enemies->count	size	57236	
+expect	545	4829	1	for	i < enemies->count	size	57304	
+expect	547	4835	0	if	((RadioMessage *) ((*messages)[3]))->isOver() && m_nScriptTimerA >= 18001	size	57220	
+expect	547	4835	1	if	((RadioMessage *) ((*messages)[3]))->isOver() && m_nScriptTimerA >= 18001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	549	4849	0	if	(*enemies)[i]->shipGroupFlag == 49 || (*enemies)[i]->shipGroupFlag == 44	size	57216	
+expect	549	4849	1	if	(*enemies)[i]->shipGroupFlag == 49 || (*enemies)[i]->shipGroupFlag == 44	size	57224	
+expect	551	4872	0	if	m_nState == 5	size	57216	
+expect	551	4872	1	if	m_nState == 5	size	57172	
+expect	553	4876	0	for	i < 12	size	57216	
+expect	553	4876	1	for	i < 12	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	555	4886	0	if	__builtin_expect(m_nScriptTimerB >= 25001, 1)	size	57236	
+expect	555	4886	1	if	__builtin_expect(m_nScriptTimerB >= 25001, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	557	4894	0	if	player->isInRocketControl()	size	57236	
+expect	557	4894	1	if	player->isInRocketControl()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	559	4931	0	if	__builtin_expect(chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x, 1)	size	57236	
+expect	559	4931	1	if	__builtin_expect(chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x, 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	561	4942	0	if	m_nState == 7 && ((RadioMessage *) ((*messages)[10]))->isOver()	size	57264	
+expect	561	4942	1	if	m_nState == 7 && ((RadioMessage *) ((*messages)[10]))->isOver()	size	57208	
+expect	563	4951	0	if	station->rootGeometry->getPosition().z > 100000.0f	size	57256	
+expect	563	4951	1	if	station->rootGeometry->getPosition().z > 100000.0f	53958	81851	289b2a069f8504d1e8a3919e43915e04
+expect	565	4980	0	if	m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()	size	57220	
+expect	565	4980	1	if	m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()	size	57220	
+expect	567	5003	0	if	m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000	size	57252	
+expect	567	5003	1	if	m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	569	5021	0	if	m_nFlashCountdown > 0	size	57248	
+expect	569	5021	1	if	m_nFlashCountdown > 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	571	5033	0	if	m_pExplosion != nullptr	size	57260	
+expect	571	5033	1	if	m_pExplosion != nullptr	size	57244	
+expect	573	5044	0	if	__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)	54123	82016	289b2a069f8504d1e8a3919e43915e04
+expect	573	5044	1	if	__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	575	5065	0	if	m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000	size	57236	
+expect	575	5065	1	if	m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	577	5077	0	if	m_nScriptTimerA >= 3001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	577	5077	1	if	m_nScriptTimerA >= 3001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	579	5093	0	if	m_nScriptTimerA >= 6001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	579	5093	1	if	m_nScriptTimerA >= 6001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	581	5101	0	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	581	5101	1	if	m_nScriptTimerA >= 10001	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	583	5114	0	if	m_nScriptTimerA < 3000	size	57240	
+expect	583	5114	1	if	m_nScriptTimerA < 3000	size	57240	
+expect	585	5119	0	if	m_nScriptTimerA < 5000	size	57236	
+expect	585	5119	1	if	m_nScriptTimerA < 5000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	587	5127	0	if	m_nScriptTimerA >= 5000 && m_nScriptTimerA - delta < 5000	53935	81830	07752cde942efd50fdec71192614b8e0
+expect	587	5127	1	if	m_nScriptTimerA >= 5000 && m_nScriptTimerA - delta < 5000	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	589	5136	0	if	m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700	size	57228	
+expect	589	5136	1	if	m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700	size	57236	
+expect	591	5145	0	if	m_nScriptTimerA > 5000 && m_nScriptTimerA < 6000	size	57220	
+expect	591	5145	1	if	m_nScriptTimerA > 5000 && m_nScriptTimerA < 6000	size	57236	
+expect	593	5153	0	if	m_nScriptTimerA >= 6500	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	593	5153	1	if	m_nScriptTimerA >= 6500	54401	82294	289b2a069f8504d1e8a3919e43915e04
+expect	595	5182	0	if	m_nScriptTimerA <= 29999	size	57240	
+expect	595	5182	1	if	m_nScriptTimerA <= 29999	size	57244	
+expect	597	5186	0	if	!(*enemies)[0]->isVisible()	size	57248	
+expect	597	5186	1	if	!(*enemies)[0]->isVisible()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	599	5196	0	if	m_nScriptTimerA >= 34000	size	57224	
+expect	599	5196	1	if	m_nScriptTimerA >= 34000	53945	81838	289b2a069f8504d1e8a3919e43915e04
+expect	601	5205	0	if	m_nScriptTimerA <= 2999	size	57252	
+expect	601	5205	1	if	m_nScriptTimerA <= 2999	size	57224	
+expect	603	5236	0	if	m_nState == 3	size	57256	
+expect	603	5236	1	if	m_nState == 3	size	57264	
+expect	605	5242	0	if	__builtin_expect(AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition()) // lint: arm_bu	54694	82587	289b2a069f8504d1e8a3919e43915e04
+expect	605	5242	1	if	__builtin_expect(AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition()) // lint: arm_bu	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	607	5245	0	if	!(*enemies)[i]->player->isActive()	size	57228	
+expect	607	5245	1	if	!(*enemies)[i]->player->isActive()	size	57224	
+expect	609	5269	0	if	field_0xa9 != 0	size	57328	
+expect	609	5269	1	if	field_0xa9 != 0	size	57244	
+expect	611	5277	0	if	distance <= 49999 && player->player->field_5e == 0	size	57240	
+expect	611	5277	1	if	distance <= 49999 && player->player->field_5e == 0	size	57256	
+expect	613	5280	0	if	i != 0 && (*enemies)[i - 1]->field_0x3e != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	613	5280	1	if	i != 0 && (*enemies)[i - 1]->field_0x3e != 0	size	57244	
+expect	615	5291	0	if	(*enemies)[0]->player->getHitpoints() <= 0	size	57312	
+expect	615	5291	1	if	(*enemies)[0]->player->getHitpoints() <= 0	size	57244	
+expect	617	5293	0	if	(*enemies)[i]->field_0x3e != 0	size	57236	
+expect	617	5293	1	if	(*enemies)[i]->field_0x3e != 0	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect	619	5299	0	if	(*stationList)[i] == Globals::status->getStation()->getIndex()	size	57236	
+expect	619	5299	1	if	(*stationList)[i] == Globals::status->getStation()->getIndex()	53932	81825	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	16	731	0	if	((RadioMessage *) ((*messages)[14]))->isTriggered()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	16	731	1	if	((RadioMessage *) ((*messages)[14]))->isTriggered()	size	0000df70	
+expect-rerun	18	740	0	if	((RadioMessage *) ((*messages)[8]))->isOver()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	26	845	1	if	m_nScriptTimerA >= 2001	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	28	868	0	if	m_nScriptTimerA >= 2501	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	44	1019	1	if	m_nScriptTime >= 12001	53927	81805	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	50	1053	1	if	m_nScriptTime >= 7901	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	62	1149	0	if	m_nScriptTimerA >= 6001	53857	81735	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	64	1180	1	if	m_nScriptTimerA >= 4001	54725	82604	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	66	1199	1	if	m_nScriptTimerA >= 5001	size	0000dfa0	
+expect-rerun	68	1227	1	for	i < enemies->count	size	0000e01c	
+expect-rerun	72	1261	0	if	m_nScriptTime >= 30001	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	74	1285	1	if	distance < 200000.0f	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	76	1292	0	if	m_nScriptTime - delta <= 38000	size	0000df98	
+expect-rerun	78	1308	1	if	fading	54353	82231	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	80	1318	0	for	i < enemies->count	size	0000df88	
+expect-rerun	84	1353	0	if	Globals::status->getCurrentCampaignMission() == 106	size	0000df78	
+expect-rerun	86	1360	1	if	((RadioMessage *) ((*messages)[2]))->isOver()	size	0000df94	
+expect-rerun	88	1371	1	if	__builtin_expect(m_nScriptTimerA >= 3001, 0)	size	0000dfc8	
+expect-rerun	110	1499	0	for	i < wingmen->count	size	0000df70	
+expect-rerun	110	1499	1	for	i < wingmen->count	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	144	1770	1	if	ship->enemyFlagsLo != 0	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	150	1818	0	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1	size	0000df88	
+expect-rerun	150	1818	1	if	((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1	size	0000df94	
+expect-rerun	152	1845	0	if	((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0	size	0000df88	
+expect-rerun	168	2029	1	if	delta == 0x7d	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	172	2063	0	for	i < enemies->count	size	0000df98	
+expect-rerun	194	2234	0	if	m_nState == 2	size	0000dfb0	
+expect-rerun	196	2259	0	if	m_nState == 1	size	0000df9c	
+expect-rerun	196	2259	1	if	m_nState == 1	size	0000df9c	
+expect-rerun	198	2272	0	for	i < enemies->count	size	0000df98	
+expect-rerun	198	2272	1	for	i < enemies->count	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	202	2289	0	if	m_nState == 3 && ((RadioMessage *) ((*messages)[6]))->isOver()	54592	82470	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	228	2584	0	if	((RadioMessage *) ((*messages)[7]))->isTriggered()	54871	82749	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	228	2584	1	if	((RadioMessage *) ((*messages)[7]))->isTriggered()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	252	2793	1	if	m_nState >= 7 && m_nState <= 9	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	256	2819	0	if	m_nState == 1 && player->isDockedToDockingPoint()	size	0000df8c	
+expect-rerun	266	2858	0	if	__builtin_expect((m_nScriptTimerA >= 3001), 0)	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	266	2858	1	if	__builtin_expect((m_nScriptTimerA >= 3001), 0)	53917	81795	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	274	2938	0	if	player->isInRocketControl()	size	0000df9c	
+expect-rerun	274	2938	1	if	player->isInRocketControl()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	276	2967	0	for	i < 3	54838	82716	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	306	3210	0	for	i != 2	size	0000df84	
+expect-rerun	306	3210	1	for	i != 2	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	308	3214	0	for	i != 2	size	0000df8c	
+expect-rerun	322	3329	1	for	i < enemies->count	size	0000df9c	
+expect-rerun	324	3334	0	if	leader == -1	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	324	3334	1	if	leader == -1	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	360	3595	1	if	m_nState == 3	size	0000dfb8	
+expect-rerun	362	3603	0	if	m_nScriptTimerA > 3000	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	364	3612	0	for	i < 2	size	0000df94	
+expect-rerun	366	3624	1	for	i < 2	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	388	3793	0	if	m_nState == 10 && ((RadioMessage *) ((*messages)[7]))->isOver()	size	0000df8c	
+expect-rerun	406	3917	1	if	e->shipGroup == 8 && e->player->isActive()	size	0000df94	
+expect-rerun	412	3943	0	if	(uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state	size	0000dfc8	
+expect-rerun	412	3943	1	if	(uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state	size	0000dfcc	
+expect-rerun	432	4093	1	if	m_nState == 1	size	0000df88	
+expect-rerun	434	4101	0	if	m_nScriptTimerA < 75001	54180	82058	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	434	4101	1	if	m_nScriptTimerA < 75001	size	0000df8c	
+expect-rerun	436	4110	1	for	i < enemies->count	size	0000dfbc	
+expect-rerun	438	4127	0	if	m_nState == 1	size	0000e06c	
+expect-rerun	446	4215	0	if	m_nState == 1	size	0000df98	
+expect-rerun	480	4410	0	if	__builtin_expect(m_nScriptTimerA >= 324, 0)	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	480	4410	1	if	__builtin_expect(m_nScriptTimerA >= 324, 0)	53927	81805	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	482	4433	0	if	m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000	53928	81806	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	484	4445	0	for	i < 13	size	0000df80	
+expect-rerun	486	4475	0	if	player->isInRocketControl()	size	0000df98	
+expect-rerun	486	4475	1	if	player->isInRocketControl()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	488	4502	1	for	i < enemies->count	55383	83261	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	510	4637	0	if	__builtin_expect((*enemies)[i]->shipGroup == 9, 1)	54007	81885	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	512	4659	1	if	((RadioMessage *) ((*messages)[6]))->isOver()	53984	81862	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	526	4731	1	if	player->isDockedToDockingPoint() && player->hackingWon()	53911	81789	289b2a069f8504d1e8a3919e43915e04
+expect-rerun	596	5185	0	if	m_nScriptTimerA > 25000	size	0000df9c	
+expect-rerun	596	5185	1	if	m_nScriptTimerA > 25000	size	0000df98	
+expect-rerun	608	5255	0	if	m_nScriptTimerB >= 25001	53911	81789	289b2a069f8504d1e8a3919e43915e04
+existing-expect	0	1033	flip	!Globals::layout->isFading()	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	0	1033	strip	!Globals::layout->isFading()	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	1	1086	flip	m_nScriptTime >= 9001	size	0000df98	
+existing-expect	1	1086	strip	m_nScriptTime >= 9001	size	0000df98	
+existing-expect	2	1114	flip	m_nScriptTimerA >= 1100 - delta	54050	81928	289b2a069f8504d1e8a3919e43915e04
+existing-expect	2	1114	strip	m_nScriptTimerA >= 1100 - delta	53851	81729	289b2a069f8504d1e8a3919e43915e04
+existing-expect	3	1149	flip	m_nScriptTimerA >= 6001	size	0000df70	
+existing-expect	3	1149	strip	m_nScriptTimerA >= 6001	53911	81789	289b2a069f8504d1e8a3919e43915e04
+existing-expect	4	1338	flip	!Globals::layout->isFading()	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	4	1338	strip	!Globals::layout->isFading()	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	5	1368	flip	m_nState == 2	size	0000dfb8	
+existing-expect	5	1368	strip	m_nState == 2	size	0000df9c	
+existing-expect	6	1371	flip	m_nScriptTimerA >= 3001	size	0000dfc8	
+existing-expect	6	1371	strip	m_nScriptTimerA >= 3001	size	0000dfc4	
+existing-expect	7	1394	flip	m_nState == 5	size	0000df9c	
+existing-expect	7	1394	strip	m_nState == 5	size	0000df98	
+existing-expect	8	1435	flip	((RadioMessage *) ((*messages)[0]))->isOver()	54933	82811	289b2a069f8504d1e8a3919e43915e04
+existing-expect	8	1435	strip	((RadioMessage *) ((*messages)[0]))->isOver()	54864	82742	289b2a069f8504d1e8a3919e43915e04
+existing-expect	9	1440	flip	m_nState == 2 && m_nScriptTimerA >= 2000	size	0000df88	
+existing-expect	9	1440	strip	m_nState == 2 && m_nScriptTimerA >= 2000	size	0000df88	
+existing-expect	10	1467	flip	wingman->isWingMan()	53872	81750	289b2a069f8504d1e8a3919e43915e04
+existing-expect	10	1467	strip	wingman->isWingMan()	53872	81750	289b2a069f8504d1e8a3919e43915e04
+existing-expect	11	1475	flip	Globals::status->getCurrentCampaignMission() >= 2	55078	82956	289b2a069f8504d1e8a3919e43915e04
+existing-expect	11	1475	strip	Globals::status->getCurrentCampaignMission() >= 2	size	0000df98	
+existing-expect	12	1532	flip	Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr	size	0000dfa8	
+existing-expect	12	1532	strip	Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr	53985	81863	289b2a069f8504d1e8a3919e43915e04
+existing-expect	13	1696	flip	((RadioMessage *) ((*messages)[2]))->isTriggered()	size	0000df80	
+existing-expect	13	1696	strip	((RadioMessage *) ((*messages)[2]))->isTriggered()	53861	81739	289b2a069f8504d1e8a3919e43915e04
+existing-expect	14	1890	flip	m_nState == 1	size	0000df88	
+existing-expect	14	1890	strip	m_nState == 1	53859	81737	289b2a069f8504d1e8a3919e43915e04
+existing-expect	15	2051	flip	m_nScriptTimerA >= 15001	size	0000df8c	
+existing-expect	15	2051	strip	m_nScriptTimerA >= 15001	size	0000df8c	
+existing-expect	16	2065	flip	ship != nullptr && ship->shipGroup == 9	54022	81900	289b2a069f8504d1e8a3919e43915e04
+existing-expect	16	2065	strip	ship != nullptr && ship->shipGroup == 9	size	0000df98	
+existing-expect	17	2222	flip	(*enemies)[i]->player->isAlwaysFriend()	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	17	2222	strip	(*enemies)[i]->player->isAlwaysFriend()	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	18	2277	flip	m_nState == 2	size	0000df98	
+existing-expect	18	2277	strip	m_nState == 2	53860	81738	289b2a069f8504d1e8a3919e43915e04
+existing-expect	19	2399	flip	((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	19	2399	strip	((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6	size	0000df88	
+existing-expect	20	2500	flip	((RadioMessage *) ((*messages)[1]))->isOver()	size	0000df98	
+existing-expect	20	2500	strip	((RadioMessage *) ((*messages)[1]))->isOver()	size	0000df98	
+existing-expect	21	2823	flip	player->isDockedToDockingPoint()	size	0000df8c	
+existing-expect	21	2823	strip	player->isDockedToDockingPoint()	size	0000df88	
+existing-expect	22	2856	flip	m_nState == 5	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	22	2856	strip	m_nState == 5	size	0000df88	
+existing-expect	23	2858	flip	(m_nScriptTimerA >= 3001)	53863	81741	289b2a069f8504d1e8a3919e43915e04
+existing-expect	23	2858	strip	(m_nScriptTimerA >= 3001)	53863	81741	289b2a069f8504d1e8a3919e43915e04
+existing-expect	24	3078	flip	m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered()	54987	82865	289b2a069f8504d1e8a3919e43915e04
+existing-expect	24	3078	strip	m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered()	size	0000df98	
+existing-expect	25	3079	flip	player->isDockedToDockingPoint()	size	0000df94	
+existing-expect	25	3079	strip	player->isDockedToDockingPoint()	size	0000df88	
+existing-expect	26	3117	flip	m_nState == 8	size	0000df7c	
+existing-expect	26	3117	strip	m_nState == 8	53903	81781	289b2a069f8504d1e8a3919e43915e04
+existing-expect	27	3120	flip	m_nScriptTimerA >= 8001	size	0000df7c	
+existing-expect	27	3120	strip	m_nScriptTimerA >= 8001	size	0000df8c	
+existing-expect	28	3132	flip	m_nState == 9	53900	81778	289b2a069f8504d1e8a3919e43915e04
+existing-expect	28	3132	strip	m_nState == 9	size	0000df8c	
+existing-expect	29	3132	flip	m_nState == 10	53900	81778	289b2a069f8504d1e8a3919e43915e04
+existing-expect	29	3132	strip	m_nState == 10	size	0000df8c	
+existing-expect	30	3160	flip	(m_nState == 11)	53856	81734	289b2a069f8504d1e8a3919e43915e04
+existing-expect	30	3160	strip	(m_nState == 11)	53885	81763	289b2a069f8504d1e8a3919e43915e04
+existing-expect	31	3326	flip	m_nScriptTimerA >= 30001	size	0000df94	
+existing-expect	31	3326	strip	m_nScriptTimerA >= 30001	53865	81743	289b2a069f8504d1e8a3919e43915e04
+existing-expect	32	3478	flip	target == -1	size	0000df8c	
+existing-expect	32	3478	strip	target == -1	53860	81738	289b2a069f8504d1e8a3919e43915e04
+existing-expect	33	3571	flip	(((RadioMessage *) ((*messages)[1]))->isOver())	size	0000df88	
+existing-expect	33	3571	strip	(((RadioMessage *) ((*messages)[1]))->isOver())	53863	81741	289b2a069f8504d1e8a3919e43915e04
+existing-expect	34	3712	flip	i == 3	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	34	3712	strip	i == 3	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	35	3761	flip	m_nScriptTimerA >= 110001	size	0000df98	
+existing-expect	35	3761	strip	m_nScriptTimerA >= 110001	size	0000df8c	
+existing-expect	37	4003	flip	m_nState == 3	size	0000df9c	
+existing-expect	37	4003	strip	m_nState == 3	53852	81730	289b2a069f8504d1e8a3919e43915e04
+existing-expect	38	4145	flip	*counter >= 3001	53914	81792	289b2a069f8504d1e8a3919e43915e04
+existing-expect	38	4145	strip	*counter >= 3001	size	0000df98	
+existing-expect	39	4266	flip	m_nState == 2	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	39	4266	strip	m_nState == 2	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	40	4296	flip	!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <=	53848	81726	289b2a069f8504d1e8a3919e43915e04
+existing-expect	40	4296	strip	!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <=	53855	81733	289b2a069f8504d1e8a3919e43915e04
+existing-expect	41	4379	flip	m_nScriptTimerA >= 1001	size	0000df7c	
+existing-expect	41	4379	strip	m_nScriptTimerA >= 1001	53861	81739	289b2a069f8504d1e8a3919e43915e04
+existing-expect	42	4410	flip	m_nScriptTimerA >= 324	53837	81715	289b2a069f8504d1e8a3919e43915e04
+existing-expect	42	4410	strip	m_nScriptTimerA >= 324	53849	81727	289b2a069f8504d1e8a3919e43915e04
+existing-expect	43	4561	flip	((RadioMessage *) ((*messages)[2]))->isOver()	size	0000dfa0	
+existing-expect	43	4561	strip	((RadioMessage *) ((*messages)[2]))->isOver()	size	0000df94	
+existing-expect	44	4624	flip	m_nScriptTimerA >= 1001	size	0000df8c	
+existing-expect	44	4624	strip	m_nScriptTimerA >= 1001	size	0000df8c	
+existing-expect	45	4637	flip	(*enemies)[i]->shipGroup == 9	53954	81832	289b2a069f8504d1e8a3919e43915e04
+existing-expect	45	4637	strip	(*enemies)[i]->shipGroup == 9	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	46	4688	flip	m_nScriptTimerA >= 2001	size	0000df70	
+existing-expect	46	4688	strip	m_nScriptTimerA >= 2001	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	47	4696	flip	i % 3 == 0	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	47	4696	strip	i % 3 == 0	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	48	4820	flip	m_nScriptTimerB <= 6999	size	0000df98	
+existing-expect	48	4820	strip	m_nScriptTimerB <= 6999	53864	81742	289b2a069f8504d1e8a3919e43915e04
+existing-expect	49	4874	flip	Globals::isRunningHDonWeakDevice	53859	81737	289b2a069f8504d1e8a3919e43915e04
+existing-expect	49	4874	strip	Globals::isRunningHDonWeakDevice	size	0000df84	
+existing-expect	50	4881	flip	i < 22	53902	81780	289b2a069f8504d1e8a3919e43915e04
+existing-expect	50	4881	strip	i < 22	53858	81736	289b2a069f8504d1e8a3919e43915e04
+existing-expect	51	4886	flip	m_nScriptTimerB >= 25001	54642	82520	289b2a069f8504d1e8a3919e43915e04
+existing-expect	51	4886	strip	m_nScriptTimerB >= 25001	size	0000df88	
+existing-expect	52	4931	flip	chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x	54540	82418	289b2a069f8504d1e8a3919e43915e04
+existing-expect	52	4931	strip	chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x	53859	81737	289b2a069f8504d1e8a3919e43915e04
+existing-expect	53	4947	flip	m_nScriptTimerA <= 9999	size	0000df9c	
+existing-expect	53	4947	strip	m_nScriptTimerA <= 9999	size	0000df98	
+existing-expect	54	5044	flip	((RadioMessage *) ((*messages)[14]))->isOver()	54048	81926	289b2a069f8504d1e8a3919e43915e04
+existing-expect	54	5044	strip	((RadioMessage *) ((*messages)[14]))->isOver()	53860	81738	289b2a069f8504d1e8a3919e43915e04
+existing-expect	55	5075	flip	(((RadioMessage *) ((*messages)[15]))->isOver())	53864	81742	289b2a069f8504d1e8a3919e43915e04
+existing-expect	55	5075	strip	(((RadioMessage *) ((*messages)[15]))->isOver())	53864	81742	289b2a069f8504d1e8a3919e43915e04
+existing-expect	56	5122	flip	m_nScriptTimerA < 6000	53852	81730	289b2a069f8504d1e8a3919e43915e04
+existing-expect	56	5122	strip	m_nScriptTimerA < 6000	53852	81730	289b2a069f8504d1e8a3919e43915e04
+existing-expect	57	5142	flip	m_nScriptTimerA >= 5500	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	57	5142	strip	m_nScriptTimerA >= 5500	53857	81735	289b2a069f8504d1e8a3919e43915e04
+existing-expect	58	5242	flip	AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosi	size	0000df8c	
+existing-expect	58	5242	strip	AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosi	53943	81821	289b2a069f8504d1e8a3919e43915e04
+operand-swap	1	620	&&	introMsg->isOver() <> m_nState == 0	size	0000e070	
+operand-swap	13	709	&&	m_nState == 5 <> ((RadioMessage *) ((*messages)[12]))->is	size	0000df74	
+operand-swap	37	964	&&	msg2->isOver() <> m_nState == 0	size	0000e050	
+operand-swap	38	968	&&	m_nState == 1 <> !Globals::layout->isFading()	size	0000dfa0	
+operand-swap	39	975	&&	Globals::status->getCurrentCampaignMissi <> Globals::status->inAlienOrbit()	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	69	1242	&&	m_nState >= 5 <> m_nState <= 8	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	81	1328	&&	m_nScriptTimerA <= 7000 <> m_nScriptTimerA + delta > 7000	size	0000df80	
+operand-swap	89	1385	&&	m_nState == 3 <> ((RadioMessage *) ((*messages)[4]))->isT	size	0000dfa0	
+operand-swap	90	1388	&&	m_nState == 4 <> ((RadioMessage *) ((*messages)[4]))->isO	size	0000df9c	
+operand-swap	93	1400	&&	m_nState == 6 <> ((RadioMessage *) ((*messages)[5]))->isO	size	0000dfa4	
+operand-swap	94	1415	&&	m_nState >= 2 <> m_nState <= 4	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	95	1420	||	Globals::status->getCurrentCampaignMissi <> Globals::status->getCurrentCampaignMissi	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	105	1474	&&	m_pLevel->getPlayer() != 0 <> __builtin_expect(Globals::status->getCur	compilefail		
+operand-swap	105	1474	&&	__builtin_expect(Globals::status->getCur <> field_0x24 >= 7001	compilefail		
+operand-swap	114	1521	&&	Globals::status->getCurrentCampaignMissi <> Globals::status->inAlienOrbit()	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	115	1523	&&	((RadioMessage *) ((*messages)[1]))->isT <> m_nState == 0	size	0000dfc8	
+operand-swap	116	1528	&&	messages != nullptr <> Globals::status->getCurrentCampaignMissi	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	118	1538	&&	((RadioMessage *) ((*messages)[2]))->isO <> messages->count >= 3	53819	81697	289b2a069f8504d1e8a3919e43915e04
+operand-swap	118	1538	&&	messages->count >= 3 <> m_nState == 0	54250	82146	e0ea831c9dba1d6c969779f3234556f7
+operand-swap	121	1562	||	(Globals::status->getMission()->isCampai <> Globals::status->getCurrentCampaignMissi	size	0000dfa0	
+operand-swap	122	1571	&&	((RadioMessage *) ((*messages)[1]))->isT <> m_nState == 0	size	0000df94	
+operand-swap	123	1588	&&	((RadioMessage *) ((*messages)[1]))->isO <> m_nState == 1	size	0000dfd8	
+operand-swap	128	1643	&&	m_nState == 4 <> m_nScriptTime >= m_nScriptTimerA + 4000	size	0000dfac	
+operand-swap	129	1650	&&	((RadioMessage *) ((*messages)[4]))->isO <> m_nState == 3	size	0000df9c	
+operand-swap	130	1659	&&	((RadioMessage *) ((*messages)[0]))->isT <> m_nState == 0	size	0000dfa0	
+operand-swap	133	1693	&&	m_nState == 2 <> m_nScriptTime >= 20001	size	0000df98	
+operand-swap	134	1696	&&	__builtin_expect(((RadioMessage *) ((*me <> m_nState == 3	size	0000dfa0	
+operand-swap	136	1723	&&	ship != nullptr <> ship->shipGroup == 9	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	140	1741	&&	ship != nullptr <> ship->shipGroup == 9	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	141	1749	&&	((RadioMessage *) ((*messages)[4]))->isO <> m_nState == 5	size	0000df8c	
+operand-swap	146	1779	&&	((RadioMessage *) ((*messages)[2]))->isT <> m_nState == 0	size	0000dfcc	
+operand-swap	148	1788	&&	((RadioMessage *) ((*messages)[3]))->isT <> m_nState == 0	size	0000df98	
+operand-swap	150	1818	&&	((RadioMessage *) ((*messages)[4]))->isT <> m_nState == 1	54279	82164	b082fbc327fbd3e3844f2873a3679f0d
+operand-swap	152	1845	&&	((RadioMessage *) ((*messages)[0]))->isT <> m_nState == 0	size	0000dfa0	
+operand-swap	153	1890	&&	((RadioMessage *) ((*messages)[2]))->isO <> __builtin_expect(m_nState == 1, 1)	size	0000dfa0	
+operand-swap	160	1957	&&	m_nState == 2 <> (*enemies)[0]->getPosition().z >= 90000.	size	0000dfa0	
+operand-swap	162	1971	&&	m_nState == 3 <> (*enemies)[0]->getPosition().z >= (*m_pL	54016	81895	289b2a069f8504d1e8a3919e43915e04
+operand-swap	165	1988	&&	((RadioMessage *) ((*messages)[4]))->isT <> m_nState == 0	size	0000df98	
+operand-swap	167	2025	&&	((RadioMessage *) ((*messages)[5]))->isT <> m_nState == 1	size	0000dfa0	
+operand-swap	176	2096	&&	messages != nullptr <> m_nState == 5	size	0000dfa8	
+operand-swap	176	2096	&&	m_nState == 5 <> ((RadioMessage *) ((*messages)[7]))->isO	size	0000df88	
+operand-swap	179	2154	&&	m_nState == 0 <> !Globals::status->inAlienOrbit()	size	0000df94	
+operand-swap	184	2185	||	!Globals::layout->isFading() <> m_nScriptTimerA >= 10001	size	0000df88	
+operand-swap	195	2237	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[0]))->isT	size	0000df7c	
+operand-swap	199	2277	&&	__builtin_expect(m_nState == 2, 1) <> ((RadioMessage *) ((*messages)[5]))->isT	53812	81690	289b2a069f8504d1e8a3919e43915e04
+operand-swap	202	2289	&&	m_nState == 3 <> ((RadioMessage *) ((*messages)[6]))->isO	54406	82284	289b2a069f8504d1e8a3919e43915e04
+operand-swap	204	2300	&&	((RadioMessage *) ((*messages)[1]))->isT <> m_nState == 0	54127	82005	289b2a069f8504d1e8a3919e43915e04
+operand-swap	205	2305	&&	((RadioMessage *) ((*messages)[3]))->isO <> m_nState == 1	size	0000dfa0	
+operand-swap	208	2343	&&	((RadioMessage *) ((*messages)[9]))->isT <> m_nState == 5	size	0000df98	
+operand-swap	209	2357	&&	((RadioMessage *) ((*messages)[7]))->isT <> m_nState == 4	size	0000dfd4	
+operand-swap	210	2387	&&	((RadioMessage *) ((*messages)[5]))->isT <> m_nState == 3	size	0000df8c	
+operand-swap	213	2411	&&	((RadioMessage *) ((*messages)[0]))->isT <> m_nState == 0	size	0000dfcc	
+operand-swap	216	2463	&&	((RadioMessage *) ((*messages)[0]))->isT <> m_nState == 0	54021	81899	289b2a069f8504d1e8a3919e43915e04
+operand-swap	223	2559	&&	(*enemies)[i]->field_0x40 != 0 <> (*enemies)[i]->player->getEmpPoints() < 	size	0000df94	
+operand-swap	225	2569	&&	(*enemies)[i]->field_0x40 != 0 <> (*enemies)[i]->player->empDisabledByte !	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	230	2604	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[0]))->isO	size	0000df8c	
+operand-swap	242	2712	&&	m_nState == 10 <> ((RadioMessage *) ((*messages)[9]))->isO	size	0000dfa4	
+operand-swap	252	2793	&&	m_nState >= 7 <> m_nState <= 9	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	256	2819	&&	m_nState == 1 <> player->isDockedToDockingPoint()	size	0000df8c	
+operand-swap	257	2821	&&	m_nState == 2 <> ((RadioMessage *) ((*messages)[5]))->isO	size	0000df88	
+operand-swap	259	2827	&&	m_nState == 3 <> Globals::status->field_178 >= 10	size	0000df94	
+operand-swap	260	2831	&&	m_nState == 4 <> ((RadioMessage *) ((*messages)[6]))->isO	size	0000df94	
+operand-swap	260	2831	&&	((RadioMessage *) ((*messages)[6]))->isO <> !m_pLevel->getPlayer()->isDockedToDockin	size	0000df88	
+operand-swap	268	2901	&&	Globals::status->field_178 > 7 <> m_nScriptTime <= 179999	size	0000dfe8	
+operand-swap	270	2917	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[2]))->isT	size	0000dfb8	
+operand-swap	298	3132	||	__builtin_expect(m_nState == 9, 0) <> __builtin_expect(m_nState == 10, 0)	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	303	3170	||	Globals::status->field_178 > 6 <> m_nScriptTime >= 60001	size	0000df98	
+operand-swap	315	3276	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[0]))->isT	size	0000df84	
+operand-swap	340	3456	&&	(*enemies)[i]->shipGroup == 10 <> (*enemies)[i]->isDead()	53818	81696	289b2a069f8504d1e8a3919e43915e04
+operand-swap	342	3471	&&	(*enemies)[i]->shipGroup == 10 <> (*enemies)[i]->player->getEnemy(0)->isDe	size	0000df94	
+operand-swap	343	3473	&&	k <= 5 <> target == -1	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	388	3793	&&	m_nState == 10 <> ((RadioMessage *) ((*messages)[7]))->isO	size	0000df9c	
+operand-swap	398	3868	&&	mover != nullptr <> mover->shipGroup == 10	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	406	3917	&&	e->shipGroup == 8 <> e->player->isActive()	size	0000dfa0	
+operand-swap	409	3933	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[1]))->isT	54095	81973	289b2a069f8504d1e8a3919e43915e04
+operand-swap	423	4037	&&	m_nState >= 4 <> m_nState <= 6	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	424	4038	&&	player->isDockedToDockingPoint() <> player->hackingWon()	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	424	4038	&&	player->hackingWon() <> player->getHackingGameDockIndex() >= 0	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	428	4068	||	player->isDockedToDockingPoint() <> m_nScriptTime >= 60001	53825	81703	289b2a069f8504d1e8a3919e43915e04
+operand-swap	437	4112	&&	enemy->shipGroup == 8 <> enemy->isDead()	53820	81698	289b2a069f8504d1e8a3919e43915e04
+operand-swap	445	4203	&&	player->hackingWon() <> player->isDockedToDockingPoint()	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	445	4203	&&	player->isDockedToDockingPoint() <> player->getHackingGameDockIndex() >= 0	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	447	4216	&&	!(*enemies)[0]->player->isAlwaysEnemy() <> ((RadioMessage *) ((*messages)[1]))->isT	53820	81698	289b2a069f8504d1e8a3919e43915e04
+operand-swap	449	4220	&&	!(*enemies)[i]->isWingMan() <> (*enemies)[i]->field_0x3f_b == 0	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	450	4225	&&	player->isDockedToDockingPoint() <> player->hackingWon()	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	450	4225	&&	player->hackingWon() <> player->getHackingGameDockIndex() >= 0	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	451	4229	&&	target->getDockingType() == 3 <> dockingCount == 1	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	455	4249	&&	player->getRoute() != 0 <> (uint8_t) ((Route *) (intptr_t) player->	53817	81695	289b2a069f8504d1e8a3919e43915e04
+operand-swap	461	4267	||	Globals::status->getShip()->hasCargo(201 <> Globals::status->getShip()->hasCargo(202	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	461	4267	||	Globals::status->getShip()->hasCargo(202 <> Globals::status->getShip()->hasCargo(203	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	461	4267	||	Globals::status->getShip()->hasCargo(203 <> Globals::status->getShip()->hasCargo(204	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	461	4267	||	Globals::status->getShip()->hasCargo(204 <> Globals::status->getShip()->hasCargo(205	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	473	4325	&&	i != 0 <> m_nState >= 2	size	0000df88	
+operand-swap	474	4326	||	m_nState != 4 <> m_nScriptTimerA <= 1000	size	0000df88	
+operand-swap	482	4433	&&	m_nScriptTimerA > 2000 <> m_nScriptTimerA < 5000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	485	4474	&&	m_nState == 0 <> ((RadioMessage *) ((*messages)[0]))->isT	size	0000e000	
+operand-swap	525	4726	&&	((RadioMessage *) ((*messages)[8]))->isO <> m_nTimeLimit <= 0	size	0000df8c	
+operand-swap	526	4731	&&	player->isDockedToDockingPoint() <> player->hackingWon()	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	533	4771	&&	m_nState == 1 <> ((RadioMessage *) ((*messages)[0]))->isO	size	0000df80	
+operand-swap	538	4797	||	ship->shipGroupFlag == 49 <> ship->shipGroupFlag == 44	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	546	4831	||	ship->shipGroupFlag == 49 <> ship->shipGroupFlag == 44	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	547	4835	&&	((RadioMessage *) ((*messages)[3]))->isO <> m_nScriptTimerA >= 18001	53822	81700	289b2a069f8504d1e8a3919e43915e04
+operand-swap	549	4849	||	(*enemies)[i]->shipGroupFlag == 49 <> (*enemies)[i]->shipGroupFlag == 44	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	556	4891	||	(destroyed >= 9 && m_nScriptTime > 20000 <> (*enemies)[fighterIndex]->player->getHit	size	0000df98	
+operand-swap	561	4942	&&	m_nState == 7 <> ((RadioMessage *) ((*messages)[10]))->is	size	0000df94	
+operand-swap	565	4980	&&	m_nScriptTimerA >= 12001 <> ((RadioMessage *) ((*messages)[12]))->is	size	0000df94	
+operand-swap	567	5003	&&	m_nScriptTimerB < 9000 <> m_nScriptTimerB + delta >= 9000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	568	5011	&&	((RadioMessage *) ((*messages)[13]))->is <> m_pExplosion == nullptr	size	0000df94	
+operand-swap	575	5065	&&	m_nScriptTimerB > 2000 <> m_nScriptTimerB < 9000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	575	5065	&&	m_nScriptTimerB < 9000 <> m_nScriptTimerB + delta >= 9000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	587	5127	&&	m_nScriptTimerA >= 5000 <> m_nScriptTimerA - delta < 5000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	588	5130	&&	m_nScriptTimerA >= 5500 <> m_nScriptTimerA - delta < 5500	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	589	5136	&&	m_nScriptTimerA >= 5700 <> m_nScriptTimerA - delta < 5700	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	591	5145	&&	m_nScriptTimerA > 5000 <> m_nScriptTimerA < 6000	53816	81694	289b2a069f8504d1e8a3919e43915e04
+operand-swap	602	5210	&&	m_nScriptTimerB >= 12001 <> ((RadioMessage *) ((*messages)[2]))->isO	size	0000dfac	
+operand-swap	611	5277	&&	distance <= 49999 <> player->player->field_5e == 0	size	0000dfa4	
+operand-swap	613	5280	&&	i != 0 <> (*enemies)[i - 1]->field_0x3e != 0	size	0000df94	
