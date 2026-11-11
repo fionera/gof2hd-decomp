@@ -905,7 +905,7 @@ enemies:
                 if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) &&
                     this->dockNavPtr != nullptr) {
                     KIPlayer *current = (navWreck || this->dockNavPtr->field_0x24) ? this->field_0x1c : this->lockedEnemy;
-                    if (this->dockNavPtr != current) {
+                    if (__builtin_expect(this->dockNavPtr != current, 1)) { // lint: arm_builtin anchor: Radar::draw
                         Sprite *blip = this->blipSprite;
                         float frames = (float) (blip->getRawFrameCount() - 1);
                         int elapsedInt = this->enemyLockTimer;
