@@ -701,7 +701,7 @@ enemies:
                 if (enemy->shipGroup == 10) {
                     bossSeen = true;
                 }
-                if (__builtin_expect((enemy->field_0x42 && enemy->player->isAlwaysEnemy()), 1)) {  // lint: arm_builtin
+                if (enemy->field_0x42 && enemy->player->isAlwaysEnemy()) {
                     alwaysEnemy = true;
                 }
             }
@@ -771,10 +771,9 @@ enemies:
                     if (wreck) {
                         image = this->image_0xa0;
                     } else if (enemy == locked) {
-                        Player *target = enemy->player;
-                        if (target->enemyFlagsLo) {
+                        if (enemy->player->enemyFlagsLo) {
                             image = this->image_0x7c;
-                        } else if (target->carriesFriendCargoFlag) {
+                        } else if (enemy->player->carriesFriendCargoFlag) {
                             image = this->image_0x80;
                         } else {
                             image = this->image_0x84;
@@ -1264,7 +1263,7 @@ asteroids_done:
     if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
-            __builtin_expect((current != 151 && alwaysEnemySeen), 0)) {  // lint: arm_builtin
+            (current != 151 && alwaysEnemySeen)) {
             Globals::sound->stop(current);
             if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens() ||
                 Globals::status->getCurrentCampaignMission() == 16) {
@@ -1312,7 +1311,7 @@ asteroids_done:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                if (__builtin_expect((Globals::status->inAlienOrbit()), 0) || Globals::status->getStation()->isAttackedByAliens()) {  // lint: arm_builtin
+                if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {
                     Globals::sound->play(145, nullptr, nullptr, 0.0f);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
                     Globals::sound->play(143, nullptr, nullptr, 0.0f);
