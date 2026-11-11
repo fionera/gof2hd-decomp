@@ -1685,7 +1685,7 @@ bool LevelScript::process(int delta) {
                     Level *self = m_pLevel;
                     m_pCamera->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
-                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)) { // lint: arm_builtin
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -5046,7 +5046,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nFlashCountdown = 300;
                     }
-                    if (m_nFlashCountdown > 0) {
+                    if (__builtin_expect(m_nFlashCountdown > 0, 1)) { // lint: arm_builtin
                         m_nFlashCountdown -= delta;
                         if (m_nFlashCountdown <= 0) {
                             m_nFlashCountdown = 0;
