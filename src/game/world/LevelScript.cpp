@@ -1339,7 +1339,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 5:
-                if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
+                if (__builtin_expect(!Globals::layout->isFading(), 0)) { // lint: arm_builtin
                     Globals::layout->enableFillScreen(true);
                     Status *st = Globals::status;
                     Globals::status->nextCampaignMission(true);
@@ -1441,7 +1441,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (__builtin_expect(m_nState == 2 && m_nScriptTimerA >= 2000, 1)) { // lint: arm_builtin
+        if (m_nState == 2 && m_nScriptTimerA >= 2000) {
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
@@ -4317,7 +4317,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 0)) { // lint: arm_builtin
+                            if (__builtin_expect(__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c, 0) && Globals::rnd->nextInt(100) <= 9, 0)) { // lint: arm_builtin
                                 ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                 ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
                             }
