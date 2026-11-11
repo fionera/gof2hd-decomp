@@ -632,12 +632,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (!this->lockConfirmed) {
-                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
-                    }
                     this->field_0x14 = this->field_0x18;
                     if (__builtin_expect(this->field_0x1a8, 0)) {  // lint: arm_builtin
                         this->level->getPlayer()->dockToPlanet();
+                    }
+                    if (!this->lockConfirmed) {
+                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
                 }
                 if ((this->planetLockTimer < 1) | (missionBlocksPlanets != 0)) {
@@ -688,9 +688,9 @@ enemies:
                 }
                 continue;
             }
-            this->update(enemy);
             bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
+            this->update(enemy);
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
             }
@@ -706,8 +706,8 @@ enemies:
                 }
             }
             if (this->onScreen) {
-                enemy->field_0x76 = 1;
                 this->egoPos = player->getPosition();
+                enemy->field_0x76 = 1;
                 this->targetPos = enemy->player->getPosition();
                 if (!(this->egoPos.x - this->targetPos.x < -24000.0f) && !(this->egoPos.x - this->targetPos.x > 24000.0f) &&
                     !(this->egoPos.y - this->targetPos.y < -24000.0f) && !(this->egoPos.y - this->targetPos.y > 24000.0f) &&
@@ -797,7 +797,8 @@ enemies:
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
-                        this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
+                        auto target = this->targetPos;
+                        this->lockLabel = this->calcDistance(target.x, target.y, target.z,
                                                              this->cameraX, this->cameraY, this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                     this->screenY + this->halfScreenWidth, false);
@@ -842,8 +843,9 @@ enemies:
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
                         this->screenY < top + size * 2) {
+                        auto onPlanetCourse = this->field_0x1a8;
                         enemy->field_0x75 = 1;
-                        if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !this->field_0x1a8)) {
+                        if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !onPlanetCourse)) {
                             if (this->dockNavPtr != enemy) {
                                 this->enemyLockTimer = 0;
                             }
@@ -855,8 +857,8 @@ enemies:
             }
         tractor:
             if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
-                this->field_0x1c = enemy;
                 this->dockNavPtr = enemy;
+                this->field_0x1c = enemy;
                 enemyHit = true;
             }
         }
@@ -892,7 +894,7 @@ enemies:
                                 this->egoPos.z - this->targetPos.z < -24000.0f ||
                                 this->egoPos.z - this->targetPos.z > 24000.0f) {
                                 Array<int> *cargo = this->lockedEnemy->cargo;
-                                if (cargo == nullptr) {
+                                if (__builtin_expect(cargo == nullptr, 0)) {  // lint: arm_builtin
                                     hud->hudEvent(22, this->level->getPlayer(), 0);
                                 } else {
                                     for (uint32_t c = 0; c < cargo->size(); c += 2) {
@@ -950,6 +952,7 @@ enemies:
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
+            auto camZ = this->cameraZ;
             PlayerGasCloud *cloud = (PlayerGasCloud *) this->gasClouds->data()[i];
             Array<AEGeometry *> *sparks = (Array<AEGeometry *> *) cloud->getSparks();
             if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
@@ -1000,7 +1003,7 @@ enemies:
                 cloud->field_0x73 = 0;
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
-                                                         this->cameraX, this->cameraY, this->cameraZ);
+                                                         this->cameraX, this->cameraY, camZ);
                     Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                 this->screenY + this->halfScreenWidth, false);
                 }
@@ -1205,10 +1208,11 @@ asteroids:
                         this->asteroidLockTimer = 0;
                     }
                 } else {
+                    auto hasScanner = this->hasScanner19;
                     this->asteroidLockTimer += mode;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
                         if (!candidateWreck) {
-                            if (!this->hasScanner19) {
+                            if (!hasScanner) {
                                 hud->hudEvent(20, this->level->getPlayer(), 0);
                             } else {
                                 if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
@@ -1263,7 +1267,7 @@ asteroids_done:
     if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
-            (current != 151 && alwaysEnemySeen)) {
+            __builtin_expect((current != 151 && alwaysEnemySeen), 0)) {  // lint: arm_builtin
             Globals::sound->stop(current);
             if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens() ||
                 Globals::status->getCurrentCampaignMission() == 16) {
@@ -1296,7 +1300,7 @@ asteroids_done:
         }
     } else {
         this->field_0x54 = 0;
-        if (Globals::status->getCurrentCampaignMission() != 145) {
+        if (__builtin_expect((Globals::status->getCurrentCampaignMission() != 145), 1)) {  // lint: arm_builtin
             current = Globals::sound->currentMusicEvent;
             bool ambient;
             switch (current) {
@@ -1311,7 +1315,7 @@ asteroids_done:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {
+                if (__builtin_expect((Globals::status->inAlienOrbit()), 0) || Globals::status->getStation()->isAttackedByAliens()) {  // lint: arm_builtin
                     Globals::sound->play(145, nullptr, nullptr, 0.0f);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
                     Globals::sound->play(143, nullptr, nullptr, 0.0f);

@@ -9,7 +9,7 @@ using AbyssEngine::String;
 class Mission {
 public:
     bool failed;
-    uint8_t won;
+    bool won;
     Agent *agent;
     int id;
     String name;
@@ -122,7 +122,7 @@ public:
 
     void setFailed(bool failed);
 
-    unsigned char hasWon();
+    bool hasWon();
 
     void setWon(bool won);
 

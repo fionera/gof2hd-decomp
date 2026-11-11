@@ -1855,7 +1855,7 @@ void Level::createMission() {
     }
     if (hasWanted)
         this->friendCount += wanted->getNumWingmen() + 1;
-    int alienGuns = alienWave ? (bigAlienWave == 1 ? 8 : 7) : 0;
+    int alienGuns = alienWave * (bigAlienWave == 1 ? 8 : 7);
     int fortressGuns = pirateFortress ? 5 : 0;
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(pirateEscorts + stationPirates + blueprint + extraAliens + pirates + convoy + fortressGuns + alienGuns +
@@ -2115,12 +2115,14 @@ case4Else:
     }
 case4Tail:
     {
+    // Hoisted before the hunter-count block: the RNG pointer is loop-invariant,
+    // and this placement reproduces the original's literal-pool/RA shape.
+    AERandom *rnd = Globals::rnd;
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
     Globals *globals = Globals::globals;
-    AERandom *rnd = Globals::rnd;
     Array<KIPlayer *> *enemies = this->enemies;
     for (unsigned i = 0; i < enemies->size(); i++) {
         KIPlayer *ship = this->createShip(
@@ -5193,9 +5195,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         wpy = 0;
         wpz = 0;
     }
-    int jitter1 = Globals::rnd->nextInt(40000);
-    int jitter2 = Globals::rnd->nextInt(40000);
     int jitter3 = Globals::rnd->nextInt(40000);
+    int jitter2 = Globals::rnd->nextInt(40000);
+    int jitter1 = Globals::rnd->nextInt(40000);
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
     switch (type) {
