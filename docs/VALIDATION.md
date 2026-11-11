@@ -103,12 +103,13 @@ and `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size- and bas
 (`0x26298` @ `0x1a3b78`): `Level::createShip` is the faithful 336 B real-`new` cleanup-only
 record (57 rows, `ttype 0xff`); the wave-131 `try`/`catch` body (328 B record) was reverted in
 wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
-`Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is
-exact at 948 B. `.rodata` is
+`Generator::createMission` is exact at 172 B (wave-121 w7110); `HangarWindow::render`'s
+948 B record is no longer byte-exact after the wave-176 ship-guard reorder (row 39 LSDA
+length 150 -> 118), but the section stays size- and base-exact. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (80,139), `.ARM.extab` (746) and
+section bytes are `.text` (79,591), `.ARM.extab` (1,321) and
 `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
