@@ -2840,8 +2840,9 @@ bool LevelScript::process(int delta) {
                             player->setSpeed(reinterpret_cast<float &>(speedBits) * 1.05f);
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
                             Level::initStreamOutPosition = 1;
+                            Status *st = Globals::status;
                             Globals::status->field_64 = player->player->getHitpoints();
-                            Globals::status->field_5c = player->player->getShieldHP();
+                            st->field_5c = player->player->getShieldHP();
                             Globals::status->field_60 = player->player->getArmorHP();
                             st->field_68 = player->player->getGammaHP();
                             Globals::appManager->SetCurrentApplicationModule(2);
