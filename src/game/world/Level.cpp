@@ -5175,7 +5175,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     struct EmpGuard {
         ~EmpGuard() {}
     };
-    int mission = Globals::status->getCurrentCampaignMission();
+    int mission;
+    {
+        EmpGuard guard;
+        mission = Globals::status->getCurrentCampaignMission();
+    }
     int wpz, wpx, wpy;
     if (waypoint != nullptr) {
         wpx = waypoint->x;
@@ -5223,10 +5227,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int x = wpx + jitter1 - 20000;
     float y = (float) (wpy + jitter2 - 20000);
     float z = (float) (wpz + jitter3 - 20000);
-    try {
+    {
+        EmpGuard guard;
         player->setEmpData(empPoints, empTime);
-    } catch (...) {
-        __builtin_trap(); // lint: arm_builtin
     }
 
     KIPlayer *ship = nullptr;
@@ -5305,7 +5308,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         fixed->field_0x40 = 1;
         ship = fixed;
     }
-    ship->setLevel(this);
+    {
+        EmpGuard guard;
+        ship->setLevel(this);
+    }
     return (PlayerFixedObject *) ship;
 }
 
