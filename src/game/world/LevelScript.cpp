@@ -2189,10 +2189,12 @@ bool LevelScript::process(int delta) {
                     } else {
                         m_nScriptTimerA += delta;
                         if (!Globals::layout->isFading() || m_nScriptTimerA >= 10001) {
-                            Globals::status->field_64 = player->player->getHitpoints();
-                            Globals::status->field_5c = player->player->getShieldHP();
-                            Globals::status->field_60 = player->player->getArmorHP();
-                            Globals::status->field_68 = player->player->getGammaHP();
+                            Player *pp = player->player;
+
+                            Globals::status->field_64 = pp->getHitpoints();
+                            Globals::status->field_5c = pp->getShieldHP();
+                            Globals::status->field_60 = pp->getArmorHP();
+                            Globals::status->field_68 = pp->getGammaHP();
                             Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
@@ -2347,18 +2349,20 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 0;
                     }
                 } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
+                    Level *lvl = m_pLevel;
+
                     player->player->setVulnerable(true);
                     (*enemies)[10]->setSpeed(8.0f);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    lvl->lodManager->forceUpdate(delta, false);
                     m_pCamera->setLookAtCam(false);
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
                     m_pRadar->enabled = 1;
-                    resetCamera(m_pLevel);
+                    resetCamera(lvl);
                     m_nState = 6;
                     m_bCinematicBreak = 0;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    lvl->lodManager->forceUpdate(delta, false);
                 }
                 if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
                     Vector origin = (*enemies)[0]->getPosition();
@@ -2462,6 +2466,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 70: { // 0x1399a2
+                Radar *radar = m_pRadar;
                 // Cutscene-exit teardown variant (state 0): like case 69 but reframes closer, points
                 // the camera to the opposite side and freezes the player ship. The radar is re-enabled
                 // before resetCamera, as in the original (0x13ec80/0x13ec84 vs 0x13ec8c). FP immediates
@@ -2476,7 +2481,7 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     hud->visible = 0;
-                    m_pRadar->enabled = 0;
+                    radar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -2537,7 +2542,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     hud->visible = 1;
-                    m_pRadar->enabled = 1;
+                    radar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
@@ -4737,9 +4742,11 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
+                        Level *lvl = m_pLevel;
+
                         m_nScriptTime = 0;
                         m_nTimeLimit = 91000;
-                        m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel);
+                        lvl->objectivesB = new Objective(3, 91000, lvl);
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;
