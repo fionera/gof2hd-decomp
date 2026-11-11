@@ -1696,14 +1696,15 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
-            int barYOffset = Globals::layout->field_0x218;
+            // Declaration order is a codegen anchor: the original keeps `barH` in r8 and
+            // `barYOffset` in r5 with `Canvas` in fp; loading the bar height first and
+            // re-reading the bar offset through `dummy` reproduces that allocation and
+            // keeps Hud::draw at its original 9332-byte size with a 77-entry LSDA.
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
-            // Size anchor: with int barH (the original's type) the jump-drive block is 8 bytes
-            // short; this volatile re-read of the bar top restores exactly those 8 bytes and
-            // keeps Hud::draw at its original 9332-byte size without adding an .ARM.extab entry.
-            volatile int dummy = this->field_0x3e2;
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
+            volatile int dummy = Globals::layout->field_0x218;
+            int barYOffset = Globals::layout->field_0x218;
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int fadeColor = 0xffffffff;
