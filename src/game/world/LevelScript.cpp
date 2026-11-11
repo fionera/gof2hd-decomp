@@ -684,15 +684,16 @@ bool LevelScript::process(int delta) {
             // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
+                Level *self = m_pLevel;
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
                 Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
-                resetCamera(m_pLevel);
+                resetCamera(self);
                 player->setFreeLookMode(false);
                 m_pCamera->enableFirstPersonCam(false);
                 player->hideShipForFirstPersonCameraView(false);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pLevel->getPlayer()->setCollide(false);
+                self->getPlayer()->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 player->player->removeAllGuns();
@@ -3072,12 +3073,13 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
                     if (player->isDockedToDockingPoint()) {
-                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
+                        Level *self = m_pLevel;
+                        self->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
-                        m_pLevel->getPlayer()->resetGunDelay();
+                        self->getPlayer()->resetGunDelay();
                         m_nScriptTimerA = 0;
-                        m_pLevel->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
+                        self->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
                     }
