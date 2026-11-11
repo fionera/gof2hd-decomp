@@ -14,16 +14,16 @@ below was measured on `57e085059` in this worktree.
 | metric | base | landed |
 |---|---:|---:|
 | function size | 9,908 | **9,908** |
-| raw same-address diff | 6,339 | **6,330** (-9) |
+| raw same-address diff | 6,339 | **6,329** (-10) |
 | instruction-index alignment | 1,757 | 1,776 |
 | instruction count | 3,542 ours / 3,532 orig | 3,543 / 3,532 |
-| whole-`.so` `.text` differing bytes | 75,365 | **75,356** (-9) |
+| whole-`.so` `.text` differing bytes | 75,365 | **75,355** (-10) |
 | `.ARM.exidx` differing bytes | 0 | 0 |
 | `.ARM.extab` differing bytes | 655 (size/base exact at `0x1a3b78`, 156,312 B) | **655** (unchanged) |
 | `.rel.plt` | byte-identical | **byte-identical** |
 | `.rodata` / `.data` / `.dynsym` / `.dynstr` / `.hash` | 0 | 0 |
 | `.note.gnu.build-id` differing bytes | 20 | 20 |
-| total differing bytes | 76,040 | **76,031** |
+| total differing bytes | 76,040 | **76,030** |
 | file size | 2,187,328 | 2,187,328 |
 
 Gate after the change: byte_exact **4,507/4,524**, linked_exact
@@ -76,6 +76,19 @@ This is a pure branch-hint removal; the predicate is unchanged. On the
 wave-181 shape this site was neutral/worse; on the new planet-lock shape it is
 the unique single-`expect` improvement (-5 raw, 6,335 -> 6,330, size exact).
 It is the last `__builtin_expect` site in the function (index 32 of 33).
+
+### 1.3 Third cell: enemy-loop `lockedEnemy` dead test order
+
+```diff
+@@ enemy-loop tail, lockedEnemy cleanup (line ~870)
+-            if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
++            if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDead() || this->lockedEnemy->isDying())) {
+```
+
+The two predicates are side-effect-free and the OR is commutative. This is the
+secondary `lockedEnemy` cleanup inside the `enemyHit` tail (the first one at
+line 673, before the enemy loop, keeps its original `isDying`-first order and
+is neutral). Swapping only this occurrence is -1 raw, size exact.
 
 ## 2. Why this moves bytes
 
@@ -145,10 +158,10 @@ original's, but at `+0x1a8` addresses because of the earlier global shift.
 
 ```sh
 ulimit -v 12000000
-cp /home/debian/GalaxyOnFire2/scratch/w12609/R_rm32.cpp src/game/weapons/Radar.cpp
+cp /home/debian/GalaxyOnFire2/scratch/w12609/BR/locked_second_only.cpp src/game/weapons/Radar.cpp
 cmake --build cmake-build-match --target link_so -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Radar4drawEP6PlayerP3Hudi
-# -> raw= 6330 aligned= 1776 size=9908/9908 insn=3543/3532
+# -> raw= 6329 aligned= 1776 size=9908/9908 insn=3543/3532
 cmake --build cmake-build-match --target check -j2    # RATCHET PASS
 cmake --build cmake-build-match --target drift -j2    # 0 field(s)
 ```
@@ -159,18 +172,23 @@ Section-level diff (scratch helper `secdiff.py`, ELF parser):
 python3 /home/debian/GalaxyOnFire2/scratch/w12609/secdiff.py \
   /home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so \
   cmake-build-match/libgof2hdaa.so
-# .text 75,356 ; .ARM.extab 655 ; .note.gnu.build-id 20 ; .rel.plt identical
+# .text 75,355 ; .ARM.extab 655 ; .note.gnu.build-id 19 ; .rel.plt identical
 ```
 
 ## 6. Scratch inventory (`/home/debian/GalaxyOnFire2/scratch/w12609`)
 
 * `Radar.base.cpp` — exact base source (HEAD `Radar.cpp`).
 * `PL/D1_S1_sDS.cpp` — first-cell source (raw 6,335).
-* `R_rm32.cpp` — landed source (raw 6,330).
+* `R_rm32.cpp` — second-cell source (raw 6,330).
+* `BR/locked_second_only.cpp` — landed source (raw 6,329).
 * `measure.sh <cpp>` — copy to `src/`, `link_so -j2`, `fn_diff`.
 * `gen_plsweep.py` / `PL/` — 144-variant planet-lock block sweep.
 * `gen_ship.py` / `S_*.cpp` — 14-variant shipGroup/wreck sweep.
 * `gen_planet.py` / `P_*.cpp` — 11-variant first planet-body sweep.
 * `gen_expect.py` / `EX/` — 33-site remove/flip sweep (66 variants).
+* `gen_expect2.py` / `EX2/` — 32-site re-sweep on the 6,330 shape.
+* `gen_plsweep2.py` / `PL2/` — 144-variant planet-block re-sweep.
+* `gen_ship2.py` / `S2_*.cpp` — shipGroup/wreck re-sweep.
+* `heat.py` — per-address differing-run census.
 * `dump.py` / `full.py` — side-by-side and full disassembly dumps.
 * `secdiff.py` — per-section differing-byte report.

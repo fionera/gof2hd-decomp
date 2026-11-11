@@ -11,18 +11,20 @@ tree (raw 3647, `.text` 75,365, `.ARM.extab` 655).
 
 ## 1. Result
 
-**One size-exact code win landed: raid-loop `setRotate`/`setSpeed` order.**
+**Two size-exact code wins landed: raid-loop `setRotate`/`setSpeed` order,
+then the alien-turret `v`/`cargo` store order.**
 
 ```text
                                      size            raw    aligned  insn
 base 57e085059                       17172/17172     3647   956      6206/6197
-landed (this pass)                   17172/17172     3646   951      6206/6197
+after raid-loop order (§2a)          17172/17172     3646   951      6206/6197
+after alien-turret v/cargo (§2b)     17172/17172     3645   1135     6206/6197
 ```
 
 Section bytes (measured in this worktree):
 
 ```text
-.text        size 1,259,464 / 1,259,464   differing bytes 75,365 -> 75,364  (-1)
+.text        size 1,259,464 / 1,259,464   differing bytes 75,365 -> 75,363  (-2)
 .ARM.extab   size   156,312 /   156,312   differing bytes    655 ->    655  (0)
 .ARM.exidx   size    28,528 /    28,528   differing bytes      0 ->      0
 .rel.plt     size    29,392 /    29,392   byte-identical (cmp clean)
@@ -30,7 +32,7 @@ Section bytes (measured in this worktree):
 .note.gnu.build-id 20
 ```
 
-Net total-byte win **-1** (`.text` only).  `.text` and `.ARM.extab` stay
+Net total-byte win **-2** (`.text` only).  `.text` and `.ARM.extab` stay
 size- and base-exact (`.ARM.extab` @ `0x1a3b78`, 156,312 B).  The function is
 still one of the 17 non-byte-exact bodies, so the ratcheted `byte_exact` count
 is unchanged.
@@ -71,6 +73,21 @@ PRS    3654   950
 metric by 5.  (The original emits `hitpoints` first, then `setSpeed`, then
 `setRotate`; that source order `PSR` measures 3654, so the emitted schedule is
 not simply the source order here.)
+
+### 2b. Alien turret loop (`~line 1971`)
+
+```cpp
+-            v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
+             gun->cargo = nullptr;
++            v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
+```
+
+`v` is only read by the following `setPosition`, and `cargo` is an independent
+field store, so the swap is semantics-preserving.  Measured alone on top of
+§2a: raw 3646 -> 3645, `.text` 75,364 -> 75,363, `.ARM.extab` 655 unchanged,
+size 17172/17172.  (The aligned metric rises to 1135; raw is the gate metric
+and this is the only semantics-safe adjacent swap in the whole function that
+beats 3646.)
 
 ## 3. Mission-type switch / branch-layout findings (no further win)
 
@@ -140,7 +157,7 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Level13crea
 cmake --build cmake-build-match --target check -j2
 ```
 
-Expected: `raw=3646 aligned=951 size=17172/17172`, `.text` diff 75,364,
+Expected: `raw=3645 aligned=1135 size=17172/17172`, `.text` diff 75,363,
 `.ARM.extab` diff 655, `.rel.plt` diff 0, `RATCHET PASS`.
 
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w12615/`

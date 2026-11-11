@@ -1642,26 +1642,25 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
         int barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
-            short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            short textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
+            int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
-            // Codegen anchor: reading the reverse flag into a named bool after the
-            // dock-amount calls makes clang keep it in r8 (the shipped register)
-            // and lets the getText select reuse it; the original reloads the
-            // field once for both uses.  Semantically identical (no writes to
-            // field_0x279 in between), raw diff 150 -> 148 at the same 9,332 B.
-            bool reversed = this->field_0x279;
+            // The original tests the reverse flag with `cmp/beq` and selects the
+            // forward text id; naming the inverted predicate keeps the condition
+            // in r8 and lets both selects share the same polarity.
+            bool forward = this->field_0x279 == 0;
             float progress = (float) transferred / (float) total;
-            if (reversed)
+            if (!forward)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            String text = *Globals::gameText->getText(reversed ? 3204 : 3205) + String(" ");
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            String text = *Globals::gameText->getText(forward ? 3204 : 3205) + String(" ");
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int top = this->field_0x3e2;
             int y = top * 2;
             unsigned int barYOffset = Globals::layout->field_0x218;
+            int y2 = barYOffset + y;
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
@@ -1670,7 +1669,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
-                                          (Globals::w >> 1) - barW / 2, barYOffset + y);
+                                          (Globals::w >> 1) - barW / 2, y2);
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1), (int) ((float) (top * 2) + (float) barH * 2.5f), false);
             if (this->field_0x27a && Globals::status->getMission() != 0 &&
                 Globals::status->getMission()->getType() != 168)
