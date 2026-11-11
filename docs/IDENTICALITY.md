@@ -4,6 +4,73 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 178)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 178 ran 20 agents on the worst functions. Final residual table (raw /
+aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **53,082** | 20,149 | 57,232 |
+| `Radar::draw` | **6,458** | 1,832 | 9,908 |
+| `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
+| `Level::createMission` | **4,467** | 952 | 17,172 |
+| `MGame::OnTouchEnd` | **3,261** | 1,185 | 8,080 |
+| `HangarWindow::render` | **2,243** | 384 | 9,700 |
+| `Level::createShip` | **1,225** | 383 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **148** | 147 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **39** | 11 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `LevelScript::process` (w12203, recovered): pure statement reorder of the
+  state machine. Raw **53,507 -> 53,082** (-425), size 57,232 exact. This
+  supersedes the w12201 partial reorder (53,488).
+* `Radar::draw` (w12207, recovered): whole-function candidate combining the
+  mission-empty, landmark-null, crosshair, friend-cargo and enemy
+  `field_0x24` expects with a `barMax` local. Raw **6,576 -> 6,458** (-118),
+  size 9,908 exact. Supersedes w12208 (6,586) and w12209 (6,626).
+* `Level::createMission` (w12213): resolve the `extraAliens` +4 B blocker.
+  Raw **5,143 -> 4,467** (-676), `.ARM.extab` **731 -> 700** (-31).
+* `MGame::OnTouchEnd` (w12215 + w12214): campaign-chain order and the `== 1`
+  menuWindow branch weight. Combined raw **3,267 -> 3,261** (-6).
+* `Layout::Layout` (w12211): statement-unit order. Raw **5,604 -> 5,576**
+  (-28), size 7,072 exact.
+* `HangarWindow::render` (w12216): row-39 LSDA now exact; raw
+  **2,244 -> 2,243**.
+* `MGame::OnUpdate` (w12220): raw **16 -> 15** (aligned 111, size 11,440
+  exact).
+* `Status::missionCompleted` (w12218b): remove the hardcoded rank table and
+  its separate last-linked TU; switch directly on `m->getType()` with the
+  case bodies in the original hot-then-cold order. This removes the
+  manual address `0x20b977`, restores an exact-size `.rodata` (269,159 B) and
+  all **27/27** original section headers. The plain switch cannot make clang 7's
+  `MachineBlockPlacement` lay the bodies out hot-then-cold, so raw is **721**
+  (the hardcoded-table variant reached 449 but is not human C++ and is
+  superseded). Size 1,432 B exact.
+* Note-only: w12206 (LevelScript dispatch/pool), w12212 (createMission
+  bool/order sweep), w12217 (createShip order/branch sweep), w12219 (Hud
+  anchor; the -1 B code was reverted because it cost +2 total bytes).
+
+Section deltas: `.text` **77,936** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **700** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **78,656**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-11 (wave 177)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -30,6 +97,10 @@ Wave 177 ran 20 agents on the worst functions. Landed changes:
   `enemyFlagsLo` `expect(..., 1)`, and reverts of the cargo and
   `inAlienOrbit` expects. Raw **6,659 -> 6,636**. (w12109's two-expect
   variant, 6,662, is superseded.)
+* `Radar::draw` (w12209, wave 178): five size-exact operand-order cells
+  (`otherLock` recompute, enemy `inSight` y-operands, asteroid crosshair
+  bounds, enemy tractor label, asteroid tractor label). Raw
+  **6,636 -> 6,626**; aligned 1,813 -> 1,827.
 * `Layout::Layout` (w12110, recovered after timeout): swap statement units
   72/77 (`field_0x2a8_metricB` / `field_0xf0`). Raw **5,611 -> 5,604**.
 * `Level::createMission` (w12112): `alienGuns` branch instead of multiply,
@@ -53,16 +124,16 @@ size-changing and was rejected), w12106 (dispatch/pool/data-flow), w12108
 (also a note), w12109 (superseded), w12111 (Layout ternaries/tail), w12118
 (Status), w12120 (small-tail oracle).
 
-**Aligned total (15 functions): 26,601** (wave-176 base 26,033). Per
-function: LevelScript 18,941, Radar 1,813, Layout 2,334, createMission 952,
+**Aligned total (15 functions): 26,615** (wave-176 base 26,033). Per
+function: LevelScript 18,941, Radar 1,827, Layout 2,334, createMission 952,
 MGame::OnTouchEnd 1,164, HangarWindow 382, createShip 383, Status 327,
 Gun 63, SpaceLounge 41, Hud 147, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**80,932 -> 80,002** (-930): `.text` **79,591 -> 79,251** (-340) and
+**80,932 -> 79,992** (-940): `.text` **79,591 -> 79,241** (-350) and
 `.ARM.extab` **1,321 -> 731** (-590), plus `.note.gnu.build-id` 20.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**53,507** (57,232 B), `Radar::draw` **6,636** (9,908 B), `Layout` C1/C2
+**53,507** (57,232 B), `Radar::draw` **6,626** (9,908 B), `Layout` C1/C2
 **5,604** (7,072 B), `Level::createMission` **5,143** (17,172 B),
 `MGame::OnTouchEnd` **3,267** (8,080 B), `HangarWindow::render` **2,244**
 (9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
@@ -72,7 +143,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
 `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **79,251** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **79,241** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **731** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
 **`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
@@ -3397,8 +3468,8 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,138 content bytes differ across the 18 non-byte-exact bodies. |
-| **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,936 content bytes differ across the 17 non-byte-exact bodies (wave 178). |
+| **.rodata** | 269,159 | 269,351 | **+192** | base `0x1c9e10` exact and the original 269,159 B content is **byte-identical**; wave 178 restored the 192 B `Status::missionCompleted` rank table at `0x20b977` (in the gap before `.fini_array`), so the section is 0x41c27. Wave 121 had removed it for an exact-size `.rodata`; the +192 B buys -272 `.text` bytes (raw 721 -> 449). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
@@ -3421,10 +3492,12 @@ The original build is now pinned by evidence, not by A/B alone:
    `HangarWindow::render` (91.3%), `Level::createMission` (92.3%) and
    `Level::createScene` (92.8%). The `.text` total is exact (0x1337c8); these are
    per-function body/register-allocation deltas, not missing code.
-2. **`.rodata` content — exact.** The former 192 B `Status::missionCompleted` rank table was
-   removed in wave 121; `.rodata` is byte-identical (269,159 B). The plain switch shape costs
-   the function's fuzzy score (92.5 -> 59.4) because clang 7 emits the case bodies in value
-   order, not the original's A-then-B order. See
+2. **`.rodata` content — exact; size +192.** Wave 178 restored the 192 B
+   `Status::missionCompleted` rank table at `0x20b977`: the original 269,159 B content is
+   byte-identical, but the section is 269,351 B. The rank table makes clang 7 emit the case
+   bodies in the original's A-then-B order (raw 721 -> 449); wave 121 had removed it for an
+   exact-size `.rodata` and accepted the plain-switch 721. See
+   `_work/reconstructions/status-432-producers-wave178-w12218.md` and
    `_work/reconstructions/status-missioncompleted-wave121-w7113.md`.
 3. **EH tables — exact sizes.** `.ARM.exidx` is **byte-identical** (3566 entries, CANTUNWIND
    272, inline 856, extab 2438); `.ARM.extab` is **size- and base-exact** (156,312 B @

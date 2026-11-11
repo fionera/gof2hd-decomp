@@ -1827,13 +1827,13 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             }
                         }
                     }
+                    float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
+                    this->activeTouchId = nullptr;
                     this->menuTouchOpen = 0;
                     this->touch0Id = nullptr;
                     this->touch1Id = nullptr;
-                    this->activeTouchId = nullptr;
-                    this->level->getStarSystem()->initLight();
-                    float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
                     this->level->enableParticleEffects(particleQuality > 0.0f, particleQuality > 0.7f);
+                    this->level->getStarSystem()->initLight();
                     if (this->menuWindow->cinematicSteerActive) {
                         // "Skip" pressed in the pause menu.
                         this->menuWindow->cinematicSteerActive = 0;
@@ -2092,37 +2092,40 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
-            this->hud->closeHudMenu();
             this->hudMenuOpen = 0;
+            this->hud->closeHudMenu();
             resumeSounds();
             this->pauseOpen = 0;
-        } else if (wingmanCommand >= 0) {
-            // Order the wingmen.
-            Array<KIPlayer *> *enemies = this->level->getEnemies();
-            if (enemies != nullptr) {
-                for (unsigned i = 0; i < enemies->size(); i++) {
-                    KIPlayer *wingman = (*enemies)[i];
-                    if (wingman->isWingMan() && !wingman->isDead()) {
-                        wingman->setWingmanCommand(wingmanCommand,
-                                                   wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
+        } else {
+            if (wingmanCommand >= 0) {
+                // Order the wingmen.
+                Array<KIPlayer *> *enemies = this->level->getEnemies();
+                if (enemies != nullptr) {
+                    for (unsigned i = 0; i < enemies->size(); i++) {
+                        KIPlayer *wingman = (*enemies)[i];
+                        if (wingman->isWingMan() && !wingman->isDead()) {
+                            wingman->setWingmanCommand(wingmanCommand,
+                                                       wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
+                        }
                     }
                 }
+                this->hudMenuOpen = 0;
+                this->hud->closeHudMenu();
+                this->pauseOpen = 0;
+                resumeSounds();
             }
-            this->hudMenuOpen = 0;
-            this->hud->closeHudMenu();
-            this->pauseOpen = 0;
-            resumeSounds();
-        } else if (this->hudTouchFlags == 0) {
-            this->hud->closeHudMenu();
-            this->hudMenuOpen = 0;
-            this->touch0Id = nullptr;
-            this->touch1Id = nullptr;
-            this->pauseOpen = 0;
-            resumeSounds();
-            if (this->_bc8) {
-                this->_bc8 = 0;
-                if (this->player != nullptr) {
-                    this->player->resetGunDelay();
+            if (this->hudTouchFlags == 0) {
+                this->hud->closeHudMenu();
+                this->hudMenuOpen = 0;
+                this->touch0Id = nullptr;
+                this->touch1Id = nullptr;
+                this->pauseOpen = 0;
+                resumeSounds();
+                if (this->_bc8) {
+                    this->_bc8 = 0;
+                    if (this->player != nullptr) {
+                        this->player->resetGunDelay();
+                    }
                 }
             }
         }
@@ -2810,9 +2813,10 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
+                    Status *volatile st = Globals::status;
                     int radioIndex = Globals::rnd->nextInt(2);
+                    int radioBase = st->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     Level *level = this->level;
-                    int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     level->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&

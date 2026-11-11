@@ -346,7 +346,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     int missionBlocksPlanets = false;
     bool alwaysEnemySeen = false;
     bool alwaysEnemy = false;
-    if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
+    if (__builtin_expect((!mission->isEmpty()), 1) && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&  // lint: arm_builtin
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
     }
@@ -425,7 +425,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
           (Globals::status->getStation()->getIndex() == 111 &&
            Globals::status->getCurrentCampaignMission() > 93))), 0)) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
-            if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
+            if (i == 2 || __builtin_expect((this->landmarks->data()[i] == nullptr), 0) || !this->landmarks->data()[i]->isVisible()) {  // lint: arm_builtin
                 continue;
             }
             this->update(this->landmarks->data()[i]);
@@ -717,13 +717,14 @@ enemies:
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
                         enemy->field_0x76 = 1;
                     } else {
+                        auto barMax = this->field_0x1c8;
                         if (!enemy->isDead()) {
                             int cx = (int) PlayerEgo::crosshairPos.x;
                             int cy = (int) PlayerEgo::crosshairPos.y;
                             enemy->field_0x73 = this->screenX > cx - this->field_0x124 &&
-                                                this->screenX < cx + this->field_0x124 &&
+                                                __builtin_expect((this->screenX < cx + this->field_0x124 &&  // lint: arm_builtin
                                                 this->screenY > cy - this->field_0x124 &&
-                                                this->screenY < cy + this->field_0x124;
+                                                this->screenY < cy + this->field_0x124), 1);
                         }
                         Player *target = enemy->player;
                         unsigned int frameImage;
@@ -740,7 +741,7 @@ enemies:
                         }
                         Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
                                                      this->screenY + this->halfScreenWidth + 2);
-                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) this->field_0x1c8;
+                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) barMax;
                         this->barWidth = (int) hull;
                         Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
                                                       this->screenX + 3 - this->halfScreenHeight,
@@ -748,7 +749,7 @@ enemies:
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
-                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) this->field_0x1c8;
+                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) barMax;
                             this->barWidth = (int) emp;
                             Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,
@@ -820,7 +821,7 @@ enemies:
                 } else {
                     if (__builtin_expect(enemy->player->enemyFlagsLo, 0)) { // lint: arm_builtin anchor: Radar::draw
                         image = enemy == locked ? this->image_0x90 : this->image_0x60;
-                    } else if (enemy->player->carriesFriendCargoFlag) {
+                    } else if (__builtin_expect((enemy->player->carriesFriendCargoFlag), 1)) {  // lint: arm_builtin
                         image = enemy == locked ? this->image_0x94 : this->image_0x68;
                     } else {
                         image = enemy == locked ? this->image_0x98 : this->image_0x78;
@@ -831,7 +832,7 @@ enemies:
             }
             if (!this->level->getPlayer()->isAutoPilot() &&
                 __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
-                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || enemy->field_0x24) &&
+                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
                 (!wreck || enemy->isDead())) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
                     this->field_0x1c = enemy;

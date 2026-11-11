@@ -2049,7 +2049,7 @@ void Level::createMission() {
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
         }
     }
-    if (__builtin_expect(extraAliens >= 1, 1)) { // lint: arm_builtin
+    if (extraAliens >= 1) {
         this->spawnPosition = this->player->getPosition();
         this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
         this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
@@ -2114,9 +2114,6 @@ case4Else:
     }
 case4Tail:
     {
-    // Hoisted before the hunter-count block: the RNG pointer is loop-invariant,
-    // and this placement reproduces the original's literal-pool/RA shape.
-    AERandom *rnd = Globals::rnd;
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
@@ -2126,7 +2123,7 @@ case4Tail:
     for (unsigned i = 0; i < enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
+                this->playerRoute->getWaypoint(((AERandom *) Globals::globals)->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
