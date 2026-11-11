@@ -1662,6 +1662,7 @@ bool LevelScript::process(int delta) {
             case 16: {
                 // Wormhole tutorial: show the target, open the wormhole and send the enemies through.
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
+                    Level *self = m_pLevel;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
@@ -1674,11 +1675,11 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
-                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
-                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                    m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
+                    Vector camPos = (*self->getEnemies())[0]->getPosition();
                     camPos += Vector{6000.0f, 4000.0f, 47500.0f};
                     m_pCamera->setPosition(camPos);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    self->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
                     Level *self = m_pLevel;
@@ -1893,6 +1894,7 @@ bool LevelScript::process(int delta) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                 } else if (((RadioMessage *) ((*messages)[2]))->isOver() && __builtin_expect(m_nState == 1, 1)) { // lint: arm_builtin
+                    Level *self = m_pLevel;
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
                     m_nState = 2;
@@ -1909,8 +1911,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     m_nTimeLimit = 180000;
                     m_pGeometry6 = nullptr;
-                    m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    self->objectivesA = new Objective(3, 180000, m_pLevel);
+                    self->lodManager->forceUpdate(delta, false);
                 }
                 if (m_pGeometry6 != nullptr) {
                     m_pGeometry6->moveForward((float) (delta * 3));
@@ -2126,6 +2128,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(0.5f, 30);
                     Globals::sound->setParamValue(1, 153, 0.5f);
                     if (player->isInWormhole()) {
+                        Level *self = m_pLevel;
                         player->setTurretMode(false);
                         resetCamera(m_pLevel);
                         player->setFreeLookMode(false);
@@ -2139,18 +2142,18 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                         player->player->setVulnerable(false);
                         m_pCamera->setPosition(player->getPosition());
-                        m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
+                        m_pCamera->setTarget(((PlayerStation *) (*self->getLandmarks())[0])->rootGeometry);
                         m_tempVec = 5000.0f * AbyssEngine::AEMath::VectorNormalize(player->getPosition());
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
-                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
+                        ((PlayerWormHole *) (*self->getLandmarks())[3])->freeMissionLock();
                         // The original's only switchSunForSupernovaIntro call is the mission-89
                         // case-3 one, but MachineBlockPlacement puts that cold block after the
                         // first PlayerEgo::setDockingState reference.  Emit the call here (after
                         // freeMissionLock) so the .plt order stays
                         // freeMissionLock < switchSun < setDockingState; the mission-89 arm above
                         // no longer calls it.
-                        m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
-                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                        self->getStarSystem()->switchSunForSupernovaIntro();
+                        ((PlayerWormHole *) (*self->getLandmarks())[3])->reset(true);
 
                         m_bRenderParticles = 1;
                         Globals::sound->play(154, nullptr, nullptr, 0.0f);
@@ -2189,10 +2192,12 @@ bool LevelScript::process(int delta) {
                     } else {
                         m_nScriptTimerA += delta;
                         if (!Globals::layout->isFading() || m_nScriptTimerA >= 10001) {
-                            Globals::status->field_64 = player->player->getHitpoints();
-                            Globals::status->field_5c = player->player->getShieldHP();
-                            Globals::status->field_60 = player->player->getArmorHP();
-                            Globals::status->field_68 = player->player->getGammaHP();
+                            Player *pp = player->player;
+
+                            Globals::status->field_64 = pp->getHitpoints();
+                            Globals::status->field_5c = pp->getShieldHP();
+                            Globals::status->field_60 = pp->getArmorHP();
+                            Globals::status->field_68 = pp->getGammaHP();
                             Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
@@ -2347,18 +2352,19 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 0;
                     }
                 } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
+                    Level *self = m_pLevel;
                     player->player->setVulnerable(true);
                     (*enemies)[10]->setSpeed(8.0f);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    self->lodManager->forceUpdate(delta, false);
                     m_pCamera->setLookAtCam(false);
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
                     m_pRadar->enabled = 1;
-                    resetCamera(m_pLevel);
+                    resetCamera(self);
                     m_nState = 6;
                     m_bCinematicBreak = 0;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    self->lodManager->forceUpdate(delta, false);
                 }
                 if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
                     Vector origin = (*enemies)[0]->getPosition();
@@ -2462,6 +2468,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 70: { // 0x1399a2
+                Radar *radar = m_pRadar;
                 // Cutscene-exit teardown variant (state 0): like case 69 but reframes closer, points
                 // the camera to the opposite side and freezes the player ship. The radar is re-enabled
                 // before resetCamera, as in the original (0x13ec80/0x13ec84 vs 0x13ec8c). FP immediates
@@ -2476,7 +2483,7 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     hud->visible = 0;
-                    m_pRadar->enabled = 0;
+                    radar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -2537,7 +2544,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     hud->visible = 1;
-                    m_pRadar->enabled = 1;
+                    radar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
@@ -4737,9 +4744,11 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
+                        Level *lvl = m_pLevel;
+
                         m_nScriptTime = 0;
                         m_nTimeLimit = 91000;
-                        m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel);
+                        lvl->objectivesB = new Objective(3, 91000, lvl);
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;

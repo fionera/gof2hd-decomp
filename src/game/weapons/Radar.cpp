@@ -639,11 +639,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if (missionBlocksPlanets || this->planetLockTimer < 1) {
+                if (this->planetLockTimer < 1 || missionBlocksPlanets) {
                     goto enemies;
                 }
                 int frame;
-                if (this->field_0x18 != 0 && this->field_0x18 != this->field_0x14) {
+                if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
                     frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
