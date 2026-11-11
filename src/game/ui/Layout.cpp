@@ -99,12 +99,12 @@ Layout::Layout() {
     this->field_0x29c_buttonRowGap = Globals::iPadHD ? 12 * 1.40625f : (Globals::n9 ? 8 : (Globals::retinaDisplay ? 24 : 12));
     this->animSpeedScale = Globals::iPadHD ? 1.40625f : (Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f));
     this->field_0xdc = Globals::iPadHD ? 10.0f * 1.40625f : (Globals::n9 ? 15.0f : (Globals::retinaDisplay ? 20.0f : 10.0f));
-    this->field_0xf0 = Globals::iPadHD ? 80 * 1.40625f : (Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80));
+    this->field_0x2a8_metricB = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
     this->field_0x298_buttonYBias = Globals::iPadHD ? 84 * 1.40625f : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 168 : 84));
     this->field_0x2ac_metricC = Globals::iPadHD ? 147 : (Globals::n9 ? 189 : (Globals::retinaDisplay ? 210 : 105));
     this->field_0x2a4_metricA = Globals::iPadHD ? 110 * 1.40625f : (Globals::n9 ? 198 : (Globals::retinaDisplay ? 220 : 110));
     this->ringMidFarThreshold = Globals::iPadHD ? 200 * 1.40625f : (Globals::n9 ? 300 : (Globals::retinaDisplay ? 400 : 200));
-    this->field_0x2a8_metricB = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
+    this->field_0xf0 = Globals::iPadHD ? 80 * 1.40625f : (Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80));
     this->field_0xf8 = Globals::iPadHD ? 562 : (Globals::n9 ? 600 : (Globals::retinaDisplay ? 800 : 400));
     this->field_0x2b0 = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 54 : (Globals::retinaDisplay ? 60 : 30));
     this->ringRadiusScale = Globals::iPadHD ? 1.40625f : (Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f));

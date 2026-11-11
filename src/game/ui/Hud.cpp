@@ -1646,11 +1646,17 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             short textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
+            // Codegen anchor: reading the reverse flag into a named bool after the
+            // dock-amount calls makes clang keep it in r8 (the shipped register)
+            // and lets the getText select reuse it; the original reloads the
+            // field once for both uses.  Semantically identical (no writes to
+            // field_0x279 in between), raw diff 150 -> 148 at the same 9,332 B.
+            bool reversed = this->field_0x279;
             float progress = (float) transferred / (float) total;
-            if (this->field_0x279)
+            if (reversed)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            String text = *Globals::gameText->getText(reversed ? 3204 : 3205) + String(" ");
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int top = this->field_0x3e2;

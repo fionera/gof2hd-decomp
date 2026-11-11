@@ -651,8 +651,8 @@ bool LevelScript::process(int delta) {
                 // 0x138440: once message #6 finishes, lock the camera onto ship 0 and reframe.
                 RadioMessage *msg6 = (RadioMessage *) ((*messages)[6]);
                 if (msg6->isOver()) {
-                    m_nState = 2;
                     wcamera->setTarget((*enemies)[0]->geometry);
+                    m_nState = 2;
                     wcamera->setPosition(-5000.0f, 300.0f, -5000.0f); // 0x13855c/560
                 }
             }
@@ -685,8 +685,8 @@ bool LevelScript::process(int delta) {
             // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
-                Level *self = m_pLevel;
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Level *self = m_pLevel;
                 Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
                 resetCamera(self);
@@ -696,11 +696,11 @@ bool LevelScript::process(int delta) {
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 self->getPlayer()->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
-                player->setComputerControlled(true);
                 player->player->removeAllGuns();
+                player->setComputerControlled(true);
                 m_pCamera->setLookAtCam(true);
-                m_pCamera->setTarget(player->geometry);
                 player->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
+                m_pCamera->setTarget(player->geometry);
                 Vector playerPos = player->geometry->getPosition();
                 m_pCamera->setPosition(playerPos);
                 m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
@@ -713,11 +713,11 @@ bool LevelScript::process(int delta) {
             Vector pos = player->getPosition();
             int speedBits = player->getSpeed();
             if (reinterpret_cast<float &>(speedBits) == 2.0f) {
-                Globals::sound->play(157, nullptr, nullptr, 0.0f);
                 Vector zero157{0.0f, 0.0f, 0.0f};
+                Globals::sound->play(157, nullptr, nullptr, 0.0f);
                 Globals::sound->updateEvent3DAttributes(157, &pos, &zero157, false);
-                Globals::sound->play(158, nullptr, nullptr, 0.0f);
                 Vector zero158{0.0f, 0.0f, 0.0f};
+                Globals::sound->play(158, nullptr, nullptr, 0.0f);
                 Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
                 Globals::sound->stop(player->field_0x1c);
                 Globals::sound->play(161, nullptr, nullptr, 0.0f);
@@ -746,8 +746,8 @@ bool LevelScript::process(int delta) {
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
                 m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
+                m_pCamera->setLookAtCam(false);
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
                 m_bStartSequence = 0;               // strb 0 -> this+0x20
             }
@@ -758,8 +758,8 @@ bool LevelScript::process(int delta) {
                     // State 6: the station's docking bay opens around the player.
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = player->getPosition();
-                    Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
                     m_nScriptTimerA += delta;
+                    Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
                     m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     float rumble = (float) m_nScriptTimerA / 4000.0f;
                     if (!(rumble < 1.0f)) {
@@ -812,8 +812,8 @@ bool LevelScript::process(int delta) {
                     wcamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
                         m_nState = 9;
-                        m_nScriptTimerA = 0;
                         wcamera->setRumblePercentage(0.0f, 0);
+                        m_nScriptTimerA = 0;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
@@ -830,10 +830,10 @@ bool LevelScript::process(int delta) {
                     player->setPosition(0.0f, 0.0f, 0.0f);
                     m_pLevel->particleRenderBoolPtr->reset();
                     m_pLevel->particleEmitBoolPtr->reset();
-                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
-                    m_pGeometry5->setPosition(player->getPosition());
+                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_pCamera->setPosition(5000.0f, 500.0f, -10000.0f);
+                    m_pGeometry5->setPosition(player->getPosition());
                     m_nScriptTimerA = 0;
                     break;
                 }
@@ -868,13 +868,13 @@ bool LevelScript::process(int delta) {
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                             ->Update((long long) delta, false);
                     if (m_nScriptTimerA >= 2501) {
-                        m_nState = 12;
                         player->StopEngineSound();
                         player->field_0x1c = 156;
+                        m_nState = 12;
                         player->PlayEngineSound();
                         player->startSmokeEmission();
-                        player->setVisible(true);
                         player->setExhaustVisible(false);
+                        player->setVisible(true);
                         player->setSpeed(2.0f);
                     }
                     break;
@@ -981,6 +981,7 @@ bool LevelScript::process(int delta) {
         m_bCinematicBreak = 1;
         switch (m_nState) {
             case 0: {
+                AbyssEngine::PaintCanvas *canvas983 = Globals::Canvas;
                 // Build the arrival rumble up, then seat the station model and play its sting.
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 10000.0f;
@@ -990,9 +991,9 @@ bool LevelScript::process(int delta) {
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTime >= 10001) {
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nState = 1;
@@ -1279,13 +1280,14 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             case 2: {
+                TargetFollowCamera *cam1281 = m_pCamera;
                 float distance = AbyssEngine::AEMath::VectorLength(
-                        *m_pCamera->getPosition() - (*m_pLevel->getEnemies())[0]->geometry->getPosition());
+                        *cam1281->getPosition() - (*m_pLevel->getEnemies())[0]->geometry->getPosition());
                 float rumble = distance / 7000.0f;
                 if (!(rumble < 1.0f)) {
                     rumble = 1.0f;
                 }
-                m_pCamera->setRumblePercentage((1.0f - rumble) * 100.0f, 30);
+                cam1281->setRumblePercentage((1.0f - rumble) * 100.0f, 30);
                 if (distance < 200000.0f) {
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward((float) (delta * 10) + distance * 0.1f);
                 }
@@ -1525,8 +1527,8 @@ bool LevelScript::process(int delta) {
     } else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
         // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
         if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-            m_nState = 1;
             Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+            m_nState = 1;
             ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
     } else if (messages != nullptr && Globals::status->getCurrentCampaignMission() == 50) {
@@ -1611,9 +1613,10 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(player->getPosition());
                     m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
                     for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
-                        if ((*m_pLevel->getEnemies())[i]->shipGroup == 8) {
-                            (*m_pLevel->getEnemies())[i]->player->setHitpoints(0);
-                            (*m_pLevel->getEnemies())[i]->setDead();
+                        Level *lvl1613 = m_pLevel;
+                        if ((*lvl1613->getEnemies())[i]->shipGroup == 8) {
+                            (*lvl1613->getEnemies())[i]->player->setHitpoints(0);
+                            (*lvl1613->getEnemies())[i]->setDead();
                         }
                     }
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -1682,12 +1685,13 @@ bool LevelScript::process(int delta) {
                     self->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
+                    TargetFollowCamera *cam1688 = m_pCamera;
                     Level *self = m_pLevel;
-                    m_pCamera->translate((float) -delta, 0.0f, (float) (-3 * delta));
+                    cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
-                        m_pCamera->setLookAtCam(false);
-                        m_pCamera->setTarget(player->geometry);
+                        cam1688->setLookAtCam(false);
+                        cam1688->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
@@ -2400,9 +2404,9 @@ bool LevelScript::process(int delta) {
                     Vector origin = (*enemies)[0]->getPosition();
                     for (int i = 5; i != 9; i++) {
                         int dx = Globals::rnd->nextInt(10000) + 15000;
-                        KIPlayer *pirate = (*enemies)[i];
                         int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                         int dy = Globals::rnd->nextInt(10000);
+                        KIPlayer *pirate = (*enemies)[i];
                         int dz = Globals::rnd->nextInt(10000) + 15000;
                         int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
                         pirate->setPosition(origin + Vector{(float) x, (float) (dy - 5000), (float) z});
@@ -2789,6 +2793,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(1.0f - rumble, 100);
                     if (m_nScriptTimerA >= 2151) {
+                        Level *lvl2791 = m_pLevel;
                         KIPlayer *e0 = (*enemies)[0];
                         ((PlayerStation *) e0)->rootGeometry->setVisible(false);
                         if (m_nScriptTimerA >= 10001) {
@@ -2799,8 +2804,8 @@ bool LevelScript::process(int delta) {
                             player->freeze = 0;
                             m_pHud->visible = 1;
                             m_pRadar->enabled = 1;
-                            resetCamera(m_pLevel);
-                            m_pLevel->lodManager->forceUpdate(delta, false);
+                            resetCamera(lvl2791);
+                            lvl2791->lodManager->forceUpdate(delta, false);
                             m_bCinematicBreak = 0;
                             m_nScriptTimerA = 0;
                             m_nState = 14;
@@ -3628,9 +3633,10 @@ bool LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // 3 -> 4
                     }
                 } else if (m_nState == 4) {
+                    AEGeometry *pgeom3630 = player->geometry;
                     m_nScriptTimerA += delta;
-                    Vector drift = (player->geometry->getDirection() * 6.08f
-                                    + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
+                    Vector drift = (pgeom3630->getDirection() * 6.08f
+                                    + pgeom3630->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.1f, drift.y * 0.1f, drift.z * 0.1f);
                     for (int i = 0; i < 2; ++i) {
                         ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
@@ -4278,8 +4284,9 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nState == 1) {
                         if (m_pLevel->getGasClouds() != nullptr) {
-                            for (unsigned int i = 0; i < m_pLevel->getGasClouds()->count; i++) {
-                                if (((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr) {
+                            Level *lvl4280 = m_pLevel;
+                            for (unsigned int i = 0; i < lvl4280->getGasClouds()->count; i++) {
+                                if (((PlayerGasCloud *) (*lvl4280->getGasClouds())[i])->getSparks() != nullptr) {
                                     m_nState = 2;
                                 }
                             }
@@ -4566,6 +4573,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
+                    Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
                     player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.25f;
@@ -4588,8 +4596,8 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
-                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*enemies4568)[1]->geometry);
+                        m_tempVec = (*enemies4568)[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 26000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
@@ -5046,7 +5054,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nFlashCountdown = 300;
                     }
-                    if (m_nFlashCountdown > 0) {
+                    if (__builtin_expect(m_nFlashCountdown > 0, 1)) { // lint: arm_builtin
                         m_nFlashCountdown -= delta;
                         if (m_nFlashCountdown <= 0) {
                             m_nFlashCountdown = 0;

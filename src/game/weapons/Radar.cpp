@@ -419,11 +419,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     bool landmarkHit = false;
     int notTurretMode = !turretMode;
     int notOtherLock = !otherLock;
-    if (this->landmarks != nullptr &&
+    if (__builtin_expect((this->landmarks != nullptr && // lint: arm_builtin
         !(Globals::status->getStation()->getIndex() == 109 ||
           Globals::status->getStation()->getIndex() == 110 ||
           (Globals::status->getStation()->getIndex() == 111 &&
-           Globals::status->getCurrentCampaignMission() > 93))) {
+           Globals::status->getCurrentCampaignMission() > 93))), 0)) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
@@ -627,7 +627,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (planetHit && !this->level->getPlayer()->isDockingToAsteroid() &&
                 !this->level->getPlayer()->isDockingToDockingPoint()) {
                 this->planetLockTimer += mode;
-                if (this->planetLockTimer > this->field_0x1b8) {
+                if (__builtin_expect((this->planetLockTimer > this->field_0x1b8), 1)) { // lint: arm_builtin
                     if (missionBlocksPlanets) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
@@ -696,7 +696,7 @@ enemies:
             }
             KIPlayer *locked = this->lockedEnemy;
             if (!enemy->stealFlagByte && !(enemy->countsAsEnemyExcludeFlag != 0 || wreck) &&
-                enemy->player->enemyFlagsLo) {
+                __builtin_expect((enemy->player->enemyFlagsLo), 1)) { // lint: arm_builtin
                 this->field_0x1bc++;
                 if (enemy->shipGroup == 10) {
                     bossSeen = true;
@@ -894,7 +894,7 @@ enemies:
                                 this->egoPos.z - this->targetPos.z < -24000.0f ||
                                 this->egoPos.z - this->targetPos.z > 24000.0f) {
                                 Array<int> *cargo = this->lockedEnemy->cargo;
-                                if (__builtin_expect(cargo == nullptr, 0)) {  // lint: arm_builtin
+                                if (cargo == nullptr) {  // lint: arm_builtin
                                     hud->hudEvent(22, this->level->getPlayer(), 0);
                                 } else {
                                     for (uint32_t c = 0; c < cargo->size(); c += 2) {
@@ -1300,7 +1300,7 @@ asteroids_done:
         }
     } else {
         this->field_0x54 = 0;
-        if (__builtin_expect((Globals::status->getCurrentCampaignMission() != 145), 1)) {  // lint: arm_builtin
+        if ((Globals::status->getCurrentCampaignMission() != 145)) {  // lint: arm_builtin
             current = Globals::sound->currentMusicEvent;
             bool ambient;
             switch (current) {
@@ -1315,7 +1315,7 @@ asteroids_done:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                if (__builtin_expect((Globals::status->inAlienOrbit()), 0) || Globals::status->getStation()->isAttackedByAliens()) {  // lint: arm_builtin
+                if ((Globals::status->inAlienOrbit()) || Globals::status->getStation()->isAttackedByAliens()) {  // lint: arm_builtin
                     Globals::sound->play(145, nullptr, nullptr, 0.0f);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
                     Globals::sound->play(143, nullptr, nullptr, 0.0f);
