@@ -325,8 +325,8 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
     int pitchBits = *(const volatile int *) &pitchTable[race];
     int yawBits = *(const volatile int *) &yawTable[race];
-    float yaw = *(const float *) &yawBits;
-    float pitch = *(const float *) &pitchBits;
+    float yaw = *(const float *) &pitchBits;
+    float pitch = *(const float *) &yawBits;
     MatrixSetRotation(nearKey, pitch, yaw, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
 

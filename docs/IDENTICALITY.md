@@ -16,40 +16,49 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,523** | 22,148 | 57,232 |
-| `Radar::draw` | **6,324** | 1,780 | 9,908 |
+| `LevelScript::process` | **52,452** | 20,495 | 57,232 |
+| `Radar::draw` | **6,323** | 1,780 | 9,908 |
 | `Layout` C1/C2 | **5,391** | 2,520 | 7,072 |
-| `Level::createMission` | **3,646** | 951 | 17,172 |
+| `Level::createMission` | **3,645** | 1,135 | 17,172 |
 | `MGame::OnTouchEnd` | **3,034** | 1,445 | 8,080 |
 | `HangarWindow::render` | **1,523** | 681 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
-| `Hud::draw` | **148** | 147 | 9,332 |
+| `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
-| `ModStation` C1/C2 | **39** | 11 | 1,008 |
+| `ModStation` C1/C2 | **27** | 15 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **15** | 111 | 11,440 |
 
 Landed changes:
 
+* `LevelScript::process` (w12607 + w12604): alias/partial-receiver sweep
+  (three passes, including indexed-enemy aliases) and four data-flow cells
+  (Chain-A camera z float-mul, escort route array factoring, depth-scaled
+  `moveForward` association, Chain-A z float-mul re-land). Raw
+  **52,523 -> 52,452** (-71), aligned 22,148 -> 20,495.
+* `Hud::draw` (w12620): dock-transfer register rotation. Raw **148 -> 32**
+  (-116), aligned 147 -> 21, `.ARM.extab` **655 -> 651**.
 * `HangarWindow::render` (w12617): free-credits `textY` before `SetColor`,
-  buy-list draw before `setSplitText` and before `replaceTextKeepSize`,
-  free-credits `baseY` dialog-first. Raw **1,594 -> 1,523** (-71), aligned
-  680 -> 681, `.ARM.extab` **655 -> 647** (-8).
-* `Radar::draw` (w12609 + w12610): planet-lock plain dock guard + expect on
-  the sound guard, campaign-145 expect dropped, and per-site `radarFont()`
-  hoists. Raw **6,339 -> 6,324** (-15), aligned 1,757 -> 1,780.
-* `Level::createMission` (w12615): raid-loop `setRotate`/`setSpeed` order.
-  Raw **3,647 -> 3,646** (-1), aligned 956 -> 951.
+  buy-list draw before `setSplitText`/`replaceTextKeepSize`, free-credits
+  `baseY` dialog-first. Raw **1,594 -> 1,523** (-71), `.ARM.extab`
+  **655 -> 647**.
+* `Radar::draw` (w12609 + w12610): planet-lock plain dock guard + sound-guard
+  expect, campaign-145 expect dropped, per-site `radarFont()` hoists, and the
+  enemy-tail `lockedEnemy` dead-test order. Raw **6,339 -> 6,323** (-16).
+* `ModStation::ModStation` (w12619): pitch/yaw reinterpret swap. Raw
+  **39 -> 27** (-12), aligned 11 -> 15.
+* `Level::createMission` (w12615): raid-loop `setRotate`/`setSpeed` order and
+  alien-turret `v`/`cargo` order. Raw **3,647 -> 3,645** (-2).
 
-Section deltas: `.text` **75,278** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
+Section deltas: `.text` **75,077** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **643** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,945**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,740**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 181)
