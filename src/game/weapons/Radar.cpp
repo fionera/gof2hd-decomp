@@ -717,7 +717,6 @@ enemies:
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
                         enemy->field_0x76 = 1;
                     } else {
-                        auto barMax = this->field_0x1c8;
                         if (!enemy->isDead()) {
                             int cx = (int) PlayerEgo::crosshairPos.x;
                             int cy = (int) PlayerEgo::crosshairPos.y;
@@ -727,6 +726,7 @@ enemies:
                                                 this->screenY < cy + this->field_0x124), 1);
                         }
                         Player *target = enemy->player;
+                        auto barMax = this->field_0x1c8;
                         unsigned int frameImage;
                         unsigned int barImage;
                         if (target->enemyFlagsLo) {
@@ -844,9 +844,8 @@ enemies:
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
                         this->screenY < top + size * 2) {
-                        auto onPlanetCourse = this->field_0x1a8;
                         enemy->field_0x75 = 1;
-                        if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !onPlanetCourse)) {
+                        if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !this->field_0x1a8)) {
                             if (this->dockNavPtr != enemy) {
                                 this->enemyLockTimer = 0;
                             }
