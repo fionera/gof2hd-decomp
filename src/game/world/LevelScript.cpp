@@ -2774,13 +2774,14 @@ bool LevelScript::process(int delta) {
                         m_nState = 13;
                     }
                 } else if (m_nState == 13) {
+                    AEGeometry *geom5 = m_pGeometry5;
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f, (float) -delta * 4.0f);
                     m_nScriptTimerA += delta;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                    geom5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                             Vector{0.0f, 1.0f, 0.0f});
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom5->transform))
                             ->Update((long long) delta, false);
                     float rumble = (float) m_nScriptTimerA / 10000.0f;
                     if (!(rumble < 1.0f)) {
@@ -3148,6 +3149,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
                 } else if (__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
+                    Level *lvl = m_pLevel;
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false);
@@ -3155,18 +3157,19 @@ bool LevelScript::process(int delta) {
                     m_tempVec.x += (float) delta * 0.006f;
                     (*enemies)[3]->geometry->moveForward(m_tempVec.x * (float) delta);
                     if (m_nScriptTimerA >= 2001) {
+                        TargetFollowCamera *cam = m_pCamera;
                         if (m_nState == 9) {
                             m_nState = 10;
                         }
                         if (m_nScriptTimerA >= 7001) {
-                            m_pCamera->setFixed(false);
-                            m_pCamera->setTarget(player->geometry);
-                            m_pCamera->setLookAtCam(false);
-                            m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                            cam->setFixed(false);
+                            cam->setTarget(player->geometry);
+                            cam->setLookAtCam(false);
+                            cam->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                             m_pHud->visible = 1;
-                            resetCamera(m_pLevel);
+                            resetCamera(lvl);
                             m_pRadar->enabled = 1;
-                            m_pLevel->lodManager->forceUpdate(delta, false);
+                            lvl->lodManager->forceUpdate(delta, false);
                             player->setComputerControlled(false);
                             m_bCinematicBreak = 0;
                             player->player->setVulnerable(true);
@@ -4628,10 +4631,11 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
+                        Level *lvl = m_pLevel;
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
-                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*lvl->getEnemies())[1]->geometry);
+                        m_tempVec = (*lvl->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
