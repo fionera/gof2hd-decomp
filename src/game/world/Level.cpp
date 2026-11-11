@@ -2122,8 +2122,8 @@ case4Else:
 case4Tail:
     {
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
-    int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
+    int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     ArraySetLength(hunterCount, *this->enemies);
     Globals *globals = Globals::globals;
     Array<KIPlayer *> *enemies = this->enemies;

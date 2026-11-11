@@ -822,19 +822,19 @@ void HangarWindow::render() {
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->setVisible(true);
                                 (*this->buttons)[1]->draw();
+                                (*this->buttons)[1]->setVisible(true);
                                 buttonOffset = (*this->buttons)[1]->getWidth() + shipRh;
                                 if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin
                                     // Draw-first source order is a one-byte raw
                                     // codegen coincidence (the original block sits at
                                     // a different address); it leaves the row-39 LSDA
                                     // and the 9,700 B size untouched.
-                                    (*this->buttons)[10]->draw();
                                     (*this->buttons)[2]->setVisible(true);
+                                    (*this->buttons)[10]->setVisible(true);
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
-                                    (*this->buttons)[10]->setVisible(true);
+                                    (*this->buttons)[10]->draw();
                                 }
                             }
                         } else {
@@ -1013,9 +1013,9 @@ void HangarWindow::render() {
                           (float) gsy * 0.5f + (float) ((gsy + this->gridButtonHeight) * 1));
             (*this->buttons)[17]->setVisible(true);
             if (this->listModeFlag) {
+                (*this->buttons)[17]->draw();
                 (*this->buttons)[17]->setPosition(x, y, 68);
                 (*this->buttons)[17]->replaceTextKeepSize(*Globals::gameText->getText(118));
-                (*this->buttons)[17]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - rh, 17, 68);
                 Globals::Canvas->DrawImage2D(
                     this->scrollHintImageB,
