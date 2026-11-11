@@ -2159,23 +2159,24 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(100.0f, 30);
                     m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
                     if (m_bRenderParticles) {
+                        AEGeometry *pg1 = m_pParticleGeom1;
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                 ->Update((long long) delta, false);
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom1->transform))
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(pg1->transform))
                                 ->Update((long long) delta, false);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom2->transform))
                                 ->Update((long long) delta, false);
                         AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                         Vector dir = AbyssEngine::AEMath::MatrixGetDir(
                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
-                        m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        pg1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_nScriptTimerA += delta;
                         if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                     ->currentTime >= 4001) {
                             ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                         }
-                        m_pParticleGeom1->setPosition(dir * 10000.0f);
+                        pg1->setPosition(dir * 10000.0f);
                         if (m_nScriptTimerA >= 15001) {
                             m_bRenderParticles = 0;
                             m_nScriptTimerA = 0;
@@ -2603,6 +2604,7 @@ bool LevelScript::process(int delta) {
             case 80: {
                 // The capital ship destroys the pirate base, then the player is towed into the dock.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    AEGeometry *geom = m_pGeometry1;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
@@ -2615,8 +2617,8 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(m_pGeometry1);
-                    m_tempVec = m_pGeometry1->getPosition();
+                    m_pCamera->setTarget(geom);
+                    m_tempVec = geom->getPosition();
                     m_tempVec += Vector{-20000.0f, 5000.0f, -35000.0f};
                     m_pCamera->setPosition(m_tempVec);
                     m_nScriptTimerA = 0;
