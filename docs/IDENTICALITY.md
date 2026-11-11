@@ -4,6 +4,41 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 173)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 173 landed one size-exact raw win:
+
+* `Level::createMission` (w11814): the `if (pirateFortress)` turret loop's
+  start/bound operand order plus the `cargo`/`shipGroup` store order.  Raw
+  **5,425 -> 5,421** (-4), aligned 936 -> 940; 17,172 B exact, slots
+  unchanged (the PEI 3-cycle is not source-reachable size-exactly).  See
+  `_work/reconstructions/level-createmission-wave173-w11814.md`.
+
+Total differing bytes fall **82,234 -> 82,230** (-4) and `.text`
+**81,503 -> 81,499** (-4); `.ARM.extab` stays **711**.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,750** (57,232 B), `Radar::draw` **7,054** (9,908 B), `Layout` C1/C2
+**5,640** (7,072 B), `Level::createMission` **5,421** (17,172 B),
+`MGame::OnTouchEnd` **3,773** (8,080 B), `HangarWindow::render` **2,266**
+(9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **548**
+(9,332 B), `Status::missionCompleted` **722** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
+**175** (1,948 B), `Generator::createMission` **40** (1,996 B),
+`ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B), `MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **81,499** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **711** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 172)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
