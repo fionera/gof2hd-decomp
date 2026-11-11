@@ -48,23 +48,29 @@ Wave 177 ran 20 agents on the worst functions. Landed changes:
   Raw **1,229 -> 1,225**.
 * `Hud::draw` (w12119): reverse-flag anchor. Raw **150 -> 148**.
 
+Wave 178 (w12214) continues the `MGame::OnTouchEnd` statement-order sweep:
+moving the `particleQuality` / `activeTouchId` / `initLight` group ahead of
+the touch-id stores and `enableParticleEffects` lowers raw **3,267 -> 3,263**
+(aligned 1,164 -> 1,186); size stays 8,080 and `.rel.plt` stays
+byte-identical. `.text` differing bytes **79,251 -> 79,247**.
+
 Notes-only (no code): w12101 (recovered cells; the `resetCamera` cell is
 size-changing and was rejected), w12106 (dispatch/pool/data-flow), w12108
 (also a note), w12109 (superseded), w12111 (Layout ternaries/tail), w12118
 (Status), w12120 (small-tail oracle).
 
-**Aligned total (15 functions): 26,601** (wave-176 base 26,033). Per
+**Aligned total (15 functions): 26,623** (wave-176 base 26,033). Per
 function: LevelScript 18,941, Radar 1,813, Layout 2,334, createMission 952,
-MGame::OnTouchEnd 1,164, HangarWindow 382, createShip 383, Status 327,
+MGame::OnTouchEnd 1,186, HangarWindow 382, createShip 383, Status 327,
 Gun 63, SpaceLounge 41, Hud 147, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**80,932 -> 80,002** (-930): `.text` **79,591 -> 79,251** (-340) and
+**80,932 -> 79,998** (-934): `.text` **79,591 -> 79,247** (-344) and
 `.ARM.extab` **1,321 -> 731** (-590), plus `.note.gnu.build-id` 20.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **53,507** (57,232 B), `Radar::draw` **6,636** (9,908 B), `Layout` C1/C2
 **5,604** (7,072 B), `Level::createMission` **5,143** (17,172 B),
-`MGame::OnTouchEnd` **3,267** (8,080 B), `HangarWindow::render` **2,244**
+`MGame::OnTouchEnd` **3,263** (8,080 B), `HangarWindow::render` **2,244**
 (9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
 **721** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
 `SpaceLounge::drawLounge` **175** (1,948 B), `Hud::draw` **148** (9,332 B),
@@ -72,7 +78,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
 `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **79,251** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **79,247** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **731** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
 **`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;

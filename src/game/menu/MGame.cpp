@@ -1827,13 +1827,13 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             }
                         }
                     }
+                    float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
+                    this->activeTouchId = nullptr;
                     this->menuTouchOpen = 0;
                     this->touch0Id = nullptr;
                     this->touch1Id = nullptr;
-                    this->activeTouchId = nullptr;
-                    this->level->getStarSystem()->initLight();
-                    float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
                     this->level->enableParticleEffects(particleQuality > 0.0f, particleQuality > 0.7f);
+                    this->level->getStarSystem()->initLight();
                     if (this->menuWindow->cinematicSteerActive) {
                         // "Skip" pressed in the pause menu.
                         this->menuWindow->cinematicSteerActive = 0;
