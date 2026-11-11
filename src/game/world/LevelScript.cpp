@@ -2466,6 +2466,7 @@ bool LevelScript::process(int delta) {
                 // the camera to the opposite side and freezes the player ship. The radar is re-enabled
                 // before resetCamera, as in the original (0x13ec80/0x13ec84 vs 0x13ec8c). FP immediates
                 // from the .rodata pool: @0x139b60 = 3000.0f (dir scale), @0x139b64/68/6c = {-600, -300, -1000}.
+                Hud *hud = m_pHud;
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -2474,7 +2475,7 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    m_pHud->visible = 0;
+                    hud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
@@ -2535,7 +2536,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLookAtCam(false);
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
-                    m_pHud->visible = 1;
+                    hud->visible = 1;
                     m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
