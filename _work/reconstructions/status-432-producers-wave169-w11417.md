@@ -64,6 +64,8 @@ instruction-index alignment; `size` = function bytes.  All shapes keep the
 | +11 gap labels | 1324 | 374 | 1372 | reordered |
 | +12 gap labels (all G2 weight 2) | 1334 | 363 | 1372 | **G1,G2,G3,default** |
 | +13 gap labels (+G1 weight 3) | 1286 | 371 | 1372 | **G1,G2,G3,default** |
+| ascending source case order | 722 | 324 | 1432 | identical to baseline |
+| `switch(t + (atStation?40:0))`, bodies duplicated | 1371 | 396 | 1472 | uniform, ascending |
 | split high/low two switches | 1304 | 453 | 1372 | ascending |
 | split high/low + 12 gap labels | 1209 | 376 | 1380 | grouped |
 | split high/low + 13 gap labels | 1313 | 366 | 1380 | grouped |
@@ -90,10 +92,11 @@ injection keeps the 29-case IR switch (same RA, same 1432 B) and measures
 * **Duplicated case bodies with different fallthroughs**: splitting the
   shared 167/174 body is tail-merged back to one block (no-op).  Duplicating
   a body under a gap label is exactly the gap-label producer above.
-* **`switch` over a `(type, flag)` pair**: measured in wave 167 at
-  **1447/436/1560 B** (80-entry jump table, bodies duplicated for both flag
-  values); not size-exact.  Not re-run here because the size delta is
-  structural (the table doubles).
+* **`switch` over a `(type, flag)` pair**: re-measured this wave as
+  `switch (t + (atStation ? 40 : 0))` with every body duplicated for both
+  flag values: **1371/396/1472 B** (wave 167 measured 1447/436/1560 B with
+  a slightly different key).  Not size-exact: the jump table doubles and
+  the body weights stay uniform, so the layout is still ascending.
 * **Hand-written if-chain over a precomputed rank**: measured in wave 167 at
   **1455/411/1548 B** (29 equality tests + rank switch; not folded because
   the rank values are non-monotonic) and in wave 168 as `gen9`
