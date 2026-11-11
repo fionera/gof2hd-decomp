@@ -909,8 +909,7 @@ void HangarWindow::render() {
     Globals::layout->drawFooter();
     (*this->buttons)[11]->setVisible(true);
     (*this->buttons)[11]->setAlwaysPressed(!*(volatile bool *)&Globals::options[78]);
-    Status *st = Globals::status;
-    (*this->buttons)[11]->setText(Globals::layout->formatCredits(st->getCredits()));
+    (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
     (*this->buttons)[11]->draw();
     if (!this->dialogActive)
         return;
@@ -1060,8 +1059,8 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
-                int rh = Globals::layout->field_0x2c_rowHeight;
                 int width = button->getWidth();
+                int rh = Globals::layout->field_0x2c_rowHeight;
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
                 PaintCanvas *volatile canvas = Globals::Canvas;

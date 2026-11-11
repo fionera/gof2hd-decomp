@@ -16,12 +16,12 @@ size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,679** | 21,635 | 57,232 |
-| `Radar::draw` | **6,349** | 1,743 | 9,908 |
+| `LevelScript::process` | **52,639** | 21,589 | 57,232 |
+| `Radar::draw` | **6,339** | 1,757 | 9,908 |
 | `Layout` C1/C2 | **5,393** | 2,520 | 7,072 |
 | `Level::createMission` | **3,647** | 956 | 17,172 |
 | `MGame::OnTouchEnd` | **3,034** | 1,445 | 8,080 |
-| `HangarWindow::render` | **1,620** | 871 | 9,700 |
+| `HangarWindow::render` | **1,594** | 680 | 9,700 |
 | `Level::createShip` | **1,214** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
@@ -34,32 +34,33 @@ size; all size-exact):
 
 Landed changes:
 
-* `LevelScript::process` (w12503 + w12504): 70 non-adjacent statement moves
-  plus three follow-up cells (one-use `playerPos` fold, two `Vector`-add
-  operand swaps, scalar-mul operand order). Raw **52,818 -> 52,679** (-139),
-  aligned 20,109 -> 21,635. w12505's 50 store rotations do not compose with
-  this body and are recorded as a superseded note.
+* `LevelScript::process` (w12503 + w12504): 70 non-adjacent statement moves,
+  a second K=2 sweep (22 more moves), and three follow-up cells (one-use
+  `playerPos` fold, two `Vector`-add operand swaps, scalar-mul operand order).
+  Raw **52,818 -> 52,639** (-179), aligned 20,109 -> 21,589. w12505's nine
+  store-rotation commits (52,673 alone) do not compose with this body and are
+  recorded as a superseded note.
 * `HangarWindow::render` (w12516): grid/ship draw-order cells, upgrade-block
   permutation, free-credits `visible` if/else, `baseY`/buy-list term order,
-  free-credits loop branch hint, and the `i == 0` cold hint. Raw
-  **2,041 -> 1,620** (-421), aligned 655 -> 871, `.ARM.extab` **713 -> 709**.
+  free-credits loop branch hint, `i == 0` cold hint, inlined `Status *` footer
+  local, and free-credits width-before-rh. Raw **2,041 -> 1,594** (-447),
+  aligned 655 -> 680, `.ARM.extab` **713 -> 709**.
 * `Level::createMission` (w12512): six adjacent-statement reorders plus the
   raid-loop hitpoints reorder. Raw **3,682 -> 3,647** (-35), aligned
   1,071 -> 956.
-* `Radar::draw` (w12507): planet-lock body order + stop-test operand order,
-  two stale `arm_builtin` waiver re-hints, and the dock-nav arrival guard
-  re-hint (on top of w12509's music-tail reorder). Raw **6,379 -> 6,349**
-  (-30), aligned 1,752 -> 1,743.
+* `Radar::draw` (w12507): planet-lock body order, stop-test operand order,
+  two stale `arm_builtin` waiver re-hints, dock-nav arrival guard re-hint,
+  landmark-loop store order, and `hasScanner`/`asteroidLockTimer` order.
+  Raw **6,379 -> 6,339** (-40), aligned 1,752 -> 1,757.
 * `Layout::Layout` (w12510): window permutation. Raw **5,408 -> 5,393**
-  (-15), aligned 2,438 -> 2,520. w12511's tail order (5,401) does not
-  compose better and is recorded as a superseded note.
+  (-15), aligned 2,438 -> 2,520. w12511's tail order (5,401) is superseded.
 
-Section deltas: `.text` **75,560** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **75,484** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **709** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **76,289**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **76,213**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 180)

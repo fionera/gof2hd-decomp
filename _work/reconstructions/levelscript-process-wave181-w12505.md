@@ -10,20 +10,17 @@ original `0x137d18`, **57,232 B = 0xdf90**, size-exact).  Worktree
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    52,818           52,803            (-15)
-process aligned insns    20,109           20,121            (+12)
+process raw diffbytes    52,818           52,816            (-2)
+process aligned insns    20,109           20,109            (0)
 orig / ours size         57232 / 57232    57232 / 57232     (size-exact)
-.text diffbytes          76,200           76,185            (-15)
+.text diffbytes          76,200           76,198            (-2)
 .ARM.extab diffbytes     713              713               (unchanged)
 .rel.plt                 md5 289b2a06…    md5 289b2a06…     (byte-identical)
 ```
 
-## Landed changes
+## Landed change
 
-Three three-line rotations of independent statements (all measured
-individually and then re-measured combined; they compose additively):
-
-1. Mission-79 branch tail (source ~line 2811), **-2**:
+One three-store rotation inside the mission-79 branch (source ~line 2811):
 
 ```diff
 -                            m_bCinematicBreak = 0;
@@ -34,70 +31,9 @@ individually and then re-measured combined; they compose additively):
 +                            m_bCinematicBreak = 0;
 ```
 
-2. Mission-79 declaration block (source ~line 1483), **-1**:
-
-```diff
--            Status *st = Globals::status;
--            Level *lvl = m_pLevel;
--            field_0x24 = 0;
-+            Level *lvl = m_pLevel;
-+            field_0x24 = 0;
-+            Status *st = Globals::status;
-```
-
-3. Case-158 intro teardown (source ~line 1605), **-1**:
-
-```diff
--                    m_bCinematicBreak = 1;
--                    m_pHud->visible = 0;
--                    m_pRadar->enabled = 0;
-+                    m_pRadar->enabled = 0;
-+                    m_bCinematicBreak = 1;
-+                    m_pHud->visible = 0;
-```
-
-4. Case-70 state-1 camera offset (source ~line 2529), **-1**:
-
-```diff
--                        camPos.x += -600.0f;
--                        camPos += dir * 2000.0f;
--                        camPos.y += 800.0f;
-+                        camPos.x += -600.0f;
-+                        camPos.y += 800.0f;
-+                        camPos += dir * 2000.0f;
-```
-
-5. Mission-79 completion globals (source ~line 1605), **-1**:
-
-```diff
--                            Level::programmedStation = nullptr;
--                            Level::initStreamOutPosition = 1;
--                            Level::comingFromAlienWorld = 1;
--                            Globals::switch_to_target_setting = 1;
-+                            Level::initStreamOutPosition = 1;
-+                            Level::comingFromAlienWorld = 1;
-+                            Globals::switch_to_target_setting = 1;
-+                            Level::programmedStation = nullptr;
-```
-
-6. Case-158 intro camera/radar setup (source ~line 2491), **-9**:
-
-```diff
--                    radar->enabled = 0;
--                    player->setComputerControlled(true);
--                    m_pCamera->setLookAtCam(true);
-+                    player->setComputerControlled(true);
-+                    m_pCamera->setLookAtCam(true);
-+                    radar->enabled = 0;
-```
-
-All stores are to distinct fields (or pure register aliases); the rotations
-are semantics-preserving.  The case-70 rotation changes the floating-point
-addition order for `camPos.y` (`(y + 800) + dir.y*2000` instead of
-`(y + dir.y*2000) + 800`); it is retained because it is the measured raw
-winner.  The fully faithful order (`camPos += dir*2000` before the component
-adds, matching the original disassembly at `0x139a72`) is +3 raw, so it was
-not landed.
+All three are independent stores to distinct fields; the rotation is
+semantics-preserving.  It is the only non-adjacent triple rotation that wins
+on this base (see below).
 
 ## Method
 
@@ -137,13 +73,6 @@ candidates reported):
   `Status *st`/`Level *lvl`/`field_0x24` declaration block (mission 79), and the
   `camPos.x/camPos/camPos.y` float-accumulation order (case 70) — the last is
   not bit-exact in floating point and was not landed.
-* **541 independent statement triples × 2 rotations** (`sweep8.py`, ~7 min at
-  3 workers) on the 52,812 tree: 27 size-exact relplt-clean wins.  Best was
-  `t1886_120` (case-158 `radar->enabled`/`setComputerControlled`/
-  `setLookAtCam` rotation) at **-9**; it is landed (item 6).  Next-best
-  (`t994_201`, `t2027_120`, `t2159_201`) measured -5 each on the 52,812 base,
-  the rest -4…-1.  These are individually measured, not proven additive; the
-  remaining cells should be re-swept on the new tree (indices shift).
 
 ## Rejected / observations
 
@@ -175,9 +104,9 @@ cd /home/debian/GalaxyOnFire2/wt/w12505
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 52803 aligned= 20121 size= 57232/57232
+# -> raw= 52816 aligned= 20109 size= 57232/57232
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=52803 size=57232/57232 text=76185 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=52816 size=57232/57232 text=76198 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2
 ```
 

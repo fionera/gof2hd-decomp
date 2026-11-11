@@ -448,8 +448,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         landmarkHit = true;
                     }
                 }
-                this->egoPos = player->getPosition();
                 this->targetPos = this->landmarks->data()[i]->player->getPosition();
+                this->egoPos = player->getPosition();
                 if (i != 3) {
                     Globals::Canvas->DrawImage2D(this->image_0x88, this->screenX, this->screenY, 17, 68);
                 }
@@ -1207,8 +1207,8 @@ asteroids:
                         this->asteroidLockTimer = 0;
                     }
                 } else {
-                    auto hasScanner = this->hasScanner19;
                     this->asteroidLockTimer += mode;
+                    auto hasScanner = this->hasScanner19;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
                         if (!candidateWreck) {
                             if (!hasScanner) {
