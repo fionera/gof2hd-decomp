@@ -2192,10 +2192,12 @@ bool LevelScript::process(int delta) {
                     } else {
                         m_nScriptTimerA += delta;
                         if (!Globals::layout->isFading() || m_nScriptTimerA >= 10001) {
-                            Globals::status->field_64 = player->player->getHitpoints();
-                            Globals::status->field_5c = player->player->getShieldHP();
-                            Globals::status->field_60 = player->player->getArmorHP();
-                            Globals::status->field_68 = player->player->getGammaHP();
+                            Player *pp = player->player;
+
+                            Globals::status->field_64 = pp->getHitpoints();
+                            Globals::status->field_5c = pp->getShieldHP();
+                            Globals::status->field_60 = pp->getArmorHP();
+                            Globals::status->field_68 = pp->getGammaHP();
                             Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
@@ -2359,7 +2361,7 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
                     m_pRadar->enabled = 1;
-                    resetCamera(m_pLevel);
+                    resetCamera(self);
                     m_nState = 6;
                     m_bCinematicBreak = 0;
                     self->lodManager->forceUpdate(delta, false);
@@ -4742,9 +4744,11 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
+                        Level *lvl = m_pLevel;
+
                         m_nScriptTime = 0;
                         m_nTimeLimit = 91000;
-                        m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel);
+                        lvl->objectivesB = new Objective(3, 91000, lvl);
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;
