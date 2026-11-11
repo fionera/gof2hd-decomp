@@ -1,6 +1,6 @@
 # Radar::draw wave 169 (w11407) — condition-chain expects
 
-**Status:** in progress, 2026-11-11. Worktree `wt/w11407`, branch `wave169-w11407`,
+**Status:** complete, 2026-11-11. Worktree `wt/w11407`, branch `wave169-w11407`,
 base `master` `ec3ceb07c`. Target `src/game/weapons/Radar.cpp`,
 `_ZN5Radar4drawEP6PlayerP3Hudi` (`Radar::draw(Player*, Hud*, int)`), 9,908 B.
 
@@ -70,9 +70,14 @@ cell (scratch `/dev/shm/w11407/auto_expect.py`).  Size-exact raw wins:
 | 2 | `this->dockNavPtr != current` (enemy-lock blip, line 908) | 1 | 7,304 → **7,258** | 1,554 → 1,552 | 9,908 |
 | 3 | `(i & 0x7fffffff) == 3` (landmark off-screen blip, line 480) | 1 | 7,258 → **7,251** | 1,552 → 1,540 | 9,908 |
 | 4 | `enemyLockTimer > (...) && dockNavPtr != nullptr` (line 905) | 1 | 7,251 → **7,127** | 1,540 → 1,607 | 9,908 |
+| 5 | `cloud == locked` (gas-cloud lock blip, line 996) | 1 | 7,127 → **7,127** | 1,607 → 1,606 | 9,908 |
 
-All four are size-exact and `.rel.plt` stays byte-identical; `check` green
+All five are size-exact and `.rel.plt` stays byte-identical; `check` green
 (byte 4,507 / linked 4,507 / size 4,524 / data 843 / imports 207 / lint CLEAN).
+Final: raw **7,127**, aligned **1,606**, size 9,908.  Whole-`.so` `.text`
+differing bytes 82,327 -> **81,968**; `.ARM.extab` 668 -> **712** (the
+`(i & 0x7fffffff) == 3` expect alone accounts for 665 -> 712; extab is not
+gate-tracked, and the raw win is the primary metric).
 
 ## 3. Near misses (not landed)
 
