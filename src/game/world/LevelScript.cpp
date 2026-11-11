@@ -1339,7 +1339,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 5:
-                if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
+                if (!Globals::layout->isFading()) {
                     Globals::layout->enableFillScreen(true);
                     Status *st = Globals::status;
                     Globals::status->nextCampaignMission(true);
@@ -1441,7 +1441,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (__builtin_expect(m_nState == 2 && m_nScriptTimerA >= 2000, 1)) { // lint: arm_builtin
+        if (m_nState == 2 && m_nScriptTimerA >= 2000) {
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
