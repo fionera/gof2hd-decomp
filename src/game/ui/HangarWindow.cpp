@@ -813,19 +813,21 @@ void HangarWindow::render() {
                             // from the stack before the upgrade check, so the two
                             // reads are distinct values to the register allocator.
                             int upgTab = tab;
-                            if (tab != 0 && !(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
-                                (*this->buttons)[1]->setPosition(
-                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                    this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->setVisible(true);
-                                (*this->buttons)[1]->draw();
-                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                if (upgTab == 1 && this->upgradeMode) {
-                                    (*this->buttons)[2]->setVisible(true);
-                                    (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                      this->field_0x114 + y, 17);
-                                    (*this->buttons)[10]->setVisible(true);
-                                    (*this->buttons)[10]->draw();
+                            if (tab != 0) {
+                                if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
+                                    (*this->buttons)[1]->setPosition(
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                        this->field_0x114 + y, 18);
+                                    (*this->buttons)[1]->setVisible(true);
+                                    (*this->buttons)[1]->draw();
+                                    buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                    if (this->upgradeMode && upgTab == 1) {
+                                        (*this->buttons)[2]->setVisible(true);
+                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                          this->field_0x114 + y, 17);
+                                        (*this->buttons)[10]->setVisible(true);
+                                        (*this->buttons)[10]->draw();
+                                    }
                                 }
                             }
                         } else {
