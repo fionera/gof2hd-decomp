@@ -1525,7 +1525,7 @@ bool LevelScript::process(int delta) {
             Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
             ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
-    } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr) {
+    } else if (messages != nullptr && Globals::status->getCurrentCampaignMission() == 50) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
         // shared exit-wormhole body below (the size/isOver/state gate lives there, once).
         goto wormholeExitBody;
@@ -1535,7 +1535,7 @@ bool LevelScript::process(int delta) {
     wormholeExitBody:
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
-        if (messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
+        if (((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && m_nState == 0) {
             for (unsigned int i = 0; i < enemies->count; ++i) {
                 if (!(*enemies)[i]->isWingMan()) {
                     (*enemies)[i]->player->setAlwaysFriend(false);
