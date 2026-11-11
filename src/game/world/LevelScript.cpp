@@ -4577,9 +4577,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
+                    player->setSpeed(0.0f);
                     m_pCamera->setFixed(true);
                     Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
-                    player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.25f;
                     (*enemies)[0]->geometry->moveForward(step);
