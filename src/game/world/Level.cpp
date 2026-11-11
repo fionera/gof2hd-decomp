@@ -5244,7 +5244,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
-        if (missionPtr != 1 && missionPtr != 23) {
+        if (__builtin_expect(missionPtr != 1, 1) && missionPtr != 23) { // lint: arm_builtin
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
