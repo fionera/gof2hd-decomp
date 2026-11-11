@@ -1184,8 +1184,8 @@ bool LevelScript::process(int delta) {
                 } else if (m_nScriptTimerA >= 2151) {
                     // 0x13c82e: as the pan passes two seconds, fade out both escorts and the
                     // approached station's model (KIPlayer::setVisible, not the root geometry).
-                    (*enemies)[1]->setVisible(false);
                     (*enemies)[0]->setVisible(false);
+                    (*enemies)[1]->setVisible(false);
                     (*m_pLevel->getLandmarks())[0]->setVisible(false);
                 }
                 break;
