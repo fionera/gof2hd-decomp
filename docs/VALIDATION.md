@@ -50,10 +50,9 @@ source tree reproduces the original TU membership and within-TU function order, 
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
 its original address; `.text`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and 26 of the 27 original section headers are exact. `.rodata` is
-base-exact and its original 269,159 B content is byte-identical, but its section size is +192
-(269,351 B): wave 178 restored the 192-byte `Status::missionCompleted` rank table at `0x20b977`,
-in the gap before `.fini_array`, so no later section moves (see below).
+content is byte-identical, and all 27 original section headers are exact. `.rodata` is
+size- and base-exact (269,159 B @ `0x1c9e10`); wave 178's `Status::missionCompleted` rank table
+and its separate last-linked TU were removed again in w12218b (see below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -107,12 +106,11 @@ wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
 `Generator::createMission` is exact at 172 B (wave-121 w7110); `HangarWindow::render`'s
 948 B record was recovered in wave 177 (w12116): row 39 LSDA length is 150/150 and the
 record diff is 90, while the section stays size- and base-exact. `.rodata` is
-**base-exact** (`0x1c9e10`) and its original 269,159 B content is **byte-identical**, but the
-section is **269,351 B (+192)**: wave 178 restored the 192 B
-`Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
-in the gap before `.fini_array` (wave 121 had removed it for an exact-size `.rodata`; wave 178
-trades the +192 B section size for -272 `.text` bytes, raw 721 -> 449). The differing
-section bytes are `.text` (78,979), `.ARM.extab` (731) and
+**size- and base-exact** (269,159 B @ `0x1c9e10`) and its content is **byte-identical**:
+wave 178's 192 B `Status::missionCompleted` rank table and its separate last-linked TU were
+removed again in w12218b, restoring all 27/27 section headers at the cost of +272 `.text`
+bytes (raw 449 -> 721; the plain switch cannot reproduce the rank table's hot-then-cold body
+order). The differing section bytes are `.text` (79,251), `.ARM.extab` (731) and
 `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS

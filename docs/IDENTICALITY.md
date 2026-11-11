@@ -4,7 +4,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-11 (wave 178)
+## Update 2026-11-11 (wave 178, w12218b)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
@@ -13,20 +13,24 @@ imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 
 Wave 178 landed one change:
 
-* `Status::missionCompleted` (w12218): restore the pre-wave-121 192-byte
-  mission-type -> case-rank table (its own TU, last `.rodata` input, fixed
-  address `0x20b977`) and switch on `MISSION_CASE[m->getType()]`.  The rank
-  permutation makes clang 7's `MachineBlockPlacement` lay the big case
-  bodies out in the original hot-then-cold order again.  Raw
-  **721 -> 449**, aligned **327 -> 160**, size **1,432 B** exact, insn
-  529/527.  `.text` differing bytes fall **79,251 -> 78,979** (-272).
+* `Status::missionCompleted` (w12218b): remove the wave-178 rank table and its
+  separate last-linked TU, and switch directly on `m->getType()` again with
+  the case bodies in the original hot-then-cold order.  This removes the
+  hardcoded table address `0x20b977` and restores an exact-size `.rodata`
+  (269,159 B) and all **27/27** original section headers.  The plain switch
+  cannot make clang 7's `MachineBlockPlacement` lay the bodies out hot-then-cold
+  (it follows the ascending jump-table successor list), so the function raw
+  diff regresses **449 -> 721**, aligned **160 -> 327**, size still
+  **1,432 B** exact, insn 529/527.  `.text` differing bytes rise
+  **78,979 -> 79,251** (+272).  The rank table is preserved for reference in
+  `_work/reconstructions/status-432-producers-wave178b-w12218b.md`.
 
-**Aligned total (15 functions): 26,434** (wave-177 base 26,601). Per
-function: LevelScript 18,941, Radar 1,813, Layout 2,334, createMission 952,
-MGame::OnTouchEnd 1,164, HangarWindow 382, createShip 383, Status 160,
+**Aligned total (15 functions): 26,601** (wave-178 rank-table base 26,434).
+Per function: LevelScript 18,941, Radar 1,813, Layout 2,334, createMission 952,
+MGame::OnTouchEnd 1,164, HangarWindow 382, createShip 383, Status 327,
 Gun 63, SpaceLounge 41, Hud 147, Generator 21, MenuTouchWindow 16,
-ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**80,002 -> 79,730** (-272): `.text` **79,251 -> 78,979** (-272), with
+ModStation 11, MGame::OnUpdate 6. Total differing bytes rise
+**79,730 -> 80,002** (+272): `.text` **78,979 -> 79,251** (+272), with
 `.ARM.extab` **731** (unchanged) and `.note.gnu.build-id` 20.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
@@ -34,22 +38,21 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **5,604** (7,072 B), `Level::createMission` **5,143** (17,172 B),
 `MGame::OnTouchEnd` **3,267** (8,080 B), `HangarWindow::render` **2,244**
 (9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
-**449** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
+**721** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
 `SpaceLounge::drawLounge` **175** (1,948 B), `Hud::draw` **148** (9,332 B),
 `Generator::createMission` **40** (1,996 B), `ModStation` C1/C2 **39**
 (1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
 `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **78,979** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **79,251** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **731** (size- and
-base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0 differing bytes over
-the original 269,159 B** but **size +192** (269,351 B, base `0x1c9e10`
-exact) — the rank table is appended at `0x20b977` in the gap before
-`.fini_array`, so 26 of the 27 section headers stay exact and no later
-section moves; **`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**;
-`.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
-The `.rodata` +192 B is the deliberate trade for the -272 `.text` bytes; see
-`_work/reconstructions/status-432-producers-wave178-w12218.md`.
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0 differing bytes and
+size-exact 269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B), and all
+**27/27** original section headers are exact.  The `.rodata` +192 B / 26-of-27
+header trade of the rank-table version is gone; the cost is +272 `.text`
+bytes.  See `_work/reconstructions/status-432-producers-wave178b-w12218b.md`.
 
 ## Update 2026-11-11 (wave 177)
 

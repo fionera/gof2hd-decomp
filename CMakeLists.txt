@@ -161,12 +161,6 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/ui/Layout.cpp"
 # original does not export but we do is fixed by reshaping the C++ (internal linkage, structure),
 # not by hiding it at link time. The compiler-emitted duplicate C1/C2 & D1/D2 constructor/destructor
 # aliases that cannot be removed in source are the documented irreducible delta (see docs/VALIDATION.md).
-# Status::missionCompleted's mission-type -> case-rank table.  It is a codegen device (see
-# tools/mission_case_table.cpp) and must be the *last* .rodata input so appending it shifts no
-# existing .rodata byte.  Linked after every vendored archive for that reason.
-add_library(mission_table OBJECT tools/mission_case_table.cpp)
-target_compile_options(mission_table PRIVATE -ffunction-sections -funwind-tables)
-
 set(_so "${CMAKE_BINARY_DIR}/libgof2hdaa.so")
 # The original link was gold *without* -s, followed by a GNU strip: the shipped APK library has
 # bfd-normalized section headers (.rel.plt SHF_INFO_LINK/sh_info, INIT/FINI_ARRAY sh_entsize=4,
@@ -217,7 +211,6 @@ add_custom_command(OUTPUT "${_so}"
             ${_link_libcxxabi}
             ${_link_aos}
             ${_link_libgcc}
-            $<TARGET_OBJECTS:mission_table>
             -l dl -l c
             ${_libdir}/crtend_so.o
     # The original was stripped with GNU binutils after the link.  bfd normalizes the section
@@ -231,7 +224,7 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs mission_table $<TARGET_OBJECTS:gof2> $<TARGET_OBJECTS:mission_table> ${_crtbegin}
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_crtbegin}
             ${_openssl_out} ${_libzip_out} ${_zlib_out}
             ${CMAKE_SOURCE_DIR}/tools/source_order.txt
             ${CMAKE_SOURCE_DIR}/tools/reorder_shstrtab.py

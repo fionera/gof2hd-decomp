@@ -1,5 +1,11 @@
 # Status::missionCompleted — restore the rank-table dispatch, wave 178 (w12218)
 
+> **Superseded by w12218b.**  The hardcoded `0x20b977` rank table and its
+> separate last-linked TU were removed again in
+> `_work/reconstructions/status-432-producers-wave178b-w12218b.md`; the source
+> is back to the plain `switch (m->getType())` (raw 721, `.rodata` exact).
+> This note is kept as the record of the rank-table experiment.
+
 Status: **source change landed**.  Worktree `wt/w12218`, branch
 `wave178-w12218`, base master `1b48f990f` (wave 177).  Scratch
 `/home/debian/GalaxyOnFire2/scratch/w12218`.  Original
