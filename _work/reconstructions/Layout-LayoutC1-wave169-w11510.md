@@ -3,16 +3,19 @@
 Target `_ZN6LayoutC1Ev` / `_ZN6LayoutC2Ev` (aliased, one body), original
 vaddr `0xd1028`, size **7,072 B**, source `src/game/ui/Layout.cpp`.
 Baseline (master `00c403d5a`): raw **5,650**, aligned **2,284**, 7,072 B.
-Exit: raw **5,647**, aligned **2,285**, 7,072 B.
+Exit: raw **5,640**, aligned **2,283**, 7,072 B.
 
 ## Landed change
 
-One statement move in the shared tail: `field_0x290` (offset 0x290) moved
-from just before `field_0x2f4` to just before
-`field_0x284_sliderSlot5Enabled`, i.e. after `choiceWindowTitleHeight`
-(0x304). Semantics unchanged.
+Two statement moves in the shared tail (semantics unchanged):
 
-Measured `5,650 -> 5,647` raw, aligned `2,284 -> 2,285`, size exact
+1. `field_0x290` (offset 0x290) moved from just before `field_0x2f4` to
+   just before `field_0x284_sliderSlot5Enabled`, i.e. after
+   `choiceWindowTitleHeight` (0x304).  `5,650 -> 5,647`.
+2. `field_0x284_sliderSlot5Enabled` then moved from just after
+   `field_0x290` to just before `field_0x94`.  `5,647 -> 5,640`.
+
+Measured `5,650 -> 5,640` raw, aligned `2,284 -> 2,283`, size exact
 7,072.  Gate: byte 4507, linked 4507, size 4524/4524, data 843/843,
 imports 207, lint CLEAN, RATCHET PASS.
 
@@ -46,6 +49,7 @@ T  shared tail   d2548..d2800: 0x2bc, footerButtonOffset, 0x200, 0x1f0,
 |---|---:|---:|---:|
 | baseline HEAD | 5,650 | 2,284 | 7,072 |
 | **landed `field_0x290` move** | **5,647** | **2,285** | **7,072** |
+| **landed `field_0x290` + `field_0x284` moves** | **5,640** | **2,283** | **7,072** |
 | full nested dispatch A / !n9 / n9 (all 0x204..0x27c fields, shared rewardBox) | 5,830 | 2,555 | 6,880 |
 | same + 0x204 + blk.b in dispatch | 6,030 | 2,340 | 6,832 |
 | dispatch with ascending-offset field order | 5,928 | 2,705 | 6,948 |
