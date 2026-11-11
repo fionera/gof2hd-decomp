@@ -1334,10 +1334,11 @@ bool LevelScript::process(int delta) {
             case 5:
                 if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
                     Globals::layout->enableFillScreen(true);
+                    Status *st = Globals::status;
                     Globals::status->nextCampaignMission(true);
                     Globals::switch_to_target_setting = 0;
                     Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                    Globals::status->getStation()->setAttackedFriends(false);
+                    st->getStation()->setAttackedFriends(false);
                     Level::comingFromAlienWorld = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
                     Level::initStreamOutPosition = 0;
