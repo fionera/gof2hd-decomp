@@ -4430,7 +4430,7 @@ bool LevelScript::process(int delta) {
                     for (int i = 0; i < 13; i++) {
                         KIPlayer *enemy = (*enemies)[i];
                         m_tempVec = enemy->geometry->getDirection();
-                        if (m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000) {
+                        if (__builtin_expect((m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000), 1)) { // lint: arm_builtin
                             m_tempVec -= enemy->geometry->getRightVector()
                                          * ((float) m_nScriptTimerA / 100000.0f);
                         }
