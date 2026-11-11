@@ -794,6 +794,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                  ->animating) {
+                        Globals::sound->stop(Globals::sound->currentMusicEvent);
                         Globals::sound->play(141, nullptr, nullptr, 0.0f);
                         m_nState = 8;
                         m_nScriptTimerA = 0;
@@ -808,7 +809,8 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
-                        Globals::sound->stop(Globals::sound->currentMusicEvent);
+                        m_nState = 9;
+                        m_nScriptTimerA = 0;
                         m_pCamera->setRumblePercentage(0.0f, 0);
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -883,7 +885,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[17]))->isOver()) {
                         m_tempVec = player->getPosition();
                         m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
-                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_nState = 13;
                     }
@@ -1311,12 +1313,12 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(1.0f, 100);
                 } else {
                     Globals::layout->startFade(false, -1, 10000);
-                    m_nState = 5;
+                    (*enemies)[2]->setVisible(true);
+                    m_nState = 4;
                     for (unsigned int i = 3; i < enemies->count; i++) {
                         (*enemies)[i]->player->setHitpoints(0);
                     }
                     m_nScriptTimerA = 0;
-                    (*enemies)[2]->setVisible(true);
                 }
                 break;
             }
