@@ -1696,27 +1696,26 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
-            // Declaration order is a codegen anchor: the original keeps `barH` in r8 and
-            // `barYOffset` in r5 with `Canvas` in fp; loading the bar height first and
-            // re-reading the bar offset through `dummy` reproduces that allocation and
-            // keeps Hud::draw at its original 9332-byte size with a 77-entry LSDA.
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            // Codegen anchors: the original constructs `text` before the width/height
+            // queries and keeps `barH` in r8, `barYOffset` in r5 and `Canvas` in fp.
+            // `top`/`barYOffset` are loaded before the fade math, the `fadeColor` select
+            // must stay a ternary (an if/else puts it in r2 and adds a `mov r1,r2`), and
+            // `filled` is inlined rather than declared: a local `float filled` opens a
+            // second cleanup region and grows the LSDA from 77 to 78 entries.
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
-            volatile int dummy = Globals::layout->field_0x218;
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
-            int fadeColor = 0xffffffff;
-            if (fade < 1.0f)
-                fadeColor = (int) (fade * 255.0f) - 256;
-            int top = this->field_0x3e2;
+            int fadeColor = fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff;
             int y = barOffset + top * 2;
+            int y2 = y + barYOffset;
             Globals::Canvas->SetColor(fadeColor);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
-            float filled = progress * (float) halfW;
-            Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
-                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
+            Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - progress * (float) halfW), 0, (int) (progress * (float) halfW + progress * (float) halfW),
+                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - progress * (float) halfW), y2);
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, text,
                 (Globals::w >> 1) -
