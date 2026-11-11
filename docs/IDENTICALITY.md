@@ -54,13 +54,17 @@ Wave 174 ran 20 agents on the same worst functions. Landed changes:
   moves 90 -> 91, still under the record gate.
 * `MGame::OnTouchEnd` (w11919): `hudTouchFlags == 0` body store order.
   Raw **3,773 -> 3,771** (-2), aligned 1,453 unchanged; 8,080 B exact.
+* `Status::missionCompleted` (w11918): the single `switch (m->getType())`
+  is split into an outer switch for the low/typed cases and a nested
+  `default:` switch for the 150+ cases. Raw **722 -> 721** (-1), aligned
+  320 -> 333; 1,432 B exact.
 
-**Aligned total (15 functions): 26,172** (wave-173 base 26,055). Per
-function: Layout 2,290, LevelScript 18,226, createShip 422, Status 320,
+**Aligned total (15 functions): 26,185** (wave-173 base 26,055). Per
+function: Layout 2,290, LevelScript 18,226, createShip 422, Status 333,
 Radar 1,602, MGame::OnTouchEnd 1,453, createMission 940, Gun 57,
 HangarWindow 621, SpaceLounge 41, Hud 146, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**81,592 -> 81,210** (-382) and `.text` **80,897 -> 80,440** (-457);
+**81,592 -> 81,209** (-383) and `.text` **80,897 -> 80,439** (-458);
 `.ARM.extab` rises **675 -> 750** (+75) but remains size- and base-exact.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
@@ -68,13 +72,13 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **5,633** (7,072 B), `Level::createMission` **5,421** (17,172 B),
 `MGame::OnTouchEnd` **3,771** (8,080 B), `HangarWindow::render` **2,242**
 (9,700 B), `Level::createShip` **1,232** (2,764 B), `Hud::draw` **168**
-(9,332 B), `Status::missionCompleted` **722** (1,432 B),
+(9,332 B), `Status::missionCompleted` **721** (1,432 B),
 `Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
 **175** (1,948 B), `Generator::createMission` **40** (1,996 B),
 `ModStation` C1/C2 **39** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **80,440** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **80,439** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **750** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
