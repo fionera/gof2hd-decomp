@@ -4,6 +4,39 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 178)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 178 landed one change:
+
+* `HangarWindow::render` (w12216): force the `Globals::options[78]` read in the
+  footer `setAlwaysPressed` call through a volatile reference. Raw
+  **2,244 -> 2,243**, `.text` **79,251 -> 79,250**, total **80,002 -> 80,001**;
+  size 9,700 B exact, insns 3,734/3,734, LSDA record diff **90** unchanged,
+  row 39 **`(2508, 150, 9664)`** still exact.  Aligned 382 -> 384 (the
+  volatile read reschedules the `0x14a880` block).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,507** (57,232 B), `Radar::draw` **6,636** (9,908 B), `Layout` C1/C2
+**5,604** (7,072 B), `Level::createMission` **5,143** (17,172 B),
+`MGame::OnTouchEnd` **3,267** (8,080 B), `HangarWindow::render` **2,243**
+(9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
+**721** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `Hud::draw` **148** (9,332 B),
+`Generator::createMission` **40** (1,996 B), `ModStation` C1/C2 **39**
+(1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
+`MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **79,250** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **731** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
+**`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 177)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
