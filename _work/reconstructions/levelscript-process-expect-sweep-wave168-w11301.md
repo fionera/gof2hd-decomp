@@ -19,10 +19,10 @@ byte_exact 4507 / linked_exact 4507 / size 4524 / data 843 / imports 207
 ## Result (landed)
 
 ```
-process raw diffbytes    54,029   (-2)
-process aligned insns    17,786   (+22, indicative only)
+process raw diffbytes    54,028   (-3)
+process aligned insns    17,788   (+24, indicative only)
 orig / ours size         57232 / 57232   (size-exact)
-.text diffbytes          82,524   (-2)
+.text diffbytes          82,523   (-3)
 .ARM.extab diffbytes     670     (unchanged)
 .rel.plt                 0        (BYTE-IDENTICAL)
 RATCHET PASS (byte 4507 / linked 4507 / size 4524 / data 843 / imports 207 / lint CLEAN)
@@ -35,6 +35,7 @@ Three hints, one commit:
 | 1 | 5132 | full if | 0 | `m_nScriptTimerA >= 5500` (explosion update) |
 | 2 | 3111 | full if | 1 | `m_nScriptTimerA >= 8001` (state-8 reframe) |
 | 3 | 4871 | for cond | 1 | `i < 22` (destroyed-ship count loop) |
+| 4 | 1436 | if operand | 0 | `m_nState == 2` (first operand of `m_nState == 2 && m_nScriptTimerA >= 2000`) |
 
 Cells 1+2 are the wave-167 near-miss pair (`L5132:0 + L3111:1`): it is
 **54,032 / size 57,236** on this base (the wave-167 note records 54,030;
@@ -61,6 +62,13 @@ pair base were linked and raw-measured (69 cells, ~1.5 s each).
 The 69 size-exact cells on the pair base were all raw-measured; the best was
 cell 3 at 54,029.  Adding any of the 23 next-best cells on top of cell 3
 does not improve it (best addition 54,052).
+
+A second sweep re-ran the same 791-cell parser on the post-cell-3 base and
+link-measured all 154 `&&`/`||` sub-expression (`*-node`) cells that kept the
+function size at 57,232.  One further win: cell 4 (line 1436, first operand
+`m_nState == 2`, e=0) is **54,028 / size 57,232 / `.text` 82,523 / rel.plt 0
+/ extab 670**.  It is the only node cell below 54,029; the rest are neutral
+(54,029) or worse.
 
 ## Tested but not landed (on the pair base, size-exact)
 

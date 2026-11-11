@@ -1434,7 +1434,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (m_nState == 2 && m_nScriptTimerA >= 2000) {
+        if (__builtin_expect(m_nState == 2, 0) && m_nScriptTimerA >= 2000) { // lint: arm_builtin
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
