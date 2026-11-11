@@ -817,7 +817,7 @@ void HangarWindow::render() {
                             // span and the 9,700 B size; the inner branch weight also
                             // orders the EH landing-pad thunks closer to the original.
                             if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
-                                if (__builtin_expect(!(tab == 3 && this->selectedItem->ship == Globals::status->getShip()), 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
+                                if (__builtin_expect(!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship), 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
                                     int upgTab = tab;
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
