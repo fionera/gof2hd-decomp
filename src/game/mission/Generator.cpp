@@ -748,6 +748,8 @@ Agent *Generator::createAgent(Station *station) {
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     volatile int bonus;
+    // Volatile anchor: keeps rawBonus in r6 and b in r5, matching the
+    // original bonus block's register assignment.
     volatile int bv;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
@@ -956,7 +958,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         if (b % 50 != 0) {
             b = rawBonus - rem;
         }
-        bv = rawBonus;
+        bv = rawBonus;  // volatile anchor (dead store; fixes the r6/r5 split)
         bonus = b;
     }
 
