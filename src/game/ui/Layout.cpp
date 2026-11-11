@@ -51,9 +51,9 @@ Layout::Layout() {
     this->field_0x78 = Globals::iPadHD ? 263 * 1.40625f : (Globals::n9 ? 473 : (Globals::retinaDisplay ? 526 : 263));
     this->field_0x2c4 = Globals::iPadHD ? 126 : (Globals::n9 ? 108 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
     this->field_0x98 = Globals::iPadHD ? 420 * 1.40625f : (Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420));
-    this->field_0x2d0 = (int)(float)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     int t_field_0x2c8 = Globals::iPadHD ? (int)(45 * 1.40625f) : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
     this->field_0x2c8 = (int)(float)t_field_0x2c8;
+    this->field_0x2d0 = (int)(float)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     this->field_0x2cc = Globals::iPadHD ? 90 * 1.40625f : (Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
     this->field_0x2d8 = Globals::iPadHD ? 141 : ((Globals::retinaDisplay || Globals::n9) ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? 125 : 75));
     volatile unsigned char *rd = &Globals::retinaDisplay;
