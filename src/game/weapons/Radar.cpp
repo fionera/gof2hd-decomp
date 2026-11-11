@@ -632,12 +632,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (!this->lockConfirmed) {
-                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
-                    }
                     this->field_0x14 = this->field_0x18;
                     if (__builtin_expect(this->field_0x1a8, 0)) {  // lint: arm_builtin
                         this->level->getPlayer()->dockToPlanet();
+                    }
+                    if (!this->lockConfirmed) {
+                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
                 }
                 if ((this->planetLockTimer < 1) | (missionBlocksPlanets != 0)) {
@@ -688,9 +688,9 @@ enemies:
                 }
                 continue;
             }
-            this->update(enemy);
             bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
+            this->update(enemy);
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
             }
@@ -706,8 +706,8 @@ enemies:
                 }
             }
             if (this->onScreen) {
-                enemy->field_0x76 = 1;
                 this->egoPos = player->getPosition();
+                enemy->field_0x76 = 1;
                 this->targetPos = enemy->player->getPosition();
                 if (!(this->egoPos.x - this->targetPos.x < -24000.0f) && !(this->egoPos.x - this->targetPos.x > 24000.0f) &&
                     !(this->egoPos.y - this->targetPos.y < -24000.0f) && !(this->egoPos.y - this->targetPos.y > 24000.0f) &&
@@ -855,8 +855,8 @@ enemies:
             }
         tractor:
             if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
-                this->field_0x1c = enemy;
                 this->dockNavPtr = enemy;
+                this->field_0x1c = enemy;
                 enemyHit = true;
             }
         }
