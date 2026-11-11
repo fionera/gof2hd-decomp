@@ -1992,12 +1992,11 @@ void Level::createMission() {
         }
     }
     if (raid) {
-        Status *status = *(Status *volatile *) &Globals::status;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
-        bool hard = status->hardCoreMode();
+        bool hard = Globals::status->hardCoreMode();
         int guns = alienGuns + fortressGuns;
         if (raidRace == 8 && Level::initStreamOutPosition &&
-            Globals::rnd->nextInt(100) < (hard ? 40 : 20) + status->getLevel()) {
+            Globals::rnd->nextInt(100) < (hard ? 40 : 20) + Globals::status->getLevel()) {
             this->spawnPosition = this->player->getPosition() / 3.0f;
             this->field_180->setNewCoords(this->spawnPosition);
         }
