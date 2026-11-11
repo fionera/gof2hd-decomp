@@ -779,8 +779,8 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 7: {
-                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     m_nScriptTimerA += delta;
+                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
