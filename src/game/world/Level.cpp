@@ -5243,7 +5243,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (shipClass == 0) {
         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+        AEGeometry *grp = Globals::globals->getShipGroup(type, race, group);
+        {
+            EmpGuard guard;
+            fighter->setShipGroup(grp, type, hostile);
+        }
         if (__builtin_expect(missionPtr != 1, 1) && missionPtr != 23) { // lint: arm_builtin
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
@@ -5315,10 +5319,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         fixed->setBV(volumes);
         ship = fixed;
     }
-    {
-        EmpGuard guard;
-        ship->setLevel(this);
-    }
+    ship->setLevel(this);
     return (PlayerFixedObject *) ship;
 }
 
