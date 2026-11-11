@@ -93,22 +93,26 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-10, waves 165-166)
+### Current state — ELF sections (2026-11-11, wave 174)
 All **27 original section headers are present**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
 `.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
 `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
 and `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size- and base-exact**
-(`0x26298` @ `0x1a3b78`): `Level::createShip` is the faithful 336 B real-`new` cleanup-only
-record (57 rows, `ttype 0xff`); the wave-131 `try`/`catch` body (328 B record) was reverted in
-wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
+(`0x26298` @ `0x1a3b78`): `Level::createShip` is a 336 B cleanup-only
+record (57 rows, `ttype 0xff`, `cs_len` 315).  Wave 174 (w11915) keeps the
+wave-173 placement-`new` + invoke-barrier body but replaces the `catch(...)`
+around `setEmpData` with a local cleanup guard, so the record stays
+cleanup-only (no type table, no `.rel.dyn` relocation) and two further
+cleanup scopes bring the call-site table to the original 57 rows; the
+section is size- and base-exact and `.ARM.exidx` is byte-identical.
 `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is
 exact at 948 B. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (80,897), `.ARM.extab` (675) and
+section bytes are `.text` (80,569), `.ARM.extab` (746) and
 `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
