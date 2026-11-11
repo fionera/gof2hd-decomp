@@ -16,9 +16,9 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,060** | 20,191 | 57,232 |
+| `LevelScript::process` | **53,039** | 20,207 | 57,232 |
 | `Radar::draw` | **6,407** | 1,806 | 9,908 |
-| `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
+| `Layout` C1/C2 | **5,569** | 2,434 | 7,072 |
 | `Level::createMission` | **3,832** | 977 | 17,172 |
 | `MGame::OnTouchEnd` | **3,259** | 1,183 | 8,080 |
 | `HangarWindow::render` | **2,242** | 390 | 9,700 |
@@ -43,8 +43,11 @@ Landed changes:
   and cloud order) and reaches **6,458 -> 6,418**; w12308's `otherLock`
   reorder adds **-11** for a combined **6,407**. w12309 (6,424) and w12308
   alone (6,439) are superseded.
-* `LevelScript::process` (w12302): four block-scope receiver aliases.
-  Raw **53,082 -> 53,060**.
+* `LevelScript::process` (w12302 + w12305): four block-scope receiver aliases
+  plus the declaration-order sweep. Combined raw **53,082 -> 53,039**
+  (w12302 alone 53,060, w12305 alone 53,061).
+* `Layout::Layout` (w12311): move `field_0x2c_rowHeight` after `field_0x38`.
+  Raw **5,576 -> 5,569**.
 * `MGame::OnTouchEnd` (w12315): `MenuTouchWindow::OnTouchEnd` returns `bool`.
   Raw **3,261 -> 3,259**.
 * `Level::createShip` (w12317): fighter LOD branch layout.
@@ -57,12 +60,12 @@ Landed changes:
 * Note-only: w12318 (Status chain-fold weights are post-MBP-canonicalised),
   w12320 (build provenance / Status TBH audit).
 
-Section deltas: `.text` **77,221** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **77,193** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **694** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **77,935**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **77,907**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 178)
@@ -82,7 +85,7 @@ aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
 | `Level::createMission` | **4,467** | 952 | 17,172 |
 | `MGame::OnTouchEnd` | **3,261** | 1,185 | 8,080 |
-| `HangarWindow::render` | **2,242** | 390 | 9,700 |
+| `HangarWindow::render` | **2,243** | 384 | 9,700 |
 | `Level::createShip` | **1,225** | 383 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
@@ -3533,7 +3536,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,221 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,193 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
 | **.rodata** | 269,159 | 269,351 | **+192** | base `0x1c9e10` exact and the original 269,159 B content is **byte-identical**; wave 178 restored the 192 B `Status::missionCompleted` rank table at `0x20b977` (in the gap before `.fini_array`), so the section is 0x41c27. Wave 121 had removed it for an exact-size `.rodata`; the +192 B buys -272 `.text` bytes (raw 721 -> 449). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
