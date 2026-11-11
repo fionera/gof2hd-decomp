@@ -1147,12 +1147,13 @@ bool LevelScript::process(int delta) {
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTimerA >= 6001) {
-                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
+                    AEGeometry *geom = m_pGeometry5;
+                    geom->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
                     AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                            Globals::Canvas->TransformGetTransform(geom->transform);
                     t->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                            Globals::Canvas->TransformGetTransform(geom->transform);
                     t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
