@@ -1594,8 +1594,8 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(15, nullptr, nullptr, 0.0f);
                 } else if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
                     Vector pos = player->getPosition();
-                    Vector zero{0.0f, 0.0f, 0.0f};
                     player->setTurretMode(false);
+                    Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(15, &pos, &zero, false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
@@ -1876,9 +1876,9 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pCamera->setPosition(player->geometry->getPosition());
                     Vector *frame = &m_tempVec; // LevelScript tempVec @0x28
+                    Vector tmp{0.0f, 0.0f, 0.0f};
                     *frame = player->geometry->getDirection();
                     *frame *= 25000.0f;
-                    Vector tmp{0.0f, 0.0f, 0.0f};
                     tmp = player->geometry->getRightVector();
                     tmp *= 1000.0f;
                     *frame += tmp;
@@ -2263,8 +2263,8 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setActive(true);
                     Vector camPos = (*enemies)[0]->getPosition();
+                    m_pCamera->setActive(true);
                     m_pCamera->setTarget((*enemies)[0]->geometry);
                     camPos.z += 3000.0f;
                     camPos += (*enemies)[0]->geometry->getDirection() * 10000.0f;
@@ -3157,9 +3157,9 @@ bool LevelScript::process(int delta) {
                         m_tempVec = Vector{1.0f, 1.0f, 1.0f};
                     }
                 } else if (__builtin_expect(m_nState == 9, 0) || __builtin_expect(m_nState == 10, 0)) { // lint: arm_builtin
-                    Level *lvl = m_pLevel;
                     Vector pos = (*enemies)[3]->geometry->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
+                    Level *lvl = m_pLevel;
                     Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false);
                     m_nScriptTimerA += delta;
                     m_tempVec.x += (float) delta * 0.006f;
@@ -3485,11 +3485,11 @@ bool LevelScript::process(int delta) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->isDead()) {
                                 (*enemies)[i]->revive();
-                                (*enemies)[i]->awake();
                                 int dx = Globals::rnd->nextInt(10000) + 35000;
-                                KIPlayer *fighter = (*enemies)[i];
+                                (*enemies)[i]->awake();
                                 int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                                 int dz = Globals::rnd->nextInt(10000) + 35000;
+                                KIPlayer *fighter = (*enemies)[i];
                                 int dy = Globals::rnd->nextInt(10000);
                                 int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
                                 fighter->setPosition(playerPos + Vector{(float) x, (float) (dy - 5000), (float) z});
@@ -3799,9 +3799,9 @@ bool LevelScript::process(int delta) {
                         int off = 10000;
                         for (int i = 2; i < 5; ++i) {
                             if ((*enemies)[i]->isDead()) {
-                                (*enemies)[i]->revive(); // KIPlayer vtable+0x18
                                 int rx = Globals::rnd->nextInt(1000);
                                 int rz = Globals::rnd->nextInt(1000);
+                                (*enemies)[i]->revive(); // KIPlayer vtable+0x18
                                 int ry = Globals::rnd->nextInt(1000);
                                 (*enemies)[i]->setPosition(
                                         playerPos.x + lightDir.x * 100000.0f + (float) off + (float) rx,
@@ -3870,8 +3870,8 @@ bool LevelScript::process(int delta) {
                             m_pGeometry6 = marker;
                             marker->setDirection(player->geometry->getDirection(),
                                                  Vector{0.0f, 1.0f, 0.0f});
-                            wcamera->setTarget(marker);
                             Vector camPos = *wcamera->getPosition();
+                            wcamera->setTarget(marker);
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
                             Vector zero{0.0f, 0.0f, 0.0f};
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
@@ -3989,8 +3989,8 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
-                            (*enemies)[i]->awake();
                             Vector playerPos = player->getPosition();
+                            (*enemies)[i]->awake();
                             KIPlayer *pirate = (*enemies)[i];
                             int sideX = Globals::rnd->nextInt(100);
                             int offsetY = Globals::rnd->nextInt(1000);
