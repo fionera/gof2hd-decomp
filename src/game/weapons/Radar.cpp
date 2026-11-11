@@ -419,7 +419,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     bool landmarkHit = false;
     int notTurretMode = !turretMode;
     int notOtherLock = !otherLock;
-    if (__builtin_expect((this->landmarks != nullptr &&
+    if (__builtin_expect((this->landmarks != nullptr && // lint: arm_builtin
         !(Globals::status->getStation()->getIndex() == 109 ||
           Globals::status->getStation()->getIndex() == 110 ||
           (Globals::status->getStation()->getIndex() == 111 &&
@@ -627,7 +627,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (planetHit && !this->level->getPlayer()->isDockingToAsteroid() &&
                 !this->level->getPlayer()->isDockingToDockingPoint()) {
                 this->planetLockTimer += mode;
-                if (__builtin_expect((this->planetLockTimer > this->field_0x1b8), 1)) {
+                if (__builtin_expect((this->planetLockTimer > this->field_0x1b8), 1)) { // lint: arm_builtin
                     if (missionBlocksPlanets) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
@@ -696,7 +696,7 @@ enemies:
             }
             KIPlayer *locked = this->lockedEnemy;
             if (!enemy->stealFlagByte && !(enemy->countsAsEnemyExcludeFlag != 0 || wreck) &&
-                __builtin_expect((enemy->player->enemyFlagsLo), 1)) {
+                __builtin_expect((enemy->player->enemyFlagsLo), 1)) { // lint: arm_builtin
                 this->field_0x1bc++;
                 if (enemy->shipGroup == 10) {
                     bossSeen = true;

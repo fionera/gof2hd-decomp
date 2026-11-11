@@ -5353,7 +5353,7 @@ bool LevelScript::process(int delta) {
 }
 
 void LevelScript::resetCamera(Level *level) {
-    if (__builtin_expect(level->getPlayer() != 0, 0)) { // lint: arm_builtin
+    if (level->getPlayer() != 0) {
         TargetFollowCamera *camera = m_pCamera;
         PlayerEgo *player = (PlayerEgo *) level->getPlayer();
         camera->setTarget(player->geometry);
