@@ -4,6 +4,52 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 179)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Residual table (raw / aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **53,060** | 20,191 | 57,232 |
+| `Radar::draw` | **6,458** | 1,832 | 9,908 |
+| `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
+| `Level::createMission` | **4,467** | 952 | 17,172 |
+| `MGame::OnTouchEnd` | **3,261** | 1,185 | 8,080 |
+| `HangarWindow::render` | **2,243** | 384 | 9,700 |
+| `Level::createShip` | **1,225** | 383 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **148** | 147 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **39** | 11 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `LevelScript::process` (w12302): four block-scope receiver aliases found by a
+  fresh alias/hoist sweep on the post-wave-178 base (`Radar *radar = m_pRadar`
+  in the mission-7 docking block, `Status *st = Globals::status` in the
+  post-sequence block, `AbyssEngine::PaintCanvas *canvas = Globals::Canvas` in
+  the mission-6 camera block, `AEGeometry *geom = player->geometry` in the
+  mission-3 drift block). Raw **53,082 -> 53,060** (-22), size 57,232 exact,
+  `.rel.plt` byte-identical. The four deltas are additive; no further
+  single alias or pair improves the result.
+
+Section deltas: `.text` **77,914** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **700** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **78,634**. File size is
+exact at 2,187,328 B.
+
 ## Update 2026-11-11 (wave 178)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
