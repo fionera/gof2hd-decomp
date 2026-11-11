@@ -1476,16 +1476,16 @@ bool LevelScript::process(int delta) {
 
         field_0x24 += delta; // passedTime += delta
         if (m_pLevel->getPlayer() != 0 &&
-            __builtin_expect(Globals::status->getCurrentCampaignMission() >= 2, 1) // lint: arm_builtin
- &&
+            Globals::status->getCurrentCampaignMission() >= 2 &&
             field_0x24 >= 7001) {
+            Level *lvl = m_pLevel;
             field_0x24 = 0;
             m_bStartSequence = 0;    // active = false
             m_bStartSequenceOver = 1; // startSequenceIsOver = true
             m_pCamera->setLookAtCam(false);
-            m_pLevel->getPlayer()->player->setVulnerable(true);
+            lvl->getPlayer()->player->setVulnerable(true);
             m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
-            m_pLevel->getPlayer()->setCollide(true);
+            lvl->getPlayer()->setCollide(true);
 
             if (Level::programmedStation != 0) {
                 if (!Level::programmedStation->equals(Globals::status->getStation())) {
