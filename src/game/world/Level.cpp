@@ -5193,9 +5193,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         wpy = 0;
         wpz = 0;
     }
-    int jitter1 = Globals::rnd->nextInt(40000);
-    int jitter2 = Globals::rnd->nextInt(40000);
     int jitter3 = Globals::rnd->nextInt(40000);
+    int jitter2 = Globals::rnd->nextInt(40000);
+    int jitter1 = Globals::rnd->nextInt(40000);
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
     switch (type) {
