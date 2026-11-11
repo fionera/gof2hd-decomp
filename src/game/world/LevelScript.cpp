@@ -1114,7 +1114,7 @@ bool LevelScript::process(int delta) {
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
                 (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (m_nScriptTimerA >= 1100 - delta) { // lint: arm_builtin
+                if (__builtin_expect((m_nScriptTimerA >= 1100 - delta), 0)) { // lint: arm_builtin
                     m_nState = 7;
                     m_nScriptTimerA = 0;
                 }
@@ -2127,7 +2127,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     m_pCamera->setRumblePercentage(0.5f, 30);
                     Globals::sound->setParamValue(1, 153, 0.5f);
-                    if (player->isInWormhole()) {
+                    if (__builtin_expect((player->isInWormhole()), 0)) { // lint: arm_builtin
                         Level *self = m_pLevel;
                         player->setTurretMode(false);
                         resetCamera(m_pLevel);
