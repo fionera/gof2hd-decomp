@@ -1793,7 +1793,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                 }
                 uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
-                if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
+                // The window returns 0/1; testing `== 1` keeps this branch 50/50
+                // (a plain `!= 0` test is predicted 5:3 by the zero heuristic).
+                if (this->menuWindow->OnTouchEnd(x, y, touchId) == 1) {
                     // Pause menu closed.
                     this->pauseOpen = 0;
                     this->pauseSnapshot = 0;
