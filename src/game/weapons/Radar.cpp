@@ -575,8 +575,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     marked = true;
                 } else if (Globals::status->getCurrentCampaignMission() == 125 &&
                     Globals::status->isFreighterMissionStation(stations->data()[i]) &&
-                    ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
-                      (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0) {
+                    __builtin_expect((((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() // lint: arm_builtin
+                                        & (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0), 0)) {
                     Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
                                                  this->screenY - 10);
                     marked = true;
@@ -647,7 +647,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
-                    if (__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin anchor: Radar::draw
+                    if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
                     frame = this->blipSprite->getRawFrameCount() - 1;
