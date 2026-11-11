@@ -2849,6 +2849,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nState = 5;
                 } else if (m_nState == 6) {
+                    Galaxy *galaxy = Globals::galaxy;
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 2001) {
                         int speedBits = player->getSpeed();
@@ -2857,9 +2858,9 @@ bool LevelScript::process(int delta) {
                         }
                         if (m_nScriptTimerA >= 8001) {
                             Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
+                            Globals::status->setStation((Station *) (intptr_t) galaxy->getStation(113));
                             player->setSpeed(reinterpret_cast<float &>(speedBits) * 1.05f);
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
+                            Globals::status->departStation((Station *) (intptr_t) galaxy->getStation(113));
                             Level::initStreamOutPosition = 1;
                             Status *st = Globals::status;
                             Globals::status->field_64 = player->player->getHitpoints();
@@ -2878,7 +2879,7 @@ bool LevelScript::process(int delta) {
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
                         if (player->isInRocketControl()) {
-                            resetCamera(m_pLevel);
+                            resetCamera(self);
                             player->setRocketControl(nullptr, nullptr);
                             player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
