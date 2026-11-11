@@ -9,7 +9,7 @@ wave-180 `w12410` permutation is landed as `5d9a14d6a`, raw **5,408**).
 
 | metric | before | after |
 |---|---:|---:|
-| raw same-address bytes | **5,408** | **5,393** (-15) |
+| raw same-address bytes | **5,408** | **5,391** (-17) |
 | aligned (difflib) | 2,438 | 2,520 (+82) |
 | size | 7,072/7,072 | **7,072/7,072** |
 | instructions | 2,514/2,552 | 2,518/2,552 |
@@ -30,8 +30,12 @@ stores; no value, type or control-flow change.  In source order:
    **after** `field_0x25c` (units 173/174, a 3-window rotation).
 4. `footerButtonOffset` moved **before** the `field_0x280` if/else chain and
    `field_0x285` moved **before** that chain (units 171/172, 3-window).
+5. A second pass (after the first commit) found one more W=4 win: the window
+   `(field_0x10, windowTopInset, headerTitleY, field_0xc)` rotated to
+   `(field_0xc, windowTopInset, headerTitleY, field_0x10)` (5393->5391).
 
-`git diff` is 6 moved lines (12 changed lines).
+`git diff` vs the post-wave-180 base is 8 moved lines; vs the first commit it
+is 2 moved lines.
 
 ## 2. Method
 
@@ -46,6 +50,10 @@ exactly reproduces the file) and ran a fresh greedy window search:
 * `W=3`: exhaustive 5-permutation scan over all 202 windows, repeated to a
   fixed point (2 rounds).  Wins: window 141 `(2,0,1)` (5404->5399), window
   161 `(2,1,0)` (5399->5395), window 171 `(2,1,0)` (5395->5393).
+* `W=4` exhaustive over the head region units 0..41 (2 rounds): window 1
+  `(3,1,2,0)` (5393->5391).
+* A 600-candidate randomized `W=4` + single-move (±12) search found no further
+  size-exact win.
 
 Every candidate was a real `link_so` + `tools/fn_diff.py` measurement; only
 size-exact (`7,072/7,072`) raw improvements were kept.  Windows that separate
@@ -75,7 +83,7 @@ cd /home/debian/GalaxyOnFire2/wt/w12510
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
-# raw=5393 aligned=2520 size=7072/7072 insn=2518/2552
+# raw=5391 aligned=2520 size=7072/7072 insn=2518/2552
 cmake --build cmake-build-match --target check -j2
 # RATCHET PASS: byte_exact 4507, linked_exact 4507, size-exact 4524/4524,
 # data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370
@@ -84,10 +92,11 @@ cmake --build cmake-build-match --target check -j2
 Scratch `/home/debian/GalaxyOnFire2/scratch/w12510/`: `units.py` (204-unit
 parser), `sweep.py` (`w2`/`w3` greedy window search), `Layout.base.cpp`
 (pristine post-wave-180 ctor), `best_all.json` (landed unit order),
-`w2_run.txt` / `w3_run.txt` (per-candidate logs).
+`w2_run.txt` / `w3_run.txt` / `w4head.txt` (per-candidate logs), `rand.py`
+(randomized W=4 + move search), `w4range.py` (range-restricted exhaustive W=4).
 
 Gate at exit: byte_exact **4507/4524**, linked_exact **4507/4524**,
 size-exact **4524/4524**, stub_zero_size **0**, missing **0**, wrong_type
 **0**, extra **0**, data_exact **843/843**, imports **207**, lint **CLEAN**,
 drift **0**, parity **5370/5370**, `.rel.plt` byte-identical.
-`Layout` C1/C2 raw **5,393**, aligned **2,520**, size **7,072/7,072**.
+`Layout` C1/C2 raw **5,391**, aligned **2,520**, size **7,072/7,072**.

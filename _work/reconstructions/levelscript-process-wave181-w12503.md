@@ -259,3 +259,141 @@ moves and all were individually size-exact + `.rel.plt`-identical.
 A leave-one-out check on the sweep-1 combination had shown every one of those
 70 moves load-bearing; the sweep-2 combination was accepted greedily with the
 same size/`.rel.plt`/raw checks at every step.
+
+## Third sweep on the improved tree (landed)
+
+Re-ran the `K=2` sweep on the 52,643 tree (3,919 candidates).  It found **11**
+size-exact, `.rel.plt`-identical raw winners.  Greedy accepted 4 (raw 52,634);
+the `frame->setPosition` / `CameraSetLocal` read-after-write swap was again
+dropped, leaving **3 moves** and raw **52,635**.
+
+```
+                         after sweep 2    after sweep 3
+process raw diffbytes    52,643           52,635     (-8)
+process aligned insns    21,563           21,571
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          76,025           76,017     (-8)
+.ARM.extab diffbytes     713              713        (unchanged)
+.note.gnu.build-id       20               20         (unchanged)
+total differing bytes    76,758           76,750     (-8)
+.rel.plt                 md5 903755c8…    md5 903755c8…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Line numbers are from the sweep-2 tree (`3d37f6670`).
+
+| # | line | dir | new line | moved statement |
+|---:|---:|---|---:|---|
+| 1 | 1604 | up | 1602 | `m_pLevel->flashScreen(3);` |
+| 2 | 3220 | down | 3222 | `player->stopShooting(0);` |
+| 3 | 3347 | down | 3348 | `m_bCinematicBreak = 0;` |
+
+### Cumulative result
+
+`process` raw **52,818 -> 52,635** (-183) over the three sweeps; `.text`
+**76,200 -> 76,017**; `.ARM.extab` unchanged at 713; `.rel.plt` byte-identical;
+size 57,232 exact; all gate counts unchanged.
+
+## Distance-3 sweep (landed)
+
+The `K=2` space was exhausted after the third sweep, so the next sweep kept only
+distance-3 moves (`|i-j| == 3`, i.e. crossing two intervening statements):
+1,048 candidates, **30** size-exact, `.rel.plt`-identical raw winners.  Greedy
+accepted all 28 that compose (raw **52,595**; no semantically unsafe pair in
+this set, so no rejection was needed).
+
+```
+                         after sweep 3    after distance-3
+process raw diffbytes    52,635           52,595     (-40)
+process aligned insns    21,571           21,770
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          76,017           75,977     (-40)
+.ARM.extab diffbytes     713              713        (unchanged)
+.note.gnu.build-id       20               20         (unchanged)
+total differing bytes    76,750           76,710     (-40)
+.rel.plt                 md5 903755c8…    md5 903755c8…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Line numbers are from the sweep-3 tree (`8fba3fc2c`).
+
+| # | line | dir | new line | moved statement |
+|---:|---:|---|---:|---|
+| 1 | 3024 | up | 3021 | `m_pCamera->setFixed(true);` |
+| 2 | 2005 | up | 2002 | `camera41->enableFirstPersonCam(false);` |
+| 3 | 3563 | up | 3560 | `m_pCamera->setLookAtCam(false);` |
+| 4 | 700 | down | 703 | `player->setComputerControlled(true);` |
+| 5 | 1267 | down | 1270 | `m_nState = 2;` |
+| 6 | 2890 | down | 2893 | `resetCamera(self);` |
+| 7 | 5264 | down | 5267 | `m_pLevel->lodManager->forceUpdate(delta, false);` |
+| 8 | 939 | up | 936 | `Level::initStreamOutPosition = 1;` |
+| 9 | 1241 | down | 1244 | `m_pCamera->setPosition(m_tempVec);` |
+| 10 | 1369 | down | 1372 | `m_nScriptTimerA = 0;` |
+| 11 | 1702 | up | 1699 | `m_bCinematicBreak = 0;` |
+| 12 | 1837 | down | 1840 | `(*m_pLevel->getLandmarks())[3]->setVisible(true);` |
+| 13 | 1965 | up | 1962 | `player->setComputerControlled(false);` |
+| 14 | 2343 | down | 2346 | `player->player->setVulnerable(true);` |
+| 15 | 2349 | down | 2352 | `m_pCamera->setTarget(player->geometry);` |
+| 16 | 2386 | up | 2383 | `player->setTurretMode(false);` |
+| 17 | 2640 | down | 2643 | `m_pCamera->setPosition(m_tempVec);` |
+| 18 | 2694 | up | 2691 | `m_pLevel->field_74->systemSetMatrix(m_pLevel->field_5c, &m_matrix);` |
+| 19 | 2905 | down | 2908 | `self->getPlayer()->setCollide(false);` |
+| 20 | 3181 | up | 3178 | `player->setComputerControlled(false);` |
+| 21 | 3221 | up | 3218 | `m_pCamera->setLookAtCam(true);` |
+| 22 | 3265 | up | 3262 | `m_nScriptTimerA = 0;` |
+| 23 | 3424 | up | 3421 | `m_nState = 3;` |
+| 24 | 4394 | down | 4397 | `player->player->setVulnerable(false);` |
+| 25 | 4489 | down | 4492 | `m_pCamera->setTarget(player->geometry);` |
+| 26 | 4528 | down | 4531 | `m_bCinematicBreak = 1;` |
+| 27 | 4669 | up | 4666 | `m_nState++;` |
+| 28 | 4876 | down | 4879 | `m_pLevel->getPlayer()->resetGunDelay();` |
+
+### Final cumulative result
+
+`process` raw **52,818 -> 52,595** (-223) over the four sweeps; `.text`
+**76,200 -> 75,977**; `.ARM.extab` unchanged at 713; `.rel.plt` byte-identical;
+size 57,232 exact; all gate counts unchanged (`byte_exact` 4507,
+`linked_exact` 4507, size-exact 4524/4524, data 843/843, imports 207, lint
+CLEAN, drift 0, parity 5370/5370).
+
+## Distance-4 sweep (landed)
+
+Next: only distance-4 moves (`|i-j| == 4`, crossing three intervening
+statements): 808 candidates, **14** size-exact, `.rel.plt`-identical raw
+winners.  Greedy accepted all 10 that compose (raw **52,570**).
+
+```
+                         after d3         after d4
+process raw diffbytes    52,595           52,570     (-25)
+process aligned insns    21,770           21,834
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          75,977           75,952     (-25)
+.ARM.extab diffbytes     713              713        (unchanged)
+.note.gnu.build-id       20               20         (unchanged)
+total differing bytes    76,710           76,685     (-25)
+.rel.plt                 md5 903755c8…    md5 903755c8…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Line numbers are from the distance-3 tree (`59e50ccc8`).
+
+| # | line | dir | new line | moved statement |
+|---:|---:|---|---:|---|
+| 1 | 2117 | up | 2113 | `m_nScriptTimerA = 0;` |
+| 2 | 2388 | down | 2392 | `resetCamera(m_pLevel);` |
+| 3 | 2987 | up | 2983 | `m_nScriptTimerA = 0;` |
+| 4 | 3561 | down | 3565 | `m_pLevel->getPlayer()->resetGunDelay();` |
+| 5 | 4879 | down | 4883 | `m_pLevel->getPlayer()->resetGunDelay();` |
+| 6 | 1908 | up | 1902 | `m_pRadar->enabled = 1;` |
+| 7 | 2004 | down | 2008 | `resetCamera(m_pLevel);` |
+| 8 | 2550 | down | 2554 | `player->setComputerControlled(false);` |
+| 9 | 2919 | up | 2915 | `m_nState = 6;` |
+| 10 | 4493 | down | 4497 | `player->setVisible(true);` |
+
+### Final cumulative result (wave 181 / w12503)
+
+`process` raw **52,818 -> 52,570** (-248) over the five sweeps; `.text`
+**76,200 -> 75,952**; `.ARM.extab` unchanged at 713; `.rel.plt` byte-identical;
+size 57,232 exact; all gate counts unchanged (`byte_exact` 4507,
+`linked_exact` 4507, size-exact 4524/4524, data 843/843, imports 207, lint
+CLEAN, drift 0, parity 5370/5370).
