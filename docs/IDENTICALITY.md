@@ -78,7 +78,7 @@ ModStation 12, MGame::OnUpdate 111.  Total differing bytes fall
 `.ARM.extab` **725 -> 1,247** (+522).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,015** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
+**54,015** (57,232 B), `Radar::draw` **7,127** (9,908 B), `Layout` C1/C2
 **5,656** (7,072 B), `Level::createMission` **5,435** (17,172 B),
 `MGame::OnTouchEnd` **3,775** (8,080 B), `HangarWindow::render` **1,970**
 (9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **582**
