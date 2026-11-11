@@ -3150,7 +3150,7 @@ bool LevelScript::process(int delta) {
                             m_nState++;
                         }
                     }
-                } else if (m_nState == 11) {
+                } else if (__builtin_expect((m_nState == 11), 1)) { // lint: arm_builtin
                     m_tempVec.x += (float) delta * 0.02f;
                     (*enemies)[3]->geometry->moveForward(m_tempVec.x * (float) delta);
                 }
@@ -5064,7 +5064,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pExplosion->update(delta, nullptr);
                     m_pCamera->translate((float) (-2 * delta), 0.0f, (float) -delta * 0.33f);
-                    if (((RadioMessage *) ((*messages)[15]))->isOver()) {
+                    if (__builtin_expect((((RadioMessage *) ((*messages)[15]))->isOver()), 0)) { // lint: arm_builtin
                         m_nScriptTimerA += delta;
                         if (m_nScriptTimerA >= 3001) {
                             m_pGeometry1->setPosition(
