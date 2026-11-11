@@ -2851,8 +2851,9 @@ bool LevelScript::process(int delta) {
                 } else if (__builtin_expect(m_nState == 5, 1)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 3001) {
+                        Level *self = m_pLevel;
                         m_nScriptTimerA = 0;
-                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
+                        self->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
                         if (player->isInRocketControl()) {
@@ -2862,7 +2863,7 @@ bool LevelScript::process(int delta) {
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
                         player->setTurretMode(false);
-                        resetCamera(m_pLevel);
+                        resetCamera(self);
                         player->setFreeLookMode(false);
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
@@ -2871,14 +2872,14 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         player->setComputerControlled(true);
-                        m_pLevel->getPlayer()->setCollide(false);
+                        self->getPlayer()->setCollide(false);
                         m_pCamera->setLookAtCam(true);
                         AEGeometry *ship = player->geometry;
                         (*enemies)[0]->player->setHitpoints(0);
                         m_tempVec = player->geometry->getPosition();
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
-                                                   m_pLevel->getPlayer()->getPosition()
-                                                   - ((KIPlayer *) m_pLevel->getDockingTarget(0))->geometry->getPosition()),
+                                                   self->getPlayer()->getPosition()
+                                                   - ((KIPlayer *) self->getDockingTarget(0))->geometry->getPosition()),
                                            Vector{0.0f, 1.0f, 0.0f});
                         m_dirVec = player->geometry->getRightVector();
                         m_tempVec += m_dirVec * 10000.0f;
