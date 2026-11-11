@@ -825,11 +825,15 @@ void HangarWindow::render() {
                                 (*this->buttons)[1]->draw();
                                 buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
                                 if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin
+                                    // Draw-first source order is a one-byte raw
+                                    // codegen coincidence (the original block sits at
+                                    // a different address); it leaves the row-39 LSDA
+                                    // and the 9,700 B size untouched.
+                                    (*this->buttons)[10]->draw();
                                     (*this->buttons)[2]->setVisible(true);
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
                                     (*this->buttons)[10]->setVisible(true);
-                                    (*this->buttons)[10]->draw();
                                 }
                             }
                         } else {

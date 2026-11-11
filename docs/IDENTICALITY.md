@@ -67,7 +67,7 @@ aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
 | `Level::createMission` | **4,467** | 952 | 17,172 |
 | `MGame::OnTouchEnd` | **3,261** | 1,185 | 8,080 |
-| `HangarWindow::render` | **2,243** | 384 | 9,700 |
+| `HangarWindow::render` | **2,242** | 390 | 9,700 |
 | `Level::createShip` | **1,225** | 383 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
@@ -95,6 +95,10 @@ Landed changes:
   (-28), size 7,072 exact.
 * `HangarWindow::render` (w12216): row-39 LSDA now exact; raw
   **2,244 -> 2,243**.
+* `HangarWindow::render` (w12316): the four-call upgrade-button block is
+  laid out draw-first; a one-byte raw coincidence. Raw **2,243 -> 2,242**,
+  aligned 384 -> 390, size 9,700 exact, row-39 `(2508,150,9664)` and the
+  948 B `.ARM.extab` record diff 90 unchanged.
 * `MGame::OnUpdate` (w12220): raw **16 -> 15** (aligned 111, size 11,440
   exact).
 * `Status::missionCompleted` (w12218b): remove the hardcoded rank table and
@@ -109,12 +113,12 @@ Landed changes:
   bool/order sweep), w12217 (createShip order/branch sweep), w12219 (Hud
   anchor; the -1 B code was reverted because it cost +2 total bytes).
 
-Section deltas: `.text` **77,936** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **77,935** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **700** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **78,656**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **78,655**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 177)
