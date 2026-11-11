@@ -609,9 +609,9 @@ bool LevelScript::process(int delta) {
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
-    PlayerEgo *volatile player = m_pLevel->getPlayer();
+    PlayerEgo *player = m_pLevel->getPlayer();
     Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
-    Status *volatile status = Globals::status;
+    Status *status = Globals::status;
     if (status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -633,9 +633,8 @@ bool LevelScript::process(int delta) {
             (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
             (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
             // Face them +X with +Y up, and make them visible (0x137f34).
-            KIPlayer **shipData = enemies->data_;
             for (int i = 0; i < 3; ++i) {
-                KIPlayer *e = shipData[i];
+                KIPlayer *e = (*enemies)[i];
                 e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 e->geometry->setVisible(true);
             }
@@ -1462,7 +1461,7 @@ bool LevelScript::process(int delta) {
     }
 
     // --- shared "active" tail / general state machine (disasm 0x137f7c); runs for all missions ---
-    if (__builtin_expect(m_bStartSequence != 0, 1)) { // lint: arm_builtin
+    if (m_bStartSequence != 0) {
         m_pLevel->lodManager->forceUpdate(30, false);
 
         if (Globals::status->getWingmen() != 0) {
@@ -1513,7 +1512,7 @@ bool LevelScript::process(int delta) {
 
     // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
     // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
-    if (Globals::status->getCurrentCampaignMission() == 5) {
+    else if (Globals::status->getCurrentCampaignMission() == 5) {
         // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
         if (m_nState == 0) {
             Vector *scratch = &m_tempVec; // LevelScript tempVec @0x28
@@ -1540,7 +1539,7 @@ bool LevelScript::process(int delta) {
     wormholeExitBody:
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
-        if (((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && __builtin_expect(m_nState == 0, 0)) { // lint: arm_builtin
+        if (((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && m_nState == 0) {
             for (unsigned int i = 0; i < enemies->count; ++i) {
                 if (!(*enemies)[i]->isWingMan()) {
                     (*enemies)[i]->player->setAlwaysFriend(false);
