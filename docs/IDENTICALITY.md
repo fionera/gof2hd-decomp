@@ -4,6 +4,25 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 176, w12019)
+
+**Current authoritative state on this branch.** `check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact
+**4524/4524**, data_exact **843/843**, imports **207**, lint **CLEAN**,
+drift **0**, symbol parity **5370/5370**.
+
+* `Hud::draw` (w12019): the damage-block volatile value read is replaced by
+  a dead volatile address store (`Status **volatile p = &Globals::status;`).
+  Raw **156 -> 150**, aligned **145 -> 143**; 9,332 B exact, `.rel.plt`
+  byte-identical.  Damage-region raw 25 -> 19; dock2 130 and show 1 are
+  unchanged.  See `_work/reconstructions/hud-draw-wave176-w12019.md`.
+
+Section deltas on this branch: `.text` **80,160** differing bytes (size
+exact); `.ARM.exidx` **0**; `.ARM.extab` **746** (size- and base-exact
+**156,312 B**); `.rodata` **0**; **`.rel.plt` 0** (byte-identical,
+29,392 B); `.data` **0**; `.bss` **0**; `.note.gnu.build-id` **20**.
+File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 175)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
