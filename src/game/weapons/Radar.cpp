@@ -1288,7 +1288,7 @@ asteroids_done:
                     Globals::sound->play(141, nullptr, nullptr, 0.0f);
                 }
             } else {
-                if (__builtin_expect((__builtin_expect(alwaysEnemySeen, 1)), 0)) {  // lint: arm_builtin
+                if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
                     Globals::sound->play(150, nullptr, nullptr, 0.0f);
@@ -1328,8 +1328,11 @@ asteroids_done:
                         if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
                             Globals::status->getMission()->getTargetStation() ==
                                     Globals::status->getStation()->getIndex()) {
-                            Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242,
-                                                 nullptr, nullptr, 0.0f);
+                            if (Globals::status->getCurrentCampaignMission() > 105) {
+                                Globals::sound->play(2242, nullptr, nullptr, 0.0f);
+                            } else {
+                                Globals::sound->play(2241, nullptr, nullptr, 0.0f);
+                            }
                         } else {
                             Globals::sound->play(148, nullptr, nullptr, 0.0f);
                         }

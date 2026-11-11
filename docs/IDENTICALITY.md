@@ -16,8 +16,8 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,926** | 20,010 | 57,232 |
-| `Radar::draw` | **6,385** | 1,754 | 9,908 |
+| `LevelScript::process` | **52,819** | 20,109 | 57,232 |
+| `Radar::draw` | **6,379** | 1,752 | 9,908 |
 | `Layout` C1/C2 | **5,569** | 2,434 | 7,072 |
 | `Level::createMission` | **3,705** | 900 | 17,172 |
 | `MGame::OnTouchEnd` | **3,049** | 1,407 | 8,080 |
@@ -53,18 +53,26 @@ Landed changes:
 * `Level::createShip` (w12417): `empPoints` clamp polarity
   (`level <= 20 ? level : 20`). Raw **1,221 -> 1,214** (-7), aligned
   394 -> 396.
+* `LevelScript::process` (w12403): 28 net adjacent-statement moves/rotations
+  across the state-machine blocks (five exhaustive adjacent-pair sweeps with
+  an independence filter). Raw **52,926 -> 52,819** (-107), aligned
+  20,010 -> 20,109.
+* `Radar::draw` (w12408): supernova mission-station jingle written as an
+  explicit `> 105` if/else (restores the original `ite lt; movwlt 2241;
+  movwge 2242` select) and the redundant outer `expect(alwaysEnemySeen, 0)`
+  dropped. Raw **6,385 -> 6,379** (-6 on top of w12407/w12409).
 
 Notes-only (no size-exact raw win): w12411 (Layout 20-sweep, original
 per-device branch tree), w12414 (OnTouchEnd dispatch/hasWon/touch-switch),
 w12420 (build provenance + Status TBH audit; stock NDK r18b recipe
 re-confirmed).
 
-Section deltas: `.text` **76,513** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **76,400** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **713** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **77,246**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **77,133**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 179)
