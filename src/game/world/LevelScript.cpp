@@ -981,6 +981,7 @@ bool LevelScript::process(int delta) {
         m_bCinematicBreak = 1;
         switch (m_nState) {
             case 0: {
+                AbyssEngine::PaintCanvas *canvas983 = Globals::Canvas;
                 // Build the arrival rumble up, then seat the station model and play its sting.
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 10000.0f;
@@ -990,9 +991,9 @@ bool LevelScript::process(int delta) {
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTime >= 10001) {
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nState = 1;
@@ -1279,13 +1280,14 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             case 2: {
+                TargetFollowCamera *cam1281 = m_pCamera;
                 float distance = AbyssEngine::AEMath::VectorLength(
-                        *m_pCamera->getPosition() - (*m_pLevel->getEnemies())[0]->geometry->getPosition());
+                        *cam1281->getPosition() - (*m_pLevel->getEnemies())[0]->geometry->getPosition());
                 float rumble = distance / 7000.0f;
                 if (!(rumble < 1.0f)) {
                     rumble = 1.0f;
                 }
-                m_pCamera->setRumblePercentage((1.0f - rumble) * 100.0f, 30);
+                cam1281->setRumblePercentage((1.0f - rumble) * 100.0f, 30);
                 if (distance < 200000.0f) {
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward((float) (delta * 10) + distance * 0.1f);
                 }
@@ -1611,9 +1613,10 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(player->getPosition());
                     m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
                     for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
-                        if ((*m_pLevel->getEnemies())[i]->shipGroup == 8) {
-                            (*m_pLevel->getEnemies())[i]->player->setHitpoints(0);
-                            (*m_pLevel->getEnemies())[i]->setDead();
+                        Level *lvl1613 = m_pLevel;
+                        if ((*lvl1613->getEnemies())[i]->shipGroup == 8) {
+                            (*lvl1613->getEnemies())[i]->player->setHitpoints(0);
+                            (*lvl1613->getEnemies())[i]->setDead();
                         }
                     }
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -1682,12 +1685,13 @@ bool LevelScript::process(int delta) {
                     self->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
+                    TargetFollowCamera *cam1688 = m_pCamera;
                     Level *self = m_pLevel;
-                    m_pCamera->translate((float) -delta, 0.0f, (float) (-3 * delta));
+                    cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
-                        m_pCamera->setLookAtCam(false);
-                        m_pCamera->setTarget(player->geometry);
+                        cam1688->setLookAtCam(false);
+                        cam1688->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
@@ -2789,6 +2793,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(1.0f - rumble, 100);
                     if (m_nScriptTimerA >= 2151) {
+                        Level *lvl2791 = m_pLevel;
                         KIPlayer *e0 = (*enemies)[0];
                         ((PlayerStation *) e0)->rootGeometry->setVisible(false);
                         if (m_nScriptTimerA >= 10001) {
@@ -2799,8 +2804,8 @@ bool LevelScript::process(int delta) {
                             player->freeze = 0;
                             m_pHud->visible = 1;
                             m_pRadar->enabled = 1;
-                            resetCamera(m_pLevel);
-                            m_pLevel->lodManager->forceUpdate(delta, false);
+                            resetCamera(lvl2791);
+                            lvl2791->lodManager->forceUpdate(delta, false);
                             m_bCinematicBreak = 0;
                             m_nScriptTimerA = 0;
                             m_nState = 14;
@@ -3628,9 +3633,10 @@ bool LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // 3 -> 4
                     }
                 } else if (m_nState == 4) {
+                    AEGeometry *pgeom3630 = player->geometry;
                     m_nScriptTimerA += delta;
-                    Vector drift = (player->geometry->getDirection() * 6.08f
-                                    + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
+                    Vector drift = (pgeom3630->getDirection() * 6.08f
+                                    + pgeom3630->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.1f, drift.y * 0.1f, drift.z * 0.1f);
                     for (int i = 0; i < 2; ++i) {
                         ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
@@ -4278,8 +4284,9 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nState == 1) {
                         if (m_pLevel->getGasClouds() != nullptr) {
-                            for (unsigned int i = 0; i < m_pLevel->getGasClouds()->count; i++) {
-                                if (((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr) {
+                            Level *lvl4280 = m_pLevel;
+                            for (unsigned int i = 0; i < lvl4280->getGasClouds()->count; i++) {
+                                if (((PlayerGasCloud *) (*lvl4280->getGasClouds())[i])->getSparks() != nullptr) {
                                     m_nState = 2;
                                 }
                             }
@@ -4566,6 +4573,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
+                    Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
                     player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.25f;
@@ -4588,8 +4596,8 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
-                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*enemies4568)[1]->geometry);
+                        m_tempVec = (*enemies4568)[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 26000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
