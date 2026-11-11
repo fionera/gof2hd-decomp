@@ -2679,7 +2679,7 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
     return false;
 }
 
-int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+bool MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     this->dragging = 0;
     this->pendingActivate = 0;
 

@@ -213,7 +213,7 @@ public:
 
     float getRelativeScrollStartPos();
 
-    int OnTouchEnd(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    bool OnTouchEnd(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 

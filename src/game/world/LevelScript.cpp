@@ -1480,6 +1480,7 @@ bool LevelScript::process(int delta) {
         if (m_pLevel->getPlayer() != 0 &&
             Globals::status->getCurrentCampaignMission() >= 2 &&
             field_0x24 >= 7001) {
+            Status *st = Globals::status;
             Level *lvl = m_pLevel;
             field_0x24 = 0;
             m_bStartSequence = 0;    // active = false
@@ -1490,7 +1491,7 @@ bool LevelScript::process(int delta) {
             lvl->getPlayer()->setCollide(true);
 
             if (Level::programmedStation != 0) {
-                if (!Level::programmedStation->equals(Globals::status->getStation())) {
+                if (!Level::programmedStation->equals(st->getStation())) {
                     m_pHud->hudEvent(5, m_pLevel->getPlayer(), 0);
                 }
             }
@@ -1500,7 +1501,7 @@ bool LevelScript::process(int delta) {
                 setAutoPilotToProgrammedStation();
             }
 
-            if (Globals::status->getWingmen() != 0) {
+            if (st->getWingmen() != 0) {
                 Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
                 for (unsigned int i = 0; i < wingmen->count; ++i) {
                     KIPlayer *wingman = (*wingmen)[i];
@@ -2658,16 +2659,17 @@ bool LevelScript::process(int delta) {
                         m_pGeometry1->setVisible(false);
                     }
                 } else if (m_nState == 6) {
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     m_pGeometry6->setPosition(Vector{12487.0f, -11451.0f, 5958.0f});
                     m_pCamera->setLookAtCam(true);
                     m_pHud->visible = 0;
                     m_tempVec = Vector{-28855.0f, -30075.0f, 63820.0f} / 1.7f;
                     m_pCamera->setPosition(m_tempVec);
                     Vector facing = m_pGeometry6->getPosition() - m_tempVec;
-                    AEGeometry *frame = new AEGeometry(Globals::Canvas);
+                    AEGeometry *frame = new AEGeometry(canvas);
                     frame->setDirection(facing, Vector{0.0f, 1.0f, 0.0f});
                     frame->setPosition(m_tempVec);
-                    Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), frame->getMatrix());
+                    canvas->CameraSetLocal(canvas->CameraGetCurrent(), frame->getMatrix());
                     delete frame;
                     m_pGeometry0->setVisible(true);
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -3101,13 +3103,14 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
                     if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
+                        Radar *radar = m_pRadar;
                         Level *self = m_pLevel;
                         self->getPlayer()->setAutoPilot(nullptr);
-                        m_pRadar->lockedEnemy = nullptr;
-                        m_pRadar->dockNavPtr = nullptr;
+                        radar->lockedEnemy = nullptr;
+                        radar->dockNavPtr = nullptr;
                         self->getPlayer()->resetGunDelay();
                         m_nScriptTimerA = 0;
-                        self->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
+                        self->getPlayer()->dockToDockingPoint(nullptr, radar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
                     }
@@ -3621,9 +3624,10 @@ bool LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // 2 -> 3
                     }
                 } else if (m_nState == 3) {
+                    AEGeometry *geom = player->geometry;
                     m_nScriptTimerA += delta;
-                    Vector drift = (player->geometry->getDirection() * 6.08f
-                                    + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
+                    Vector drift = (geom->getDirection() * 6.08f
+                                    + geom->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.4f, drift.y * 0.4f, drift.z * 0.4f);
                     for (int i = 0; i < 2; ++i) {
                         ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;

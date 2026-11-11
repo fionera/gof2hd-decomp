@@ -1871,7 +1871,9 @@ void Level::createMission() {
             (*this->enemies)[0]->player->setMaxHitpoints(hp);
             (*this->enemies)[0]->player->setHitpoints(hp);
             (*this->enemies)[0]->name = wanted->getName();
-            delete (*this->enemies)[0]->cargo;
+            if ((*this->enemies)[0]->cargo != nullptr) {
+                delete (*this->enemies)[0]->cargo;
+            }
             (*this->enemies)[0]->cargo = nullptr;
             (*this->enemies)[0]->cargo = new Array<int>();
             ArrayAdd(wanted->getLoot(), *(*this->enemies)[0]->cargo);
@@ -1913,7 +1915,9 @@ void Level::createMission() {
                 (*this->enemies)[i]->setPosition(pos);
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 (*this->enemies)[i]->player->setHitpoints(9999999);
-                delete (*this->enemies)[i]->cargo;
+                if ((*this->enemies)[i]->cargo != nullptr) {
+                    delete (*this->enemies)[i]->cargo;
+                }
                 (*this->enemies)[i]->cargo = nullptr;
                 (*this->enemies)[i]->field_0x70 = 0;
             } else {
@@ -1934,7 +1938,9 @@ void Level::createMission() {
             (*this->enemies)[i]->player->setHitpoints(9999999);
             ((PlayerFixedObject *) (*this->enemies)[i])->setName(*Globals::gameText->getText(1667));
             (*this->enemies)[i]->field_0x70 = 0;
-            delete (*this->enemies)[i]->cargo;
+            if ((*this->enemies)[i]->cargo != nullptr) {
+                delete (*this->enemies)[i]->cargo;
+            }
             (*this->enemies)[i]->cargo = nullptr;
         } else {
             bool alienRace = Globals::rnd->nextInt(100) > 29;
@@ -1965,8 +1971,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->shipGroup = localRace;
             gun->cargo = nullptr;
+            gun->shipGroup = localRace;
         }
     }
     if (pirateFortress) {
@@ -1985,8 +1991,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = 1;
+            gun->cargo = nullptr;
             t += 6;
         }
     }
@@ -2041,9 +2047,10 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            Vector pos = {pirateBase.x + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
-                          pirateBase.y + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
-                          pirateBase.z + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000)};
+            float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float oz = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            Vector pos = {pirateBase.x + ox, pirateBase.y + oy, pirateBase.z + oz};
             (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
             (*this->enemies)[i]->setToSleep();
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
@@ -2189,14 +2196,14 @@ case4Tail:
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                         switch (k) {
                         case 0:
-                            offset[1] = -3000.0f;
-                            offset[0] = 20000.0f;
                             offset[2] = -50000.0f;
+                            offset[0] = 20000.0f;
+                            offset[1] = -3000.0f;
                             break;
                         case 1:
-                            offset[2] = -30000.0f;
-                            offset[0] = 10000.0f;
                             offset[1] = -7000.0f;
+                            offset[0] = 10000.0f;
+                            offset[2] = -30000.0f;
                             break;
                         case 2:
                             offset[2] = -36000.0f;
@@ -2204,8 +2211,6 @@ case4Tail:
                             offset[0] = 25000.0f;
                             break;
                         default:
-                            // Store order chosen to reproduce the original's literal-pool
-                            // ordering and store scheduling for this block.
                             offset[2] = -45000.0f;
                             offset[0] = 12000.0f;
                             offset[1] = 6000.0f;
@@ -2265,9 +2270,9 @@ case4Tail:
                     return;
                 }
                 case 2: {
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int coords[6] = {(int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
                                      (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0, 0, 0};
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     this->enemyRoute = new Route(coords, 6);
                     int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
@@ -5237,7 +5242,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
-        if (missionPtr != 1 && missionPtr != 23) {
+        if (__builtin_expect(missionPtr != 1, 1) && missionPtr != 23) { // lint: arm_builtin
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
