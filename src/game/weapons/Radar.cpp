@@ -632,13 +632,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    this->field_0x14 = this->field_0x18;
                     if (__builtin_expect(this->field_0x1a8, 0)) {  // lint: arm_builtin
                         this->level->getPlayer()->dockToPlanet();
                     }
                     if (!this->lockConfirmed) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
+                    this->field_0x14 = this->field_0x18;
                 }
                 if ((this->planetLockTimer < 1) | (missionBlocksPlanets != 0)) {
                     goto enemies;
@@ -883,7 +883,7 @@ enemies:
                     } else if (this->lockedEnemy != this->dockNavPtr) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                         this->lockedEnemy = this->dockNavPtr;
-                        if (this->field_0x1a9) {
+                        if (__builtin_expect(this->field_0x1a9, 1)) {  // lint: arm_builtin
                             this->egoPos = player->getPosition();
                             this->targetPos = this->lockedEnemy->player->getPosition();
                             if (this->egoPos.x - this->targetPos.x < -24000.0f ||
@@ -893,7 +893,7 @@ enemies:
                                 this->egoPos.z - this->targetPos.z < -24000.0f ||
                                 this->egoPos.z - this->targetPos.z > 24000.0f) {
                                 Array<int> *cargo = this->lockedEnemy->cargo;
-                                if (cargo == nullptr) {  // lint: arm_builtin
+                                if (__builtin_expect(cargo == nullptr, 0)) {  // lint: arm_builtin
                                     hud->hudEvent(22, this->level->getPlayer(), 0);
                                 } else {
                                     for (uint32_t c = 0; c < cargo->size(); c += 2) {
@@ -1300,7 +1300,7 @@ asteroids_done:
         }
     } else {
         this->field_0x54 = 0;
-        if ((Globals::status->getCurrentCampaignMission() != 145)) {  // lint: arm_builtin
+        if (__builtin_expect((Globals::status->getCurrentCampaignMission() != 145), 1)) {  // lint: arm_builtin
             current = Globals::sound->currentMusicEvent;
             bool ambient;
             switch (current) {

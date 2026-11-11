@@ -203,3 +203,187 @@ i.e. `setVisible(2); setVisible(10); setPosition(10); draw(10)`.
 unchanged, `.rel.plt` byte-identical, file size exact, 27/27 headers.
 Other permutations measured: (3,1,2,0) 2,014/680, (1,3,0,2) 2,014/731,
 (1,0,2,3) 2,016/676.  The landed one has the best raw/aligned pair.
+
+## Fifth landing: free-credits visible if/else chain (raw 2014 -> 1962)
+
+The free-credits `visible` predicate was written as one short-circuit boolean
+expression; clang speculated the `Globals::options[73..75]` loads.  The
+original loads each option only inside its `i == n` arm.  Rewriting the
+predicate as an explicit if/else chain restores the conditional loads:
+
+```cpp
+bool visible = true;
+if (i == 0)
+    visible = false;
+else if (i == 1 && Globals::options[73])
+    visible = false;
+else if (i == 2 && Globals::options[74])
+    visible = false;
+else if (i == 3 && Globals::options[75])
+    visible = false;
+else if (i == 4 && Globals::options[76])
+    visible = false;
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 2,014 | **1,962** |
+| instruction-index alignment | 678 | 710 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,731 / 3,734 | **3,730 / 3,734** |
+| its `.ARM.extab` record diff | 90 | **90** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 76,173 | **76,121** |
+| `.ARM.extab` section diff | 713 | **713** |
+| total differing bytes | 76,906 | **76,854** |
+
+`check` green (RATCHET PASS).  `.ARM.extab` size/base exact, content
+unchanged (the one-instruction count drop does not move the row-39 range),
+`.rel.plt` byte-identical, file size exact, 27/27 headers.
+
+Neutral variants measured: `(i == n && Globals::options[...])` in the
+original boolean expression (2,014; clang re-speculates), and volatile
+`options` reads (2,014).
+
+## Sixth landing: free baseY + buy-list x term order (raw 1962 -> 1959)
+
+Two independent expression-order changes, both size-exact:
+
+```diff
+-                int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * col;
++                int x = (this->gridSpacingX + this->buttonWidth) * col - this->buttonWidth - this->gridSpacingX + Globals::w / 2;
+...
+-        int baseY = Globals::layout->windowTopInset + this->dialog->y + Globals::layout->field_0x2c_rowHeight * 2;
++        int baseY = Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->windowTopInset + this->dialog->y;
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,962 | **1,959** |
+| instruction-index alignment | 710 | 725 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,730 / 3,734 | 3,730 / 3,734 |
+| its `.ARM.extab` record diff | 90 | **90** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 76,121 | **76,118** |
+| `.ARM.extab` section diff | 713 | **713** |
+| total differing bytes | 76,854 | **76,851** |
+
+`check` green (RATCHET PASS): byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub 0, missing 0, wrong_type 0, extra 0, data 843/843,
+imports 207, lint CLEAN, drift 0, parity 5370/5370.  `.ARM.extab` size/base
+exact (`0x26298` @ `0x1a3b78`), content unchanged (713), `.rel.plt`
+byte-identical, file size 2,187,328 exact, 27/27 headers.
+
+Each change alone is also size-exact: the free `baseY` reorder alone gives
+1,960 and the buy-list `x` reorder alone gives 1,961; together 1,959.  Other
+baseY permutations (dialog-first, top-first, parenthesised) are all 1,960 or
+1,962; the `rowHeight * 2`-first form is the best.  Algebraic simplifications
+(`Globals::w / 2 + (gridSpacingX + buttonWidth) * (col - 1)` for the list x,
+`Globals::w / 2 + gridSpacingX + buttonWidth` for the grid x) are 9,704/9,720 B
+and not landable.  The win is a schedule coincidence: the free-block
+`rowHeight` load and the buy-list `x` multiply reorder two windows in the
+merged buy/free region; the tail register allocation (`&this->buttons` in r4
+vs the original's r9, `Globals::options` in r9 vs the original's sp+124 spill)
+is unchanged.
+
+## Cumulative wave-181 result
+
+`_ZN12HangarWindow6renderEv`: raw **2,041 -> 1,959** (-82), size
+9,700/9,700, 3,730/3,734 insns, LSDA record diff 90, row 39
+`(2508,150,9664)` exact, `.text` 76,200 -> **76,118**,
+`.ARM.extab` 713 unchanged, `.ARM.exidx` 0, `.rel.plt` byte-identical,
+file size 2,187,328 exact.
+
+## Seventh landing: free-credits loop branch hint (raw 1959 -> 1625)
+
+The free-credits loop had no branch-weight hint.  Adding the same
+`__builtin_expect` anchor the buy-credits loop already uses flips the whole
+tail register allocation to the original's:
+
+```diff
+-        for (int i = 0; i < 5; i++) {
++        for (int i = 0; __builtin_expect(i < 5, 1); i++) { // lint: arm_builtin
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,959 | **1,625** |
+| instruction-index alignment | 725 | 876 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,730 / 3,734 | **3,729 / 3,734** |
+| its `.ARM.extab` record diff | 90 | **88** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 76,118 | **75,784** |
+| `.ARM.extab` section diff | 713 | **711** |
+| total differing bytes | 76,851 | **76,515** |
+
+`check` green (RATCHET PASS): byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub 0, missing 0, wrong_type 0, extra 0, data 843/843,
+imports 207, lint CLEAN, drift 0, parity 5370/5370.  `.ARM.extab` size/base
+exact (`0x26298` @ `0x1a3b78`), content *improves* by 2 (713 -> 711),
+`.rel.plt` byte-identical, file size 2,187,328 exact, 27/27 headers.
+
+### Why the hint flips the tail
+
+The free-credits loop is the last loop in the function; without a hint clang
+weights its back-edge equally, which changes the global Greedy allocation of
+the tail.  With `__builtin_expect(i < 5, 1)` the loop's back-edge is marked
+hot, and the allocator reproduces the original's tail:
+
+```
+orig  14a86a mov r9, fp ; 14a86e ldr.w r0,[r9,#36]!   ; &this->buttons in r9
+ours  14a86a mov r9, fp ; 14a86e ldr.w r0,[r9,#36]!   ; now matches
+```
+
+`Globals::options` is spilled to `[sp,#124]` as in the original instead of
+being kept in r9, and `&this->buttons` is no longer spilled to `[sp,#132]` at
+`0x14a89c`.  The free-credits block itself also aligns (the `rowHeight` load
+now sits between `getWidth` and `getHeight` as in the original).  The
+instruction count drops by one (3,730 -> 3,729) and the row-39 LSDA range is
+unchanged; the record diff drops 90 -> 88 (rows 40-44 still differ, the same
+shape as before).
+
+## Cumulative wave-181 result (final)
+
+`_ZN12HangarWindow6renderEv`: raw **2,041 -> 1,625** (-416), size
+9,700/9,700, 3,729/3,734 insns, LSDA record diff 88, row 39
+`(2508,150,9664)` exact, `.text` 76,200 -> **75,784**,
+`.ARM.extab` 713 -> **711** (size/base exact), `.ARM.exidx` 0,
+`.rel.plt` byte-identical, file size 2,187,328 exact.
+
+## Eighth landing: free-credits `i == 0` branch hint (raw 1625 -> 1620)
+
+The free-credits visible predicate's first arm is almost never taken
+(`i == 0` is the "rate us" row).  Marking it cold:
+
+```diff
+-            if (i == 0)
++            if (__builtin_expect(i == 0, 0)) // lint: arm_builtin
+                 visible = false;
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,625 | **1,620** |
+| instruction-index alignment | 876 | 871 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,729 / 3,734 | 3,729 / 3,734 |
+| its `.ARM.extab` record diff | 88 | **88** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 75,784 | **75,779** |
+| `.ARM.extab` section diff | 711 | **711** |
+| total differing bytes | 76,515 | **76,510** |
+
+`check` green (RATCHET PASS).  `.ARM.extab` size/base exact, content
+unchanged (711), `.rel.plt` byte-identical, file size exact, 27/27 headers.
+The other `i == n` arms and the inner `if (i == 0)` text arm were also
+tested with hints; all are 9,704-9,712 B except this one.
+
+## Cumulative wave-181 result (final)
+
+`_ZN12HangarWindow6renderEv`: raw **2,041 -> 1,620** (-421), size
+9,700/9,700, 3,729/3,734 insns, LSDA record diff 88, row 39
+`(2508,150,9664)` exact, `.text` 76,200 -> **75,779**,
+`.ARM.extab` 713 -> **711** (size/base exact), `.ARM.exidx` 0,
+`.rel.plt` byte-identical, file size 2,187,328 exact.
