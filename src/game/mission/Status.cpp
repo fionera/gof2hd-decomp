@@ -1442,8 +1442,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     case 158:
  {
                 Array<Item *> *equipment = ship->getEquipment();
-                unsigned j = 0;
                 bool hasSpecial = false;
+                unsigned j = 0;
                 bool hasGood = false;
                 for (; j < equipment->size(); j++) {
                     if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {

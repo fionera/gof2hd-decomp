@@ -4,6 +4,46 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 176)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 176 landed one change:
+
+* `Status::missionCompleted` (w12016): `case 158` local declaration order
+  (`hasSpecial` before the loop index `j`). Raw **721** unchanged, aligned
+  329 -> **327**; 1,432 B exact. `.rel.plt` byte-identical. No source-only
+  raw win exists for this function: the original's hot-then-cold block order
+  is weight-driven and every source-level weight hint that reorders the
+  blocks changes register allocation / branch widths and the size. See
+  `_work/reconstructions/status-432-producers-wave176-w12016.md`.
+
+**Aligned total (15 functions): 26,500** (wave-175 base 26,502). Per
+function: Layout 2,289, LevelScript 18,476, createShip 422, Status 327,
+Radar 1,657, MGame::OnTouchEnd 1,453, createMission 958, Gun 57,
+HangarWindow 621, SpaceLounge 41, Hud 145, Generator 21, MenuTouchWindow 16,
+ModStation 11, MGame::OnUpdate 6.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**53,593** (57,232 B), `Radar::draw` **6,785** (9,908 B), `Layout` C1/C2
+**5,620** (7,072 B), `Level::createMission` **5,285** (17,172 B),
+`MGame::OnTouchEnd` **3,771** (8,080 B), `HangarWindow::render` **2,242**
+(9,700 B), `Level::createShip` **1,232** (2,764 B), `Hud::draw` **156**
+(9,332 B), `Status::missionCompleted` **721** (1,432 B),
+`Gun::calcCharacterCollision` **463** (1,984 B), `SpaceLounge::drawLounge`
+**175** (1,948 B), `Generator::createMission` **40** (1,996 B),
+`ModStation` C1/C2 **39** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
+(1,896 B), `MGame::OnUpdate` **16** (11,440 B).
+
+Section deltas: `.text` **80,166** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **746** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 175)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
