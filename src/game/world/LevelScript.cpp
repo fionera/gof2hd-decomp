@@ -2530,7 +2530,7 @@ bool LevelScript::process(int delta) {
                     // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
                     // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
+                    if (__builtin_expect(!((RadioMessage *) ((*messages)[2]))->isOver(), 1)) { // lint: arm_builtin
                         break; // -> post-switch tail (0x144e36)
                     }
                     m_pCamera->setLookAtCam(false);
