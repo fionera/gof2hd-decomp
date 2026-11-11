@@ -639,22 +639,23 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if (__builtin_expect(!missionBlocksPlanets && this->planetLockTimer >= 1, 1)) { // lint: arm_builtin anchor: Radar::draw
-                    int frame;
-                    if (this->field_0x18 != 0 && this->field_0x18 != this->field_0x14) {
-                        frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
-                                       ((float) this->planetLockTimer / (float) this->field_0x1b8));
-                    } else {
-                        if (__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin anchor: Radar::draw
-                            goto enemies;
-                        }
-                        frame = this->blipSprite->getRawFrameCount() - 1;
-                    }
-                    this->blipSprite->setFrame(frame);
-                    this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
-                                                          (int) PlayerEgo::crosshairPos.y);
-                    this->blipSprite->draw(1.0f, 1.0f);
+                if (missionBlocksPlanets || this->planetLockTimer < 1) {
+                    goto enemies;
                 }
+                int frame;
+                if (this->field_0x18 != 0 && this->field_0x18 != this->field_0x14) {
+                    frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
+                                   ((float) this->planetLockTimer / (float) this->field_0x1b8));
+                } else {
+                    if (__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin anchor: Radar::draw
+                        goto enemies;
+                    }
+                    frame = this->blipSprite->getRawFrameCount() - 1;
+                }
+                this->blipSprite->setFrame(frame);
+                this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                      (int) PlayerEgo::crosshairPos.y);
+                this->blipSprite->draw(1.0f, 1.0f);
             } else if (this->field_0x14 == 0) {
                 this->field_0x18 = 0;
                 this->planetLockTimer = 0;

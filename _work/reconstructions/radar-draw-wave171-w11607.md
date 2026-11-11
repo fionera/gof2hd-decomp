@@ -1,7 +1,8 @@
 # Radar::draw wave 171 (w11607) — exhaustive condition re-sweep + two landed expects
 
 **Status:** complete, 2026-11-11. Worktree `wt/w11607`, branch `wave171-w11607`,
-base `master` `50716a763`. Target `src/game/weapons/Radar.cpp`,
+base `master` `50716a763`.  **Final: raw 7,095 -> 7,066, aligned 1,595 -> 1,561,
+size 9,908 (two commits).** Target `src/game/weapons/Radar.cpp`,
 `_ZN5Radar4drawEP6PlayerP3Hudi` (`Radar::draw(Player*, Hud*, int)`), 9,908 B.
 
 Read with `radar-draw-wave170-w11507.md` (three landed expects, 7,127 -> 7,095)
@@ -91,3 +92,55 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Radar4drawE
 cmake --build cmake-build-match --target check -j2
 # scratch: /dev/shm/w11607/{sweep.py,sweep.json,testvar.py,vars_for.py,vars_tern.py,vars_sound.py}
 ```
+
+## 6. Second commit: planet-lock draw guard clause
+
+The original planet-lock draw block is a **guard clause**, not an `if` around
+the draw body.  Original disassembly at `0x130486`:
+
+```
+130486 ldr  r0,[r4,#0x1a0]   ; planetLockTimer
+13048a movs r1,#0
+13048c cmp  r0,#1
+13048e it   lt
+130490 movlt r1,#1
+130492 orrs r0,r5,r1         ; missionBlocksPlanets | (timer < 1)
+130496 bne  12ec24           ; -> enemies
+13049a ...                   ; draw body is the fallthrough
+```
+
+The source shape was reconstructed as:
+
+```cpp
+if (missionBlocksPlanets || this->planetLockTimer < 1) {
+    goto enemies;
+}
+int frame;
+...
+```
+
+(no `__builtin_expect`: the original has none on this guard).  This is
+semantically identical to the previous
+`if (__builtin_expect(!missionBlocksPlanets && planetLockTimer >= 1, 1)) { draw }`
+but produces the original guard-clause layout.
+
+| metric | before | after |
+|---|---:|---:|
+| raw | 7,093 | **7,066** |
+| aligned | 1,561 | **1,561** |
+| size | 9,908 | 9,908 |
+| insn | 3,537 | 3,538 |
+
+`.rel.plt` stays byte-identical; `.ARM.extab` unchanged at 711; whole-`.so`
+`.text` differing bytes 81,823 -> **81,796**.  `check` green (byte 4,507 /
+linked 4,507 / size 4,524 / data 843 / imports 207 / lint CLEAN).
+
+## 7. Discarded: semantic-inversion "negated expect" sweep
+
+A sweep of `__builtin_expect(!(E), v)` forms produced apparently large raw
+wins (e.g. 7,066 for the planet guard, 7,090 for the `field_0x14` test), but
+`expect(!E, v)` returns `!E`, i.e. it inverts the condition.  Those cells are
+semantically wrong unless the body/else is swapped.  The guard-clause
+restructure above is the one case where the inversion is faithful (body
+swapped for `goto enemies`).  Correct negated-hint forms
+(`!__builtin_expect(!E, 0)`) are codegen no-ops here.
