@@ -1437,7 +1437,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (__builtin_expect(m_nState == 2, 0) && m_nScriptTimerA >= 2000) { // lint: arm_builtin
+        if (__builtin_expect(m_nState == 2 && m_nScriptTimerA >= 2000, 1)) { // lint: arm_builtin
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
@@ -2820,7 +2820,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
-                    if (player->isDockedToDockingPoint()) {
+                    if (__builtin_expect(player->isDockedToDockingPoint(), 1)) {
                         player->setDockingState(2);
                     }
                     m_nState = 3;
@@ -4263,7 +4263,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                if (m_nState == 2) {
+                if (__builtin_expect(m_nState == 2, 0)) {
                     if (Globals::status->getShip()->hasCargo(201, 1)
                         || Globals::status->getShip()->hasCargo(202, 1)
                         || Globals::status->getShip()->hasCargo(203, 1)
