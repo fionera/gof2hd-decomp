@@ -11,17 +11,18 @@ linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
 17 functions remain non-byte-exact, all size-exact.
 
-Residual table (raw / aligned / size; all size-exact):
+Wave 179 ran 20 agents on the worst functions. Final residual table (raw /
+aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,060** | 20,191 | 57,232 |
-| `Radar::draw` | **6,458** | 1,832 | 9,908 |
+| `Radar::draw` | **6,407** | 1,806 | 9,908 |
 | `Layout` C1/C2 | **5,576** | 2,410 | 7,072 |
-| `Level::createMission` | **4,467** | 952 | 17,172 |
-| `MGame::OnTouchEnd` | **3,261** | 1,185 | 8,080 |
-| `HangarWindow::render` | **2,243** | 384 | 9,700 |
-| `Level::createShip` | **1,225** | 383 | 2,764 |
+| `Level::createMission` | **3,832** | 977 | 17,172 |
+| `MGame::OnTouchEnd` | **3,259** | 1,183 | 8,080 |
+| `HangarWindow::render` | **2,242** | 390 | 9,700 |
+| `Level::createShip` | **1,221** | 394 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -33,22 +34,36 @@ Residual table (raw / aligned / size; all size-exact):
 
 Landed changes:
 
-* `LevelScript::process` (w12302): four block-scope receiver aliases found by a
-  fresh alias/hoist sweep on the post-wave-178 base (`Radar *radar = m_pRadar`
-  in the mission-7 docking block, `Status *st = Globals::status` in the
-  post-sequence block, `AbyssEngine::PaintCanvas *canvas = Globals::Canvas` in
-  the mission-6 camera block, `AEGeometry *geom = player->geometry` in the
-  mission-3 drift block). Raw **53,082 -> 53,060** (-22), size 57,232 exact,
-  `.rel.plt` byte-identical. The four deltas are additive; no further
-  single alias or pair improves the result.
+* `Level::createMission` (w12312): replace the compound cargo/escort test with
+  explicit null checks. Raw **4,467 -> 3,844** (-623), `.ARM.extab`
+  **700 -> 694**. (w12313 then reorders the turret/convoy stores:
+  **3,844 -> 3,832**.)
+* `Radar::draw` (w12307 + w12308): w12307 is a superset of w12309 (barMax sink,
+  `onPlanetCourse` removal, crosshair operand order, cargo-flag weight, tractor
+  and cloud order) and reaches **6,458 -> 6,418**; w12308's `otherLock`
+  reorder adds **-11** for a combined **6,407**. w12309 (6,424) and w12308
+  alone (6,439) are superseded.
+* `LevelScript::process` (w12302): four block-scope receiver aliases.
+  Raw **53,082 -> 53,060**.
+* `MGame::OnTouchEnd` (w12315): `MenuTouchWindow::OnTouchEnd` returns `bool`.
+  Raw **3,261 -> 3,259**.
+* `Level::createShip` (w12317): fighter LOD branch layout.
+  Raw **1,225 -> 1,221**.
+* `HangarWindow::render` (w12316): draw-first upgrade block.
+  Raw **2,243 -> 2,242**.
+* `Hud::draw` (w12319): image-id local reaches raw **147**, but
+  `.ARM.extab` rises **700 -> 703** (net +2 bytes), so the code is reverted;
+  the note is kept.
+* Note-only: w12318 (Status chain-fold weights are post-MBP-canonicalised),
+  w12320 (build provenance / Status TBH audit).
 
-Section deltas: `.text` **77,914** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **700** (size- and
+Section deltas: `.text` **77,221** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **694** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **78,634**. File size is
-exact at 2,187,328 B.
+`.note.gnu.build-id` **20**. Total differing bytes **77,935**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 178)
 
@@ -3518,7 +3533,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,936 content bytes differ across the 17 non-byte-exact bodies (wave 178). |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 77,221 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
 | **.rodata** | 269,159 | 269,351 | **+192** | base `0x1c9e10` exact and the original 269,159 B content is **byte-identical**; wave 178 restored the 192 B `Status::missionCompleted` rank table at `0x20b977` (in the gap before `.fini_array`), so the section is 0x41c27. Wave 121 had removed it for an exact-size `.rodata`; the +192 B buys -272 `.text` bytes (raw 721 -> 449). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
