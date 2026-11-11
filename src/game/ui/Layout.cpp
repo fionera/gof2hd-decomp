@@ -258,7 +258,6 @@ Layout::Layout() {
     this->field_0x278 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
     this->field_0x258 = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
     this->field_0x25c = Globals::iPadHD ? 16 * 1.40625f : (Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16));
-    this->field_0x27c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     if (Globals::iPadHD)
         this->field_0x260 = 1 * 1.40625f;
     else if (Globals::n9)
@@ -267,6 +266,7 @@ Layout::Layout() {
         this->field_0x260 = 0;
     else
         this->field_0x260 = 1;
+    this->field_0x27c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->field_0x270 = Globals::iPadHD ? 70 * 1.40625f : (Globals::n9 ? 105 : (Globals::retinaDisplay ? 140 : 70));
     this->field_0x268 = Globals::iPadHD ? 11 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8));
     this->field_0x264 = Globals::iPadHD ? 300 * 1.40625f : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
@@ -278,8 +278,8 @@ Layout::Layout() {
         this->field_0x280 = Globals::retinaDisplay ? 5 : 0;
     else
         this->field_0x280 = 4;
-    this->scrollBarInset = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x285 = 1;
+    this->scrollBarInset = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->scrollBarHandle = Globals::iPadHD ? 0.0f : (Globals::n9 ? 1 : Globals::retinaDisplay);
     this->rewardBoxWidth = Globals::iPadHD ? 100 * 1.40625f : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
     this->rewardBoxHeight = Globals::n9 ? 352 : (Globals::retinaDisplay ? 392 : 196);
