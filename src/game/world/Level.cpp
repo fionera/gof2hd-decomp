@@ -1971,8 +1971,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->shipGroup = localRace;
             gun->cargo = nullptr;
+            gun->shipGroup = localRace;
         }
     }
     if (pirateFortress) {
@@ -1991,8 +1991,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = 1;
+            gun->cargo = nullptr;
             t += 6;
         }
     }
@@ -2196,14 +2196,14 @@ case4Tail:
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                         switch (k) {
                         case 0:
-                            offset[1] = -3000.0f;
-                            offset[0] = 20000.0f;
                             offset[2] = -50000.0f;
+                            offset[0] = 20000.0f;
+                            offset[1] = -3000.0f;
                             break;
                         case 1:
-                            offset[2] = -30000.0f;
-                            offset[0] = 10000.0f;
                             offset[1] = -7000.0f;
+                            offset[0] = 10000.0f;
+                            offset[2] = -30000.0f;
                             break;
                         case 2:
                             offset[2] = -36000.0f;
@@ -2211,8 +2211,6 @@ case4Tail:
                             offset[0] = 25000.0f;
                             break;
                         default:
-                            // Store order chosen to reproduce the original's literal-pool
-                            // ordering and store scheduling for this block.
                             offset[2] = -45000.0f;
                             offset[0] = 12000.0f;
                             offset[1] = 6000.0f;
