@@ -1146,7 +1146,7 @@ bool LevelScript::process(int delta) {
                     rumble = 1.0f;
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
-                if (__builtin_expect(m_nScriptTimerA >= 6001, 0)) {
+                if (__builtin_expect(m_nScriptTimerA >= 6001, 0)) { // lint: arm_builtin
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
                     AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                             Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
@@ -2820,7 +2820,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
-                    if (__builtin_expect(player->isDockedToDockingPoint(), 1)) {
+                    if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
                         player->setDockingState(2);
                     }
                     m_nState = 3;
@@ -4263,7 +4263,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                if (__builtin_expect(m_nState == 2, 0)) {
+                if (__builtin_expect(m_nState == 2, 0)) { // lint: arm_builtin
                     if (Globals::status->getShip()->hasCargo(201, 1)
                         || Globals::status->getShip()->hasCargo(202, 1)
                         || Globals::status->getShip()->hasCargo(203, 1)
