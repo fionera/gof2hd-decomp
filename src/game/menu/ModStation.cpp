@@ -318,16 +318,13 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->camKeyY = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1];
     this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
-    // Compiler barrier only (no instruction emitted): keeps the two table
-    // address materialisations ahead of the iPad load, matching the original.
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     const float *pitchTable = gHangarCamPitch;
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
     int pitchBits = *(const volatile int *) &pitchTable[race];
     int yawBits = *(const volatile int *) &yawTable[race];
     float yaw = *(const float *) &pitchBits;
     float pitch = *(const float *) &yawBits;
-    MatrixSetRotation(nearKey, pitch, yaw, 0.0f,
+    MatrixSetRotation(nearKey, yaw, pitch, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
 
     Matrix farKey;

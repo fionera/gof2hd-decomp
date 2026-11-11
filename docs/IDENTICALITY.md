@@ -4,6 +4,55 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 183)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+15 functions remain non-byte-exact, all size-exact.
+
+Wave 183 runs 20 agents on the worst functions. Residual table so far (raw /
+aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **52,371** | 22,196 | 57,232 |
+| `Radar::draw` | **6,321** | 1,782 | 9,908 |
+| `Layout` C1/C2 | **5,385** | 2,562 | 7,072 |
+| `Level::createMission` | **3,630** | 1,127 | 17,172 |
+| `MGame::OnTouchEnd` | **3,030** | 1,446 | 8,080 |
+| `HangarWindow::render` | **1,523** | 681 | 9,700 |
+| `Level::createShip` | **1,213** | 396 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **32** | 21 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **11** | 5 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `LevelScript::process` (w12703 + w12704): re-landed w12604 data-flow cells,
+  `float -10*delta` form, and the iOS-structure case-11 tail reorder plus an
+  11-statement reorder sweep. Raw **52,412 -> 52,371** (-41), aligned
+  22,050 -> 22,196.
+* `ModStation::ModStation` (w12719): `nearKey` argument swap + fence removal.
+  Raw **27 -> 11** (-16), aligned 15 -> 5.
+* `MGame::OnTouchEnd` (w12716): hoist the instant-action predicate. Raw
+  **3,034 -> 3,030** (-4), aligned 1,416 -> 1,446.
+* `Radar::draw` (w12709): revert the second `lockedEnemy` cleanup order.
+  Raw **6,322 -> 6,321** (-1).
+
+Section deltas: `.text` **74,953** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **75,619**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-11 (wave 182)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,

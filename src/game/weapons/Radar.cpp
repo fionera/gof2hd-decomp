@@ -870,7 +870,7 @@ enemies:
             !(this->level->getPlayer()->isDockingToDockingPoint() || turretMode || otherLock)) {
             bool navWreck = this->dockNavPtr != nullptr && this->dockNavPtr->hasCargo &&
                             (this->dockNavPtr->isDead() || this->dockNavPtr->isDying());
-            if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDead() || this->lockedEnemy->isDying())) {
+            if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
                 this->lockedEnemy = nullptr;
             }
             if (enemyHit) {
