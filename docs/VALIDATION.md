@@ -48,11 +48,12 @@ post-processing step; `tools/reorder_shstrtab.py` merely restores gold's own `.s
 no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The
 source tree reproduces the original TU membership and within-TU function order, so the plain
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
-its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
+its original address; `.text`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact. `.rodata` is now
-byte-identical too: the former `Status::missionCompleted` rank table was removed in wave 121
-and the switch is a plain `switch (m->getType())` (see below).
+content is byte-identical, and 26 of the 27 original section headers are exact. `.rodata` is
+base-exact and its original 269,159 B content is byte-identical, but its section size is +192
+(269,351 B): wave 178 restored the 192-byte `Status::missionCompleted` rank table at `0x20b977`,
+in the gap before `.fini_array`, so no later section moves (see below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -93,9 +94,9 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-10, waves 165-166)
+### Current state — ELF sections (2026-11-11, wave 178)
 All **27 original section headers are present**, with no extra section and an
-**exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
+**exact file size** (2,187,328 B). `.text`, `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
 `.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
 `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
@@ -106,10 +107,12 @@ wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
 `Generator::createMission` is exact at 172 B (wave-121 w7110); `HangarWindow::render`'s
 948 B record was recovered in wave 177 (w12116): row 39 LSDA length is 150/150 and the
 record diff is 90, while the section stays size- and base-exact. `.rodata` is
-**byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
+**base-exact** (`0x1c9e10`) and its original 269,159 B content is **byte-identical**, but the
+section is **269,351 B (+192)**: wave 178 restored the 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
-was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (79,251), `.ARM.extab` (731) and
+in the gap before `.fini_array` (wave 121 had removed it for an exact-size `.rodata`; wave 178
+trades the +192 B section size for -272 `.text` bytes, raw 721 -> 449). The differing
+section bytes are `.text` (78,979), `.ARM.extab` (731) and
 `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
