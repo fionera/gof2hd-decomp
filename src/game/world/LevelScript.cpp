@@ -1108,7 +1108,7 @@ bool LevelScript::process(int delta) {
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
                 (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (m_nScriptTimerA >= 1100 - delta) {
+                if (__builtin_expect(m_nScriptTimerA >= 1100 - delta, 0)) { // lint: arm_builtin
                     m_nState = 7;
                     m_nScriptTimerA = 0;
                 }
@@ -1460,7 +1460,7 @@ bool LevelScript::process(int delta) {
             Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
             for (unsigned int i = 0; i < wingmen->count; ++i) {
                 KIPlayer *wingman = (*wingmen)[i];
-                if (wingman->isWingMan()) {
+                if (__builtin_expect(wingman->isWingMan(), 0)) { // lint: arm_builtin
                     ((PlayerFighter *) wingman)->field_0x12d = 1;
                 }
             }
@@ -2042,7 +2042,7 @@ bool LevelScript::process(int delta) {
                     freighter->translate(Vector{0.0f, (float) -delta, (float) (2 * delta)});
                     freighter->geometry->rotate(0.0f, 0.0f, (float) delta * 3.0e-5f);
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 15001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 15001, 0)) { // lint: arm_builtin
                         m_nState = 3;
                     }
                 } else if (m_nState == 3) {
@@ -3105,7 +3105,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(m_tempVec);
                     m_nScriptTimerA = 0;
                     m_nState++;
-                } else if (m_nState == 8) {
+                } else if (__builtin_expect(m_nState == 8, 0)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
                     if (m_nScriptTimerA >= 8001) {
