@@ -1871,7 +1871,9 @@ void Level::createMission() {
             (*this->enemies)[0]->player->setMaxHitpoints(hp);
             (*this->enemies)[0]->player->setHitpoints(hp);
             (*this->enemies)[0]->name = wanted->getName();
-            delete (*this->enemies)[0]->cargo;
+            if ((*this->enemies)[0]->cargo != nullptr) {
+                delete (*this->enemies)[0]->cargo;
+            }
             (*this->enemies)[0]->cargo = nullptr;
             (*this->enemies)[0]->cargo = new Array<int>();
             ArrayAdd(wanted->getLoot(), *(*this->enemies)[0]->cargo);
@@ -1913,7 +1915,9 @@ void Level::createMission() {
                 (*this->enemies)[i]->setPosition(pos);
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 (*this->enemies)[i]->player->setHitpoints(9999999);
-                delete (*this->enemies)[i]->cargo;
+                if ((*this->enemies)[i]->cargo != nullptr) {
+                    delete (*this->enemies)[i]->cargo;
+                }
                 (*this->enemies)[i]->cargo = nullptr;
                 (*this->enemies)[i]->field_0x70 = 0;
             } else {
@@ -1934,7 +1938,9 @@ void Level::createMission() {
             (*this->enemies)[i]->player->setHitpoints(9999999);
             ((PlayerFixedObject *) (*this->enemies)[i])->setName(*Globals::gameText->getText(1667));
             (*this->enemies)[i]->field_0x70 = 0;
-            delete (*this->enemies)[i]->cargo;
+            if ((*this->enemies)[i]->cargo != nullptr) {
+                delete (*this->enemies)[i]->cargo;
+            }
             (*this->enemies)[i]->cargo = nullptr;
         } else {
             bool alienRace = Globals::rnd->nextInt(100) > 29;
@@ -2041,9 +2047,10 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            Vector pos = {pirateBase.x + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
-                          pirateBase.y + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
-                          pirateBase.z + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000)};
+            float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float oz = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            Vector pos = {pirateBase.x + ox, pirateBase.y + oy, pirateBase.z + oz};
             (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
             (*this->enemies)[i]->setToSleep();
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
@@ -2265,9 +2272,9 @@ case4Tail:
                     return;
                 }
                 case 2: {
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int coords[6] = {(int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
                                      (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0, 0, 0};
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     this->enemyRoute = new Route(coords, 6);
                     int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
