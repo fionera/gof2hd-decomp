@@ -727,8 +727,9 @@ void Gun::calcCharacterCollision() {
                     *td = enemy->getPosition();
                     *td -= position;
                     int distance = (int) AbyssEngine::AEMath::VectorLength(*td);
-                    if (__builtin_expect(distance < this->magnitude, 0)) {  // lint: arm_builtin
-                        float falloff = (float) (this->magnitude - distance) / (float) this->magnitude;
+                    int diff = this->magnitude - distance;
+                    if (__builtin_expect(diff > 0, 0)) {  // lint: arm_builtin
+                        float falloff = (float) diff / (float) this->magnitude;
                         if (falloff > 1.0f) {
                             falloff = 1.0f;
                         } else if (falloff < 0.0f) {
