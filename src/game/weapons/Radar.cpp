@@ -752,10 +752,10 @@ enemies:
                         }
                         if (enemy == locked) {
                             unsigned int lockImage;
-                            if (enemy->player->enemyFlagsLo) {
-                                lockImage = this->image_0x5c;
-                            } else if (enemy->player->carriesFriendCargoFlag) {
+                            if (enemy->player->carriesFriendCargoFlag) {
                                 lockImage = this->image_0x64;
+                            } else if (enemy->player->enemyFlagsLo) {
+                                lockImage = this->image_0x5c;
                             } else {
                                 lockImage = this->image_0x74;
                             }
@@ -774,12 +774,12 @@ enemies:
                         } else {
                             image = this->image_0x84;
                         }
-                    } else if (__builtin_expect(enemy->player->enemyFlagsLo, 1)) {  // lint: arm_builtin
-                        image = this->image_0x60;
+                    } else if (!enemy->player->enemyFlagsLo && !enemy->player->carriesFriendCargoFlag) {
+                        image = this->image_0x78;
                     } else if (enemy->player->carriesFriendCargoFlag) {
                         image = this->image_0x68;
-                    } else {
-                        image = this->image_0x78;
+                    } else if (__builtin_expect(enemy->player->enemyFlagsLo, 1)) {  // lint: arm_builtin
+                        image = this->image_0x60;
                     }
                     Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                     enemy->field_0x73 = 0;
