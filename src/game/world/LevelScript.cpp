@@ -717,7 +717,7 @@ bool LevelScript::process(int delta) {
                 Globals::sound->play(158, nullptr, nullptr, 0.0f);
                 Vector zero158{0.0f, 0.0f, 0.0f};
                 Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
-                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->stop(player->field_0x1c);
                 Globals::sound->play(161, nullptr, nullptr, 0.0f);
             }
             Vector zero161{0.0f, 0.0f, 0.0f};
