@@ -1904,3 +1904,37 @@ Aligned is reported for the landed cells only (17,757 after commit 1,
 | 3024 | tern | 1 | FAIL | - | - | - |
 | 3034 | tern | 0 | FAIL | - | - | - |
 | 3034 | tern | 1 | FAIL | - | - | - |
+
+## Post-commit-3 spot checks (final base, 54,031)
+
+Cells that were near-misses on the earlier bases, re-applied to the final
+source (candidate positions regenerated from HEAD):
+
+| cell | raw | size | rel.plt | extab | note |
+|---|---:|---:|---:|---:|---|
+| L2754:0 `m_nState == 13` | 54,039 | 57,236 | 0 | 1,345 | size +4 |
+| L2894:0 `m_nScriptTimerB == 0` | 54,034 | 57,236 | 0 | 1,345 | size +4 |
+| L5065:0 `messages[15]->isOver()` | 54,032 | 57,236 | 0 | 1,345 | size +4 |
+| L5283:0 `field_0x3e != 0` | 54,038 | 57,236 | 0 | 1,345 | size +4 |
+| L5106:1 `m_nScriptTimerA < 7000` | 54,031 | 57,236 | 0 | 1,344 | size +4 |
+| L5132:0 `m_nScriptTimerA >= 5500` | 54,035 | 57,232 | 0 | 658 | raw worse |
+| L649:1 / L2678:1 / L2744:1 | 54,031 | 57,232 | 0 | 658 | neutral |
+
+No further win on the final base.  The remaining near-misses are all
+size-changing (+4) and have no -4 B companion that does not cost more raw
+than it saves.
+
+## Summary
+
+* 11 cells landed in 3 commits: raw **54,095 -> 54,031** (-64), `.text`
+  **82,898 -> 82,834** (-64), `.ARM.extab` **660 -> 658** (-2).
+* Aligned **17,621 -> 17,764** (+143, indicative only).
+* Size 57,232 exact at every step; `.rel.plt` byte-identical at every step;
+  `check` green (byte_exact 4507 / linked 4507 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0).
+* The sweep space is now exhausted for single cells: every `if` condition
+  (both e values), every top-level `&&`/`||` operand (both e values), every
+  ternary condition, every loop condition (wave 166), and the nested
+  `&&`/`||` groups have all been measured.  Further gains need either a
+  size-compensating pair or a structural change (the `this=sl` callee-saved
+  swap documented in the wave-160 prologue note is the dominant residual).
