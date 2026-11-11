@@ -2843,7 +2843,7 @@ bool LevelScript::process(int delta) {
                             Globals::status->field_64 = player->player->getHitpoints();
                             Globals::status->field_5c = player->player->getShieldHP();
                             Globals::status->field_60 = player->player->getArmorHP();
-                            Globals::status->field_68 = player->player->getGammaHP();
+                            st->field_68 = player->player->getGammaHP();
                             Globals::appManager->SetCurrentApplicationModule(2);
                         }
                     }
