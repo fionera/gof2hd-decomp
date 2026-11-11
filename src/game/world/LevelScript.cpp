@@ -1111,7 +1111,7 @@ bool LevelScript::process(int delta) {
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
                 (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (__builtin_expect(m_nScriptTimerA >= 1100 - delta, 0)) { // lint: arm_builtin
+                if (m_nScriptTimerA >= 1100 - delta) { // lint: arm_builtin
                     m_nState = 7;
                     m_nScriptTimerA = 0;
                 }
@@ -4293,7 +4293,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 1)) { // lint: arm_builtin
+                            if (__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 0)) { // lint: arm_builtin
                                 ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                 ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
                             }
@@ -4407,7 +4407,7 @@ bool LevelScript::process(int delta) {
                 case 4: {
                     m_nScriptTimerA += delta;
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
-                    if (__builtin_expect(m_nScriptTimerA >= 324, 0)) { // lint: arm_builtin
+                    if (__builtin_expect(m_nScriptTimerA >= 324, 1)) { // lint: arm_builtin
                         KIPlayer *wreck = (*enemies)[13];
                         KIPlayer *boss = (*enemies)[14];
                         wreck->geometry->setMatrix(boss->geometry->getMatrix());
@@ -5119,7 +5119,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA < 5000) {
                         m_pGeometry4->moveForward((float) (35 * delta));
                     }
-                    if (__builtin_expect(m_nScriptTimerA < 6000, 1)) { // lint: arm_builtin
+                    if (__builtin_expect(m_nScriptTimerA < 6000, 0)) { // lint: arm_builtin
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
                                 ->Update((long long) delta, true);
                     }
