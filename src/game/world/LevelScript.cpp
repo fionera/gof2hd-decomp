@@ -3458,7 +3458,7 @@ bool LevelScript::process(int delta) {
                     wcamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
                     wcamera->setLocal(local);
-                    if (m_nScriptTimerA >= 10001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 10001, 1)) { // lint: arm_builtin
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 10) {
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
