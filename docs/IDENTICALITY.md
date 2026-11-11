@@ -4,6 +4,28 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 178)
+
+**Current authoritative state (w12213 branch).** `check` is green: byte_exact
+**4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity
+**5370/5370**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave 178 w12213 landed one `Level::createMission` change: drop the
+`extraAliens` `__builtin_expect` and call `AERandom::nextInt` on
+`Globals::globals` (the original's receiver) instead of `Globals::rnd`.
+Raw **5,143 -> 4,467** (aligned **952**, 17,172 B exact). The `.text`
+differing bytes fall **79,251 -> 78,575** (-676) and `.ARM.extab`
+**731 -> 700** (-31), both sections size- and base-exact; `.rel.plt`
+stays byte-identical.
+
+Section deltas: `.text` **78,575** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **700** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
+**`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **19**. Total differing bytes **79,294**. File size is
+exact (2,187,328 B).
+
 ## Update 2026-11-11 (wave 177)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
