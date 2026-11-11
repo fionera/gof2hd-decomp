@@ -793,7 +793,7 @@ enemies:
                     AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
                     if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
                         inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
-                                  this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124;
+                                  this->screenY < cy + this->field_0x124 && this->screenY > cy - this->field_0x124;
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
@@ -841,8 +841,8 @@ enemies:
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
-                    if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
-                        this->screenY < top + size * 2) {
+                    if (this->screenY < top + size * 2 && this->screenY > top && this->screenX > left &&
+                        this->screenX < left + size * 2) {
                         auto onPlanetCourse = this->field_0x1a8;
                         enemy->field_0x75 = 1;
                         if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !onPlanetCourse)) {
@@ -856,7 +856,7 @@ enemies:
                 }
             }
         tractor:
-            if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
+            if (this->tractorMode2 && wreck && enemy->isDead() && this->field_0x1c == nullptr) {
                 this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
                 enemyHit = true;
@@ -947,8 +947,8 @@ enemies:
         }
     }
 
-    otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
-                this->lockedStation != nullptr || this->field_0x14 != 0;
+    otherLock = this->lockedStation != nullptr || (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
+                this->field_0x1c != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
@@ -1158,7 +1158,7 @@ asteroids:
                     }
                     canvas->DrawImage2D(image, x, y, 17, 68);
                 }
-                if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
+                if (this->field_0x1c == nullptr && wreck && this->tractorMode2) {
                     this->field_0x1c = asteroid;
                     this->dockNavPtr = asteroid;
                     asteroidHit = true;
