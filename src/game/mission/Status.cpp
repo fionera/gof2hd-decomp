@@ -1439,6 +1439,24 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
+                    case 158:
+ {
+                Array<Item *> *equipment = ship->getEquipment();
+                unsigned j = 0;
+                bool hasSpecial = false;
+                bool hasGood = false;
+                for (; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {
+                        hasGood = true;
+                    } else if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == 10) {
+                        hasSpecial = true;
+                    }
+                }
+                if (hasGood && hasSpecial) {
+                    return m;
+                }
+                break;
+            }
                     case 166:
                 if (__builtin_expect(atStation && station->getIndex() == m->getTargetStation(), 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint, plain form 59.4 -> 71.0
                     int index = m->getProductionGoodIndex();
@@ -1550,24 +1568,6 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-                    case 158:
- {
-                Array<Item *> *equipment = ship->getEquipment();
-                unsigned j = 0;
-                bool hasSpecial = false;
-                bool hasGood = false;
-                for (; j < equipment->size(); j++) {
-                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {
-                        hasGood = true;
-                    } else if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == 10) {
-                        hasSpecial = true;
-                    }
-                }
-                if (hasGood && hasSpecial) {
-                    return m;
-                }
-                break;
-            }
                 }
                     break;
             }
