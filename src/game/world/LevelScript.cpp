@@ -1399,8 +1399,8 @@ bool LevelScript::process(int delta) {
             Status *st = Globals::status;
             Globals::status->field_64 = pp->getHitpoints();
             Globals::status->field_5c = pp->getShieldHP();
-            st->field_60 = pp->getArmorHP();
-            Globals::status->field_68 = pp->getGammaHP();
+            Globals::status->field_60 = pp->getArmorHP();
+            st->field_68 = pp->getGammaHP();
             Globals::status->nextCampaignMission(true);
             Globals::status->nextCampaignMission(true);
             Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
