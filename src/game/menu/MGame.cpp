@@ -2090,10 +2090,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
-            this->hudMenuOpen = 0;
-            this->pauseOpen = 0;
-            resumeSounds();
             this->hud->closeHudMenu();
+            this->hudMenuOpen = 0;
+            resumeSounds();
+            this->pauseOpen = 0;
         } else if (wingmanCommand >= 0) {
             // Order the wingmen.
             Array<KIPlayer *> *enemies = this->level->getEnemies();
