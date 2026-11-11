@@ -4337,6 +4337,7 @@ bool LevelScript::process(int delta) {
                     // fallthrough
                 }
                 case 1: {
+                    Level *self = m_pLevel;
                     if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
                         break;
                     }
@@ -4346,7 +4347,7 @@ bool LevelScript::process(int delta) {
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
-                    resetCamera(m_pLevel);
+                    resetCamera(self);
                     player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
@@ -4358,7 +4359,7 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
                     m_tempVec = (*enemies)[0]->geometry->getPosition();
                     m_tempVec += (*enemies)[0]->geometry->getDirection() * 18000.0f;
                     m_tempVec += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
