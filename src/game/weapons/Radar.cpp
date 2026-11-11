@@ -419,11 +419,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     bool landmarkHit = false;
     int notTurretMode = !turretMode;
     int notOtherLock = !otherLock;
-    if (__builtin_expect((this->landmarks != nullptr && // lint: arm_builtin
+    if ((this->landmarks != nullptr && // lint: arm_builtin
         !(Globals::status->getStation()->getIndex() == 109 ||
           Globals::status->getStation()->getIndex() == 110 ||
           (Globals::status->getStation()->getIndex() == 111 &&
-           Globals::status->getCurrentCampaignMission() > 93))), 0)) {
+           Globals::status->getCurrentCampaignMission() > 93)))) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
@@ -650,7 +650,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
-                    if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
+                    if ((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1))) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
                     blip = this->blipSprite;
@@ -688,7 +688,10 @@ enemies:
                 }
                 continue;
             }
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck = false;
+            if (enemy->hasCargo) {
+                wreck = enemy->isDead() || enemy->isDying();
+            }
             enemy->field_0x75 = 0;
             this->update(enemy);
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
@@ -938,7 +941,7 @@ enemies:
                 }
                 enemyHit = true;
             } else {
-                if (*(navWreck ? &this->field_0x1c : &this->lockedEnemy) == nullptr) {
+                if ((navWreck ? this->field_0x1c : this->lockedEnemy) == nullptr) {
                     this->dockNavPtr = nullptr;
                 }
                 this->enemyLockTimer = 0;
@@ -1329,8 +1332,11 @@ asteroids_done:
                         if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
                             Globals::status->getMission()->getTargetStation() ==
                                     Globals::status->getStation()->getIndex()) {
-                            Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242,
-                                                 nullptr, nullptr, 0.0f);
+                            if (Globals::status->getCurrentCampaignMission() > 105) {
+                                Globals::sound->play(2242, nullptr, nullptr, 0.0f);
+                            } else {
+                                Globals::sound->play(2241, nullptr, nullptr, 0.0f);
+                            }
                         } else {
                             Globals::sound->play(148, nullptr, nullptr, 0.0f);
                         }
