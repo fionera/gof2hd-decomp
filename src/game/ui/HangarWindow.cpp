@@ -818,12 +818,13 @@ void HangarWindow::render() {
                             if (__builtin_expect(tab != 0, 1) && // lint: arm_builtin
                                 __builtin_expect(tab != 3 || this->selectedItem->ship != Globals::status->getShip(), 1)) { // lint: arm_builtin
                                 int upgTab = tab;
+                                int shipRh = Globals::layout->field_0x2c_rowHeight;
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
                                 (*this->buttons)[1]->setVisible(true);
                                 (*this->buttons)[1]->draw();
-                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                buttonOffset = (*this->buttons)[1]->getWidth() + shipRh;
                                 if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin
                                     // Draw-first source order is a one-byte raw
                                     // codegen coincidence (the original block sits at
@@ -908,7 +909,8 @@ void HangarWindow::render() {
     Globals::layout->drawFooter();
     (*this->buttons)[11]->setVisible(true);
     (*this->buttons)[11]->setAlwaysPressed(!*(volatile bool *)&Globals::options[78]);
-    (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
+    Status *st = Globals::status;
+    (*this->buttons)[11]->setText(Globals::layout->formatCredits(st->getCredits()));
     (*this->buttons)[11]->draw();
     if (!this->dialogActive)
         return;
@@ -1003,15 +1005,18 @@ void HangarWindow::render() {
 
         if (!Globals::options[75] || !Globals::options[74] || !Globals::options[73] || !Globals::options[77] ||
             !Globals::options[76] || data->freeCreditsOffer) {
+            int rh = Globals::layout->field_0x2c_rowHeight;
+            int top = Globals::layout->field_0x20_top;
+            int gsy = this->gridSpacingY;
             int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2;
-            int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
-                          (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * 1));
+            int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * top) -
+                          (float) gsy * 0.5f + (float) ((gsy + this->gridButtonHeight) * 1));
             (*this->buttons)[17]->setVisible(true);
             if (this->listModeFlag) {
                 (*this->buttons)[17]->setPosition(x, y, 68);
                 (*this->buttons)[17]->replaceTextKeepSize(*Globals::gameText->getText(118));
                 (*this->buttons)[17]->draw();
-                Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - Globals::layout->field_0x2c_rowHeight, 17, 68);
+                Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - rh, 17, 68);
                 Globals::Canvas->DrawImage2D(
                     this->scrollHintImageB,
                     (int) ((float) (Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2) +
@@ -1047,8 +1052,8 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
-                int width = button->getWidth();
                 int rh = Globals::layout->field_0x2c_rowHeight;
+                int width = button->getWidth();
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
                 PaintCanvas *volatile canvas = Globals::Canvas;
