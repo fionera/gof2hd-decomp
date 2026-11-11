@@ -1881,7 +1881,7 @@ bool LevelScript::process(int delta) {
                     Vector camPos = *m_pCamera->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
-                } else if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
+                } else if (((RadioMessage *) ((*messages)[2]))->isOver() && __builtin_expect(m_nState == 1, 1)) { // lint: arm_builtin
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
                     m_nState = 2;
