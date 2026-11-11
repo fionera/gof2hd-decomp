@@ -1,4 +1,4 @@
-# Radar::draw wave 181 (w12507) — three stale `arm_builtin` waiver sites re-hinted (6,356 -> 6,350)
+# Radar::draw wave 181 (w12507) — stale `arm_builtin` re-hints + two statement swaps (6,356 -> 6,340)
 
 **Status:** landed, 2026-11-11. Worktree `wt/w12507`, branch `wave181-w12507`,
 base `master` `1e270aa0e` (wave-180 harvest) plus the w12508/w12509 music-tail
@@ -16,17 +16,17 @@ worktree on the 6,356 source.
 | metric | base (6,356 shape) | landed |
 |---|---:|---:|
 | function size | 9,908 | **9,908** |
-| raw same-address diff | 6,356 | **6,350** (-6) |
-| instruction-index alignment | 1,756 | **1,743** |
+| raw same-address diff | 6,356 | **6,340** (-16) |
+| instruction-index alignment | 1,756 | **1,757** |
 | instruction count | 3,542 ours / 3,532 orig | 3,542 / 3,532 |
-| whole-`.so` `.text` differing bytes | 76,177 | **76,171** (-6) |
+| whole-`.so` `.text` differing bytes | 76,177 | **76,161** (-16) |
 | `.ARM.exidx` differing bytes | 0 | 0 |
 | `.ARM.extab` differing bytes | 713 (size/base exact at `0x1a3b78`, 156,312 B) | **713** (unchanged) |
 | `.rel.plt` | byte-identical | **byte-identical** |
 | `.rodata` / `.data` / `.dynsym` / `.dynstr` / `.hash` / `.rel.dyn` / `.got` | 0 | 0 |
 | `.note.gnu.build-id` differing bytes | 20 | 20 |
 | file size | 2,187,328 | 2,187,328 |
-| total differing bytes | 76,910 | **76,904** |
+| total differing bytes | 76,910 | **76,894** |
 
 Gate after the change: byte_exact **4,507/4,524**, linked_exact
 **4,507/4,524**, size-exact **4,524/4,524**, stub_zero_size 0, missing 0,
@@ -69,6 +69,43 @@ byte-identical output at raw 6,350. They are the same basic block; the hint
 belongs on the `field_0x1a9` guard because that is the byte the original tests
 immediately before the `cbz`-style skip. Pairing any two of the three is
 size-fatal (9,900 B) or neutral.
+
+### 1.1 Landmark-loop store order (6,350 -> 6,341)
+
+Swapping the two independent stores in the landmark loop (line ~451) is a further
+raw win of -9 with size unchanged:
+
+```diff
+-                this->egoPos = player->getPosition();
+-                this->targetPos = this->landmarks->data()[i]->player->getPosition();
++                this->targetPos = this->landmarks->data()[i]->player->getPosition();
++                this->egoPos = player->getPosition();
+```
+
+Both right-hand sides are pure getters on distinct objects, so the swap is
+semantics-preserving. It is *not* a call-order match: the original emits
+`player->getPosition()` first (12e8de) and the landmark's second (12e8f8),
+while the swapped source emits them the other way round in our build. The -9
+comes purely from the changed live-range/register pressure around the two
+`Vector::operator=` calls; raw is the landing metric. `.text` 76,171 -> 76,162,
+`.ARM.extab` unchanged at 713, `.rel.plt` identical.
+
+The swap was found by an adjacent-statement sweep: 134 pairs of consecutive
+same-indent single-line statements in `Radar::draw` were exchanged one at a
+time (each a full build + `fn_diff`). Only this pair beats the base; the next
+best is `hasScanner`/`asteroidLockTimer` at 6,349, landed as a second swap
+(6,341 -> 6,340, `.text` 76,161, total 76,894, size 9,908, `.ARM.extab` 713,
+`.rel.plt` identical):
+
+```diff
+-                    auto hasScanner = this->hasScanner19;
+-                    this->asteroidLockTimer += mode;
++                    this->asteroidLockTimer += mode;
++                    auto hasScanner = this->hasScanner19;
+```
+
+`hasScanner19` is a plain member load and `asteroidLockTimer += mode` touches a
+different member, so the exchange is semantics-preserving.
 
 ## 2. Why these two sites
 

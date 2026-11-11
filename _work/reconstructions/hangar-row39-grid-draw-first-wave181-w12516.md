@@ -387,3 +387,129 @@ tested with hints; all are 9,704-9,712 B except this one.
 `(2508,150,9664)` exact, `.text` 76,200 -> **75,779**,
 `.ARM.extab` 713 -> **711** (size/base exact), `.ARM.exidx` 0,
 `.rel.plt` byte-identical, file size 2,187,328 exact.
+
+## Ninth landing: inline the `Status *st` local in the footer block (raw 1620 -> 1603)
+
+The `drawFooter`/`buttons[11]` block kept `Globals::status` in a local
+(`Status *st = Globals::status;`) before formatting the credit text:
+
+```diff
+-    Status *st = Globals::status;
+-    (*this->buttons)[11]->setText(Globals::layout->formatCredits(st->getCredits()));
++    (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
+```
+
+The original re-loads `Globals::status` from its GOT slot at the call site
+instead of keeping the local alive across `setAlwaysPressed`, so dropping the
+local matches 17 more bytes of the footer block.
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,620 | **1,603** |
+| instruction-index alignment | 871 | 683 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,729 / 3,734 | 3,729 / 3,734 |
+| its `.ARM.extab` record diff | 88 | **88** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 75,779 | **75,762** |
+| `.ARM.extab` section diff | 711 | **711** |
+| total differing bytes | 76,510 | **76,493** |
+
+`check` green (RATCHET PASS): byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub 0, missing 0, wrong_type 0, extra 0, data 843/843,
+imports 207, lint CLEAN, drift 0, parity 5370/5370.  `.ARM.extab` size/base
+exact (`0x26298` @ `0x1a3b78`), content unchanged (711), `.rel.plt`
+byte-identical, file size 2,187,328 exact, 27/27 headers.
+
+The aligned metric regresses 871 -> 683 (the footer block is now shifted
+relative to the original), but raw is the primary residual metric for this
+function and the `.text`/total byte counts both drop by 17.
+
+## Tenth landing: free-credits `width` before `rh` (raw 1603 -> 1594)
+
+The free-credits block declared `rh` before the button width/height queries:
+
+```diff
+-                int rh = Globals::layout->field_0x2c_rowHeight;
+-                int width = button->getWidth();
+-                int height = button->getHeight();
++                int width = button->getWidth();
++                int rh = Globals::layout->field_0x2c_rowHeight;
++                int height = button->getHeight();
+```
+
+The original loads `rh` between the `getWidth` and `getHeight` calls
+(`0x14ad28 getWidth`, `0x14ad30 ldr [sl]`, `0x14ad32 ldr [.,#44]`,
+`0x14ad38 getHeight`); the reorder matches that schedule.
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,603 | **1,594** |
+| instruction-index alignment | 683 | 680 |
+| function size | 9,700 / 9,700 | **9,700 / 9,700** |
+| instructions | 3,729 / 3,734 | 3,729 / 3,734 |
+| its `.ARM.extab` record diff | 88 | **88** |
+| row 39 (orig / ours) | (2508,150,9664) | **(2508,150,9664)** |
+| `.text` section diff | 75,762 | **75,753** |
+| `.ARM.extab` section diff | 711 | **711** |
+| total differing bytes | 76,493 | **76,484** |
+
+`check` green (RATCHET PASS).  `.ARM.extab` size/base exact
+(`0x26298` @ `0x1a3b78`), content unchanged (711), `.rel.plt` byte-identical,
+file size 2,187,328 exact, 27/27 headers.
+
+Other `rh`/`width`/`height` orders measured: `width,height,rh` 1606,
+`height,rh,width` 1598, `rh,height,width` 1606.  The landed order is best.
+
+## Wave-181 follow-up experiments (all size-exact unless noted)
+
+- **Buy-list `switch (count)` case-order permutations** (`v53.json`, all 119
+  non-identity permutations of the five `case` bodies): every one measured
+  raw 1620 / aligned 871 / size 9700 / insn 3729 — clang places the dense
+  switch bodies in a fixed order regardless of source order, so the sweep is
+  a no-op.  The original's body order (from the `tbb` table at `0x14a96c`:
+  entries `03 34 50 6c a6` -> `case0, case1, case2, case3, case4`) is the
+  identity order already in the source.
+- **`default:` moved after `case 0:`** (matching the original's layout, where
+  the default block sits at `0x14a9aa` between case 0 and case 1): neutral
+  1620/871, but it swaps the description/price `String` registers
+  (`r5`/`r6`) away from the original, so it was reverted.
+- **Removing the buy-list `Layout *lay` local** and using
+  `Globals::layout->...` directly: 3412/744, size **9696** (not size-exact);
+  the compiler then reloads `Globals::layout` from the stack slot instead of
+  keeping `&Globals::layout` in `sl`, and the whole loop body changes.
+- **`lay` hoisted outside the buy-list loop**: 3634/735, size 9704.
+- **`lay` kept for only one of its two uses**: `lay` for `field_0x20_top`
+  only -> 8736/1430 size 9704; `lay` for `field_0x2c_rowHeight` only ->
+  1790/948 size 9700.
+- **Ship-guard variants** (the `tab != 0 && (tab != 3 || ship != getShip())`
+  predicate): no hints 6638/9704, first hint only 1642/871, second hint only
+  6638/9704, first hint `expect 0` 8746/9732, second hint `expect 0`
+  7769/9704, reversed order 6754/9708, `tab > 0` 6644/9704, nested-if with
+  both hints 1620/871, nested plain 6638/9704.  The landed two-hint form is
+  the best.
+- **Buy-grid `rh`/`top`/`gsy` declaration order**: `top,rh,gsy` and
+  `top,gsy,rh` are both neutral 1620/871; `rh` after `setVisible` is
+  2447/9704; `setVisible` before the declarations is 2455/9688; `setVisible`
+  after `x` is 8249/9636.
+- **Footer `Status *st` variants**: `st` before `setAlwaysPressed` 3754/9704;
+  `Layout *lay11` local 1639/9700; `setText` before `setAlwaysPressed`
+  1665/9700; inlining `st` is the landed 1603/9700.
+
+The remaining residual is still the `sl`/`r9` swap at `0x1496da`
+(`ldrd sl,r9,[sp,#132]` vs `ldrd r9,sl,[sp,#132]`): the original keeps
+`&Globals::layout` in `sl` and `this` in `r9`, ours the other way round, which
+cascades through the item/ship branches, the buy-list loop, the grid tail and
+the free-credits block.  The spill slots themselves are identical
+(`fp -> [sp,#136]`, `sl -> [sp,#132]`); only the reload register assignment
+differs, so it is a Greedy tie-break that source expression/statement orderings
+have not flipped.  The landing-pad order in the `0x14b614` cleanup region
+(LSDA rows 40-44) also still differs (row 39 is exact).
+
+## Cumulative wave-181 result (final)
+
+`_ZN12HangarWindow6renderEv`: raw **2,041 -> 1,594** (-447), size
+9,700/9,700, 3,729/3,734 insns, LSDA record diff 88, row 39
+`(2508,150,9664)` exact, `.text` 76,200 -> **75,753**,
+`.ARM.extab` 713 -> **711** (size/base exact), `.ARM.exidx` 0,
+`.rel.plt` byte-identical, file size 2,187,328 exact, 27/27 headers.
