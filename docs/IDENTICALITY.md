@@ -17,11 +17,11 @@ aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,371** | 22,196 | 57,232 |
-| `Radar::draw` | **6,321** | 1,782 | 9,908 |
-| `Layout` C1/C2 | **5,385** | 2,562 | 7,072 |
+| `Radar::draw` | **6,315** | 1,858 | 9,908 |
+| `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,630** | 1,127 | 17,172 |
 | `MGame::OnTouchEnd` | **3,030** | 1,446 | 8,080 |
-| `HangarWindow::render` | **1,523** | 681 | 9,700 |
+| `HangarWindow::render` | **1,514** | 680 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
@@ -37,20 +37,28 @@ Landed changes:
 * `LevelScript::process` (w12703 + w12704): re-landed w12604 data-flow cells,
   `float -10*delta` form, and the iOS-structure case-11 tail reorder plus an
   11-statement reorder sweep. Raw **52,412 -> 52,371** (-41), aligned
-  22,050 -> 22,196.
+  22,050 -> 22,196. w12705's K=4..5 window (52,397 alone) does not compose
+  with this body and is recorded as a superseded note.
+* `HangarWindow::render` (w12717): buy-list x factored as
+  `w/2-(bw+gsx)*(1-col)` and footer `setAlwaysPressed` plain `options[78]`.
+  Raw **1,523 -> 1,514** (-9).
+* `Radar::draw` (w12711): arithmetic-order/store-scheduling cells. Raw
+  **6,322 -> 6,315** (-7), aligned 1,782 -> 1,858.
 * `ModStation::ModStation` (w12719): `nearKey` argument swap + fence removal.
   Raw **27 -> 11** (-16), aligned 15 -> 5.
 * `MGame::OnTouchEnd` (w12716): hoist the instant-action predicate. Raw
   **3,034 -> 3,030** (-4), aligned 1,416 -> 1,446.
+* `Layout::Layout` (w12712): W=4 window-142 rotation. Raw **5,385 -> 5,383**
+  (-2).
 * `Radar::draw` (w12709): revert the second `lockedEnemy` cleanup order.
   Raw **6,322 -> 6,321** (-1).
 
-Section deltas: `.text` **74,953** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,936** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,619**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,602**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 182)
