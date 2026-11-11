@@ -682,12 +682,12 @@ enemies:
                 ((enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74)) {
                 if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
                     this->field_0x1bc++;
-                    bossSeen = true;
+                    bossSeen = enemy->shipGroup == 10;
                 }
                 continue;
             }
             this->update(enemy);
-            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
