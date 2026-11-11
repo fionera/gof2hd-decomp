@@ -853,7 +853,7 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 11: {
-                    Globals::layout->enableFillScreen(true);
+                    m_nScriptTimerA += delta;
                     float rumble = (float) m_nScriptTimerA / -2500.0f + 1.0f;
                     if (rumble < 0.0f) {
                         rumble = 0.0f;
@@ -931,11 +931,11 @@ bool LevelScript::process(int delta) {
             // after the switch -- otherwise the mission-0 intro never ends.
             if (m_nState == 16) {
                 if (!Globals::layout->isFading()) {
-                    Globals::appManager->SetCurrentApplicationModule(2);
-                    m_nScriptTimerA += delta;
+                    Globals::layout->enableFillScreen(true);
                     Globals::status->nextCampaignMission(true);
                     Globals::switch_to_target_setting = 1;
-                    Level::initStreamOutPosition = 0;
+                    Level::initStreamOutPosition = 1;
+                    Globals::appManager->SetCurrentApplicationModule(2);
                     return 0;
                 }
             }
