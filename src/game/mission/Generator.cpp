@@ -747,6 +747,8 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+    volatile int bonus;
+    volatile int bv;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -943,17 +945,18 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
-    volatile int bonus;
     if ((type | 4) == 12) {
         bonus = 0;
     } else {
         int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
                                                ->getMissionBonus(agent->getRace()));
-        volatile int rem = rawBonus % 50;
-        int b = rawBonus + rem;
+        int remVal = rawBonus % 50;
+        int b = rawBonus + remVal;
+        volatile int rem = remVal;
         if (b % 50 != 0) {
             b = rawBonus - rem;
         }
+        bv = rawBonus;
         bonus = b;
     }
 
