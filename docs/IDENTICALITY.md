@@ -57,10 +57,13 @@ Wave 174 ran 20 agents on the same worst functions. Landed changes:
 * `Status::missionCompleted` (w11918): the single `switch (m->getType())`
   is split into an outer switch for the low/typed cases and a nested
   `default:` switch for the 150+ cases. Raw **722 -> 721** (-1), aligned
-  320 -> 333; 1,432 B exact.
+  320 -> 333; 1,432 B exact.  Wave 175 (w11918): the nested switch's
+  `case 158` moves from last to after `case 162` (raw unchanged **721**,
+  aligned 333 -> **329**); the grouped-weight source producer remains
+  unfound (see `_work/reconstructions/status-432-producers-wave175-w11918.md`).
 
-**Aligned total (15 functions): 26,185** (wave-173 base 26,055). Per
-function: Layout 2,290, LevelScript 18,226, createShip 422, Status 333,
+**Aligned total (15 functions): 26,181** (wave-173 base 26,055). Per
+function: Layout 2,290, LevelScript 18,226, createShip 422, Status 329,
 Radar 1,602, MGame::OnTouchEnd 1,453, createMission 940, Gun 57,
 HangarWindow 621, SpaceLounge 41, Hud 146, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
