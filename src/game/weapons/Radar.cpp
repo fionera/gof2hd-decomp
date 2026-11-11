@@ -1223,10 +1223,10 @@ asteroids:
                                 this->lockedAsteroid = this->field_0x10;
                             }
                         } else {
-                            if (!this->hasTractor13) {
-                                hud->hudEvent(9, this->level->getPlayer(), 0);
-                            } else {
+                            if (this->hasTractor13) {
                                 this->field_0x1c = this->field_0x10;
+                            } else {
+                                hud->hudEvent(9, this->level->getPlayer(), 0);
                             }
                         }
                     }
@@ -1340,10 +1340,10 @@ asteroids_done:
                         } else {
                             Globals::sound->play(148, nullptr, nullptr, 0.0f);
                         }
-                    } else if (Globals::status->inDeepScienceOrbit()) {
-                        Globals::sound->play(152, nullptr, nullptr, 0.0f);
-                    } else {
+                    } else if (!(Globals::status->inDeepScienceOrbit())) {
                         Globals::sound->play(kRaceMusic[race], nullptr, nullptr, 0.0f);
+                    } else {
+                        Globals::sound->play(152, nullptr, nullptr, 0.0f);
                     }
                 }
             }

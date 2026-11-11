@@ -192,3 +192,41 @@ size-changing).
 
 Cumulative: raw **52,523 -> 52,467** (-56), `.text` **75,365 -> 75,309**,
 `.ARM.extab` unchanged at 655, `.rel.plt` byte-identical, size 57,232 exact.
+
+## Fourth sweep: size-compensating alias pairs (landed)
+
+The single-candidate sweep on the 52,467 tree has **no** winners (989 alias +
+128 unalias + 152 sub, plus 49 value aliases; 70 declaration-move/head
+candidates; all neutral or size-changing).  As in wave 175 / w11904, a
+size-compensating pair can still win when neither half does: the sweep found
+47 candidates at size 57,228 (-4) and 39 at 57,236 (+4), and all 1,833
+cross-pairs were measured (670 s).
+
+Exactly one pair is size-exact and raw-lowering: **57,228 + 57,236 -> 52,466**
+(-1):
+
+| base line | kind | edit | alone raw / size |
+|---:|---|---|---|
+| 5133 | alias | `AEGeometry *g1A = m_pGeometry1;` in the `m_nState == 11` block (2 uses) | 52,551 / 57,228 |
+| 5136 | alias | `AbyssEngine::PaintCanvas *canvasA = Globals::Canvas;` in the `m_nScriptTimerA >= 6001` block (2 uses) | 52,560 / 57,236 |
+
+```
+                         after pass 3     after pass 4
+process raw diffbytes    52,467           52,466     (-1)
+process aligned insns    20,538           22,236
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+orig / ours insns        20,830 / 20,727  20,830 / 20,725
+.text diffbytes          75,309           75,308     (-1)
+.ARM.extab diffbytes     655              655        (unchanged)
+.note.gnu.build-id       20               20         (unchanged)
+total differing bytes    75,984           75,983     (-1)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Both are pure pointer copies of members that are never assigned in `process`;
+the pair is semantics-preserving.  The aligned count rises (register
+allocation), but raw and `.text` fall.
+
+Cumulative: raw **52,523 -> 52,466** (-57), `.text` **75,365 -> 75,308**,
+`.ARM.extab` unchanged at 655, `.rel.plt` byte-identical, size 57,232 exact.
