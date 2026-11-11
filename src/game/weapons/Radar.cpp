@@ -1281,7 +1281,7 @@ asteroids_done:
                     Globals::sound->play(141, nullptr, nullptr, 0.0f);
                 }
             } else {
-                if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
+                if (__builtin_expect((__builtin_expect(alwaysEnemySeen, 1)), 0)) {  // lint: arm_builtin
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
                     Globals::sound->play(150, nullptr, nullptr, 0.0f);
