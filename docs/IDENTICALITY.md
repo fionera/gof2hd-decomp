@@ -24,6 +24,13 @@ OOM; its work was re-run as wave 166 with `-j2` builds and a 12 GB per-agent
   and `barH` to `short` (re-aligns the show block), then `barYOffset`
   declared before `barH`.  Raw **762 -> 582** (-180), aligned **222 -> 228**
   (+6); 9,332 B exact, `.rel.plt` byte-identical, `.ARM.extab` -2.
+* `LevelScript::process` (w11301, wave 168): size-exact companion at
+  L5132+L3111 and a nested-operand companion at L1436.  Raw
+  **54,018 -> 54,015** (-3), aligned **17,764 -> 17,788** (+24); 57,232 B
+  exact, `.rel.plt` byte-identical.
+* `Layout` C1/C2 (w11319, wave 168): per-TU `-mllvm -enable-arm-prof-unpr`.
+  Raw **5,658 -> 5,656** (-2), aligned **2,280 -> 2,283** (+3); 7,072 B
+  exact, `.rel.plt` byte-identical.
 * `LevelScript::process` (w11201, wave 167): 11 more `__builtin_expect`
   cells from a 498-cell operand sweep, 772-cell full-if sweep and 486-cell
   re-sweep.  Raw **54,095 -> 54,031** (-64), aligned **17,621 -> 17,764**
@@ -62,17 +69,17 @@ weights), w11117/w11217 (small tail), w11206/w11207/w11208/w11209 (Radar
 and Layout block maps), w11118/w11119/w11218/w11219/w11220 (build provenance
 rounds 6-7).
 
-**Aligned total (15 functions): 25,686** (wave-164 base 24,608). Per
-function: Layout 2,280, LevelScript 17,764 (indicative), createShip 455,
+**Aligned total (15 functions): 25,713** (wave-164 base 24,608). Per
+function: Layout 2,283, LevelScript 17,788 (indicative), createShip 455,
 Status 320, Radar 1,454, MGame::OnTouchEnd 1,454, createMission 767, Gun 57,
 HangarWindow 620, SpaceLounge 41, Hud 228, Generator 107, MenuTouchWindow 16,
 ModStation 12, MGame::OnUpdate 111.  Total differing bytes fall
-**85,397 -> 83,019** (-2,378) and `.text` **84,652 -> 82,331** (-2,321);
+**85,397 -> 83,015** (-2,382) and `.text` **84,652 -> 82,327** (-2,325);
 `.ARM.extab` **725 -> 668** (-57).
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**54,018** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
-**5,658** (7,072 B), `Level::createMission` **5,435** (17,172 B),
+**54,015** (57,232 B), `Radar::draw` **7,487** (9,908 B), `Layout` C1/C2
+**5,656** (7,072 B), `Level::createMission` **5,435** (17,172 B),
 `MGame::OnTouchEnd` **3,775** (8,080 B), `HangarWindow::render` **2,245**
 (9,700 B), `Level::createShip` **1,560** (2,764 B), `Hud::draw` **582**
 (9,332 B), `Status::missionCompleted` **722** (1,432 B),
@@ -81,7 +88,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 `ModStation` C1/C2 **43** (1,008 B), `MenuTouchWindow::OnTouchBegin` **28**
 (1,896 B), `MGame::OnUpdate` **15** (11,440 B).
 
-Section deltas: `.text` **82,331** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **82,327** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **668** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
