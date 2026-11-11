@@ -41,15 +41,15 @@ time box (objdump of the 57 KB body twice per cell).
 
 | # | commit | line | change | raw | aligned | .text |
 |---|---|---|---:|---|---:|---:|
-| 1 | `59963f261` | 1440 | remove inner `expect(m_nState == 2, 0)`, wrap whole `&&` with `expect(..., 1)` | 53,932 -> 53,911 | 17,900 -> 17,871 | 81,825 -> 81,789 |
+| 1 | `59963f261` | 1440 | remove inner `expect(m_nState == 2, 0)`, wrap whole `&&` with `expect(..., 1)` | 53,932 -> 53,911 | 17,900 -> 17,900 | 81,825 -> 81,789 |
 |   |  | 2823 | `expect(player->isDockedToDockingPoint(), 1)` | (in #1) | | |
 |   |  | 4266 | `expect(m_nState == 2, 0)` (mission-42 cargo chain) | (in #1) | | |
-| 2 | `b5171597b` | 1149 | `expect(m_nScriptTimerA >= 6001, 0)` (mission-0 state-1) | 53,911 -> 53,857 | 17,871 -> 17,871? | 81,789 -> 81,735 |
-| 3 | `42e9d7dc5` | 4410 | flip `expect(m_nScriptTimerA >= 324, 0)` -> `1` | 53,857 -> 53,816 | -> 17,932 final | 81,735 -> 81,694 |
+| 2 | `b5171597b` | 1149 | `expect(m_nScriptTimerA >= 6001, 0)` (mission-0 state-1) | 53,911 -> 53,857 | 17,900 -> 17,900 | 81,789 -> 81,735 |
+| 3 | `42e9d7dc5` | 4410 | flip `expect(m_nScriptTimerA >= 324, 0)` -> `1` | 53,857 -> 53,816 | 17,900 -> 17,936 | 81,735 -> 81,694 |
 |   |  | 4296 | flip `expect(!field_0x13c && rnd<=9, 1)` -> `0` | (in #3) | | |
 |   |  | 1114 | strip `expect(m_nScriptTimerA >= 1100 - delta, 0)` | (in #3) | | |
 |   |  | 5122 | flip `expect(m_nScriptTimerA < 6000, 1)` -> `0` | (in #3) | | |
-| 4 | `eaec3564e` | 2277 | swap `&&` operands (mission-42 state-2 `isTriggered() && m_nState == 2`) | 53,816 -> 53,812 | 17,932 | 81,694 -> 81,690 |
+| 4 | `eaec3564e` | 2277 | swap `&&` operands (mission-42 state-2 `isTriggered() && m_nState == 2`) | 53,816 -> 53,812 | 17,936 -> 17,932 | 81,694 -> 81,690 |
 
 Final: **raw 53,812 / aligned 17,932 / size 57,232 / `.text` 81,690 / `.rel.plt` md5
 `289b2a069f8504d1e8a3919e43915e04` (byte-identical)**.
