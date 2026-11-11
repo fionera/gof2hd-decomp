@@ -123,6 +123,15 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/Level.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-enable-earlycse-memssa=false")
 
+# Layout.cpp: the ARM `prof-unpr` subtarget feature is a matching knob.  Enabling
+# it (+prof-unpr) leaves every function size, every non-target function and every
+# alloc section unchanged; it moves one more text byte into agreement in
+# Layout::Layout (raw 5,658 -> 5,657) and takes the whole-.text diff
+# 82,526 -> 82,525.  Found by the wave-168 round-8 per-TU flag sweep.  See
+# _work/reconstructions/build-provenance-round8-per-tu-flags.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/ui/Layout.cpp"
+    PROPERTIES COMPILE_OPTIONS "-Xclang;-target-feature;-Xclang;+prof-unpr")
+
 # Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
 # the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
 # (`__builtin_expect(onScreen,1) && __builtin_expect(screenX > centerX - field_0x128,1) && ...`),
