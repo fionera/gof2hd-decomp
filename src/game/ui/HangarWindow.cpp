@@ -903,7 +903,7 @@ void HangarWindow::render() {
 
     Globals::layout->drawFooter();
     (*this->buttons)[11]->setVisible(true);
-    (*this->buttons)[11]->setAlwaysPressed(!Globals::options[78]);
+    (*this->buttons)[11]->setAlwaysPressed(!*(volatile bool *)&Globals::options[78]);
     (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
     (*this->buttons)[11]->draw();
     if (!this->dialogActive)
