@@ -627,7 +627,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (planetHit && !this->level->getPlayer()->isDockingToAsteroid() &&
                 !this->level->getPlayer()->isDockingToDockingPoint()) {
                 this->planetLockTimer += mode;
-                if (this->planetLockTimer > this->field_0x1b8) {
+                if (__builtin_expect(this->planetLockTimer > this->field_0x1b8, 1)) {  // lint: arm_builtin
                     if (missionBlocksPlanets) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
@@ -1267,7 +1267,7 @@ asteroids_done:
     if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
-            __builtin_expect((current != 151 && alwaysEnemySeen), 0)) {  // lint: arm_builtin
+            (current != 151 && alwaysEnemySeen)) {
             Globals::sound->stop(current);
             if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens() ||
                 Globals::status->getCurrentCampaignMission() == 16) {
@@ -1300,7 +1300,7 @@ asteroids_done:
         }
     } else {
         this->field_0x54 = 0;
-        if (__builtin_expect((Globals::status->getCurrentCampaignMission() != 145), 1)) {  // lint: arm_builtin
+        if (Globals::status->getCurrentCampaignMission() != 145) {
             current = Globals::sound->currentMusicEvent;
             bool ambient;
             switch (current) {
