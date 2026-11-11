@@ -649,8 +649,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int frame;
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
                     blip = this->blipSprite;
-                    frame = (int) ((float) (blip->getRawFrameCount() - 1) *
-                                   ((float) this->planetLockTimer / (float) this->field_0x1b8));
+                    frame = (int) ((float) this->planetLockTimer * (float) (blip->getRawFrameCount() - 1) /
+                                   (float) this->field_0x1b8);
                 } else {
                     if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
@@ -743,14 +743,14 @@ enemies:
                         Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
                                                      this->screenY + this->halfScreenWidth + 2);
                         float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) this->field_0x1c8;
-                        this->barWidth = (int) hull;
                         Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
                                                       this->screenX + 3 - this->halfScreenHeight,
                                                       this->screenY + this->halfScreenWidth + 3);
+                        this->barWidth = (int) hull;
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
-                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) this->field_0x1c8;
+                            float emp = (float) this->field_0x1c8 * ((float) enemy->player->getEmpDamageRate() / 100.0f);
                             this->barWidth = (int) emp;
                             Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,

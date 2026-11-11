@@ -908,7 +908,7 @@ void HangarWindow::render() {
 
     Globals::layout->drawFooter();
     (*this->buttons)[11]->setVisible(true);
-    (*this->buttons)[11]->setAlwaysPressed(!*(volatile bool *)&Globals::options[78]);
+    (*this->buttons)[11]->setAlwaysPressed(!Globals::options[78]);
     (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
     (*this->buttons)[11]->draw();
     if (!this->dialogActive)
@@ -952,7 +952,7 @@ void HangarWindow::render() {
                 }
                 int row = (unsigned char) count / 3;
                 int col = (unsigned char) count % 3;
-                int x = (this->gridSpacingX + this->buttonWidth) * col - this->buttonWidth - this->gridSpacingX + Globals::w / 2;
+                int x = Globals::w / 2 - (this->buttonWidth + this->gridSpacingX) * (1 - col);
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * lay->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
