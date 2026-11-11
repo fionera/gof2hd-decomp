@@ -104,18 +104,18 @@ Wave 176 ran 20 agents on the same worst functions. Landed changes:
 Notes-only (no code): w12008 (Layout sweep), w12018 (SpaceLounge),
 w12020 (small tails).
 
-**Aligned total (15 functions): 26,033** (wave-175 base 26,525). Per
+**Aligned total (15 functions): 26,022** (wave-175 base 26,525). Per
 function: LevelScript 18,498, Layout 2,334, Radar 1,734, MGame::OnTouchEnd
-1,205, createMission 963, createShip 380, Status 327, HangarWindow 291,
+1,194, createMission 963, createShip 380, Status 327, HangarWindow 291,
 Hud 143, Gun 63, SpaceLounge 41, Generator 21, MenuTouchWindow 16,
-ModStation 11, MGame::OnUpdate 6. Total differing bytes stay **80,932**:
-`.text` falls **80,166 -> 79,591** (-575) while `.ARM.extab` rises
-**746 -> 1,321** (+575), so the net is unchanged.
+ModStation 11, MGame::OnUpdate 6. Total differing bytes fall **80,932 -> 80,892**:
+`.text` falls **80,166 -> 79,551** (-615) while `.ARM.extab` rises
+**746 -> 1,321** (+575), so the net is -40.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **53,568** (57,232 B), `Radar::draw` **6,713** (9,908 B), `Layout` C1/C2
 **5,611** (7,072 B), `Level::createMission` **5,257** (17,172 B),
-`MGame::OnTouchEnd` **3,621** (8,080 B), `HangarWindow::render` **1,965**
+`MGame::OnTouchEnd` **3,581** (8,080 B), `HangarWindow::render` **1,965**
 (9,700 B), `Level::createShip` **1,229** (2,764 B), `Status::missionCompleted`
 **721** (1,432 B), `Gun::calcCharacterCollision` **458** (1,984 B),
 `SpaceLounge::drawLounge` **175** (1,948 B), `Hud::draw` **150** (9,332 B),
@@ -123,7 +123,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
 `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **79,591** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **79,551** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **1,321** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
 **`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
