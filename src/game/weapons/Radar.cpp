@@ -343,7 +343,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    bool missionBlocksPlanets = false;
+    int missionBlocksPlanets = false;
     bool alwaysEnemySeen = false;
     bool alwaysEnemy = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
@@ -503,14 +503,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     this->lockedStation = this->field_0x28;
                 }
                 if (this->stationLockTimer > 0) {
+                    Sprite *blip = this->blipSprite;
                     int frame;
                     if (__builtin_expect(this->field_0x28 != 0, 1) && this->field_0x28 != this->lockedStation) {  // lint: arm_builtin
-                        frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
+                        frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                        ((float) this->stationLockTimer / (float) this->field_0x1b8));
                     } else {
-                        frame = this->blipSprite->getRawFrameCount() - 1;
+                        frame = blip->getRawFrameCount() - 1;
                     }
-                    this->blipSprite->setFrame(frame);
+                    blip->setFrame(frame);
                     this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                           (int) PlayerEgo::crosshairPos.y);
                     this->blipSprite->draw(1.0f, 1.0f);
@@ -631,7 +632,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (!this->lockConfirmed) {
+                    if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
                     this->field_0x14 = this->field_0x18;
@@ -642,9 +643,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 if (this->planetLockTimer < 1 || missionBlocksPlanets) {
                     goto enemies;
                 }
+                Sprite *blip = this->blipSprite;
                 int frame;
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
-                    frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
+                    frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
                     if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
