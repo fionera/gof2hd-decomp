@@ -454,13 +454,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     Globals::Canvas->DrawImage2D(this->image_0x88, this->screenX, this->screenY, 17, 68);
                 }
                 int offset = i == 0 ? this->originX : this->originY;
-                Globals::Canvas->DrawString(radarFont(), *this->labelStrings->data()[i], this->screenX + offset,
+                unsigned int lmFont = radarFont();
+                Globals::Canvas->DrawString(lmFont, *this->labelStrings->data()[i], this->screenX + offset,
                                             this->screenY, false);
                 int rowHeight = Globals::layout->field_0x4;
                 if (i <= 1) {
                     if (i == 0 && !alienOrbit) {
+                        unsigned int techFont = radarFont();
                         Globals::Canvas->DrawString(
-                                radarFont(),
+                                techFont,
                                 *Globals::gameText->getText(133) + String(": ") +
                                         String(String(Globals::status->getStation()->getTecLevel()), false),
                                 this->screenX + this->originX, this->screenY + Globals::layout->field_0x4, false);
@@ -632,13 +634,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (__builtin_expect(this->field_0x1a8, 0)) {  // lint: arm_builtin
+                    this->field_0x14 = this->field_0x18;
+                    if (this->field_0x1a8) {
                         this->level->getPlayer()->dockToPlanet();
                     }
-                    if (!this->lockConfirmed) {
+                    if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
-                    this->field_0x14 = this->field_0x18;
                 }
                 if ((this->planetLockTimer < 1) | (missionBlocksPlanets != 0)) {
                     goto enemies;
@@ -800,7 +802,8 @@ enemies:
                         auto target = this->targetPos;
                         this->lockLabel = this->calcDistance(target.x, target.y, target.z,
                                                              this->cameraX, this->cameraY, this->cameraZ);
-                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
+                        unsigned int enFont = radarFont();
+                        Globals::Canvas->DrawString(enFont, this->lockLabel, this->screenX - this->halfScreenHeight,
                                                     this->screenY + this->halfScreenWidth, false);
                     }
                 }
@@ -1300,7 +1303,7 @@ asteroids_done:
         }
     } else {
         this->field_0x54 = 0;
-        if (__builtin_expect((Globals::status->getCurrentCampaignMission() != 145), 1)) {  // lint: arm_builtin
+        if (Globals::status->getCurrentCampaignMission() != 145) {
             current = Globals::sound->currentMusicEvent;
             bool ambient;
             switch (current) {

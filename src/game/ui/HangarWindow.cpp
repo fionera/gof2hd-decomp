@@ -956,9 +956,9 @@ void HangarWindow::render() {
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * lay->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
+                (*this->buttons)[12 + count]->draw();
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 (*this->buttons)[12 + count]->setSplitText(price);
-                (*this->buttons)[12 + count]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - lay->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
@@ -1039,7 +1039,7 @@ void HangarWindow::render() {
         }
     } else if (this->freeCreditsActive) {
         int baseX = this->dialog->x + Globals::layout->buttonInsetX;
-        int baseY = Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->windowTopInset + this->dialog->y;
+        int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 2;
         int row = 0;
         for (int i = 0; __builtin_expect(i < 5, 1); i++) { // lint: arm_builtin
             TouchButton *button = (*this->buttons)[18 + i];
@@ -1064,8 +1064,8 @@ void HangarWindow::render() {
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
                 PaintCanvas *volatile canvas = Globals::Canvas;
-                canvas->SetColor(0xffffffffu);
                 volatile int textY = (int) ((float) y + (float) height * 0.2f);
+                canvas->SetColor(0xffffffffu);
                 canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
                 canvas->SetColor(0x777777ffu);
