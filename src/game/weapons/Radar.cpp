@@ -436,11 +436,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenY < this->centerY + this->field_0x128) {
                 if (!landmarkHit && i != 3 && notTurretMode && notOtherLock) {
                     int size = this->field_0x124;
-                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                    float left = PlayerEgo::crosshairPos.x - (float) size;
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     bool topOk = top < this->screenY;
-                    if (this->screenY < top + size + size && topOk && this->screenX < left + size + size &&
-                        left < this->screenX) {
+                    if (this->screenY < top + size + size && topOk && this->screenX < (int) left + size + size &&
+                        (int) left < this->screenX) {
                         if (this->field_0x28 != this->landmarks->data()[i]) {
                             this->stationLockTimer = 0;
                         }
@@ -505,7 +505,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 if (this->stationLockTimer > 0) {
                     Sprite *blip = this->blipSprite;
                     int frame;
-                    if (__builtin_expect(this->field_0x28 != 0, 1) && this->field_0x28 != this->lockedStation) {  // lint: arm_builtin
+                    if (this->field_0x28 != 0 && this->field_0x28 != this->lockedStation) {
                         frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                        ((float) this->stationLockTimer / (float) this->field_0x1b8));
                     } else {
@@ -627,7 +627,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (planetHit && !this->level->getPlayer()->isDockingToAsteroid() &&
                 !this->level->getPlayer()->isDockingToDockingPoint()) {
                 this->planetLockTimer += mode;
-                if (__builtin_expect((this->planetLockTimer > this->field_0x1b8), 1)) { // lint: arm_builtin
+                if (this->planetLockTimer > this->field_0x1b8) {
                     if (missionBlocksPlanets) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
@@ -961,9 +961,9 @@ enemies:
                     if (this->onScreen) {
                         int size = this->turretScopeHalfWidth;
                         int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
-                        int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
-                        inSight = this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
-                                  this->screenY < top + size * 2;
+                        float top = PlayerEgo::crosshairPos.y - (float) size;
+                        inSight = this->screenX > left && this->screenX < left + size * 2 && this->screenY > (int) top &&
+                                  this->screenY < (int) top + size * 2;
                     }
                     if (inSight) {
                         float distance = AbyssEngine::AEMath::VectorLength(

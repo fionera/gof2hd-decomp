@@ -4,6 +4,69 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 180)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave 180 ran 20 agents on the worst functions. Final residual table (raw /
+aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **52,926** | 20,010 | 57,232 |
+| `Radar::draw` | **6,385** | 1,754 | 9,908 |
+| `Layout` C1/C2 | **5,569** | 2,434 | 7,072 |
+| `Level::createMission` | **3,705** | 900 | 17,172 |
+| `MGame::OnTouchEnd` | **3,049** | 1,407 | 8,080 |
+| `HangarWindow::render` | **2,041** | 655 | 9,700 |
+| `Level::createShip` | **1,214** | 396 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **148** | 147 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **39** | 11 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `HangarWindow::render` (w12416): three size-exact load-order/local hoists
+  (free-credits `rowHeight`, grid-block `rowHeight`/`top`/`gridSpacing`,
+  ship-branch `rowHeight`). Raw **2,242 -> 2,041** (-201), aligned
+  390 -> 655, `.ARM.extab` content unchanged.
+* `Level::createMission` (w12412): seven size-exact store/declaration
+  reorders (pirate-base before `createStaticObject`, asteroid position before
+  `setAlwaysFriend`, `enemies = new Array` before `attackerCount`, `escorts`
+  before `goods`, convoy-tail hitpoints before the speed stores, loop-1 route
+  before `setAlwaysEnemy`) plus an explicit `cargo` null check on case-183
+  `enemies[8]`. Raw **3,832 -> 3,705** (-127), aligned 977 -> 900,
+  `.ARM.extab` **709 -> 713** (+4); net total-byte **-123**.
+* `Radar::draw` (w12407 + w12409): landmark-crosshair `left` and gas-spark
+  `top` computed as `float` and truncated at the use site (-15), and two
+  non-original branch hints dropped from the station-lock blip and
+  planet-lock timer tests (-7). Raw **6,407 -> 6,385** (-22), aligned
+  1,806 -> 1,754.
+* `Level::createShip` (w12417): `empPoints` clamp polarity
+  (`level <= 20 ? level : 20`). Raw **1,221 -> 1,214** (-7), aligned
+  394 -> 396.
+
+Notes-only (no size-exact raw win): w12411 (Layout 20-sweep, original
+per-device branch tree), w12414 (OnTouchEnd dispatch/hasWon/touch-switch),
+w12420 (build provenance + Status TBH audit; stock NDK r18b recipe
+re-confirmed).
+
+Section deltas: `.text` **76,513** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **713** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **77,246**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-11 (wave 179)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
@@ -3542,7 +3605,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 76,870 content bytes differ across the 17 non-byte-exact bodies (wave 179). |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 76,743 content bytes differ across the 17 non-byte-exact bodies (wave 180). |
 | **.rodata** | 269,159 | 269,351 | **+192** | base `0x1c9e10` exact and the original 269,159 B content is **byte-identical**; wave 178 restored the 192 B `Status::missionCompleted` rank table at `0x20b977` (in the gap before `.fini_array`), so the section is 0x41c27. Wave 121 had removed it for an exact-size `.rodata`; the +192 B buys -272 `.text` bytes (raw 721 -> 449). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
