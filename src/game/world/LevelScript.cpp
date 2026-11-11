@@ -2853,7 +2853,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (__builtin_expect(m_nState == 5, 1)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 3001) {
+                    if (__builtin_expect((m_nScriptTimerA >= 3001), 0)) { // lint: arm_builtin
                         Level *self = m_pLevel;
                         m_nScriptTimerA = 0;
                         self->getPlayer()->setAutoPilot(nullptr);
