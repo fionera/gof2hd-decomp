@@ -1146,7 +1146,7 @@ bool LevelScript::process(int delta) {
                     rumble = 1.0f;
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
-                if (m_nScriptTimerA >= 6001) {
+                if (__builtin_expect(m_nScriptTimerA >= 6001, 0)) {
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
                     AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                             Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
