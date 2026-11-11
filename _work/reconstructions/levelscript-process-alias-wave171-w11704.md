@@ -82,13 +82,13 @@ alias covering all 5 uses of the first if block +516 (size 57,224); case-10
 alias covering the third use +1,124 (size 57,240); case-41 else-if (state 1)
 alias +303; case-41 state-3 alias +642 (size 57,224).
 
-## Neutral / not landed
+## Neutral
 
 On the 53,768 base, re-measured raw-neutral size-exact aliases (no raw change):
 `case 70` m_pHud (aligned 18,231 -> 18,027) plus m_pCamera/m_pRadar/m_pLevel
 aliases at five other blocks.  All six together stay raw 53,768 (aligned
-18,039).  Not landed: raw neutral, and the alias is not witnessed by a raw
-improvement.
+18,039).  The case-70 `Hud *hud` alias was landed (raw-neutral, aligned -204);
+the other five were not (raw neutral and no aligned gain worth the extra local).
 
 ## Landed
 
@@ -96,8 +96,9 @@ improvement.
 |---|---|---|---:|---:|
 | 1 | `ddf50627b` | re-land 11 non-regressing w11604 block aliases | 53,812 -> 53,776 | 17,932 -> 18,217 |
 | 2 | `dee995b7a` | 3 new m_pCamera block aliases (mission-0 case 2/10, case 41) | 53,776 -> 53,768 | 18,217 -> 18,231 |
+| 3 | (case-70 commit) | `Hud *hud` block alias, raw-neutral | 53,768 -> 53,768 | 18,231 -> 18,027 |
 
-Final: **raw 53,768 / aligned 18,231 / size 57,232 / `.text` 81,617** (gate
+Final: **raw 53,768 / aligned 18,027 / size 57,232 / `.text` 81,617** (gate
 byte 4507 / linked 4507 / size 4524 / data 843 / imports 207, lint CLEAN,
 drift 0, parity 5370/5370).  `.rel.plt` byte-identical.
 
@@ -110,6 +111,6 @@ cmake --preset default \
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 53768 aligned= 18231 size= 57232/57232 insn= 20730/20830
+# -> raw= 53768 aligned= 18027 size= 57232/57232 insn= 20729/20830
 cmake --build cmake-build-match --target check -j2   # RATCHET PASS
 ```
