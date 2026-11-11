@@ -22,17 +22,17 @@ Layout::Layout() {
         this->footerTextInset = (Globals::retinaDisplay ? 50 : 22);
     }
     this->field_0x10_rightMargin = Globals::iPadHD ? 52 : (Globals::n9 ? 58 : (Globals::retinaDisplay ? 74 : 37));
-    this->field_0x1c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
+    this->windowTopInset = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30));
     this->field_0xc_leftMargin = Globals::iPadHD ? 40 : (Globals::n9 ? 51 : (Globals::retinaDisplay ? 58 : 29));
     this->headerTitleY = Globals::iPadHD ? 12 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 9));
-    this->windowTopInset = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30));
+    this->field_0x1c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->field_0x24 = Globals::iPadHD ? 5 * 1.40625f : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
     this->buttonInsetX = Globals::iPadHD ? 5 * 1.40625f : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
-    this->field_0x40 = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
     this->field_0x20_top = Globals::iPadHD ? 5 * 1.40625f : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
+    this->field_0x40 = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
+    this->field_0x44 = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0x30_rowHeight = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 51 : (Globals::retinaDisplay ? 60 : 30));
     this->field_0x2c_rowHeight = Globals::iPadHD ? 4 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 6 : 3));
-    this->field_0x44 = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0x3c = Globals::iPadHD ? 82 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 118 : 59));
     this->field_0x38 = Globals::iPadHD ? 9 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 14 : 7));
     this->field_0x34 = Globals::iPadHD ? 8 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 12 : 6));
@@ -52,10 +52,10 @@ Layout::Layout() {
     this->field_0x2c4 = Globals::iPadHD ? 126 : (Globals::n9 ? 108 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
     this->field_0x98 = Globals::iPadHD ? 420 * 1.40625f : (Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420));
     int t_field_0x2c8 = Globals::iPadHD ? (int)(45 * 1.40625f) : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
-    this->field_0x2c8 = (int)(float)t_field_0x2c8;
-    this->field_0x2d0 = (int)(float)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     this->field_0x2cc = Globals::iPadHD ? 90 * 1.40625f : (Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
+    this->field_0x2d0 = (int)(float)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     this->field_0x2d8 = Globals::iPadHD ? 141 : ((Globals::retinaDisplay || Globals::n9) ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? 125 : 75));
+    this->field_0x2c8 = (int)(float)t_field_0x2c8;
     volatile unsigned char *rd = &Globals::retinaDisplay;
     if (Globals::iPadHD)
         this->field_0x2d4 = 112;
@@ -315,7 +315,6 @@ Layout::Layout() {
     this->field_0x318 = Globals::iPadLarge ? 8 : (Globals::iPad ? 4 : 0);
     this->helpWindowX = Globals::iPadHD ? 331 : (Globals::iPadLarge ? 472 : ((Globals::retinaDisplay || Globals::n9 || Globals::iPad) ? 236 : 118));
     this->helpWindowY = Globals::iPadHD ? 144 * 1.40625f : (Globals::iPadLarge ? 288 : (Globals::iPad ? 144 : (Globals::n9 ? 150 : (Globals::retinaDisplay ? 150 : 76))));
-
 }
 Layout::~Layout() {
     delete this->backButton;
