@@ -4198,7 +4198,7 @@ bool LevelScript::process(int delta) {
                     // state 0 (0x139688): once the player has won the hacking mini-game at a valid dock,
                     // rename that dock and clear its docking type, then advance to state 1 (which falls
                     // straight into the shared conclusion tail below).
-                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
+                    if (player->hackingWon() && player->isDockedToDockingPoint() &&
                         player->getHackingGameDockIndex() >= 0) {
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                             ->setName(String("", false));
