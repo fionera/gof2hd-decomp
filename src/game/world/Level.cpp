@@ -2009,8 +2009,8 @@ void Level::createMission() {
              i < guns + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(raidRace, 0, raidType, this->field_180->getWaypoint(), true, false);
             if (Globals::status->inPirateLootOrbit()) {
-                (*this->enemies)[i]->setSpeed(3.5f);
                 ((PlayerFighter *) (*this->enemies)[i])->setRotate(3);
+                (*this->enemies)[i]->setSpeed(3.5f);
                 Player *p = (*this->enemies)[i]->player;
                 p->setHitpoints(p->getMaxHitpoints() * 2);
                 this->spawnPosition = this->player->getPosition();
