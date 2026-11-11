@@ -30,6 +30,10 @@ Wave 177 ran 20 agents on the worst functions. Landed changes:
   `enemyFlagsLo` `expect(..., 1)`, and reverts of the cargo and
   `inAlienOrbit` expects. Raw **6,659 -> 6,636**. (w12109's two-expect
   variant, 6,662, is superseded.)
+* `Radar::draw` (w12209, wave 178): five size-exact operand-order cells
+  (`otherLock` recompute, enemy `inSight` y-operands, asteroid crosshair
+  bounds, enemy tractor label, asteroid tractor label). Raw
+  **6,636 -> 6,626**; aligned 1,813 -> 1,827.
 * `Layout::Layout` (w12110, recovered after timeout): swap statement units
   72/77 (`field_0x2a8_metricB` / `field_0xf0`). Raw **5,611 -> 5,604**.
 * `Level::createMission` (w12112): `alienGuns` branch instead of multiply,
@@ -53,16 +57,16 @@ size-changing and was rejected), w12106 (dispatch/pool/data-flow), w12108
 (also a note), w12109 (superseded), w12111 (Layout ternaries/tail), w12118
 (Status), w12120 (small-tail oracle).
 
-**Aligned total (15 functions): 26,601** (wave-176 base 26,033). Per
-function: LevelScript 18,941, Radar 1,813, Layout 2,334, createMission 952,
+**Aligned total (15 functions): 26,615** (wave-176 base 26,033). Per
+function: LevelScript 18,941, Radar 1,827, Layout 2,334, createMission 952,
 MGame::OnTouchEnd 1,164, HangarWindow 382, createShip 383, Status 327,
 Gun 63, SpaceLounge 41, Hud 147, Generator 21, MenuTouchWindow 16,
 ModStation 11, MGame::OnUpdate 6. Total differing bytes fall
-**80,932 -> 80,002** (-930): `.text` **79,591 -> 79,251** (-340) and
+**80,932 -> 79,992** (-940): `.text` **79,591 -> 79,241** (-350) and
 `.ARM.extab` **1,321 -> 731** (-590), plus `.note.gnu.build-id` 20.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
-**53,507** (57,232 B), `Radar::draw` **6,636** (9,908 B), `Layout` C1/C2
+**53,507** (57,232 B), `Radar::draw` **6,626** (9,908 B), `Layout` C1/C2
 **5,604** (7,072 B), `Level::createMission` **5,143** (17,172 B),
 `MGame::OnTouchEnd` **3,267** (8,080 B), `HangarWindow::render` **2,244**
 (9,700 B), `Level::createShip` **1,225** (2,764 B), `Status::missionCompleted`
@@ -72,7 +76,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MenuTouchWindow::OnTouchBegin` **28** (1,896 B),
 `MGame::OnUpdate` **16** (11,440 B).
 
-Section deltas: `.text` **79,251** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **79,241** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **731** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** (byte-identical);
 **`.rel.plt` 0 (byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
