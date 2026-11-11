@@ -18,7 +18,7 @@ aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,819** | 20,109 | 57,232 |
 | `Radar::draw` | **6,379** | 1,752 | 9,908 |
-| `Layout` C1/C2 | **5,569** | 2,434 | 7,072 |
+| `Layout` C1/C2 | **5,408** | 2,438 | 7,072 |
 | `Level::createMission` | **3,682** | 1,071 | 17,172 |
 | `MGame::OnTouchEnd` | **3,034** | 1,445 | 8,080 |
 | `HangarWindow::render` | **2,041** | 655 | 9,700 |
@@ -67,6 +67,15 @@ Landed changes:
   aligned 900 -> 1,071.
 * `MGame::OnTouchEnd` (w12415): `weaponSlot` tail order (-1) and a
   statement-order sweep (-14). Raw **3,049 -> 3,034**, aligned 1,407 -> 1,445.
+* `Layout::Layout` (w12410 recovery): statement-order permutation of the
+  independent device-constant stores (field_0x34/0x48 after field_0x58;
+  oreTextYOffset/field_0xc4/field_0xc8/hudInset/field_0xcc/field_0xbc block;
+  field_0x128 before field_0x12c; field_0x110_strip58 after
+  field_0x114_strip5c; field_0x16c before field_0x158;
+  footerButtonOffset/field_0x144 before rewardBoxHeight; rewardBoxY before
+  rewardBoxWidth; helpWindowX before field_0x1f8; rewardBoxY2 block moved to
+  the constructor tail). Raw **5,569 -> 5,408** (-161), aligned
+  2,434 -> 2,438.
 * `LevelScript::process` (w12406) found a second 26-move greedy reorder
   (raw 52,875 alone) that conflicts with w12403's; the w12403 body measures
   56 bytes better, so w12403 is kept and w12406 is a note-only supersession.
@@ -76,12 +85,12 @@ per-device branch tree), w12414 (OnTouchEnd dispatch/hasWon/touch-switch),
 w12420 (build provenance + Status TBH audit; stock NDK r18b recipe
 re-confirmed).
 
-Section deltas: `.text` **76,362** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **76,201** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **713** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **77,095**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **76,934**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 179)
