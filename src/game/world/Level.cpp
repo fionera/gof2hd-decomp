@@ -1855,7 +1855,7 @@ void Level::createMission() {
     }
     if (hasWanted)
         this->friendCount += wanted->getNumWingmen() + 1;
-    int alienGuns = alienWave * (bigAlienWave == 1 ? 8 : 7);
+    int alienGuns = alienWave ? (bigAlienWave == 1 ? 8 : 7) : 0;
     int fortressGuns = pirateFortress ? 5 : 0;
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(pirateEscorts + stationPirates + blueprint + extraAliens + pirates + convoy + fortressGuns + alienGuns +
@@ -1954,9 +1954,8 @@ void Level::createMission() {
         Vector v = {0.0f, 0.0f, 0.0f};
         int k = 0;
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
-        const int end = this->friendCount + alienGuns + this->field_164 + this->field_168;
         for (int i = this->friendCount + this->field_164 + this->field_168;
-             (i < end) & (i < this->friendCount + alienGuns + this->field_164 + this->field_168); i++, k++) {
+             i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
@@ -2125,11 +2124,10 @@ case4Tail:
     Globals *globals = Globals::globals;
     Array<KIPlayer *> *enemies = this->enemies;
     for (unsigned i = 0; i < enemies->size(); i++) {
-        KIPlayer *ship = this->createShip(
+        (*this->enemies)[i] = this->createShip(
                 8, 0, globals->getRandomEnemyFighter(8),
                 this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
-        (*enemies)[i] = ship;
-        ship->setToSleep();
+        (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
     }
