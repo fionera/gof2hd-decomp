@@ -110,8 +110,13 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
 # net raw .text diff 83,141 -> 83,139.  The instruction-index alignment moves +9 (1,446 -> 1,455);
 # raw same-address bytes are the byte-identicality ground truth.  Found by the wave-166 round-6
 # per-TU flag sweep.  See _work/reconstructions/build-provenance-round6-per-tu-flags.md.
+# The ARM `cheap-predicable-cpsr` subtarget feature is a second matching knob.  Enabling it
+# (+cheap-predicable-cpsr) leaves every function size, every non-target function and every
+# alloc section unchanged; it moves 4 more text bytes into agreement in Radar::draw
+# (raw 7,095 -> 7,091) and takes the whole-.text diff 81,825 -> 81,821.  Found by the wave-171
+# round-11 subtarget sweep.  See _work/reconstructions/build-provenance-round11-extab-flags.md.
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-licm")
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-disable-postra-machine-licm;-Xclang;-target-feature;-Xclang;+cheap-predicable-cpsr")
 
 # Level.cpp: EarlyCSE's MemorySSA mode is a matching knob.  Disabling it
 # (-mllvm -enable-earlycse-memssa=false) leaves every function size, every
