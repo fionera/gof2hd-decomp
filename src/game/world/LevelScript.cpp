@@ -3566,7 +3566,7 @@ bool LevelScript::process(int delta) {
                     Vector drift = (player->geometry->getDirection() * 6.08f
                                     + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.9f, drift.y * 0.9f, drift.z * 0.9f);
-                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                    if (__builtin_expect((((RadioMessage *) ((*messages)[1]))->isOver()), 1)) { // lint: arm_builtin
                         Vector r = player->geometry->getRightVector();
                         Vector d = player->geometry->getDirection();
                         int route0[3] = {
