@@ -684,7 +684,7 @@ bool LevelScript::process(int delta) {
             // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
-                Globals::sound->stop(player->field_0x1c);
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
                 Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
                 resetCamera(m_pLevel);
