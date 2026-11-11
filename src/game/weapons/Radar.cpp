@@ -346,7 +346,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     int missionBlocksPlanets = false;
     bool alwaysEnemySeen = false;
     bool alwaysEnemy = false;
-    if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
+    if (__builtin_expect((!mission->isEmpty()), 1) && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&  // lint: arm_builtin
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
     }
@@ -419,13 +419,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     bool landmarkHit = false;
     int notTurretMode = !turretMode;
     int notOtherLock = !otherLock;
-    if ((this->landmarks != nullptr && // lint: arm_builtin
+    if (__builtin_expect((this->landmarks != nullptr && // lint: arm_builtin
         !(Globals::status->getStation()->getIndex() == 109 ||
           Globals::status->getStation()->getIndex() == 110 ||
           (Globals::status->getStation()->getIndex() == 111 &&
-           Globals::status->getCurrentCampaignMission() > 93)))) {
+           Globals::status->getCurrentCampaignMission() > 93))), 0)) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
-            if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
+            if (i == 2 || __builtin_expect((this->landmarks->data()[i] == nullptr), 0) || !this->landmarks->data()[i]->isVisible()) {  // lint: arm_builtin
                 continue;
             }
             this->update(this->landmarks->data()[i]);
@@ -650,7 +650,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     frame = (int) ((float) (blip->getRawFrameCount() - 1) *
                                    ((float) this->planetLockTimer / (float) this->field_0x1b8));
                 } else {
-                    if ((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1))) { // lint: arm_builtin anchor: Radar::draw
+                    if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
                     blip = this->blipSprite;
@@ -688,10 +688,7 @@ enemies:
                 }
                 continue;
             }
-            bool wreck = false;
-            if (enemy->hasCargo) {
-                wreck = enemy->isDead() || enemy->isDying();
-            }
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             this->update(enemy);
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
@@ -720,13 +717,14 @@ enemies:
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
                         enemy->field_0x76 = 1;
                     } else {
+                        auto barMax = this->field_0x1c8;
                         if (!enemy->isDead()) {
                             int cx = (int) PlayerEgo::crosshairPos.x;
                             int cy = (int) PlayerEgo::crosshairPos.y;
                             enemy->field_0x73 = this->screenX > cx - this->field_0x124 &&
-                                                this->screenX < cx + this->field_0x124 &&
+                                                __builtin_expect((this->screenX < cx + this->field_0x124 &&  // lint: arm_builtin
                                                 this->screenY > cy - this->field_0x124 &&
-                                                this->screenY < cy + this->field_0x124;
+                                                this->screenY < cy + this->field_0x124), 1);
                         }
                         Player *target = enemy->player;
                         unsigned int frameImage;
@@ -743,7 +741,7 @@ enemies:
                         }
                         Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
                                                      this->screenY + this->halfScreenWidth + 2);
-                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) this->field_0x1c8;
+                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) barMax;
                         this->barWidth = (int) hull;
                         Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
                                                       this->screenX + 3 - this->halfScreenHeight,
@@ -751,7 +749,7 @@ enemies:
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
-                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) this->field_0x1c8;
+                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) barMax;
                             this->barWidth = (int) emp;
                             Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,
@@ -796,7 +794,7 @@ enemies:
                     AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
                     if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
                         inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
-                                  this->screenY < cy + this->field_0x124 && this->screenY > cy - this->field_0x124;
+                                  this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124;
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
@@ -823,7 +821,7 @@ enemies:
                 } else {
                     if (__builtin_expect(enemy->player->enemyFlagsLo, 0)) { // lint: arm_builtin anchor: Radar::draw
                         image = enemy == locked ? this->image_0x90 : this->image_0x60;
-                    } else if (enemy->player->carriesFriendCargoFlag) {
+                    } else if (__builtin_expect((enemy->player->carriesFriendCargoFlag), 1)) {  // lint: arm_builtin
                         image = enemy == locked ? this->image_0x94 : this->image_0x68;
                     } else {
                         image = enemy == locked ? this->image_0x98 : this->image_0x78;
@@ -834,7 +832,7 @@ enemies:
             }
             if (!this->level->getPlayer()->isAutoPilot() &&
                 __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
-                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || enemy->field_0x24) &&
+                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
                 (!wreck || enemy->isDead())) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
                     this->field_0x1c = enemy;
@@ -844,8 +842,8 @@ enemies:
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
-                    if (this->screenY < top + size * 2 && this->screenY > top && this->screenX > left &&
-                        this->screenX < left + size * 2) {
+                    if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                        this->screenY < top + size * 2) {
                         auto onPlanetCourse = this->field_0x1a8;
                         enemy->field_0x75 = 1;
                         if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !onPlanetCourse)) {
@@ -859,7 +857,7 @@ enemies:
                 }
             }
         tractor:
-            if (this->tractorMode2 && wreck && enemy->isDead() && this->field_0x1c == nullptr) {
+            if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
                 this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
                 enemyHit = true;
@@ -941,7 +939,7 @@ enemies:
                 }
                 enemyHit = true;
             } else {
-                if ((navWreck ? this->field_0x1c : this->lockedEnemy) == nullptr) {
+                if (*(navWreck ? &this->field_0x1c : &this->lockedEnemy) == nullptr) {
                     this->dockNavPtr = nullptr;
                 }
                 this->enemyLockTimer = 0;
@@ -950,8 +948,8 @@ enemies:
         }
     }
 
-    otherLock = this->lockedStation != nullptr || (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
-                this->field_0x1c != nullptr || this->field_0x14 != 0;
+    otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
+                this->lockedStation != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
@@ -1161,7 +1159,7 @@ asteroids:
                     }
                     canvas->DrawImage2D(image, x, y, 17, 68);
                 }
-                if (this->field_0x1c == nullptr && wreck && this->tractorMode2) {
+                if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
                     this->field_0x1c = asteroid;
                     this->dockNavPtr = asteroid;
                     asteroidHit = true;
@@ -1332,11 +1330,8 @@ asteroids_done:
                         if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
                             Globals::status->getMission()->getTargetStation() ==
                                     Globals::status->getStation()->getIndex()) {
-                            if (Globals::status->getCurrentCampaignMission() > 105) {
-                                Globals::sound->play(2242, nullptr, nullptr, 0.0f);
-                            } else {
-                                Globals::sound->play(2241, nullptr, nullptr, 0.0f);
-                            }
+                            Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242,
+                                                 nullptr, nullptr, 0.0f);
                         } else {
                             Globals::sound->play(148, nullptr, nullptr, 0.0f);
                         }
