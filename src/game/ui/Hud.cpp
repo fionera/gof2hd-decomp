@@ -1185,10 +1185,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                   this->field_0x440, armorBarY);
     if (this->hasArmorRegen) {
         int regenW = (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446);
-        // `dividerOffset` as the (unused, angle is 0) pivotY is a codegen anchor: it keeps
-        // `dividerOffset` live in `sl` across the gamma block and spills `this`, matching the
-        // original's allocation and 224-byte frame (hud-draw-wave135-w7780.md, wave137-w8218).
-        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, dividerOffset,
+        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
                                       this->field_0x440, armorBarY);
     }
     // Plain three-use form: the compiler CSEs the receiver/station loads into one and
@@ -1645,8 +1642,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
         int barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
-            int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
+            short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            short textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
             float progress = (float) transferred / (float) total;
@@ -1654,15 +1651,15 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
-            unsigned int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
-            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            int top = this->field_0x3e2;
+            unsigned int barYOffset = Globals::layout->field_0x218;
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            int top = this->field_0x3e2;
-            unsigned int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
