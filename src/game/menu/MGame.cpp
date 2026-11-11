@@ -1554,7 +1554,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     bool won = Globals::status->getMission()->hasWon() ||
                                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() == true;
                     if (won) {
-                        bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
+                        bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
                         Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                         if (mission->isInstantActionMission()) {
                             Globals::switch_to_target_setting = 2;
