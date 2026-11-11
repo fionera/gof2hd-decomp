@@ -1832,9 +1832,9 @@ void Level::createMission() {
         Globals::status->getStation()->getIndex() ==
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation())
         convoy = 1;
-    int bigAlienWave = 0;
-    int alienWave = 0;
-    int pirateFortress = 0;
+    bool bigAlienWave = false;
+    bool alienWave = false;
+    bool pirateFortress = false;
     if (*bigShipsCount <= 0 || localRace != 0) {
         if (localRace == 1 && *bigShipsCount >= 1 && Globals::rnd->nextInt(100) <= 29)
             pirateFortress = Globals::status->getCurrentCampaignMission() > 140;
@@ -1903,7 +1903,7 @@ void Level::createMission() {
     }
     int stationRace = localRace == 2 ? 0 : localRace;
     for (int i = this->friendCount + this->field_164; i < this->friendCount + this->field_164 + this->field_168; i++) {
-        if (i == this->friendCount + this->field_164 && alienWave) {
+        if (alienWave && i == this->friendCount + this->field_164) {
             if (bigAlienWave == 1) {
                 Vector pos = {(float) (Globals::rnd->nextInt(80000) - 40000), (float) (Globals::rnd->nextInt(40000) - 20000),
                               (float) (Globals::rnd->nextInt(80000) + 100000)};
@@ -1923,7 +1923,7 @@ void Level::createMission() {
             (*this->enemies)[i]->setPosition((float) (Globals::rnd->nextInt(80000) - 40000),
                                              (float) (Globals::rnd->nextInt(10000) - 5000),
                                              (float) (Globals::rnd->nextInt(80000) + 40000));
-        } else if (i == this->friendCount + this->field_164 && pirateFortress) {
+        } else if (pirateFortress && i == this->friendCount + this->field_164) {
             Vector pos = {(float) (Globals::rnd->nextInt(80000) - 40000), (float) (Globals::rnd->nextInt(40000) - 20000),
                           (float) (Globals::rnd->nextInt(80000) + 60000)};
             (*this->enemies)[i] =
@@ -1976,7 +1976,7 @@ void Level::createMission() {
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         const float *t = kBaseTurrets[0];
         for (int i = this->field_168 + this->field_164 + this->friendCount;
-             i < this->field_168 + this->field_164 + this->friendCount + fortressGuns; i++) {
+             i < this->friendCount + this->field_164 + this->field_168 + fortressGuns; i++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
@@ -2050,7 +2050,7 @@ void Level::createMission() {
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
         }
     }
-    if (extraAliens >= 1) {
+    if (__builtin_expect(extraAliens >= 1, 1)) { // lint: arm_builtin
         this->spawnPosition = this->player->getPosition();
         this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
         this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
@@ -2077,7 +2077,7 @@ void Level::createMission() {
         (*this->enemies)[this->miningPlantIndex]->player->setAlwaysFriend(true);
         ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setName(*Globals::gameText->getText(3210));
     }
-    if (blueprint) {
+    if (__builtin_expect(blueprint, 1)) { // lint: arm_builtin
         int slot = extraAliens + pirateEscorts + stationPirates + pirates + convoy + fortressGuns + alienGuns +
                    this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
         int index = Globals::status->getStation()->getHiddenBlueprintIndex();
@@ -2091,7 +2091,7 @@ void Level::createMission() {
                                             kBlueprintPositions[index][2]);
         delete wreck->cargo;
         wreck->cargo = nullptr;
-        if (Globals::status->getStation()->stationHasHiddenBlueprint(false)) {
+        if (__builtin_expect(Globals::status->getStation()->stationHasHiddenBlueprint(false), 1)) { // lint: arm_builtin
             Generator *generator = new Generator();
             wreck->cargo = generator->getLootList(115, 1);
             delete generator;
@@ -2119,11 +2119,14 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    for (unsigned i = 0; i < this->enemies->size(); i++) {
+    Globals *globals = Globals::globals;
+    AERandom *rnd = Globals::rnd;
+    Array<KIPlayer *> *enemies = this->enemies;
+    for (unsigned i = 0; i < enemies->size(); i++) {
         KIPlayer *ship = this->createShip(
-                8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
-        (*this->enemies)[i] = ship;
+                8, 0, globals->getRandomEnemyFighter(8),
+                this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
+        (*enemies)[i] = ship;
         ship->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
