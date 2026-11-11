@@ -823,7 +823,8 @@ enemies:
                 Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 goto tractor;
             }
-            if (!this->level->getPlayer()->isAutoPilot() && !this->level->getPlayer()->isDockedToDockingPoint() &&
+            if (!this->level->getPlayer()->isAutoPilot() &&
+                __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
                 !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || enemy->field_0x24) &&
                 (!wreck || enemy->isDead())) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
