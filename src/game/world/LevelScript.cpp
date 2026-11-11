@@ -4770,6 +4770,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 1;
                 }
                 if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    AEGeometry *geom = m_pGeometry4;
                     if (player->isInRocketControl()) {
                         resetCamera(m_pLevel);
                         player->setRocketControl(nullptr, nullptr);
@@ -4780,8 +4781,8 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(m_pGeometry4);
-                    m_pCamera->setPosition(m_pGeometry4->getPosition());
+                    m_pCamera->setTarget(geom);
+                    m_pCamera->setPosition(geom->getPosition());
                     m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
                     player->player->setVulnerable(false);
                     player->setFreeze(true);
