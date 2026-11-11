@@ -63,7 +63,7 @@ Section deltas: `.text` **75,015** differing bytes (size exact, 1,259,464 B);
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,680**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,681**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 181)
