@@ -4,6 +4,77 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-11 (wave 181)
+
+`check` is green: byte_exact **4507/4524**, linked_exact **4507/4524**,
+size-exact **4524/4524**, data_exact **843/843**, imports **207**, lint
+**CLEAN**, drift **0**, symbol parity **5370/5370**.
+
+* `Radar::draw` (w12508): music-tail `||` operand order — the
+  `expect(current != 151 && alwaysEnemySeen)` term moved between the range and
+  mask tests, and the stop guard written in the original's call order
+  (`inAlienOrbit` -> `isAttackedByAliens` -> `getCurrentCampaignMission`).
+  Raw **6,379 -> 6,372** (-7), aligned 1,752, size 9,908 exact.
+  `.ARM.extab` unchanged (713).
+* Section deltas: `.text` **76,193** differing bytes (was 76,200);
+  `.ARM.exidx` 0; `.ARM.extab` 713 (size/base exact 156,312 B @ `0x1a3b78`);
+  `.rodata` 0; `.rel.plt` byte-identical; `.note.gnu.build-id` 20. Total
+  differing bytes **76,926** (was 76,933). File size exact (2,187,328 B),
+  27/27 section headers exact.
+
+## Update 2026-11-11 (wave 181)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+15 functions remain non-byte-exact, all size-exact.
+
+Wave 181 ran 20 agents on the worst functions. Residual table so far (raw /
+aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **52,785** | 20,162 | 57,232 |
+| `Radar::draw` | **6,356** | 1,760 | 9,908 |
+| `Layout` C1/C2 | **5,408** | 2,438 | 7,072 |
+| `Level::createMission` | **3,680** | 1,088 | 17,172 |
+| `MGame::OnTouchEnd` | **3,034** | 1,445 | 8,080 |
+| `HangarWindow::render` | **2,014** | 678 | 9,700 |
+| `Level::createShip` | **1,214** | 396 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **148** | 147 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **39** | 11 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `LevelScript::process` (w12506 + w12504): the w12403/w12406 four-site mixed
+  reorder (2^8 search, best CDEFGHIJ) plus seven block-scoped declaration
+  moves. Raw **52,818 -> 52,785** (-33), aligned 20,109 -> 20,162.
+  w12505's four store rotations do not compose (they push the body to 57,256 B)
+  and are recorded as a superseded note.
+* `Radar::draw` (w12509): three side-effect-free `||` operand reorders in the
+  music tail (stop predicate, `play(136)` guard, ambient `play(145)` guard).
+  Raw **6,379 -> 6,356** (-23), aligned 1,752 -> 1,760. w12508's overlapping
+  music-tail reorder (6,372) is superseded.
+* `HangarWindow::render` (w12516): draw-before-setVisible / draw-before-
+  setPosition / grid draw-first. Raw **2,041 -> 2,014** (-27), aligned
+  655 -> 678.
+* `Level::createMission` (w12513): case4Tail `enemies` allocation before
+  `hunterCount`. Raw **3,682 -> 3,680** (-2), aligned 1,071 -> 1,088.
+
+Section deltas: `.text` **76,115** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **713** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **19**. Total differing bytes **76,847**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-11 (wave 180)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
