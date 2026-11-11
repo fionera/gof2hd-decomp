@@ -2400,9 +2400,9 @@ bool LevelScript::process(int delta) {
                     Vector origin = (*enemies)[0]->getPosition();
                     for (int i = 5; i != 9; i++) {
                         int dx = Globals::rnd->nextInt(10000) + 15000;
-                        KIPlayer *pirate = (*enemies)[i];
                         int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                         int dy = Globals::rnd->nextInt(10000);
+                        KIPlayer *pirate = (*enemies)[i];
                         int dz = Globals::rnd->nextInt(10000) + 15000;
                         int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
                         pirate->setPosition(origin + Vector{(float) x, (float) (dy - 5000), (float) z});
