@@ -809,25 +809,26 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // Snapshot the tab: the original's ship branch reloads it
-                            // from the stack before the upgrade check, so the two
-                            // reads are distinct values to the register allocator.
-                            int upgTab = tab;
-                            if (tab != 0) {
-                                if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
-                                    (*this->buttons)[1]->setPosition(
-                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                        this->field_0x114 + y, 18);
-                                    (*this->buttons)[1]->setVisible(true);
-                                    (*this->buttons)[1]->draw();
-                                    buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                    if (this->upgradeMode && upgTab == 1) {
-                                        (*this->buttons)[2]->setVisible(true);
-                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                          this->field_0x114 + y, 17);
-                                        (*this->buttons)[10]->setVisible(true);
-                                        (*this->buttons)[10]->draw();
-                                    }
+                            // The original's ship branch keeps the getShip() check in
+                            // the outer cleanup scope and the buttons/upgrade body in
+                            // an inner one: row 39 of the 948-byte .ARM.extab record
+                            // spans the getShip() call, row 40 the body.  The unused
+                            // local is the zero-cost scope anchor for that split.
+                            if (__builtin_expect(tab != 0, 1) && // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
+                                !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                                int upgTab = tab;
+                                (*this->buttons)[1]->setPosition(
+                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
+                                    (*this->buttons)[2]->setVisible(true);
+                                    (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                      this->field_0x114 + y, 17);
+                                    (*this->buttons)[10]->setVisible(true);
+                                    (*this->buttons)[10]->draw();
                                 }
                             }
                         } else {
