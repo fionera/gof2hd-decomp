@@ -1676,16 +1676,17 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
+                    Level *self = m_pLevel;
                     m_pCamera->translate((float) -delta, 0.0f, (float) (-3 * delta));
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        resetCamera(m_pLevel);
-                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        resetCamera(self);
+                        self->lodManager->forceUpdate(delta, false);
                         m_nState = 2;
                         m_bCinematicBreak = 0;
                     }
@@ -1764,10 +1765,11 @@ bool LevelScript::process(int delta) {
                 // enemy flag, flip all of enemies[1..3] to permanent enemies.
                 if (m_nState == 0) {
                     for (int i = 1; i <= 3; i++) {
-                        Player *ship = (*m_pLevel->getEnemies())[i]->player;
+                        Level *self = m_pLevel;
+                        Player *ship = (*self->getEnemies())[i]->player;
                         if (ship->enemyFlagsLo != 0) {
                             for (int j = 1; j != 4; ++j) {
-                                (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
+                                (*self->getEnemies())[j]->player->setAlwaysEnemy(true);
                             }
                             break;
                         }
@@ -3074,8 +3076,8 @@ bool LevelScript::process(int delta) {
                         m_nState = 7;
                     }
                 } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
+                    Level *self = m_pLevel;
                     if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
-                        Level *self = m_pLevel;
                         self->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
@@ -3086,7 +3088,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setRotationAroundTarget(false);
                     }
                     player->setTurretMode(false);
-                    resetCamera(m_pLevel);
+                    resetCamera(self);
                     if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
