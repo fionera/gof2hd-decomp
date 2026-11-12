@@ -815,27 +815,21 @@ void HangarWindow::render() {
                             // line as in the original, and the tab snapshot anchors
                             // the reload of tab at the upgrade check, so the row-39
                             // LSDA range stays 150 bytes and the function 9,700 B.
-                            if (__builtin_expect(tab != 0, 1) && // lint: arm_builtin
-                                __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
-                                int upgTab = tab;
-                                int shipRh = Globals::layout->field_0x2c_rowHeight;
+                            int upgTab = tab;
+                            if (tab != 0 && (tab != 3 || Globals::status->getShip() != this->selectedItem->ship)) {
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->draw();
                                 (*this->buttons)[1]->setVisible(true);
-                                buttonOffset = (*this->buttons)[1]->getWidth() + shipRh;
-                                if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin
-                                    // Draw-first source order is a one-byte raw
-                                    // codegen coincidence (the original block sits at
-                                    // a different address); it leaves the row-39 LSDA
-                                    // and the 9,700 B size untouched.
-                                    (*this->buttons)[2]->setVisible(true);
-                                    (*this->buttons)[10]->setVisible(true);
-                                    (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                      this->field_0x114 + y, 17);
-                                    (*this->buttons)[10]->draw();
-                                }
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            }
+                            if (this->upgradeMode && upgTab == 1) {
+                                (*this->buttons)[2]->setVisible(true);
+                                (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                  this->field_0x114 + y, 17);
+                                (*this->buttons)[10]->setVisible(true);
+                                (*this->buttons)[10]->draw();
                             }
                         } else {
                             // The original dispatches the two selected-item button
