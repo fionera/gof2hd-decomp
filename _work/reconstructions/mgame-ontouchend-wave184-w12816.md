@@ -8,14 +8,14 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 3,030 | **2,997** |
-| aligned (instruction) diff | 1,446 | 1,459 |
+| raw same-address diff bytes | 3,030 | **2,990** |
+| aligned (instruction) diff | 1,446 | 1,526 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,842 | **74,809** |
+| `.text` differing bytes | 74,842 | **74,802** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 646 | 646 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,508 | **75,475** |
+| total differing bytes | 75,508 | **75,468** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -73,6 +73,32 @@ Level::initStreamOutPosition = 1;
 
 Again all stores/getters are independent.  This is the single largest residual win
 found: raw 3,028 -> 2,997 (31 B, `.text` 74,840 -> 74,809), size exact.
+
+Fourth, in the campaign-110 branch, the `field_60 = getArmorHP()` store was moved
+from third to after `switch_to_target_setting = 0`:
+
+```cpp
+Globals::status->field_64 = this->player->player->getHitpoints();
+Globals::status->field_5c = this->player->player->getShieldHP();
+Globals::status->field_68 = this->player->player->getGammaHP();
+Level::initStreamOutPosition = 0;
+Globals::switch_to_target_setting = 0;
+Globals::status->field_60 = this->player->player->getArmorHP();  // was 3rd
+Globals::status->departStation(...);
+```
+
+Raw 2,997 -> 2,990 (8 B, `.text` 74,809 -> 74,802), size exact.  The aligned
+(instruction) diff rises to 1,526 because the block's instruction schedule shifts,
+but the raw same-address byte diff — the primary metric — falls.
+
+The second full-function sweep (712 candidates, distance 1..4) also measured these
+valid single-swap wins, all rejected in favour of the larger ones above:
+`flFastForwardWeight`/`setFastForwardMode` (3,013), `field_0xcf=0`/`createRadioMessage`
+(3,008), `pauseOpen`/`choiceWindowOpen` (2,997), campaign-65 `switch_to_target_setting`
+down one (2,996), campaign-95 `field_64`/`field_5c` (2,993), campaign-110
+`field_60`/`initStreamOutPosition` (2,991).  A swap of `initStreamOutPosition` past
+`departStation(reader->loadStation(100))` measured 2,994 but is a use-after-free and
+was rejected.
 
 ## Search context (this wave)
 
