@@ -25,7 +25,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Status::missionCompleted` | **97** | 54 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
-| `Hud::draw` | **32** | 21 | 9,332 |
+| `Hud::draw` | **19** | 6 | 9,332 |
 | `Generator::createMission` | **3** | 3 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
@@ -649,7 +649,12 @@ Landed changes:
   `.ARM.extab` 575 unchanged, build-id 20 unchanged, total
   72,436 -> 72,429. `.rel.plt` byte-identical, 27/27 headers, file size
   2,187,328 exact.
-Section deltas: `.text` **71,834** differing bytes (size exact, 1,259,464 B);
+* `Hud::draw` (w13478): fold the fade-in clamp to
+  `fadeIn < 1.0f ? fadeIn : 1.0f`. Raw **32 -> 19** (-13), aligned
+  21 -> 6. `.text` 71,834 -> 71,821 (-13), `.ARM.extab` 575 unchanged,
+  build-id 20 unchanged, total 72,429 -> 72,416. `.rel.plt` byte-identical,
+  27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **71,821** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -659,7 +664,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,429**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,416**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

@@ -1663,9 +1663,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int y2 = barYOffset + y;
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
-            float fade = 1.0f;
-            if (fadeIn < 1.0f)
-                fade = fadeIn;
+            float fade = fadeIn < 1.0f ? fadeIn : 1.0f;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
