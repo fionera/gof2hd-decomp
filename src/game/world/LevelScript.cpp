@@ -5133,10 +5133,10 @@ bool LevelScript::process(int delta) {
                             m_pGeometry1->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
                                     ->SetVisible(false);
-                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
-                                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                             m_nScriptTimerA = 0;
                             m_pRadar->lockedEnemy = nullptr;
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                             m_nState++;
                         }
                     }
