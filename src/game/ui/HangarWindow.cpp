@@ -951,13 +951,13 @@ void HangarWindow::render() {
                 }
                 int row = (unsigned char) count / 3;
                 int col = (unsigned char) count % 3;
-                int x = Globals::w / 2 - (this->buttonWidth + this->gridSpacingX) * (1 - col);
+                int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + col * (this->buttonWidth + this->gridSpacingX);
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
-                (*this->buttons)[12 + count]->draw();
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 (*this->buttons)[12 + count]->setSplitText(price);
+                (*this->buttons)[12 + count]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
@@ -1062,9 +1062,9 @@ void HangarWindow::render() {
                 int width = button->getWidth();
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
-                PaintCanvas *canvas = Globals::Canvas;
                 int textY = (int) ((float) y + (float) height * 0.2f);
                 volatile int &textYv = textY;
+                PaintCanvas *canvas = Globals::Canvas;
                 canvas->SetColor(0xffffffffu);
                 canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textYv, false);
