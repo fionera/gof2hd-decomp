@@ -995,14 +995,14 @@ enemies:
                 KIPlayer *locked = this->lockedGasCloud;
                 cloud->field_0x76 = 1;
                 this->egoPos = player->getPosition();
+                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
+                                             this->screenY, 17, 68);
                 this->targetPos = cloud->player->getPosition();
                 if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
                     this->egoPos.y - this->targetPos.y > 24000.0f || this->egoPos.y - this->targetPos.y < -24000.0f ||
                     this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
                     cloud->field_0x73 = 0;
                 }
-                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
-                                             this->screenY, 17, 68);
                 cloud->field_0x73 = 0;
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,

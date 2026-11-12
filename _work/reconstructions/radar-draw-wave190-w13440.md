@@ -153,3 +153,61 @@ same station-block permutation; every neutral station spelling is 6,284 or worse
 
 `RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
 imports 207 / lint CLEAN / drift 0 / parity 5,370.
+
+## 5. Follow-up win: gas-cloud blip draw hoist (raw 6282 -> 6235)
+
+On the post-win base (6,282), a long-distance *rotation* sweep (move one single-line
+statement to another position in the same block, distance 6-12; 744 variants) found a
+size-exact raw win in the gas-cloud block of `Radar::draw`:
+
+```cpp
+             if (this->onScreen) {
+                 KIPlayer *locked = this->lockedGasCloud;
+                 cloud->field_0x76 = 1;
+                 this->egoPos = player->getPosition();
++                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty),
++                                             this->screenX, this->screenY, 17, 68);
+                 this->targetPos = cloud->player->getPosition();
+                 if (this->targetPos.x - this->egoPos.x > 24000.0f || ...) {
+                     cloud->field_0x73 = 0;
+                 }
+-                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty),
+-                                             this->screenX, this->screenY, 17, 68);
+                 cloud->field_0x73 = 0;
+```
+
+`DrawImage2D` only reads `this->screenX/screenY` (already written by the preceding
+`this->update(cloud)`) and `this->reservationDirty`; `targetPos` is a pure assignment
+from `cloud->player->getPosition()`.  The two are independent, so hoisting the draw
+above the `targetPos` store is semantically identical.  The reorder changes the
+whole-function register allocation / block layout enough to remove 47 same-address
+bytes, almost all in the `12f650`-`12f850` and `12fd50`-`12fe50` windows.
+
+| metric | base | after |
+|---|---:|---:|
+| raw same-address diff | 6,282 | **6,235** |
+| instruction-index alignment | 1,964 | 1,979 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| instruction count | 3,542 / 3,532 | 3,542 / 3,532 |
+| `.text` differing bytes (whole `.so`) | 72,872 | **72,825** |
+| `.ARM.extab` differing bytes | 601 | 601 (no growth) |
+| `.ARM.exidx` | 0 | 0 |
+| `.rel.plt` | byte-identical | **byte-identical** |
+| `.rodata` size | 269,351 | 269,351 |
+| total (text+extab+build-id) | 73,492 | **73,446** |
+
+`RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
+imports 207 / lint CLEAN / drift 0 / parity 5,370.
+
+### Other rotation results (all >= 6,282 or size-fatal, reverted)
+
+`rota_995_1003` 6,269 / aligned 1,884; `rota_995_1005` 6,270 / 1,887;
+`rotb_1199_1210` 6,245 / 1,966 (moves the asteroid `lockedAsteroid = nullptr` store
+across the `candidateWreck` block; semantically valid but weaker than the landed
+cell); every other rotation 6,381-10,148 or size-fatal.
+
+A *swap* of the asteroid `this->lockedAsteroid = nullptr;` (line 1201) with
+`this->asteroidLockTimer += mode;` (line 1213) measures 6,256 but is **not** landed:
+it moves the timer increment inside the `if (lockedAsteroid != nullptr)` block and is
+therefore semantically wrong (the original at `12fde0`-`12fde4` stores `nullptr`
+there; the timer increment lives in the `else` branch at `12fe34`).
