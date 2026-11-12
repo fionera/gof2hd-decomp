@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,656** | 867 | 17,172 |
-| `MGame::OnTouchEnd` | **2,882** | 1,731 | 8,080 |
+| `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,191** | 600 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
