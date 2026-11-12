@@ -2188,7 +2188,7 @@ case4Tail:
                     (*stops)[2] = (*this->enemies)[8];
                     Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
                     convoyRoute->setLoop(true);
-                    for (int k = 0; k < 4; k++) {
+                    for (int k = 0; __builtin_expect(k < 4, 1); k++) { // lint: arm_builtin anchor: Level::createMission case-183; hint keeps the case blocks in source order (case1 before case2)
                         int i = 10 + k;
                         // Plain float[3]: a Vector local would emit the default-ctor zero stores
                         // even though every component is overwritten by the switch below.
@@ -2216,8 +2216,8 @@ case4Tail:
                             break;
                         case 2:
                             *(volatile float *) (offset + 1) = 0.0f;
-                            offset[0] = 25000.0f;
-                            offset[2] = -36000.0f;
+                            *(volatile float *) (offset + 0) = 25000.0f;
+                            *(volatile float *) (offset + 2) = -36000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
