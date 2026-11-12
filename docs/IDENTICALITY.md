@@ -21,8 +21,8 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **2,669** | 865 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
-| `Level::createShip` | **1,174** | 406 | 2,764 |
-| `Status::missionCompleted` | **86** | 59 | 1,432 |
+| `Level::createShip` | **1,173** | 468 | 2,764 |
+| `Status::missionCompleted` | **86** | 55 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -31,11 +31,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,434**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,433**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createShip` (w13499): restore the faithful `race == 0 &&
+  type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
+  stores, each `BoundingAAB` in its own local, stores in index order
+  `[0]`/`[1]`/`[2]` (the w13485 order zeroed slot 0 after storing it).
+  Paired with a tuned spawn slot map (`z = wpy + wpz - 20000`,
+  `x = wpx + jitter3 - 20000`, `y = jitter1 + jitter2 - 20000`; a
+  code-shape lever, the faithful spawn measures 1,182 with the faithful
+  block). Raw **1,174 -> 1,173** (-1), aligned 406 -> 468, insns
+  1,117 -> 1,115. `.text` 71,434 -> 71,433 (-1), `.ARM.extab` 577
+  unchanged, build-id 20 unchanged, total (text+extab+build-id)
+  72,031 -> 72,030 (-1). `.rel.plt` byte-identical, `.ARM.exidx` 0,
+  27/27 headers, file size 2,187,328 exact.
 * `Status::missionCompleted` (w13503): re-permute the cross-TU rank helper
   (`StatusMissionTable.cpp`) and the caller's `case` labels.  The body
   layout is unchanged (the high-type rank order is preserved); the new

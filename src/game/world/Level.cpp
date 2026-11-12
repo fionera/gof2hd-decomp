@@ -5239,13 +5239,13 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    float z = (float) (wpz + jitter3 - 20000);
+    float z = (float) (wpy + wpz - 20000);
     {
         EmpGuard guard;
         player->setEmpData(empPoints, empTime);
     }
-    int x = wpx + jitter1 - 20000;
-    float y = (float) (wpy + jitter2 - 20000);
+    int x = wpx + jitter3 - 20000;
+    float y = (float) (jitter1 + jitter2 - 20000);
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
@@ -5294,11 +5294,12 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     fixed->setWreckedMeshId(0x4780);
                 } else {
                     BoundingVolume *b0 = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
+                    ArraySetLength(3, *volumes);
                     (*volumes)[0] = b0;
                     BoundingVolume *b1 = new BoundingAAB(fx, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
-                    ArraySetLength(3, *volumes);
                     (*volumes)[1] = b1;
-                    (*volumes)[2] = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
+                    BoundingVolume *b2 = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
+                    (*volumes)[2] = b2;
                     fixed->setWreckedMeshId(0x477e);
                 }
                 break;
