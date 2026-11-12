@@ -4,6 +4,63 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-12 (wave 190)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact (15 table rows; C1/C2 pairs count twice), all size-exact.
+
+Residual table (raw / aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **51,803** | 22,193 | 57,232 |
+| `Radar::draw` | **6,301** | 1,876 | 9,908 |
+| `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
+| `Level::createMission` | **3,244** | 1,156 | 17,172 |
+| `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
+| `HangarWindow::render` | **1,360** | 530 | 9,700 |
+| `Level::createShip` | **1,195** | 396 | 2,764 |
+| `Status::missionCompleted` | **475** | 187 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **32** | 21 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **11** | 5 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **10** | 112 | 11,440 |
+
+Landed changes:
+
+* `Level::createMission` (w13373): exact 56 B `case 183` convoy switch
+  (original values, `offset[1]`/`offset[0]`/`offset[2]` store order, two
+  `volatile` stores to keep the common o2 store from sinking), the original
+  `case 183` tail order (`player->setPosition` -> `stationPosition` ->
+  `timeLimit` -> `objectivesA`), the original `case 2` `objectivesA`/
+  `objectivesB` allocation order, and the `case 4` condition-first form.
+  Raw **3,427 -> 3,244** (-183), aligned 1,003 -> 1,156. `.text`
+  73,487 -> 73,304 (-183), `.ARM.extab` 610 -> 603 (-7), build-id 20
+  unchanged, total (text+extab+build-id) 74,117 -> 73,927 (-190).
+  `.rel.plt` byte-identical, `.ARM.exidx` 0, 27/27 headers, file size
+  2,187,328 exact. The `volatile int offset` in the `case 2` convoy loop is
+  a codegen lever (same values, same RNG consumption) that restores the
+  original 17,172 B literal-pool alignment.
+
+Section deltas: `.text` **73,304** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
+the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
+**269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
+`.rodata`..`.fini_array` gap at `0x20b977`); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
+back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
+and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
+**73,927**. File size is exact (2,187,328 B), and 27/27 section headers are
+present. The only program-header delta is the R E LOAD FileSiz/MemSiz
+`0x20b977 -> 0x20ba37` (+0xc0).
+
 ## Update 2026-11-12 (wave 189)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,

@@ -2200,32 +2200,32 @@ case4Tail:
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                         switch (k) {
                         case 0:
+                            offset[1] = -3000.0f;
                             offset[0] = 20000.0f;
-                            offset[1] = 0.0f;
                             offset[2] = -50000.0f;
                             break;
                         case 1:
-                            offset[2] = -36000.0f;
-                            offset[1] = -3000.0f;
-                            offset[0] = 25000.0f;
-                            break;
-                        case 2:
-                            offset[0] = 10000.0f;
                             offset[1] = -7000.0f;
+                            offset[0] = 10000.0f;
                             offset[2] = -30000.0f;
                             break;
+                        case 2:
+                            *(volatile float *) (offset + 1) = 0.0f;
+                            offset[0] = 25000.0f;
+                            offset[2] = -36000.0f;
+                            break;
                         default:
-                            offset[2] = -45000.0f;
-                            offset[0] = 12000.0f;
                             offset[1] = 6000.0f;
+                            offset[0] = 12000.0f;
+                            *(volatile float *) (offset + 2) = -45000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
                     }
-                    this->stationPosition = this->player->getPosition();
                     this->player->setPosition(-30000.0f, 5000.0f, -100000.0f);
-                    this->objectivesA = new Objective(3, 181000, this);
+                    this->stationPosition = this->player->getPosition();
                     this->timeLimit = 181000;
+                    this->objectivesA = new Objective(3, 181000, this);
                     return;
                 }
                 case 3:
@@ -2285,7 +2285,7 @@ case4Tail:
                     this->enemies = new Array<KIPlayer *>();
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
-                    int offset = 0;
+                    volatile int offset = 0;
                     for (int i = 0; i < convoyEnd; i++) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
                                                                nullptr, true, false);
@@ -2313,8 +2313,8 @@ case4Tail:
                         (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                     }
-                    this->objectivesB = new Objective(18, convoyEnd, total, this);
                     this->objectivesA = new Objective(18, 0, convoyEnd, this);
+                    this->objectivesB = new Objective(18, convoyEnd, total, this);
                     return;
                 }
                 case 6: {
@@ -2520,7 +2520,8 @@ case4Tail:
                     return;
                 }
                 case 4: {
-                    if (Globals::rnd->nextInt(2) != 0) {
+                    int roll = Globals::rnd->nextInt(2);
+                    if (roll != 0) {
                         this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
                         goto case4Tail;
                     }
