@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,691** | 21,967 | 57,232 |
-| `Radar::draw` | **6,065** | 2,043 | 9,908 |
+| `LevelScript::process` | **51,690** | 21,967 | 57,232 |
+| `Radar::draw` | **6,064** | 2,043 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
@@ -621,7 +621,19 @@ Landed changes:
   173 -> 54. `.text` 71,946 -> 71,908 (-38) on that base, `.ARM.extab`
   unchanged. `.rel.plt` byte-identical, 27/27 headers, file size
   2,187,328 exact.
-Section deltas: `.text` **71,861** differing bytes (size exact, 1,259,464 B);
+* `LevelScript::process` (w13475): move `m_pCamera->setActive(true)` below
+  the `camPos` initialiser in the case-69 wake-up block. Raw
+  **51,691 -> 51,690** (-1), aligned 21,967 unchanged. `.text` -1,
+  `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers, file
+  size 2,187,328 exact.
+* `Radar::draw` (w13465 pass 3): make all three gas-cloud far-distance
+  tests target-ego ordered. Raw **6,065 -> 6,064** (-1), aligned 2,043
+  unchanged. `.text` -1, `.ARM.extab` unchanged. `.rel.plt` byte-identical,
+  27/27 headers, file size 2,187,328 exact.
+* `LevelScript::process` (w13454 follow-up): case-125 direction offset
+  first. This is the same move already landed from w13453, so it is
+  note-only on current master.
+Section deltas: `.text` **71,859** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -631,7 +643,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,456**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,454**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

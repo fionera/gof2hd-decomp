@@ -108,3 +108,31 @@ more same-address byte (aligned 2,025 -> 2,032):
 
 `RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
 imports 207 / lint CLEAN / drift 0 / parity 5,370.
+
+## 4. Follow-up win: gas-cloud 24,000-box axis form (raw 6176 -> 6175)
+
+The gas-cloud box test spelled the x axis as `targetPos - egoPos` but the y/z axes as
+`egoPos - targetPos`.  Making all three axes `targetPos - egoPos` is semantically identical
+(the `> +24000 || < -24000` pair is symmetric under a sign flip) and removes one more
+same-address byte:
+
+```cpp
+                 if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
+-                    this->egoPos.y - this->targetPos.y > 24000.0f || this->egoPos.y - this->targetPos.y < -24000.0f ||
+-                    this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
++                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f ||
++                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f) {
+```
+
+| metric | base | after |
+|---|---:|---:|
+| raw same-address diff | 6,176 | **6,175 (-1)** |
+| instruction-index alignment | 2,032 | 2,032 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes | 72,131 | **72,130 (-1)** |
+| `.ARM.extab` differing bytes | 577 | 577 (no growth) |
+| `.rel.plt` | byte-identical | **byte-identical** |
+| total (text+extab+build-id) | 72,728 | **72,727** |
+
+`RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
+imports 207 / lint CLEAN / drift 0 / parity 5,370.

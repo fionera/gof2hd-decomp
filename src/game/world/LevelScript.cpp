@@ -2439,8 +2439,8 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setActive(true);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                    m_pCamera->setActive(true);
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 10000.0f;
                     m_pCamera->enableFirstPersonCam(false);

@@ -79,3 +79,65 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so \
 
 Scratch: `/home/debian/GalaxyOnFire2/scratch/w13472` (`sweep.py`, `b1.py`..
 `b16.py`, `runs.py`, `cc.sh`, `score.py`).
+
+## 5. Follow-up cells (same session, after landing 138)
+
+All measured with the real `link_so` build (`tools/fn_diff.py`), landed body as
+the base, size 1948 unless noted. None beat 138; they are recorded so the next
+worker does not re-run them.
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| **landed (rect x reload)** | **138** | **87** | **1948** |
+| rect x + rect y both reload (`top - Globals::layout->field_0x94`) | 310 | 90 | 1948 |
+| rect y reload only (rect x = `x - pad`) | 1412 (obj proxy) | – | 1964 |
+| rect lineHeight via local `layout` | 142 | 93 | 1948 |
+| `int above = top - pad;` after lineHeight (both calls use `above`) | 138 | 87 | 1948 |
+| `int above` + rect y reload | 138 | 87 | 1948 |
+| `int left = x - pad;` for both calls (no field reload) | 175 | 41 | 1948 |
+| `int left` + `int above` locals | 175 | 41 | 1948 |
+| `int boxW = pad * 2 + width;` | 517 | 79 | 1952 |
+| `int pad` moved after `centerX` | 1872 | 208 | 1976 |
+| `int x = centerX;` moved before `width` | 193 | 87 | 1952 |
+| `int x = centerX;` moved right after `centerX` | 138 | 87 | 1948 |
+| `int x = centerX + 0;` | 138 | 87 | 1948 |
+| `int x = <recomputed centerX expression>` | 1087 | 158 | 1948 |
+| `int top = ... (pad * 2)` | 138 | 87 | 1948 |
+| `int pad2 = pad + pad; int top = ... pad2` (named local) | 138 | 87 | 1948 |
+| named `pad2` used in the right arm too | 1553 | 167 | 1960 |
+| right arm `-(width + pad + pad)` | 139 | 88 | 1948 |
+| right arm `w - inset - width - pad - pad` | 481 | 100 | **1944** (fatal) |
+| right arm `w - (inset + width + pad + pad)` | 533 | 90 | 1952 |
+| right arm `w - inset + (-(width + pad + pad))` | 139 | 88 | 1948 |
+| clamp condition `inset > x - pad` | 140 | 89 | 1948 |
+| clamp condition `w - inset < pad + x + width` | 139 | 88 | 1948 |
+| clamp condition `x - Globals::layout->field_0x94` (reload) | 545 | 91 | 1952 |
+| then-arm `inset + Globals::layout->field_0x94` (reload) | 141 | 87 | 1948 |
+| right arm both pads reloaded from `Globals::layout` | 159 | 89 | 1948 |
+| drawBox width `Globals::layout->field_0x94 * 2 + width` | 1891 | 254 | 1980 |
+| drawBox x reload (`x - Globals::layout->field_0x94`) | 1883 | 163 | 1948 |
+| drawBox y reload (`top - Globals::layout->field_0x94`) | 1873 | 168 | 1948 |
+| top computed with two field reloads | 1538 | 177 | 1964 |
+| `__builtin_expect(this->mode == 0, 1)` | 1854 | 642 | 1968 |
+| `__builtin_expect(this->hoverAgent < 0, 0)` | 977 | 281 | 1948 |
+| plain `if (agent->isKnown())` (drop the expect anchor) | 1872 | 183 | 1976 |
+
+### Why 138 is a local optimum
+
+The residual 138 bytes (linked, same-address) break down as: early-block
+Canvas/agentRects register roles 20, pad/pad2 load+mov 4, x `vmov` 1, clamp
+condition 8, clamp right arm 33, join 40, epilogue/landing pads 36 (roughly).
+
+Forcing the original's `pad=r9, x=r5` colouring (rect x+y reload) is possible
+and does reproduce the original's `ldr.w r9,[r6,#148]`/`mov.w sl,r9,lsl#1`/
+`vmov r5,s18` exactly, but the body then diverges in the join and in the
+conversation-mode block, so raw rises to 310.  The original's right arm
+(`addgt.w r1, r6, sl; subgt r5, r0, r1`) needs `pad2` as a single reused value;
+every source spelling that makes clang emit that pair either grows the body
+(`pad2` local -> 1960, `2 * pad` -> 1960) or shrinks it (`- width - pad - pad`
+-> 1944), so none is gate-safe.  The +1 instruction in the landing-pad block
+(ours has an extra branch-only pad at `0x171484`) is an EH call-site-table
+difference and is not reachable from the mode-0 statement order.
+
+Scratch: `scratch/w13472/landed_src.cpp`, `body_landed.txt`, `sweepL.py`,
+`evalbody.py`, `scoreobj.py`, `runs.py`.
