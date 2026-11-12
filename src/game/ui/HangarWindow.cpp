@@ -816,7 +816,7 @@ void HangarWindow::render() {
                             // the reload of tab at the upgrade check, so the row-39
                             // LSDA range stays 150 bytes and the function 9,700 B.
                             if (__builtin_expect(tab != 0, 1) && // lint: arm_builtin
-                                __builtin_expect(tab != 3 || this->selectedItem->ship != Globals::status->getShip(), 1)) { // lint: arm_builtin
+                                __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
                                 int upgTab = tab;
                                 int shipRh = Globals::layout->field_0x2c_rowHeight;
                                 (*this->buttons)[1]->setPosition(
