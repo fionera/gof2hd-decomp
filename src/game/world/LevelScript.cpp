@@ -994,10 +994,10 @@ bool LevelScript::process(int delta) {
                     ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
-                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
-                            ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     m_nState = 1;
                     m_nScriptTimerA = 0;
+                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
+                            ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     return 1;
                 }
