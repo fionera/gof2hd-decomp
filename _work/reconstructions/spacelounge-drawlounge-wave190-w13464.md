@@ -203,3 +203,58 @@ Scratch: `/home/debian/GalaxyOnFire2/scratch/w13464` (`tryvar.py`,
 `/tmp/llvm_android_702b/build2/bin/clang++`; its `HINTVREG`/`PRIOVREG`/
 `NOEVICT`/`XWFACTOR`/`FORCEVREG` knobs and the `RA_TRACE` env are documented
 above (register numbers offset by 66).
+
+## 8. Addendum (same session): MIR phi/coalescing detail and extra cells
+
+The final pre-RA MIR (`-mllvm -print-after=...`, function body at the last
+`# Machine code for function _ZN11SpaceLounge10drawLoungeEv` block) shows the
+join block as:
+
+```
+%43:rgpr = PHI %3:rgpr, %bb.41, %42:gpr, %bb.42, %40:gpr, %bb.40
+%489 = t2SUBrr %389:rgpr, %2:rgpr     ; top - pad
+%490 = t2SUBrr %43:rgpr, %2:rgpr      ; x - pad   <-- uses the PHI, not %388
+%47 = COPY %488 ; boxW
+%46 = COPY %489 ; top-pad
+%45 = COPY %490 ; x-pad
+```
+
+So the pad uses consume the join PHI `%43`, and the coalescer merges that PHI
+with the `centerX` vreg (`%388`, the `COPY %386:spr` that carries the `$r3`
+allocation hint): the RA trace interval is
+`[6784r,6896B:0)[6912r,6976B:2)[6976B,7168B:0)[7232r,7280B:1)[7280B,11088r:3]`
+— one vreg live through the join to 11088r.  `%46` starts at 7568r, inside
+that last segment, hence the cost-0 eviction of x from r5.  The original needs
+`%388`=r5 (ends before the join) and the PHI in r5 then split to r9 after the
+`drawBox` call; the merged vreg makes that split impossible.  The faithful
+right arm (`-(width + pad*2)`) does emit the original's
+`addgt.w r1, r6, sl ; subgt r1, r0, r1`, but its pad interval is 6368 (one
+fewer pad use) and pad is fully spilled/split (`FINAL %2 -> $noreg`, then
+`%644/%645/%646`), giving 445.
+
+Extra source cells (all measured with the official command; HEAD is
+175/41/1948):
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| `x = w - inset + (-pad - pad - width)` (reordered neg) | 175 | 41 | 1948 |
+| `x = w - inset - width + (-pad - pad)` | 175 | 41 | 1948 |
+| `x = w - inset - (width + pad) - pad` | 469 | 65 | 1944 (fatal) |
+| `x = w - (inset + width + pad + pad)` | 477 | 77 | 1952 (fatal) |
+| `x = w - inset + (-width - (pad + pad))` | 445 | 54 | 1948 |
+| `if (x < inset + pad)` / `if (x < pad + inset)` | 492 | 73 | 1944 (fatal) |
+| `if (pad > x - inset)` | 178 | 43 | 1948 |
+| `else if (width + x + pad > w - inset)` | 175 | 41 | 1948 |
+| `else if ((pad + x) + width > ...)` / `pad + (x + width)` | 175 | 41 | 1948 |
+| `else if (pad + x + width + inset > w)` | 524 | 100 | 1940 (fatal) |
+| `boxW = width + pad * 2` | 175 | 41 | 1948 |
+| `boxW = pad + pad + width` / `width + pad + pad` | 1851 | 249/250 | 1964 (fatal) |
+| `top = bottomRight.y - (float)pad - (float)pad` | 1845 | 163 | 1968 (fatal) |
+| `centerX = (int)((topLeft.x + bottomRight.x) * 0.5f)` | 182 | 46 | 1948 |
+| `int left = x - pad; int above = top - pad;` locals | 175 | 41 | 1948 |
+| same, locals also used in DrawRectangle | 175 | 41 | 1948 |
+| drawBox before DrawRectangle / reordered | 1884 | 268 | 1980 (fatal) |
+| `SetColor(0xffffffff)` moved after centerX | 1506 | 201 | 1944 (fatal) |
+
+The `left`/`above` locals do not change the MIR order (`%489` top-pad is still
+before `%490` x-pad), so the eviction is unchanged.

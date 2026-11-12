@@ -4152,9 +4152,9 @@ bool LevelScript::process(int delta) {
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     KIPlayer *enemy = (*enemies)[i];
                     if (enemy->shipGroup == 8 && enemy->isDead()) {
-                        (*enemies)[i]->revive();          // vtable+0x18
                         Vector playerPos = player->getPosition();
                         (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                        (*enemies)[i]->revive();          // vtable+0x18
                         (*enemies)[i]->player->setEnemy(player->player);
                         delete (*enemies)[i]->cargo;
                         (*enemies)[i]->cargo = nullptr;
