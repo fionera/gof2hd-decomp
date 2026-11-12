@@ -23,7 +23,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `HangarWindow::render` | **1,355** | 617 | 9,700 |
 | `Level::createShip` | **1,192** | 396 | 2,764 |
 | `Status::missionCompleted` | **468** | 193 | 1,432 |
-| `Gun::calcCharacterCollision` | **457** | 84 | 1,984 |
+| `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
@@ -180,7 +180,13 @@ Landed changes:
   73,025 -> 73,018 (-7), `.ARM.extab` 603 and build-id 20 unchanged,
   total (text+extab+build-id) 73,648 -> 73,641 (-7). `.rel.plt`
   byte-identical, 27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **73,018** differing bytes (size exact, 1,259,464 B);
+* `Gun::calcCharacterCollision` (w13388): sink the scatter falloff clamp
+  below the EMP block so the EMP damage uses the unclamped falloff (the
+  original order). Raw **457 -> 455** (-2), aligned 84 -> 93. `.text`
+  73,018 -> 73,016 (-2), `.ARM.extab` 603 and build-id 20 unchanged,
+  total (text+extab+build-id) 73,641 -> 73,639 (-2). `.rel.plt`
+  byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **73,016** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -190,7 +196,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,641**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,639**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

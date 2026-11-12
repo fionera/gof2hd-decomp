@@ -730,13 +730,13 @@ void Gun::calcCharacterCollision() {
                     int diff = this->magnitude - distance;
                     if (__builtin_expect(diff > 0, 0)) {  // lint: arm_builtin
                         float falloff = (float) diff / (float) this->magnitude;
+                        if (this->empDamage > 0) {
+                            enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
+                        }
                         if (falloff > 1.0f) {
                             falloff = 1.0f;
                         } else if (falloff < 0.0f) {
                             falloff = 0.0f;
-                        }
-                        if (this->empDamage > 0) {
-                            enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
                         enemy->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
                     }
