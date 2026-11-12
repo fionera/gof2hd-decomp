@@ -820,11 +820,11 @@ void HangarWindow::render() {
                             // keeps the function at 9,700 B.
                             if (tab != 0 && __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
                                 int upgTab = tab;
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->setVisible(true);
-                                (*this->buttons)[1]->draw();
                                 buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
                                 if (this->upgradeMode && upgTab == 1) {
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
