@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,674** | 22,003 | 57,232 |
-| `Radar::draw` | **6,056** | 1,950 | 9,908 |
+| `Radar::draw` | **6,055** | 1,950 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,669** | 865 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,492**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,491**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -689,8 +689,15 @@ Landed changes:
   71,811 (-6), `.ARM.extab` 575 unchanged, build-id 20 unchanged, total
   72,412 -> 72,406. `.rel.plt` byte-identical, 27/27 headers, file size
   2,187,328 exact.
-Section deltas: `.text` **71,811** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
+* `Radar::draw` (w13489 wave 191b): station-blip pointer spelling — the
+  unchanged `sf, dr, rp` call order now spells `setFrame`/`draw` through
+  `this->blipSprite` and `blip` respectively (same pointer, semantically
+  identical). Raw **6,060 -> 6,059** (-1), aligned 2,027 unchanged.
+  `.text` 71,804 -> 71,803 (-1), `.ARM.extab` 582 unchanged, build-id 20
+  unchanged, total 72,406 -> 72,405. `.rel.plt` byte-identical, 27/27
+  headers, file size 2,187,328 exact.
+Section deltas: `.text` **71,803** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **582** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,644** (+0x1e5: the 484 B w13431 rank helper fills the first 0x1e5 bytes of the
@@ -699,7 +706,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,406**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,405**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
