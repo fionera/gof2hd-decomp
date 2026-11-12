@@ -16,10 +16,10 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,930** | 20,928 | 57,232 |
+| `LevelScript::process` | **51,917** | 20,935 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
-| `Layout` C1/C2 | **5,345** | 2,713 | 7,072 |
-| `Level::createMission` | **3,491** | 991 | 17,172 |
+| `Layout` C1/C2 | **5,272** | 2,727 | 7,072 |
+| `Level::createMission` | **3,486** | 1,013 | 17,172 |
 | `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
@@ -43,15 +43,26 @@ Landed changes:
   aligned 2,681 -> 2,713.
 * `Level::createMission` (w13214 pass 2): case-1 `options[44]` hoist.
   Combined raw **3,500 -> 3,491** (-9), aligned 991.
-* Notes-only: w13209 (Radar branch/landing-pad re-sweep) and w13219
-  (small-tail re-sweep) found no size-exact source win.
+* `LevelScript::process` (w13201): same-receiver adjacent swaps. Raw
+  **51,930 -> 51,928** (-2), aligned 20,929.
+* `LevelScript::process` (w13203): case-6 chaser compare operand order.
+  Combined raw **51,928 -> 51,917** (-11), aligned 20,935.
+* `Layout` C1/C2 (w13212): third store swap (`field_0x54`/`field_0x78`).
+  Combined raw **5,345 -> 5,272** (-73), aligned 2,727.
+* `Level::createMission` (w13214 pass 3): outer-pirates
+  `spawnPosition`/`setPosition` swap. Combined raw **3,493 -> 3,488** (-5).
+* `Level::createMission` (w13215 pass 6): case-183 convoy switch case-0
+  store rotate. Combined raw **3,488 -> 3,486** (-2), aligned 1,013.
+* Notes-only: w13204, w13209, w13217, w13219 and w13220 found no
+  size-exact source win. w13218's 721 -> 449 Status result uses the
+  fixed-address `0x20b977` rank table and is not landed (manual data).
 
-Section deltas: `.text` **74,196** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,105** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,855**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,764**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 187)

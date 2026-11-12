@@ -75,6 +75,15 @@ window permutations) found a larger move: units **97 and 100** exchanged
 unchanged 2,521/2,552, aligned 2,713.  `check` PASS with the same gate
 counts.
 
+### Third win (full 2-opt re-sweep, post-win)
+
+A fresh exhaustive 2-opt sweep on the improved order (20,103 valid swaps)
+found a distant pair: units **18 and 28** exchanged (`field_0x54` /
+`field_0x78`).  Proxy 5,279 -> **5,206** (-73); linked raw **5,345 ->
+5,272** (-73), size exact 7,072/7,072, instruction count unchanged
+2,521/2,552, aligned 2,713 -> 2,727.  `check` PASS with the same gate
+counts.
+
 Further K=5..7 / 3-opt / distance-11..20 passes are recorded below as they
 land.
 
