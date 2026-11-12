@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
-| `HangarWindow::render` | **1,191** | 600 | 9,700 |
+| `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -36,6 +36,18 @@ Current section deltas: `.text` **71,433**, `.ARM.extab` **585**, `.ARM.exidx` *
 
 Landed changes:
 
+* `HangarWindow::render` (w13543): restore the wave-190 ship-body order
+  (`setVisible`, `upgTab` snapshot, `draw`, `setPosition`, `buttonOffset`)
+  while keeping the w13527 body-scope `upgTab` and the `buttons[10]`-
+  before-`buttons[2]` upgrade order.  The `setPosition`-first order only
+  pays off with the snapshot hoisted above the guard (where it costs a
+  separate `getShip` cleanup scope); with the body-scope snapshot it
+  costs 153 raw / 153 `.text` bytes.  Raw 1,191 -> **1,038** (-153),
+  aligned 600 -> 620.  `.text` 71,487 -> **71,334** (-153), `.ARM.extab`
+  586 -> **577** (-9), build-id 20 unchanged.  The render LSDA row 39
+  becomes `(2508, 172, 9664)` (both encodes are two uleb bytes, so the
+  call-site table stays aligned).  Size 9,700/9,700, `.rel.plt`
+  byte-identical, RATCHET PASS.
 * `Level::createMission` (w13538): case-183 convoy switch block order and
   case-4 dispatch `expect`. Raw **2,656 -> 2,628** (-28), aligned 867 ->
   844. `.text` 71,461 -> 71,433 (-28), `.ARM.extab` 586 -> 585 (-1).
