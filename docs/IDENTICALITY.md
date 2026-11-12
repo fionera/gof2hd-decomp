@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **2,661** | 863 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **928** | 469 | 9,700 |
-| `Level::createShip` | **1,173** | 468 | 2,764 |
+| `Level::createShip` | **1,167** | 398 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
@@ -31,11 +31,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,260**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,254**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createShip` (w13501): reassociate the spawn-coordinate block
+  around the `setEmpData` guard (`z = wpx + wpy - 20000` before it;
+  `x = wpz + jitter3 - 20000`, `y = jitter1 + jitter2 + jitter3 - 20000`
+  after it). Raw **1,173 -> 1,167** (-6), aligned 468 -> 398. `.text`
+  71,260 -> 71,254 (-6), `.ARM.extab` 582 unchanged, build-id 20
+  unchanged, total (text+extab+build-id) 72,476 -> 72,470 (-6).
+  `.rel.plt` byte-identical, `.ARM.exidx` 0, size 2,764 exact.
 * `HangarWindow::render` (w13522): hoist the `tab` snapshot above the
   ship guard and reorder the upgrade-button body (`setPosition` before
   `setVisible`/`draw`, `buttons[2]->setVisible` before `buttons[10]`).

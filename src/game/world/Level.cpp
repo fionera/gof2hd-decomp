@@ -2290,17 +2290,18 @@ case4Tail:
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
                     Vector asteroidPos = {0.0f, 0.0f, 0.0f};
-                    int offset = 0;
-                    for (int i = 0; i < convoyEnd; i++, offset += 2000) {
+                    volatile int offset = 0;
+                    for (int i = 0; i < convoyEnd; i++) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
                                                                nullptr, true, false);
                         KIPlayer *ship = (*this->enemies)[i];
                         ship->setPosition((float) (offset + this->enemyRoute->getWaypoint(0)->x),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->y),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->z));
-                        (*this->enemies)[i]->player->setAlwaysEnemy(true);
-                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->getRoute()->reachWaypoint(0);
+                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+                        (*this->enemies)[i]->player->setAlwaysEnemy(true);
+                        offset += 2000;
                     }
                     for (int j = 0; (unsigned) (convoyEnd + j) < this->enemies->size(); j++) {
                         (*this->enemies)[convoyEnd + j] = this->createShip(
@@ -2309,10 +2310,11 @@ case4Tail:
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
                         Array<KIPlayer *> *enemies = this->enemies;
-                        (*enemies)[convoyEnd + j]->cargo = nullptr;
-                        ((PlayerFighter *) (*enemies)[convoyEnd + j])->crateCaptured() = 0;
-                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
+                        KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
+                        ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
                         (*enemies)[convoyEnd + j]->setSpeed(0.0f);
+                        convoyShip->cargo = nullptr;
+                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
                     }
@@ -5238,13 +5240,13 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    float z = (float) (wpy + wpz - 20000);
+    float z = (float) (wpx + wpy - 20000);
     {
         EmpGuard guard;
         player->setEmpData(empPoints, empTime);
     }
-    int x = wpx + jitter3 - 20000;
-    float y = (float) (jitter1 + jitter2 - 20000);
+    int x = wpz + jitter3 - 20000;
+    float y = (float) (jitter1 + jitter2 + jitter3 - 20000);
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
@@ -5293,12 +5295,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     fixed->setWreckedMeshId(0x4780);
                 } else {
                     BoundingVolume *b0 = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
-                    ArraySetLength(3, *volumes);
                     (*volumes)[0] = b0;
                     BoundingVolume *b1 = new BoundingAAB(fx, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
+                    ArraySetLength(3, *volumes);
                     (*volumes)[1] = b1;
-                    BoundingVolume *b2 = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
-                    (*volumes)[2] = b2;
+                    (*volumes)[2] = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
                     fixed->setWreckedMeshId(0x477e);
                 }
                 break;
