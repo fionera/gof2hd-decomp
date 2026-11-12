@@ -3537,9 +3537,9 @@ bool LevelScript::process(int delta) {
                         player->setFreeLookMode(false);
                         player->player->setVulnerable(false);
                         player->setVisible(false);
-                        wcamera->setTarget((*enemies)[0]->geometry);
                         m_nScriptTimerA = 0;
                         wcamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
+                        wcamera->setTarget((*enemies)[0]->geometry);
                         for (int k = 2; k != 10; k++) {
                             (*enemies)[k]->setPosition(1000000.0f, 1000000.0f, 1000000.0f);
                             (*enemies)[k]->setActive(false);
