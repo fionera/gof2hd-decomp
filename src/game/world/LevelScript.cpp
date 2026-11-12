@@ -2917,8 +2917,8 @@ bool LevelScript::process(int delta) {
                         m_dirVec = player->geometry->getRightVector();
                         m_nState = 6;
                         m_tempVec += m_dirVec * 10000.0f;
-                        m_dirVec = player->geometry->getDirection();
                         m_tempVec += m_dirVec * 700.0f;
+                        m_dirVec = player->geometry->getDirection();
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setTarget(player->geometry);
                     }
@@ -4524,9 +4524,9 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->player->setVulnerable(false);
                     player->setSpeed(0.0f);
-                    player->setComputerControlled(true);
                     m_pCamera->enableFirstPersonCam(false);
                     field_0xaa = player->autoTurretIsEnabled();
+                    player->setComputerControlled(true);
                     if (field_0xaa) {
                         player->setAutoTurret(false);
                     }
@@ -5203,13 +5203,13 @@ bool LevelScript::process(int delta) {
                         Globals::status->nextCampaignMission(true);
                         Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
-                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = player->player->getHitpoints();
                         m_nState++;
                         Globals::status->field_5c = player->player->getShieldHP();
                         Globals::status->field_60 = player->player->getArmorHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
-                        Globals::status->field_64 = player->player->getHitpoints();
+                        Globals::switch_to_target_setting = 1;
                         Globals::status->field_68 = player->player->getGammaHP();
                         Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
