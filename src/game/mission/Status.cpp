@@ -1433,7 +1433,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 7:
+            case 6:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 unsigned j = 0;
@@ -1451,7 +1451,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 8:
+            case 7:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     BluePrint *bluePrint = (*bluePrints)[m->getStatusValue()];
                     Array<int> *ingredients = bluePrint->getIngredientList();
@@ -1468,7 +1468,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 10:
+            case 8:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     Array<Item *> *cargo = ship->getCargo();
@@ -1482,20 +1482,20 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 12:
+            case 10:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 34:
+            case 21:
                 if (Globals::status->field_178 >= m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;
                 }
                 break;
-            case 14:
+            case 13:
                 if (atStation) {
                     Array<Item *> *equipment = ship->getEquipment();
                     for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1505,12 +1505,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 15:
+            case 14:
                 if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
                     return m;
                 }
                 break;
-            case 16:
+            case 15:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1520,7 +1520,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 18:
+            case 16:
                 if (atStation) {
                     return m;
                 }
@@ -1528,7 +1528,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 20:
+            case 18:
  {
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
@@ -1542,17 +1542,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 21:
+            case 19:
                 if (longMission) {
                     return m;
                 }
                 break;
-            case 22:
+            case 20:
                 if (notAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 13:
+            case 12:
                 if (m->getStatusValue() == 0) {
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
@@ -1561,12 +1561,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 37:
+            case 22:
                 if (shortMission) {
                     return m;
                 }
                 break;
-            case 38:
+            case 34:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
