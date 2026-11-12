@@ -201,3 +201,4 @@ src/engine/render/ParticleSettings.cpp
 src/engine/render/ParticleSystemMesh.cpp
 src/engine/core/Array.cpp
 src/engine/core/ArrayInstantiations.cpp
+src/game/mission/StatusMissionTable.cpp

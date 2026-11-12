@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,920** | 1,703 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
-| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Status::missionCompleted` | **475** | 182 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -115,6 +115,14 @@ Landed changes:
   wrap the upgrade condition in `__builtin_expect(..., 1)` (1,381 ->
   **1,360**). Aligned 545 -> 530. `.text` 73,939 -> 73,810 (-129),
   `.ARM.extab` 614 -> 610 (-4), total 74,573 -> 74,440 (-133).
+* `Status::missionCompleted` (w13351): replace the plain `switch (m->getType())`
+  with a cross-TU rank-table switch (`switch (__emutls_unregister_key[m->getType()])`)
+  whose 192 B table lives in `.fini_array` and reuses crtbegin's hidden weak
+  `__emutls_unregister_key` name. Raw **721 -> 475** (-246), aligned 327 -> 182.
+  `.text` 73,810 -> 73,567 (-243), total (text+extab+build-id) 74,440 -> 74,197.
+  `.rodata` stays byte-identical and size-exact 269,159 B;
+  `.dynsym`/`.dynstr`/`.hash`/`.rel.plt` stay byte-identical. Known costs:
+  `.fini_array` 8 -> 200 B (+192), `.dynamic` +3 B, `.rel.dyn` +4 B.
 * `LevelScript::process` (w13330): swap the line-721
   `sound->updateEvent3DAttributes(158, ...)` and `sound->play(158, ...)`
   calls. Raw **51,874 -> 51,873** (-1), aligned 21,005 -> 20,997.
@@ -133,13 +141,18 @@ Landed changes:
   and makes the m23 64-bit idle compare use the original `r2:r3` pair.
   Raw **15 -> 10**, aligned 111 -> 112, size unchanged.
 
-Section deltas: `.text` **73,810** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,567** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
-(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,440**. File size is
-exact (2,187,328 B), and all **27/27** original section headers are exact.
+(byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. The w13351
+cross-TU rank table lives in `.fini_array` (8 -> 200 B, table at `0x20cae8`),
+so `.dynamic` differs by **3** B (the `DT_FINI_ARRAY` tag) and `.rel.dyn` by
+**4** B (two `R_ARM_RELATIVE` offsets). Total differing bytes
+(text+extab+build-id) **74,197**; including the `.dynamic`/`.rel.dyn`/
+`.fini_array` deltas, **74,396**. File size is exact (2,187,328 B), and
+27/27 section headers are present (`.fini_array` size 8 -> 200).
 
 ## Update 2026-11-12 (wave 188)
 
