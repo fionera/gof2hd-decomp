@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,063** | 20,759 | 57,232 |
+| `LevelScript::process` | **52,062** | 20,759 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,358** | 2,626 | 7,072 |
 | `Level::createMission` | **3,517** | 1,009 | 17,172 |
@@ -46,15 +46,17 @@ Landed changes:
 * `LevelScript::process` (w13007): alias-pair pass 1 plus castalias pass 2
   (cache the PlayerFighter downcast in the state-1 message-2 block). Raw
   **52,074 -> 52,063** (-11), aligned 20,765 -> 20,759.
+* `LevelScript::process` (w13005): 2-opt neutral pair. Raw
+  **52,063 -> 52,062** (-1), aligned unchanged 20,759.
 * `HangarWindow::render` (w13017): buy-list price-before-description order.
   Raw unchanged 1,512, aligned 723 -> 643 (stepping stone).
 
-Section deltas: `.text` **74,373** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,372** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,040**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,039**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 185)

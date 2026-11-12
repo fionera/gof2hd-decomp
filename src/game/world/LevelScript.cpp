@@ -1867,14 +1867,14 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->setFreeLookMode(false);
+                    m_pRadar->enabled = 0;
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pCamera->setLookAtCam(true);
-                    resetCamera(m_pLevel);
                     m_pCamera->enableFirstPersonCam(false);
                     player->player->setVulnerable(false);
                     m_pHud->visible = 0;
-                    m_pRadar->enabled = 0;
                     player->stopShooting(0);
+                    resetCamera(m_pLevel);
                     player->setComputerControlled(true);
                     m_pCamera->setPosition(player->geometry->getPosition());
                     Vector *frame = &m_tempVec; // LevelScript tempVec @0x28
