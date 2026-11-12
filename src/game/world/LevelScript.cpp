@@ -1322,7 +1322,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 4;
                     (*enemies)[2]->setVisible(true);
                     Globals::layout->startFade(false, -1, 10000);
-                    for (unsigned int i = 3; i < enemies->count; i++) {
+                    for (unsigned int i = 3; enemies->count > i; i++) {
                         (*enemies)[i]->player->setHitpoints(0);
                     }
                     m_nScriptTimerA = 0;
@@ -2578,7 +2578,7 @@ bool LevelScript::process(int delta) {
                         // Wait for any escort (enemies[8+]) whose EMP points dropped below max.
                         for (unsigned int i = 8; i < enemies->count; ++i) {
                             if ((*enemies)[i]->field_0x40 != 0 &&
-                                (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]->player->getMaxEmpPoints()) {
+                                (*enemies)[i]->player->getMaxEmpPoints() > (*enemies)[i]->player->getEmpPoints()) {
                                 m_nState = 2;
                                 break;
                             }
