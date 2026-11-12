@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,710** | 21,914 | 57,232 |
+| `LevelScript::process` | **51,706** | 21,914 | 57,232 |
 | `Radar::draw` | **6,265** | 2,010 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,984** | 1,119 | 17,172 |
@@ -444,7 +444,16 @@ Landed changes:
   72,282 -> 72,273 (-9), `.ARM.extab` 584 unchanged, build-id 20, total
   72,886 -> 72,877 (-9). `.rel.plt` byte-identical, 27/27 headers, file size
   2,187,328 exact.
-Section deltas: `.text` **72,273** differing bytes (size exact, 1,259,464 B);
+* `LevelScript::process` (w13442 pass 4): hoist the dead `m_tempVec.z +=
+  1000.0f` ahead of the `enableSystemEmit`/`systemSetMatrix` pair. Raw
+  **51,710 -> 51,708** (-2), aligned 21,914 unchanged.
+* `LevelScript::process` (w13452): `killLiberator()` before
+  `setRocketControl(nullptr, nullptr)` in the teardown block. Raw
+  **51,708 -> 51,706** (-2), aligned 21,914 unchanged. Combined `.text`
+  72,273 -> 72,269 (-4), `.ARM.extab` 584 unchanged, build-id 20, total
+  72,877 -> 72,873 (-4). `.rel.plt` byte-identical, 27/27 headers, file size
+  2,187,328 exact.
+Section deltas: `.text` **72,269** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -454,7 +463,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,877**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,873**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
