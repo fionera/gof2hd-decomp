@@ -1235,10 +1235,10 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->awake();                                  // vtable+0xc
                 }
                 m_nState = 12;
-                m_tempVec = (*enemies)[enemies->count - 10]->geometry->getPosition();
                 m_tempVec.y += 500.0f;    // @0x13bdd4
                 m_tempVec.z += -20000.0f; // @0x13bdd8
                 m_pLevel->lodManager->forceUpdate(30, false);
+                m_tempVec = (*enemies)[enemies->count - 10]->geometry->getPosition();
                 m_tempVec.x += 2000.0f;   // @0x13bdd0
                 m_nScriptTimerA = 0;
                 m_pCamera->setTarget((*enemies)[enemies->count - 10]->geometry);
