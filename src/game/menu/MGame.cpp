@@ -1603,8 +1603,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             goto finishMission;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 65) {
-                            Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::switch_to_target_setting = 1;
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             FileRead *reader = new FileRead();
                             Globals::status->field_68 = this->player->player->getGammaHP();
