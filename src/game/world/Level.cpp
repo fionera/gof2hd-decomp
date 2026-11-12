@@ -2047,8 +2047,8 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             float oz = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             Vector pos = {pirateBase.x + ox, pirateBase.y + oy, pirateBase.z + oz};
             (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
@@ -2221,8 +2221,8 @@ case4Tail:
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
                     }
-                    this->player->setPosition(-30000.0f, 5000.0f, -100000.0f);
                     this->stationPosition = this->player->getPosition();
+                    this->player->setPosition(-30000.0f, 5000.0f, -100000.0f);
                     this->objectivesA = new Objective(3, 181000, this);
                     this->timeLimit = 181000;
                     return;
@@ -5232,13 +5232,13 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = wpx + jitter1 - 20000;
-    float y = (float) (wpy + jitter2 - 20000);
     float z = (float) (wpz + jitter3 - 20000);
     {
         EmpGuard guard;
         player->setEmpData(empPoints, empTime);
     }
+    int x = wpx + jitter1 - 20000;
+    float y = (float) (wpy + jitter2 - 20000);
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {

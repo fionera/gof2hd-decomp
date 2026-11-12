@@ -1900,8 +1900,8 @@ bool LevelScript::process(int delta) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                 } else if (((RadioMessage *) ((*messages)[2]))->isOver() && __builtin_expect(m_nState == 1, 1)) { // lint: arm_builtin
-                    m_pRadar->enabled = 1;
                     Level *self = m_pLevel;
+                    m_pRadar->enabled = 1;
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
                     m_nState = 2;
@@ -1914,7 +1914,7 @@ bool LevelScript::process(int delta) {
                     if (m_pGeometry6 != nullptr) {
                         delete m_pGeometry6;
                     }
-                    self->objectivesA = new Objective(3, 180000, m_pLevel);
+                    self->objectivesA = new Objective(3, 180000, self);
                     m_pGeometry6 = nullptr;
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     self->lodManager->forceUpdate(delta, false);
@@ -2493,13 +2493,13 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLookAtCam(true);
                     radar->enabled = 0;
                     m_pCamera->setActive(true);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos.x += -600.0f;
                     camPos.y += -300.0f;
                     camPos.z += -1000.0f;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
                     camPos += dir * 3000.0f;
                     m_pCamera->setPosition(camPos);
                     player->freeze = 1; // PlayerEgo+0x24
@@ -2900,6 +2900,7 @@ bool LevelScript::process(int delta) {
                         player->setTurretMode(false);
                         player->setFreeLookMode(false);
                         player->hideShipForFirstPersonCameraView(false);
+                        (*enemies)[0]->player->setHitpoints(0);
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
@@ -2908,7 +2909,6 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setLookAtCam(true);
                         AEGeometry *ship = player->geometry;
                         m_tempVec = player->geometry->getPosition();
-                        (*enemies)[0]->player->setHitpoints(0);
                         m_pRadar->enabled = 0;
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
                                                    self->getPlayer()->getPosition()
@@ -3714,7 +3714,6 @@ bool LevelScript::process(int delta) {
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
                         m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
-                        m_pCamera->setLookAtCam(true);
                         player->hideShipForFirstPersonCameraView(false);
                         m_pRadar->enabled = 0;
                         player->setFreeLookMode(false);
@@ -3732,6 +3731,7 @@ bool LevelScript::process(int delta) {
                         *tmp = ref2->getUpVector();
                         *camPos += *tmp * 400.0f;
                         m_nScriptTimerA = 0;
+                        m_pCamera->setLookAtCam(true);
                         m_nScriptTimerB = 0;
                         player->stopShooting(0);
                         m_pCamera->setPosition(*camPos);
@@ -4749,7 +4749,6 @@ bool LevelScript::process(int delta) {
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         player->setFreeze(false);
-                        m_pCamera->setTarget(player->geometry);
                         player->setSpeed(2.0f);
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
@@ -4760,6 +4759,7 @@ bool LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         m_bCinematicBreak = 0;
                         if (field_0xaa) {
+                        m_pCamera->setTarget(player->geometry);
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
