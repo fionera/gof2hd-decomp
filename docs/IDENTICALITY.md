@@ -17,12 +17,12 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,691** | 21,967 | 57,232 |
 | `Radar::draw` | **6,065** | 2,043 | 9,908 |
-| `Layout` C1/C2 | **5,244** | 2,727 | 7,072 |
+| `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,176** | 404 | 2,764 |
-| `Status::missionCompleted` | **145** | 173 | 1,432 |
+| `Status::missionCompleted` | **97** | 54 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -608,7 +608,20 @@ Landed changes:
   of the already-reloaded `pad` local. Raw **175 -> 138** (-37), aligned
   41 -> 87. `.text` -37, `.ARM.extab` 578 -> 575 (-3). `.rel.plt`
   byte-identical, 27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **71,910** differing bytes (size exact, 1,259,464 B);
+* `Layout::Layout` (w13467): fold the `field_0x114_strip5c` equal-arm
+  ternary to `(iPadHD || (!n9 && !retinaDisplay)) ? 1 : -1`. Raw
+  **5,244 -> 5,243** (-1), aligned 2,727 -> 2,728. `.text` -1,
+  `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers, file
+  size 2,187,328 exact.
+* `Status::missionCompleted` (w13477 passes 1/2): pass 1 restores the
+  case-10 dead re-query after the `isInList` test (raw 145 -> 135);
+  pass 2 restores the faithful `Globals::status->currentCampaignMission`
+  case-208 chain and the plain `field_178 >= getStatusValue()` case-20
+  compare (raw 135 -> 97). Combined raw **145 -> 97** (-48), aligned
+  173 -> 54. `.text` 71,946 -> 71,908 (-38) on that base, `.ARM.extab`
+  unchanged. `.rel.plt` byte-identical, 27/27 headers, file size
+  2,187,328 exact.
+Section deltas: `.text` **71,861** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -618,7 +631,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,505**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,456**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

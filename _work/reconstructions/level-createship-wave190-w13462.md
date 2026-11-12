@@ -86,6 +86,35 @@ literal spellings (`0.0f`, `-(15852.0f)`, `(float) 2004`, named
 `setBV` placement, coordinate-type/jitter sweeps, `switch(race)` case
 order, and the real-`new` variants (`RNF`/`RNG`/`RNF_NS`).
 
+### 2a. Additional neutral / rejected cells (this session, base = 1,182)
+
+All size-exact unless noted; `.ARM.extab` 156,312.
+
+| cell | raw | aligned | note |
+|---|---:|---:|---|
+| waypoint decl x assign order, 36 permutations | 1,182 | 397-400 | neutral; 4 decl permutations give size 2,768 |
+| `int mission = 0;` instead of `int mission;` | 1,182 | 397 | neutral |
+| `lodManager->addObject(fixed->geometry)` (drop local `g`) | 1,184 | 397 | worse |
+| `fixed->setBV(volumes)` moved before `setShipGroup` (matches original call order) | 1,188 | 393 | worse raw, better aligned |
+| `empPoints = (getLevel() > 20 ? 20 : getLevel()) * 5 + 40` | 1,189 | 395 | worse |
+| mission `EmpGuard` removed | 1,146 | 370 | **gate-fatal**: `.ARM.extab` 156,308, `.ARM.exidx` diff 1,307 |
+| `int x` before the setEmpData block, `float y` after | 2,249 | 485 | size 2,768 |
+| all of x/y/z before setEmpData (x,y,z order) | 1,199 | 397 | worse |
+| all of x/y/z after setEmpData | 1,353 | 470 | worse |
+| all-int x/y/z + `float fx/fy/fz` in capital arm | 2,293-2,305 | ~500 | size 2,752-2,768 |
+| `float fx = x` removed, implicit int->float at every use | 1,187 | 398 | worse |
+| `float z`/`float y` as `(float)(a+b) - 20000.0f` | 2,143 | 474 | size 2,776 |
+| box[9] full 6x6 w/h/d sweep | best 1,182 | 397 | landed; next best 1,184/393 (`[10]` ey/ez original + dims permuted) |
+
+The remaining 1,182 differing bytes are dominated by a ~4-byte stream
+shift that starts at `0xc031c` (our `str.w r9,[sp,#56]` `this`-spill is
+sunk into the `empPoints` ternary block; the original places it after
+the join at `0xc0332`) and a second divergence at `0xc03c8` (the
+original computes all three of x/y/z as ints *before* `setEmpData` and
+converts them together just before the `PlayerFixedObject` ctor; ours
+converts `z` before `setEmpData` and `y` before the branch).  Fixing
+either would re-sync a large tail region.
+
 ## 3. Gate
 
 `cmake --build cmake-build-match --target check -j2` -> **RATCHET PASS**:
