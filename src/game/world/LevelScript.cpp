@@ -1445,7 +1445,7 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
             }
         }
-        if (m_nState == 2 && m_nScriptTimerA >= 2000) {
+        if (__builtin_expect((m_nState == 2 && m_nScriptTimerA >= 2000), 0)) { // lint: arm_builtin
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setStatusValue(1);
         }
         return 1;
@@ -3148,7 +3148,7 @@ bool LevelScript::process(int delta) {
                 } else if (__builtin_expect(m_nState == 8, 0)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
-                    if (__builtin_expect(m_nScriptTimerA >= 8001, 1)) { // lint: arm_builtin
+                    if ((m_nScriptTimerA >= 8001)) { // lint: arm_builtin
                         m_dirVec = (*enemies)[3]->geometry->getDirection();
                         resetCamera(m_pLevel);
                         m_pCamera->setTarget((*enemies)[3]->geometry);
@@ -4732,7 +4732,7 @@ bool LevelScript::process(int delta) {
                     if (__builtin_expect(m_nScriptTimerA >= 2001, 1)) { // lint: arm_builtin
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*enemies)[i];
-                            if (ship->shipGroup == 9) {
+                            if (__builtin_expect((ship->shipGroup == 9), 1)) { // lint: arm_builtin
                                 ship->field_0x25 = 1;
                                 ship->setActive(true);
                                 (*enemies)[i]->setVisible(true);
@@ -5181,7 +5181,7 @@ bool LevelScript::process(int delta) {
                                             - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
                                             Vector{0.0f, 0.0f, 0.0f});
                     }
-                    if (m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700) {
+                    if (__builtin_expect((m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700), 0)) { // lint: arm_builtin
                         (*enemies)[stationIndex]->setVisible(false);
                         m_pGeometry1->setVisible(false);
                         Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
