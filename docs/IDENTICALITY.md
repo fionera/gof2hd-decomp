@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,308** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,444** | 1,021 | 17,172 |
-| `MGame::OnTouchEnd` | **2,920** | 1,703 | 8,080 |
+| `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
 | `Level::createShip` | **1,200** | 484 | 2,764 |
 | `Status::missionCompleted` | **475** | 182 | 1,432 |
@@ -143,6 +143,11 @@ Landed changes:
   `lodManager->addObject(g)` (same call, different address computation).
   Raw **1,202 -> 1,200** (-2), aligned unchanged 484. `.text` 73,554 ->
   73,552 (-2), total (text+extab+build-id) 74,184 -> 74,182.
+* `MGame::OnTouchEnd` (w13357): reorder the mission-type-183 escort block to
+  `setMission`, `active = 0`, `setEquipment`, `setFreelanceMission`,
+  `field_0x1e0 = level->killCountB` (all independent). Raw **2,920 -> 2,913**
+  (-7), aligned 1,703 -> 1,706. `.text` 73,552 unchanged, `.ARM.extab` 610
+  unchanged, total (text+extab+build-id) 74,182 unchanged.
 * `LevelScript::process` (w13330): swap the line-721
   `sound->updateEvent3DAttributes(158, ...)` and `sound->play(158, ...)`
   calls. Raw **51,874 -> 51,873** (-1), aligned 21,005 -> 20,997.

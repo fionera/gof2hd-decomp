@@ -1766,11 +1766,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
                                                           0, Globals::status->getStation()->getIndex(), 1);
                             Item *escortItem = (*Globals::items)[216]->makeItem(10);
-                            this->field_0x1e0 = this->level->killCountB;
-                            Globals::status->getShip()->setEquipment(escortItem, 0);
                             Globals::status->setMission(escort);
-                            Globals::status->setFreelanceMission(escort);
                             this->active = 0;
+                            Globals::status->getShip()->setEquipment(escortItem, 0);
+                            Globals::status->setFreelanceMission(escort);
+                            this->field_0x1e0 = this->level->killCountB;
                             Globals::appManager->SetCurrentApplicationModule(2);
                             return;
                         }
