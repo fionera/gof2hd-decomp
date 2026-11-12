@@ -2529,8 +2529,8 @@ bool LevelScript::process(int delta) {
                         Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                         (*m_pLevel->getEnemies())[0]->setRoute(nullptr);
                         camPos.x += -600.0f;
-                        camPos.y += 800.0f;
                         m_pCamera->setPosition(camPos);
+                        camPos.y += 800.0f;
                         camPos += dir * 2000.0f;
                         camPos.z += -1000.0f;
                         m_nState = 2;
