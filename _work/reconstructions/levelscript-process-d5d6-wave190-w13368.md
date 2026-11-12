@@ -116,3 +116,12 @@ camera `setPosition`/`setTarget`, `m_nState`/`setCollide`, and
 22,280, size 57,232/57,232. `.text` 73,254 -> 73,250 (-4), `.ARM.extab` 606
 unchanged, build-id diff 20 -> 19, total 73,880 -> 73,875 (-5). `check` green,
 RATCHET PASS.
+
+## Current-master harvest (wave 190, follow-up 4)
+
+Re-applied the last two d5 reorders on current master (`bea73c49b`):
+`hideShipForFirstPersonCameraView`/`setComputerControlled` and camera
+`setTarget`/`lodManager->forceUpdate`. LevelScript raw **51,765 -> 51,763** (-2),
+aligned 22,287, size 57,232/57,232. `.text` 73,250 -> 73,248 (-2),
+`.ARM.extab` 606 unchanged, build-id diff 19 -> 20, total 73,875 -> 73,874 (-1).
+`check` green, RATCHET PASS.

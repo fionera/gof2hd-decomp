@@ -1714,12 +1714,12 @@ bool LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);
                     player->setFreeLookMode(false);
                     resetCamera(m_pLevel);
-                    player->hideShipForFirstPersonCameraView(false);
+                    player->setComputerControlled(true);
                     m_bCinematicBreak = 1;
                     player->stopShooting(0);
                     m_pRadar->enabled = 0;
                     m_pHud->visible = 0;
-                    player->setComputerControlled(true);
+                    player->hideShipForFirstPersonCameraView(false);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -2267,12 +2267,12 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     Vector camPos = (*enemies)[0]->getPosition();
                     m_pCamera->setActive(true);
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     camPos.z += 3000.0f;
                     camPos += (*enemies)[0]->geometry->getDirection() * 10000.0f;
                     camPos.y += 300.0f;
                     m_pCamera->setPosition(camPos);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_nState = 1;
                 } else if (m_nState == 1) {
                     m_pLevel->lodManager->forceUpdate(delta, false);

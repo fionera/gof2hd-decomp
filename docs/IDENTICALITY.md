@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,765** | 22,280 | 57,232 |
+| `LevelScript::process` | **51,763** | 22,287 | 57,232 |
 | `Radar::draw` | **6,291** | 1,828 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,244** | 1,156 | 17,172 |
@@ -104,6 +104,11 @@ Landed changes:
   `setLookAtCam`/`resetCamera`. Raw **51,769 -> 51,765** (-4), aligned
   22,280. `.text` 73,254 -> 73,250 (-4), build-id diff 20 -> 19,
   total 73,880 -> 73,875 (-5).
+* `LevelScript::process` (w13368 follow-up 2): two more d5 reorders:
+  `hideShipForFirstPersonCameraView`/`setComputerControlled` and camera
+  `setTarget`/`lodManager->forceUpdate`. Raw **51,765 -> 51,763** (-2),
+  aligned 22,287. `.text` 73,250 -> 73,248 (-2), build-id diff 19 -> 20,
+  total 73,875 -> 73,874 (-1).
 * `LevelScript::process` (w13369 follow-up 2): move `Vector zero` before
   `wcamera->setTarget(marker)` in the mission-89 camera block. Raw
   **51,785 -> 51,784** (-1), aligned 22,210; it composes with w13368 to
@@ -115,17 +120,17 @@ Landed changes:
   **6,293 -> 6,291** (-2), aligned 1,828. The w13375 Hangar commit was a
   duplicate of the already-landed w13379 operand order.
 
-Section deltas: `.text` **73,250** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,248** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **606** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
 `.rodata`..`.fini_array` gap at `0x20b977`); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
-`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **19**. `.fini_array` is
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,875**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,874**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
