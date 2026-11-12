@@ -739,12 +739,12 @@ bool LevelScript::process(int delta) {
             // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
             m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
             if (((RadioMessage *) ((*messages)[8]))->isOver()) {
-                m_nState = 4;
+                m_pLevel->getPlayer()->setCollide(true);
                 player->setComputerControlled(false);
                 m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
+                m_nState = 4;
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setTarget(player->geometry);
                 m_pCamera->setLookAtCam(false);
@@ -1694,12 +1694,12 @@ bool LevelScript::process(int delta) {
                     self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         cam1688->setTarget(player->geometry);
-                        cam1688->setLookAtCam(false);
+                        resetCamera(self);
                         player->setComputerControlled(false);
                         m_pRadar->enabled = 1;
                         m_pHud->visible = 1;
                         m_bCinematicBreak = 0;
-                        resetCamera(self);
+                        cam1688->setLookAtCam(false);
                         self->lodManager->forceUpdate(delta, false);
                         m_nState = 2;
                     }
@@ -3570,13 +3570,13 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                         player->player->setVulnerable(true);
                         m_pHud->visible = 1;
-                        m_pCamera->setPosition(m_dirVec);
+                        m_pCamera->setTarget(player->geometry);
                         m_pRadar->enabled = 1;
                         m_pLevel->getPlayer()->resetGunDelay();
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
-                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setPosition(m_dirVec);
                         m_nState++;
                         m_nScriptTimerA = 0;
                     }

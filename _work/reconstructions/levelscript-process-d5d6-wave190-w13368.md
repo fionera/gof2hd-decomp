@@ -107,3 +107,12 @@ Current master before this group was raw 51,784; after it is raw **51,769**
 (-15), aligned 22,259, size 57,232/57,232. `.text` 73,269 -> 73,254 (-15),
 `.ARM.extab` 606 unchanged, total 73,895 -> 73,880 (-15). `check` green,
 RATCHET PASS.
+
+## Current-master harvest (wave 190, follow-up 3)
+
+Re-applied the three follow-up d5/d6 reorders on current master (`b65d28c2b`):
+camera `setPosition`/`setTarget`, `m_nState`/`setCollide`, and
+`setLookAtCam`/`resetCamera`. LevelScript raw **51,769 -> 51,765** (-4), aligned
+22,280, size 57,232/57,232. `.text` 73,254 -> 73,250 (-4), `.ARM.extab` 606
+unchanged, build-id diff 20 -> 19, total 73,880 -> 73,875 (-5). `check` green,
+RATCHET PASS.
