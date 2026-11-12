@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,559** | 22,789 | 57,232 |
-| `Radar::draw` | **6,015** | 1,941 | 9,908 |
+| `LevelScript::process` | **51,554** | 22,800 | 57,232 |
+| `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
@@ -31,11 +31,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,276**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,269**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13541): enemy-guard ABCDE order. Raw **6,015 -> 6,013**
+  (-2), aligned 1,941 -> 1,965. `.text` 71,276 -> 71,274 (-2).
+* `LevelScript::process` (w13524): pass 7, timer between matrix build and
+  `systemSetMatrix`. Raw **51,559 -> 51,556** (-3). `.text` -3.
+* `LevelScript::process` (w13516): multi-line d6 shift-5, mission-end
+  statics. Raw **51,556 -> 51,554** (-2). `.text` -2.
 * `LevelScript::process` (w13516): multi-line d5 shift-1, hacking dock
   release. Raw **51,561 -> 51,559** (-2). `.text` 71,278 -> 71,276 (-2),
   `.ARM.extab` 576 unchanged.
