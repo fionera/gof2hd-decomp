@@ -8,15 +8,15 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 2,972 | **2,961** |
-| aligned (instruction) diff | 1,602 | 1,602 |
+| raw same-address diff bytes | 2,972 | **2,936** |
+| aligned (instruction) diff | 1,602 | 1,689 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,591 | **74,580** |
+| `.text` differing bytes | 74,591 | **74,555** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 647 | 647 |
 | `.ARM.exidx` diff | 0 | 0 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,258 | **75,247** |
+| total differing bytes | 75,258 | **75,222** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -87,6 +87,34 @@ Three same-block statement transpositions, each moving independent stores/getter
    ```
 
    Independent stores/getters. Raw 2,964 -> 2,961.
+
+## Second round (iterative re-sweep)
+
+After landing the three swaps above (raw 2,961), the same 1..4 transposition sweep was
+re-run over lines 1630-1760 and iterated to a fixed point.  Six further independent
+store/getter transpositions were found and stacked (each re-swept before the next):
+
+| block | swap | raw after |
+|---|---|---:|
+| 100 | `Level::initStreamOutPosition = 0` <-> `field_5c = getShieldHP()` | 2,957 |
+| 110 | `field_5c = getShieldHP()` <-> `Level::initStreamOutPosition = 0` | 2,955 |
+| 126 | `switch_to_target_setting = 1` <-> `field_60 = getArmorHP()` | 2,953 |
+| 155 | `switch_to_target_setting = 1` <-> `Level::initStreamOutPosition = 1` | 2,951 |
+| tail | `field_60 = getArmorHP()` <-> `switch_to_target_setting = 0` | 2,950 |
+| 110 | `field_64 = getHitpoints()` <-> `switch_to_target_setting = 0` | 2,945 |
+| 110 | `SetCurrentApplicationModule(5)` <-> `field_68 = getGammaHP()` | 2,943 |
+| 110 | `departStation(...getStation(10))` <-> `field_68 = getGammaHP()` | 2,938 |
+| 110 | `field_64 = getHitpoints()` <-> `field_68 = getGammaHP()` | 2,937 |
+| 110 | `field_68 = getGammaHP()` <-> `field_5c = getShieldHP()` | **2,936** |
+
+The mission-110 block was re-permuted to
+`switch_to_target_setting, initStreamOutPosition, field_5c, enterSpaceLounge,
+field_68, field_60, field_64` before `departStation`; the block-100 order is
+`SetCurrentApplicationModule, field_64, field_60, field_68, field_5c,
+initStreamOutPosition, switch_to_target_setting, departStation`.  All are independent
+stores or pure `Player::get*HP` reads, so the reorders are behaviour-preserving.
+The aligned metric rises to 1,689 (the schedule moves), but raw — the primary
+metric — falls by 36 bytes total.
 
 ## Method
 
