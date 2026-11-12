@@ -2952,9 +2952,9 @@ bool LevelScript::process(int delta) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         Vector ref = (*enemies)[3]->getPosition();
+                        m_nScriptTimerA = 0;
                         (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
-                        m_nScriptTimerA = 0;
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
@@ -3997,9 +3997,9 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
+                            KIPlayer *pirate = (*enemies)[i];
                             Vector playerPos = player->getPosition();
                             (*enemies)[i]->awake();
-                            KIPlayer *pirate = (*enemies)[i];
                             int sideX = Globals::rnd->nextInt(100);
                             int offsetY = Globals::rnd->nextInt(1000);
                             int offsetZ = Globals::rnd->nextInt(2000);
