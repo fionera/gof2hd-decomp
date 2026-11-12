@@ -2256,8 +2256,9 @@ case4Tail:
                     float difficulty = (float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f;
                     int friends = Globals::rnd->nextInt(5);
                     float attackers = (float) ((int) difficulty + 3);
+                    float opt44 = *(float *) &Globals::options[44];
                     this->enemies = new Array<KIPlayer *>();
-                    int attackerCount = (int) (attackers + (*(float *) &Globals::options[44] - 0.5f) * attackers);
+                    int attackerCount = (int) (attackers + (opt44 - 0.5f) * attackers);
                     ArraySetLength(attackerCount + friends + 3, *this->enemies);
                     for (int i = 0; i < attackerCount; i++) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),

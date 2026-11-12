@@ -18,8 +18,8 @@ aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,930** | 20,928 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
-| `Layout` C1/C2 | **5,353** | 2,681 | 7,072 |
-| `Level::createMission` | **3,500** | 997 | 17,172 |
+| `Layout` C1/C2 | **5,345** | 2,713 | 7,072 |
+| `Level::createMission` | **3,491** | 991 | 17,172 |
 | `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
@@ -38,13 +38,20 @@ Landed changes:
   **3,510 -> 3,502** (-8), aligned 998 -> 996.
 * `Level::createMission` (w13215): `alienGuns` cargo-store reorder. Combined
   raw **3,502 -> 3,500** (-2), aligned 997.
+* `Layout` C1/C2 (w13212): `field_0x8c`/`field_0x9c` and
+  `field_0x148`/`field_0x204` store swaps. Raw **5,353 -> 5,345** (-8),
+  aligned 2,681 -> 2,713.
+* `Level::createMission` (w13214 pass 2): case-1 `options[44]` hoist.
+  Combined raw **3,500 -> 3,491** (-9), aligned 991.
+* Notes-only: w13209 (Radar branch/landing-pad re-sweep) and w13219
+  (small-tail re-sweep) found no size-exact source win.
 
-Section deltas: `.text` **74,213** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,196** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,872**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,855**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 187)
