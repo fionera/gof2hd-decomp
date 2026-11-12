@@ -4,7 +4,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-12 (wave 190)
+## Update 2026-11-12 (wave 191)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,679** | 22,003 | 57,232 |
-| `Radar::draw` | **6,060** | 2,027 | 9,908 |
+| `LevelScript::process` | **51,674** | 22,003 | 57,232 |
+| `Radar::draw` | **6,059** | 2,027 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
-| `Level::createMission` | **2,966** | 1,125 | 17,172 |
-| `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
+| `Level::createMission` | **2,964** | 1,124 | 17,172 |
+| `MGame::OnTouchEnd` | **2,887** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,174** | 406 | 2,764 |
 | `Status::missionCompleted` | **97** | 54 | 1,432 |
@@ -30,6 +30,9 @@ Residual table (raw / aligned / size; all size-exact):
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
+
+Current section deltas: `.text` **71,803**, `.ARM.extab` **582**, `.ARM.exidx` **0**,
+`.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 

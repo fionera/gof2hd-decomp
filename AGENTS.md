@@ -86,18 +86,18 @@ Known gate limitations (do not lean on them):
 - Lint waivers are same-line only, every criterion — a waiver on a neighbouring line waives
   nothing.
 
-## Current state (2026-11-03, wave 92)
+## Current state (2026-11-12, wave 191)
 
-`check` is green: byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact
+`check` is green: byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact
 **4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
-**CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 24 functions are not
+**CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 17 functions are not
 byte-exact. All **27 original ELF section headers are byte-identical** (no extra section);
 `.text`, `.rodata`, `.data`,
 `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
 `.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. `.ARM.extab` is
 size- and base-exact at `0x26298` (wave-102 LSDA-scope pass). The only
-differing section bytes are `.text` (102,777), `.ARM.exidx` (842) and
-`.note.gnu.build-id` (20).
+differing section bytes are `.text` (71,803), `.ARM.extab` (582), `.rodata` (485)
+and `.note.gnu.build-id` (20); `.ARM.exidx` is now byte-identical.
 
 ## Source rules (hard)
 
