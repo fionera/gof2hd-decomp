@@ -52,3 +52,27 @@ RATCHET                  PASS               PASS
 
 Scratch harness (`parser.py`, `sweep.py`, `harness.py`, `apply.py`,
 `measure_w11901.py`) lives in `/home/debian/GalaxyOnFire2/scratch/w13524/`.
+
+## Pass 2 — wider moves (simple↔ctrl↔simple, ctrl↔ctrl)
+
+Generalised the sweep beyond immediate adjacency: (A) move a simple statement
+past a control block *and* the simple statement after it, (C) past a control
+and two statements, (D) swap two adjacent control blocks.  264 candidates,
+five size-exact / `.rel.plt`-identical raw wins; three landed.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 3 | case-140 (~4058) | `setAutoPilot(nullptr)` after `resetGunDelay()` (both sides of the `!isDockedToDockingPoint()` if; neither the if nor resetGunDelay reads autopilot) | -1 |
+| 4 | case-145 (~4258) | swap the two independent `if (m_nState == 1)` body blocks (escort `turnEnemy` loop ↔ docking-hack conclusion) | -1 |
+| 5 | case-154 (~4767) | `m_nScriptTimerA = 0;` before the `if (field_0xaa)` auto-turret restore; `m_bCinematicBreak = 0;` after it (flag not read by the if) | -1 |
+
+Rejected: cell 132 (`if (leader == -1) leader = i;` must precede the
+`i == leader` dispatch — first group-10 ship would take the wrong branch) and
+cell 180 (`if (timer < 75001) break;` must precede `if (m_nState == 2) m_nState = 3;`
+or a state-2 ship would advance early).
+
+```
+process raw diffbytes    51,608             51,605     (-3; total -8 vs wave base)
+.text diffbytes          71,373             71,370     (-3)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```

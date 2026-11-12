@@ -4055,12 +4055,12 @@ bool LevelScript::process(int delta) {
                         m_nState = 4;
                         player->setVisible(true);
                         player->setFreeze(false);
-                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
+                        m_pLevel->getPlayer()->resetGunDelay();
                         if (!m_pLevel->getPlayer()->isDockedToDockingPoint()) {
                             m_pRadar->lockedEnemy = nullptr;
                             m_pRadar->dockNavPtr = nullptr;
                         }
-                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pLevel->getPlayer()->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
                         player->geometry->setDirection(
                                 AbyssEngine::AEMath::VectorNormalize((*enemies)[4]->getPosition() - player->getPosition()),
@@ -4255,15 +4255,6 @@ bool LevelScript::process(int delta) {
                 // docking count in r6; also reached from cm135/case-94). Its body only runs when the
                 // incoming state == 1. ---
                 if (m_nState == 1) {
-                    if (!(*enemies)[0]->player->isAlwaysEnemy() &&
-                        ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
-                        // Turn every non-wingman, non-flagged escort hostile (count re-fetched each pass).
-                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; ++i) {
-                            if (!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0) {
-                                (*enemies)[i]->player->turnEnemy();
-                            }
-                        }
-                    }
                     if (player->isDockedToDockingPoint() && player->hackingWon() &&
                         player->getHackingGameDockIndex() >= 0) {
                         PlayerFixedObject *target =
@@ -4276,7 +4267,16 @@ bool LevelScript::process(int delta) {
                             m_nState++; // shared tail 0x13953c increments m_nState
                         }
                     }
-                }
+                if (!(*enemies)[0]->player->isAlwaysEnemy() &&
+                        ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                        // Turn every non-wingman, non-flagged escort hostile (count re-fetched each pass).
+                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; ++i) {
+                            if (!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0) {
+                                (*enemies)[i]->player->turnEnemy();
+                            }
+                        }
+                    }
+                    }
                 break; // -> post-switch tail (0x144e36)
             }
             case 142: {
@@ -4764,12 +4764,12 @@ bool LevelScript::process(int delta) {
                         player->setSpeed(2.0f);
                         m_pRadar->enabled = 1;
                         m_pCamera->setLookAtCam(false);
-                        m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
                         if (field_0xaa) {
                         m_pCamera->setTarget(player->geometry);
                             player->setAutoTurret(true);
                         }
-                        m_nScriptTimerA = 0;
+                        m_bCinematicBreak = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 10) {
