@@ -66,7 +66,14 @@ Layout::Layout() {
     else
         this->field_0x2d4 = 60;
     this->field_0x80_touchMargin = Globals::iPadHD ? 14 : (Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10));
-    this->field_0x7c = Globals::iPadHD ? 12 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 18 : 9));
+    if (Globals::iPadHD)
+        this->field_0x7c = 12;
+    else if (Globals::n9)
+        this->field_0x7c = 13;
+    else if (Globals::retinaDisplay)
+        this->field_0x7c = 18;
+    else
+        this->field_0x7c = 9;
     this->field_0x84 = Globals::iPadHD ? 80 * 1.40625f : (Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80));
     this->field_0x88 = Globals::iPadHD ? 42 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30));
     this->field_0x9c = (int)(Globals::iPadHD ? 70.0f : (Globals::n9 ? 75.0f : (Globals::retinaDisplay ? 100.0f : 50.0f)));
