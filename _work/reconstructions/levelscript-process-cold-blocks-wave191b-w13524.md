@@ -131,3 +131,31 @@ process raw diffbytes    51,602             51,595     (-7; total -18 vs wave ba
 .text diffbytes          71,367             71,360     (-7)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 6 — distance-3/4 transpositions + state-8 block fix
+
+New class: transpositions at distance 3 and 4 inside straight-line runs (2,810
+candidates).  Sixteen size-exact / `.rel.plt`-identical raw wins; eight compose
+cleanly (one more, cell 2370, is -1 alone but +8 size when composed).
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 11 | case-4 state 8 (~2698) | `m_tempVec.x += 4500.0f` after `m_tempVec = m_pGeometry6->getPosition()` — the current order makes the add dead (original `0x141780`–`0x1417b0` assigns then adds) | -6 |
+| 12 | case-154 (~4538) | `m_pCamera->setTarget(enemies[2]->geometry)` before `m_pRadar->enabled = 0` | -3 |
+| 13 | case-145 (~4263) | `m_nState++` before the docking-hack body | -2 |
+| 14 | case-146 (~1598) | `player->setFreeLookMode(false)` before the `Vector pos = getPosition()` init | -2 |
+| 15 | case-149 (~1833) | `sound->play(34)` before `PlayerWormHole::reset(false)` (`.rel.plt` unchanged) | -2 |
+| 16 | case-143 (~2145) | `player->setComputerControlled(true)` before the camera block | -1 |
+| 17 | case-150 (~3537) | `player->setVisible(false)` before the `m_bCinematicBreak`/`setVulnerable` pair | -1 |
+| 18 | case-151 (~3661) | `m_bCinematicBreak = 0` before `resetCamera`/`forceUpdate` (radar restore after) | -1 |
+
+Rejected: cells 700/1489/1797/2212 (intervening `m_dirVec`/`*scratch`
+reassignment makes the moved add read the wrong vector), 2411
+(`m_tempVec` producer/consumer), 159 (original `0x139186`–`0x1391b4` is
+`enableFillScreen` → `nextCampaignMission` → `departStation`).
+
+```
+process raw diffbytes    51,595             51,577     (-18; total -36 vs wave base)
+.text diffbytes          71,360             71,342     (-18)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```
