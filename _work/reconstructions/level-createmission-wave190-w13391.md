@@ -150,3 +150,16 @@ volatile `offset[2]`). Raw **3,044 -> 3,037** (-7), aligned 1,116
 unchanged, size exact 17,172 B. `.text` **73,025 -> 73,018** (-7);
 `.ARM.extab` 603 and build-id 20 unchanged; total (text+extab+build-id)
 **73,648 -> 73,641** (-7). `check` -> RATCHET PASS.
+
+## 10. Follow-up harvest: case-2 escort crateCaptured before cargo
+
+`a43465e8f` moves `((PlayerFighter *) convoyShip)->crateCaptured() = 0;`
+ahead of `convoyShip->cargo = nullptr;` in the case-2 escort loop. Raw
+**3,037 -> 3,035** (-2), aligned 1,116 unchanged, size exact 17,172 B.
+`.text` **73,016 -> 73,014** (-2); `.ARM.extab` 603 and build-id 20
+unchanged; total (text+extab+build-id) **73,639 -> 73,637** (-2).
+`check` -> RATCHET PASS.
+
+Note: w13382's `case-1 declaration order` (move `int friends =
+rnd->nextInt(5)` after `opt44`) is a **loss on current master** (+64 raw:
+3,035 -> 3,099), so it was not harvested.
