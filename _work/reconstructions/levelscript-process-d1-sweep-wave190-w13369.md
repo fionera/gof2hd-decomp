@@ -230,3 +230,14 @@ current master (`5ff423480`). LevelScript raw **51,785 -> 51,784** (-1), aligned
 22,210. It composes with the w13368 d5/d6 group to raw **51,769** (-16 from
 51,785). `.text` 73,273 -> 73,254 (-19 across LevelScript + Radar), `.ARM.extab`
 606 unchanged, total 73,899 -> 73,880 (-19). `check` green, RATCHET PASS.
+
+## Current-master harvest (wave 190, commits 3280acf58..ba4dd8873)
+
+Applied the nine follow-up reorders on master `7c0d95493` and resolved the
+three context conflicts against the already-landed w13369/w13380/w13384
+order (kept master's `setActive`/`hideShipForFirstPersonCameraView` swap;
+took the branch's `fighter->setActive` and `player->setVisible` reorders).
+Raw **51,758 -> 51,750** (-8), aligned **22,300 -> 22,477** (+177), size
+exact 57,232 B. `.text` **73,044 -> 73,036** (-8); `.ARM.extab` 603 and
+build-id 20 unchanged; total (text+extab+build-id) **73,667 -> 73,659**
+(-8). `check` -> RATCHET PASS.

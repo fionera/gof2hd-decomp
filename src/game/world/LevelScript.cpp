@@ -2363,15 +2363,15 @@ bool LevelScript::process(int delta) {
                     Level *self = m_pLevel;
                     self->lodManager->forceUpdate(delta, false);
                     m_pCamera->setLookAtCam(false);
+                    player->setComputerControlled(false);
                     (*enemies)[10]->setSpeed(8.0f);
                     m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
                     m_pHud->visible = 1;
                     m_pRadar->enabled = 1;
                     self->lodManager->forceUpdate(delta, false);
-                    resetCamera(self);
                     m_bCinematicBreak = 0;
                     m_nState = 6;
+                    resetCamera(self);
                 }
                 if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
                     Vector origin = (*enemies)[0]->getPosition();
@@ -3549,9 +3549,9 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 5) {
                     (*enemies)[0]->geometry->moveForward((float) (6 * delta));
                     m_pCamera->translate((float) delta * 0.4f, (float) delta * 0.1f, (float) -delta * 1.8f);
-                    m_nScriptTimerA += delta;
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = (*enemies)[0]->geometry->getPosition();
+                    m_nScriptTimerA += delta;
                     Globals::sound->updateEvent3DAttributes(2250, &pos, &zero, false);
                     if (m_nScriptTimerA >= 8001) {
                         m_nScriptTimerA = 0;
@@ -3878,9 +3878,9 @@ bool LevelScript::process(int delta) {
                             m_pGeometry6 = marker;
                             marker->setDirection(player->geometry->getDirection(),
                                                  Vector{0.0f, 1.0f, 0.0f});
+                            Vector zero{0.0f, 0.0f, 0.0f};
                             marker->setPosition(player->geometry->getPosition());
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
-                            Vector zero{0.0f, 0.0f, 0.0f};
                             wcamera->setTarget(marker);
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                         }
@@ -4834,9 +4834,9 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(wgeometry4->getPosition());
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setTarget(wgeometry4);
+                    m_nScriptTimerA = 0;
                     player->player->setVulnerable(false);
                     m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
-                    m_nScriptTimerA = 0;
                     m_nState = 2;
                 } else if (m_nState == 2) {
                     m_nScriptTimerA += delta;
@@ -4851,9 +4851,9 @@ bool LevelScript::process(int delta) {
                                 ship->setActive(true);
                             }
                         }
-                        m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
                         m_tempVec = (*enemies)[fighterIndex]->getPosition();
                         m_tempVec += Vector{-1500.0f, -5000.0f, 2500.0f};
+                        m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
                         m_pCamera->setPosition(m_tempVec);
                         m_nState = 3;
                     }
@@ -5031,11 +5031,11 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
-                        fighter->setVisible(false);
+                        fighter->setActive(false);
                         player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pCamera->setPosition(m_tempVec + Vector{35000.0f, 0.0f, 70000.0f});
                         fighter->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                        fighter->setActive(false);
+                        fighter->setVisible(false);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
@@ -5100,10 +5100,10 @@ bool LevelScript::process(int delta) {
                         m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
                         m_pGeometry3->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pGeometry3->setVisible(true);
-                        player->setVisible(false);
+                        fighter->setVisible(false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        fighter->setVisible(false);
+                        player->setVisible(false);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         m_nState = 10;
