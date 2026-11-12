@@ -1265,10 +1265,10 @@ bool LevelScript::process(int delta) {
         switch (m_nState) {
             case 1:
                 if (m_nScriptTime >= 30001) {
+                    m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     m_tempVec = *m_pCamera->getPosition();
                     m_tempVec.y += 500.0f;
                     (*m_pLevel->getEnemies())[0]->setPosition(m_tempVec);
-                    m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
