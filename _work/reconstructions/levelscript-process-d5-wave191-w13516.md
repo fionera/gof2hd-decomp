@@ -184,3 +184,37 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Fifth landing: d6 shift-2 rotation (free-look/FP flags to the tail)
+
+On the 51,630 body, `(6,4023) shift 2` (source lines 4024-4029) was landed:
+
+```cpp
+-                        player->setFreeLookMode(false);
+-                        m_pCamera->enableFirstPersonCam(false);
+                         player->hideShipForFirstPersonCameraView(false);
+                         m_bCinematicBreak = 1;
+                         player->stopShooting(0);
+                         m_pHud->visible = 0;
++                        player->setFreeLookMode(false);
++                        m_pCamera->enableFirstPersonCam(false);
+```
+
+Independent player/camera flags and HUD/shooting state; no statement reads what
+another writes.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,630 -> 51,628  (-2)
+size       57,232 / 57,232   (exact)
+.text      71,407 -> 71,405  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
+
+Rejected in the same batch: `(6,3766) shift 2` raw 51,629 but rotates the
+`*tmp = getDirection/getRightVector/getUpVector` reads against the
+`*acc +=` uses (wrong vectors); `(6,3221) shift 2` raw 51,631 (+1).
