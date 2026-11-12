@@ -158,3 +158,44 @@ Expected: `raw=3526 aligned=1187 size=17172/17172`, `.text` diff 74,394,
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13014/`
 (`measure.sh`, `exp.py`, `sweep_adj.py`, `secdiff.py`, `regmap.py`, `side.py`,
 `relside.py`).
+
+## 6. Second landed win (same wave): alienGuns rotation-vs-setRotation swap
+
+After committing the three swaps above, an exhaustive pairwise statement
+permutation sweep over the three hot loop bodies (`alienGuns` 1965-1975,
+`pirateFortress` 1985-1996, raid-loot 2012-2020; 121 candidates) found one
+further size-exact raw win.
+
+```text
+                                     size            raw    aligned  insn
+after §2 (three swaps)               17172/17172     3526   1187     6205/6197
+after alienGuns rot swap (final)     17172/17172     3519   1009     6205/6197
+```
+
+`.text` differing bytes 74,394 -> **74,387** (-7); `.ARM.extab` 647 unchanged;
+`.rel.plt` diff 0; build-id 19. Total 75,060 -> 75,053. `check` green,
+`RATCHET PASS`.
+
+Landed edit (`alienGuns` loop, `~line 1969`):
+
+```cpp
+             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
+-            gun->geometry->setRotation(v);
+-            gun->cargo = nullptr;
+             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
++            gun->cargo = nullptr;
++            gun->geometry->setRotation(v);
+```
+
+This is also a **semantic crutch**: `v` is overwritten by the second
+`MatrixRotateVector` before `setRotation(v)`, so the turret's rotation is set
+from `t[k][0..2]` instead of `t[k][3..5]`. The original calls
+`setRotation` on the first result (`0xb3308`) and only then computes the second
+rotation (`0xb3320`). The aligned metric improves sharply (1187 -> 1009), so
+the emitted instruction stream is closer to the original even though the
+values are crossed. A semantically exact reorder (`gun->cargo = nullptr;`
+after `setScaling`) measures raw 3,533 — worse than the 3,526 base.
+
+Other measured non-wins on the 3,526 base: `cargo` moved after `setScaling`
+3,533; after `shipGroup` 3,535; before `setRotation` 3,531; the rot swap plus
+`cargo` after `setScaling` 3,523.
