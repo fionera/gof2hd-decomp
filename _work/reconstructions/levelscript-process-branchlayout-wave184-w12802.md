@@ -232,3 +232,51 @@ RATCHET                  PASS             PASS
 Cumulative for the whole pass: raw **52,281 -> 52,242** (-39), `.text`
 74,842 -> 74,803, aligned 20,700 -> 20,739; size-exact, `.rel.plt`-identical,
 `.ARM.extab` size/base exact and content diff unchanged at 646.
+
+## Pass 6: second 5-statement-run harvest
+
+Re-running the 5-statement-run sweep on the 52,242 body finds four more
+composing winners (all size-exact, `.rel.plt`-identical, `.ARM.extab`
+unchanged):
+
+| lines | new order |
+|---|---|
+| 1919-1923 | `[3,2,0,4,1]` |
+| 2523-2527 | `[2,1,0,3,4]` |
+| 3840-3844 | `[0,1,3,2,4]` |
+| 5095-5099 | `[2,3,4,0,1]` |
+
+Composed raw **52,242 -> 52,238** (-4), aligned 20,739 -> 20,749,
+`.text` 74,803 -> 74,799; `.ARM.extab` 646 / 156,312 B, `.ARM.exidx` 0,
+`.rel.plt` byte-identical, RATCHET PASS.
+
+## Final result for w12802
+
+```
+                         base (wave-183)   landed
+process raw diffbytes    52,281            52,238     (-43)
+process aligned insns    20,700            20,749     (+49)
+orig / ours size         57232 / 57232     57232 / 57232   (size-exact)
+orig / ours insns        20,830 / 20,725   20,830 / 20,729
+.text diffbytes          74,842            74,799     (-43)
+.ARM.extab diffbytes     646               646        (size/base exact, 156,312 B)
+.ARM.exidx diffbytes     0                 0
+.rel.plt                 md5 289b2a06…     md5 289b2a06…   (byte-identical)
+.rodata / .data          0 / 0             0 / 0
+byte_exact               4507              4507
+linked_exact             4507              4507
+size-exact               4524/4524         4524/4524
+data_exact               843/843           843/843
+imports                  207               207
+lint                     CLEAN ✓           CLEAN ✓
+drift                    0                 0
+symbol parity            5370/5370         5370/5370
+RATCHET                  PASS              PASS
+```
+
+The whole win is 43 `.text` bytes and 43 raw bytes, with no section-size,
+`.rel.plt`, `.ARM.extab`, `.rodata`, `.data` or symbol-parity cost.  The
+mission-0 `switch` merge (the one structural branch-layout divergence) remains
+unfixable without a `.rel.plt` change and a large raw regression, as w12702
+showed and this pass re-confirmed (4,3,5 arm order: raw 53,665, `.rel.plt`
+DIFF).

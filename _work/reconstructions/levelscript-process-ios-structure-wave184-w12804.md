@@ -99,8 +99,8 @@ size-exact, `.rel.plt`-identical raw wins were found.  Three compose:
 | 2502 `camPos += dir * 3000.0f;` | after `m_pLevel->lodManager->forceUpdate(delta,false)` (still before `setPosition`) | 52,276 |
 | 2533 `camPos += dir * 2000.0f;` | after `m_pCamera->setPosition(camPos)` | 52,277 |
 
-Measured together: raw **52,281 -> 52,253** (-28 B), size 57,232/57,232 exact,
-`.text` **74,842 -> 74,814** (-28), `.rel.plt` md5
+Measured together: raw **52,281 -> 52,245** (-36 B), size 57,232/57,232 exact,
+`.text` **74,842 -> 74,806** (-36), `.rel.plt` md5
 `289b2a069f8504d1e8a3919e43915e04` (byte-identical).  The first two moves are
 behaviour-neutral (the `setPosition` calls still see every offset).  The third
 is a codegen-shape move: the original disassembly applies `dir*2000` before
@@ -137,6 +137,42 @@ own delete, not both deletes first.  Measured: raw **52,273 -> 52,253**
 (-20 B), size 57,232/57,232 exact, `.text` **74,834 -> 74,814**, `.rel.plt`
 unchanged.
 
+## Third sweep (non-hot stride samples): 1200-offset vector fix
+
+Stride-11 samples of the remaining non-hot candidates (offsets 1-2, 610
+measured) found more raw-lowering moves.  The important one is a real bug in
+the case-154 camera-offset block (lines 3727-3734):
+
+```cpp
+// before (52253 tree): right vector fetched but unused, 1200 uses direction
+*tmp = ref2->getDirection();
+*camPos += *tmp * 6800.0f;
+*camPos += *tmp * 1200.0f;
+*tmp = ref2->getRightVector();
+*tmp = ref2->getUpVector();
+*camPos += *tmp * 400.0f;
+// after (matches original 0x13a20c-0x13a280 exactly)
+*tmp = ref2->getDirection();
+*camPos += *tmp * 6800.0f;
+*tmp = ref2->getRightVector();
+*camPos += *tmp * 1200.0f;
+*tmp = ref2->getUpVector();
+*camPos += *tmp * 400.0f;
+```
+
+The original disassembly at `0x13a20c` fetches `getDirection` -> `*6800`,
+`0x13a242` `getRightVector` -> `*1200`, `0x13a266` `getUpVector` -> `*400`,
+then `setPosition`.  Three further behaviour-neutral moves compose with it:
+`setComputerControlled(true)` after `setSpeed(0.0f)` (case 154),
+`field_0x74 = 0` after `setEnemies(nullptr)` (case 145), and
+`Level::initStreamOutPosition = 1` after `field_68 = getGammaHP()`.
+
+Measured together: raw **52,253 -> 52,245** (-8 B), size 57,232/57,232 exact,
+`.text` **74,814 -> 74,806**, `.rel.plt` unchanged.  A fifth move
+(`frame->setPosition` after `delete frame`, case 102) reaches raw 52,244 but
+is a use-after-free and was not landed; the original keeps `setPosition`
+before `CameraSetLocal`/`delete` (`0x14160c` / `0x141626` / `0x14162c`).
+
 ## Gate (after the win)
 
 ```
@@ -148,7 +184,7 @@ symbol parity            5370/5370   missing/wrong_type/extra 0/0/0
 RATCHET                  PASS
 ```
 
-`.text` 74,814; `.ARM.extab` unchanged (size/base exact at `0x1a3b78`,
+`.text` 74,806; `.ARM.extab` unchanged (size/base exact at `0x1a3b78`,
 156,312 B); `.rel.plt` byte-identical; 27/27 section headers; file size
 2,187,328 exact.
 
@@ -159,6 +195,6 @@ cd /home/debian/GalaxyOnFire2/wt/w12804
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=52253 size=57232/57232 text=74814 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=52245 size=57232/57232 text=74806 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```

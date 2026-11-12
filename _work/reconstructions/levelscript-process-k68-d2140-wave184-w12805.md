@@ -15,14 +15,14 @@ of the best single moves on the wave-183 body.
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    52,281           52,257     (-24)
-process aligned insns    20,700           20,685     (-15)
+process raw diffbytes    52,281           52,256     (-25)
+process aligned insns    20,700           20,686     (-14)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,725  20,830 / 20,722
-.text diffbytes          74,842           74,818     (-24)
+.text diffbytes          74,842           74,817     (-25)
 .ARM.extab diffbytes     646              646        (unchanged; size/base exact)
 .note.gnu.build-id       20               20         (unchanged)
-total differing bytes    75,508           75,484     (-24)
+total differing bytes    75,508           75,483     (-25)
 .rel.plt                 byte-identical   byte-identical (diff 0, md5 289b2a06…)
 .rodata                  byte-identical   byte-identical
 byte_exact               4507             4507
@@ -132,6 +132,25 @@ Line numbers are from the pass-1 tree (`9980db7c8`).
 | 4 | 3726 | up | `m_pCamera->setLookAtCam(true);` (before `player->setFreeLookMode(false)`) |
 | 5 | 5214 | up | `Globals::switch_to_target_setting = 1;` (before `m_nState++`) |
 
+## Third pass on the improved tree (landed)
+
+A third K=6..8 sweep on the 52,257 tree (2,467 candidates, 1,822 size-exact,
+2,441 rel-ident) found one winner below 52,257: moving
+`m_pCamera->setLookAtCam(true)` up before `resetCamera(m_pLevel)` in the
+mission-1 block (base line 1878) gives raw **52,256** (-1).  Pair/triple
+combinations with the other 52,257 movers do not compose below 52,256.
+
+```
+                         after pass 2     after pass 3
+process raw diffbytes    52,257           52,256     (-1)
+process aligned insns    20,685           20,686     (+1)
+.text diffbytes          74,818           74,817     (-1)
+.ARM.extab diffbytes     646              646        (unchanged)
+total differing bytes    75,484           75,483     (-1)
+.rel.plt                 byte-identical   byte-identical
+RATCHET                  PASS             PASS
+```
+
 ## Reproduction
 
 ```sh
@@ -139,7 +158,7 @@ cd /home/debian/GalaxyOnFire2/wt/w12805
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 52257 aligned= 20685 size= 57232/57232 insn= 20722/20830
+# -> raw= 52256 aligned= 20686 size= 57232/57232 insn= 20722/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 
