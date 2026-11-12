@@ -1000,8 +1000,8 @@ enemies:
                                              this->screenY, 17, 68);
                 this->targetPos = cloud->player->getPosition();
                 if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
-                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f ||
-                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f) {
+                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f ||
+                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f) {
                     cloud->field_0x73 = 0;
                 }
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw

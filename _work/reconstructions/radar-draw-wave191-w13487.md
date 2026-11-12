@@ -88,6 +88,33 @@ imports 207 / lint CLEAN / drift 0 / parity 5,370.
 - enemy-hit 5-term chain reorder (`!enemyHit` first) 8,760/9,972;
   `isActive() || (field_0x74 || ...)` 8,478/9,904.
 
+
+## 1b. Follow-up cell (same wave): gas-cloud 24000 OR chain, x-z-y order
+
+The gas-cloud out-of-range test (`Radar.cpp:1001`) is a six-term `||` chain of
+pure float comparisons.  Evaluating the z pair before the y pair (x, z, y;
+each pair upper-bound first) is another -2 raw with no size/extab change:
+
+```diff
+-                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f ||
+-                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f) {
++                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f ||
++                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f) {
+```
+
+All 48 (pair-order x within-pair-reversal) cells were measured on the
+post-cell-0 base (6,057): only `x,z,y` with both pairs upper-first wins
+(**6,055**); every reversal of a pair changes the function size (9,912-9,924).
+
+| metric | after cell 0 | after cell 1b |
+|---|---:|---:|
+| raw | 6,057 | **6,055 (-2)** |
+| aligned | 1,974 | 1,974 |
+| size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes | 71,810 | **71,808 (-2)** |
+| `.ARM.extab` | 575 | 575 |
+| `.rel.plt` | identical | identical |
+
 ## 2. Reproduction
 
 ```sh
