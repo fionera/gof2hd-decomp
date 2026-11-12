@@ -5317,7 +5317,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 break;
         }
         fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
-        lodManager->addObject(fixed->geometry);
+        AEGeometry *g = fixed->geometry;
+        lodManager->addObject(g);
         fixed->field_0x40 = 1;
         fixed->setBV(volumes);
         ship = fixed;

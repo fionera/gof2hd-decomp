@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **3,444** | 1,021 | 17,172 |
 | `MGame::OnTouchEnd` | **2,920** | 1,703 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
-| `Level::createShip` | **1,202** | 484 | 2,764 |
+| `Level::createShip` | **1,200** | 484 | 2,764 |
 | `Status::missionCompleted` | **475** | 182 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -139,6 +139,10 @@ Landed changes:
   the paired 4629 block). Raw **51,842 -> 51,832** (-10), aligned 20,998 ->
   21,043. `.text` 73,564 -> 73,554 (-10), total (text+extab+build-id)
   74,194 -> 74,184.
+* `Level::createShip` (w13347): pin `fixed->geometry` in a local before
+  `lodManager->addObject(g)` (same call, different address computation).
+  Raw **1,202 -> 1,200** (-2), aligned unchanged 484. `.text` 73,554 ->
+  73,552 (-2), total (text+extab+build-id) 74,184 -> 74,182.
 * `LevelScript::process` (w13330): swap the line-721
   `sound->updateEvent3DAttributes(158, ...)` and `sound->play(158, ...)`
   calls. Raw **51,874 -> 51,873** (-1), aligned 21,005 -> 20,997.
@@ -157,7 +161,7 @@ Landed changes:
   and makes the m23 64-bit idle compare use the original `r2:r3` pair.
   Raw **15 -> 10**, aligned 111 -> 112, size unchanged.
 
-Section deltas: `.text` **73,554** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,552** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
@@ -166,8 +170,8 @@ size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 cross-TU rank table lives in `.fini_array` (8 -> 200 B, table at `0x20cae8`),
 so `.dynamic` differs by **3** B (the `DT_FINI_ARRAY` tag) and `.rel.dyn` by
 **4** B (two `R_ARM_RELATIVE` offsets). Total differing bytes
-(text+extab+build-id) **74,184**; including the `.dynamic`/`.rel.dyn`/
-`.fini_array` deltas, **74,383**. File size is exact (2,187,328 B), and
+(text+extab+build-id) **74,182**; including the `.dynamic`/`.rel.dyn`/
+`.fini_array` deltas, **74,381**. File size is exact (2,187,328 B), and
 27/27 section headers are present (`.fini_array` size 8 -> 200).
 
 ## Update 2026-11-12 (wave 188)
