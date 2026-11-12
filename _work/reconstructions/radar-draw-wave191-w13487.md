@@ -1,4 +1,4 @@
-# Radar::draw wave 191 (w13487) — three operand-order cells: raw 6,058 -> 6,057
+# Radar::draw wave 191 (w13487) — four operand-order cells: raw 6,058 -> 6,055
 
 **Status:** landed, 2026-11-12. Worktree `wt/w13487`, branch `wave191-w13487`,
 base `master` `f325e2d87`. Target `src/game/weapons/Radar.cpp`,
@@ -114,6 +114,9 @@ post-cell-0 base (6,057): only `x,z,y` with both pairs upper-first wins
 | `.text` differing bytes | 71,810 | **71,808 (-2)** |
 | `.ARM.extab` | 575 | 575 |
 | `.rel.plt` | identical | identical |
+
+**Final state after both commits: raw 6,055 / aligned 1,974 / size 9,908;
+`.text` diff 71,808; `.ARM.extab` 575; `.rel.plt` identical; RATCHET PASS.**
 
 ## 2. Reproduction
 
