@@ -18,9 +18,9 @@ aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,917** | 20,935 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
-| `Layout` C1/C2 | **5,272** | 2,727 | 7,072 |
-| `Level::createMission` | **3,486** | 1,013 | 17,172 |
-| `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
+| `Layout` C1/C2 | **5,257** | 2,728 | 7,072 |
+| `Level::createMission` | **3,444** | 1,021 | 17,172 |
+| `MGame::OnTouchEnd` | **2,928** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -53,16 +53,23 @@ Landed changes:
   `spawnPosition`/`setPosition` swap. Combined raw **3,493 -> 3,488** (-5).
 * `Level::createMission` (w13215 pass 6): case-183 convoy switch case-0
   store rotate. Combined raw **3,488 -> 3,486** (-2), aligned 1,013.
+* `Layout` C1/C2 (w13212): `field_0x54`/`field_0x74` store swap.
+  Combined raw **5,272 -> 5,257** (-15), aligned 2,727 -> 2,728.
+* `Level::createMission` (w13214 pass 6): case-2 route coords re-placement.
+  Combined raw **3,486 -> 3,444** (-42), aligned 1,013 -> 1,021.
+* `MGame::OnTouchEnd` (w13216): pass 14, mission-162 `field_64`/`field_68`
+  getter-store transposition. Raw **2,929 -> 2,928** (-1), aligned unchanged
+  1,670; `.ARM.extab` content unchanged 639 (size/base exact).
 * Notes-only: w13204, w13209, w13217, w13219 and w13220 found no
   size-exact source win. w13218's 721 -> 449 Status result uses the
   fixed-address `0x20b977` rank table and is not landed (manual data).
 
-Section deltas: `.text` **74,105** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,047** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,764**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,706**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 187)

@@ -2249,8 +2249,8 @@ case4Tail:
                     return;
                 }
                 case 1: {
-                    int coords[9] = {Globals::rnd->nextInt(100000) - 50000, 0, 50000,
-                                     Globals::rnd->nextInt(100000) - 50000, 0, 75000,
+                    int coords[9] = {Globals::rnd->nextInt(100000) - 50000, 0, 75000,
+                                     Globals::rnd->nextInt(100000) - 50000, 0, 50000,
                                      Globals::rnd->nextInt(100000) - 50000, 0, 100000};
                     this->enemyRoute = new Route(coords, 9);
                     float difficulty = (float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f;
@@ -2275,8 +2275,8 @@ case4Tail:
                     return;
                 }
                 case 2: {
-                    int coords[6] = {(int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
-                                     (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0, 0, 0};
+                    int coords[6] = {0, 0, (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
+                                     (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0};
                     this->enemyRoute = new Route(coords, 6);
                     int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
