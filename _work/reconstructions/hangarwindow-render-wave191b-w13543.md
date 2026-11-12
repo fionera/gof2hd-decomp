@@ -74,3 +74,51 @@ python3 _work/reconstructions/extab_lsda_decode.py \
         cmake-build-match/libgof2hdaa.so
 cmake --build cmake-build-match --target check -j2
 ```
+
+## Additional negative results (same wave, after the landed commit)
+
+All measured on the landed base (`raw 1038`, `size 9,700`, `.text` 71,334,
+`.ARM.extab` 577, render LSDA record diff 38).  Every variant below is
+size-exact 9,700 and extab-record 38 unless stated.
+
+Free-credits `textY` / `textX` / declaration shapes (all neutral at 1,038
+or worse): `volatile int textY` 1,040; `PaintCanvas *canvas` before
+`textY` 1,040; `textX` after `textY` 1,038; `height` after `textX`
+1,038; `const volatile int &` 1,038; `volatile int *` 1,038; `textX`
+re-associated `width+rh+baseX` / `baseX+width+rh` / `baseX+rh+width`
+1,038; `const int rh` / `const int width` 1,038; alias moved after
+`SetColor` 1,038 (byte-identical); `*(volatile int *)&textY` inline
+1,038.  Removing the volatile read: plain `int` 9,744 (not size-exact);
+`volatile int textYv = textY` 9,716; plain copy 9,744; `textY` computed
+after `SetColor` + alias after 9,692.
+
+Free-credits button call order (all size-exact, extab 38): `DVP`
+(current, draw/setVisible/setPosition) **1,038**; `VDP` 1,044;
+`VPD` 1,072 (`.text` 71,368); `PDV` 1,077; `PVD` 1,078.
+
+Ship guard / upgrade-check shapes: current merged guard + body-scope
+`upgTab` **1,038**; w13527 `setPosition`-first body 1,191; two-if
+(upgrade check outside the guard) `V_2` 9,700 but raw 2,563 / extab 695;
+`P_2` 9,676; nested `if (tab != 0)` 9,680-9,704; hoisted `upgTab` +
+two-if 928 / extab record 677 but `.text` 71,280 / `.ARM.extab` 1,216;
+hoisted `upgTab` + merged guard (`setPosition`-first) raw 928 / extab
+record 677, `.text` 71,224 / `.ARM.extab` 1,216, total 72,462
+(+529 vs 71,933) -- a net **loss** once the section extab is counted
+(the earlier handoff's "net -13" compared the record diff, not the
+section diff).
+
+Blueprint `isBluePrint` body: hoisting `this->hintOffsetX` 9,696;
+hoisting `Globals::layout->buttonInsetX` raw 1,406 / extab 796;
+hoisting `(int)(rate*progressBarWidth)` 9,708; hoisting
+`progressBarBgImage` 9,704; `(float)progressBarWidth * rate` 1,038
+(byte-identical).
+
+Buy-list loop: moving `String name;` / `int buttonOffset;` out of the
+`for` body 9,672 (raw 9,171).
+
+Residual is unchanged: the `sl`/`r9` role swap in the blueprint run
+(0x0602), the buy-list `String`-temp/`sl` tie (`.text` 2-byte phase
+shift at `add.w sl,sp,#300`), the free-credits `width`/`rh` register
+roles plus the volatile `textY` store, and the cleanup landing-pad
+block order.  No shape tried this wave beats 1,038 while keeping the
+render LSDA record at 38 differing bytes.
