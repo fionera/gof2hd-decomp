@@ -281,3 +281,58 @@ Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13350/`
 (`measure.sh`, `try.sh`, `v.sh`, `lsda.py`, `firstdiff.py`, `sweep1.sh`,
 `sweep2.py`, `sweep3.py`, `p1.py`..`p12.py`, `s1.py`..`s3.py`, `m1.py`,
 `m2.py`, `n1.py`, `n2.py`, `k1.py`, `L0.cpp` = `Level.base.cpp`).
+
+## 8. Wave-2 follow-up: exact 56 B `case 183` switch shape (not landed)
+
+After the case-4 hoist landed (raw 3,438), the `case 183` convoy switch was
+revisited. The original 56 B shape **can** be reproduced exactly, but it is not
+a raw win because it makes the function 8 B short (17,164) and the resulting
+address shift costs more than the switch fixes.
+
+### 8a. How to force the original shape
+
+The base's differing per-arm store orders keep the stores in the IR case blocks
+(`SinkCommonCodeFromPredecessors` cannot sink a non-identical suffix). Making
+every arm store `offset[2]` last lets SimplifyCFG sink the common store and
+create PHIs; `SwitchToLookupTable` then rewrites the whole switch into three
+`@switch.table` float arrays (17,164 B, LICM `vldr`). To get the original
+machine-level sink instead, break the IR sink in exactly one arm while keeping
+`offset[2]` last everywhere, e.g. make the default arm's `offset[2]` store
+volatile (or an `int` store of the same bit pattern):
+
+```cpp
+case 0: offset[1] = -3000.0f; offset[0] = 20000.0f; offset[2] = -50000.0f; break;
+case 1: offset[1] = -7000.0f; offset[0] = 10000.0f; offset[2] = -30000.0f; break;
+case 2: offset[1] = 0.0f;     offset[0] = 25000.0f; offset[2] = -36000.0f; break;
+default:
+    offset[1] = 6000.0f; offset[0] = 12000.0f;
+    *(volatile float *)(offset + 2) = -45000.0f;   // anti-IR-sink crutch
+    break;
+```
+
+This yields the exact original 56 B dispatch (`0xb1418..0xb1450`): one shared
+`str r1,[sp,#380]`, case0/case1/case2 each 12 B, default 10 B, with the
+original values from §2d. The `case 183` tail then also matches the original
+byte-for-byte through `0xb149c` (`setPosition` → `stationPosition` →
+`timeLimit` → `objectivesA`).
+
+### 8b. Why it does not land
+
+The function becomes **17,164 B** (`-8`). The per-case body size deltas vs the
+original (from the TBH targets at `0xb02ac + 2*entry`) are:
+
+```text
+type1 -2   type2 -4   type4 +2   type6 0   type7 0   type9 0
+type10 -4  type12 0   type15 0   (sum -8)
+```
+
+The base's 60 B switch (`+4`) was load-bearing: the all-`offset[2]`-last store
+order costs another `-4`, so the switch fix alone is `-8`. `raw` rises to
+`10,893..11,105` (address shift across the whole function), far above the
+landed `3,438`. The original `case 183` tail order and the original values were
+both tested; neither changes the `-8`. A compensating `+8` would have to be
+placed inside the type1/type2/type10 bodies, and the type bodies are also
+internally block-reordered, so a simple padding addition does not realign them.
+
+Scratch variants: `p183a.py`..`p183l.py` in
+`/home/debian/GalaxyOnFire2/scratch/w13350/`.
