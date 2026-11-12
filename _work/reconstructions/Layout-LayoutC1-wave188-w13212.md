@@ -84,6 +84,14 @@ found a distant pair: units **18 and 28** exchanged (`field_0x54` /
 2,521/2,552, aligned 2,713 -> 2,727.  `check` PASS with the same gate
 counts.
 
+### Fourth win (K=4 re-sweep on the improved order)
+
+A fresh K=4 exhaustive sweep on the new order found units **27 and 28**
+exchanged (`field_0x54` / `field_0x74`).  Proxy 5,206 -> **5,191** (-15);
+linked raw **5,272 -> 5,257** (-15), size exact 7,072/7,072, aligned 2,727
+-> 2,728, instruction count 2,521 -> 2,522 (still size-exact).  `check`
+PASS with the same gate counts.
+
 Further K=5..7 / 3-opt / distance-11..20 passes are recorded below as they
 land.
 
