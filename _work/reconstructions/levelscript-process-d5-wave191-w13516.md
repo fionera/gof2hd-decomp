@@ -425,3 +425,68 @@ data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370).
 The sibling cell `(5, merged 4887) shift 4` also measured 51,616 (-1) on the
 51,617 body (moves the same `m_nFlashCountdown = 300;` store to the front of
 the group); it overlaps this landing and is being re-measured on the new body.
+
+## Twelfth landing: multi-line d5 shift-3 (transport flag group)
+
+On the 51,616 body, `(5, merged 1884) shift 3` (source lines 1940-1944) was
+landed:
+
+```cpp
++                        m_pHud->visible = 0;
++                        player->hideShipForFirstPersonCameraView(false);
+                         (*enemies)[0]->shipGroup = 1;
+                         player->player->setVulnerable(false);
+                         player->setFreeLookMode(false);
+-                        m_pHud->visible = 0;
+-                        player->hideShipForFirstPersonCameraView(false);
+```
+
+Independent flag stores (enemy ship-group, player vulnerability/free-look,
+HUD visibility, hide-ship-for-FP); no statement reads what another writes.
+Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,616 -> 51,615  (-1)
+aligned    22,633
+size       57,232 / 57,232   (exact)
+.text      71,393 -> 71,392  (-1)
+.ARM.extab 577 (unchanged; size/base exact)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical, diff 0)
+```
+
+`check` -> RATCHET PASS.
+
+## Thirteenth landing: multi-line d5 shift-3 (cinematic-break freeze group)
+
+On the 51,615 body, `(5, merged 4238) shift 3` (source lines 4399-4403) was
+landed:
+
+```cpp
++                        player->setFreeze(true);
++                        m_bCinematicBreak = 1;
+                         player->hideShipForFirstPersonCameraView(false);
+                         player->stopShooting(0);
+                         player->setFreeLookMode(false);
+-                        player->setFreeze(true);
+-                        m_bCinematicBreak = 1;
+```
+
+`setFreeze(true)` / `m_bCinematicBreak = 1` are independent flag stores.
+`PlayerEgo::stopShooting` early-returns only on `turretActive` or `isDead()`,
+neither of which `setFreeze` touches, and the hide-ship/free-look stores do not
+read the freeze flag.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,615 -> 51,613  (-2)
+aligned    22,646
+size       57,232 / 57,232   (exact)
+.text      71,392 -> 71,390  (-2)
+.ARM.extab 577 (unchanged; size/base exact)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical, diff 0)
+```
+
+`check` -> RATCHET PASS.

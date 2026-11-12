@@ -4396,11 +4396,11 @@ bool LevelScript::process(int delta) {
                         player->killLiberator();
                     }
                     player->setVisible(false);
+                    player->setFreeze(true);
+                    m_bCinematicBreak = 1;
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     player->setFreeLookMode(false);
-                    player->setFreeze(true);
-                    m_bCinematicBreak = 1;
                     m_pCamera->enableFirstPersonCam(false);
                     resetCamera(self);
                     player->player->setVulnerable(false);

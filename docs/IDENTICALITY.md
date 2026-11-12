@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,544** | 22,796 | 57,232 |
+| `LevelScript::process` | **51,542** | 22,809 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
-| `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
+| `Layout` C1/C2 | **5,234** | 2,709 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
@@ -31,10 +31,24 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,252**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,243**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `Layout` C1/C2 (w13546, wave 191b): restate `footerTextInset` after the
+  opening if/else block.  The redundant assignment is CSE'd, but it makes
+  the default-arm schedule merge `0xc/0x10/0x14` into `stmia` and
+  `0x18/0x1c` into `strd`, matching the original's `d15e2/d15ea`.  Raw
+  **5,241 -> 5,234** (-7, both C1/C2), aligned 2,726 -> 2,709, insn
+  2,521 -> 2,519, size 7,072/7,072 exact.  `.text` -7, `.rel.plt`
+  byte-identical.
+* `LevelScript::process` (w13516, wave 191b): multi-line d5 shift-3,
+  cinematic freeze group: `setFreeze(true)` / `m_bCinematicBreak = 1`
+  move before `hideShipForFirstPersonCameraView`/`stopShooting`/
+  `setFreeLookMode`.  Raw **51,544 -> 51,542** (-2), aligned
+  22,796 -> 22,809, size 57,232/57,232 exact.  `.text` -2, `.ARM.extab`
+  576 unchanged, `.rodata` 485 unchanged.  `.rel.plt` byte-identical.
 
 * `LevelScript::process` (w13515, wave 191b): d3 store hoist in the
   mission-0 state-6 arrival block: `m_nScriptTimerA = 0` moves before
