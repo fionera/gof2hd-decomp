@@ -16,11 +16,11 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,786** | 22,208 | 57,232 |
-| `Radar::draw` | **6,298** | 1,802 | 9,908 |
+| `Radar::draw` | **6,297** | 1,804 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,244** | 1,156 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
-| `HangarWindow::render` | **1,360** | 530 | 9,700 |
+| `HangarWindow::render` | **1,355** | 617 | 9,700 |
 | `Level::createShip` | **1,195** | 396 | 2,764 |
 | `Status::missionCompleted` | **475** | 187 | 1,432 |
 | `Gun::calcCharacterCollision` | **457** | 84 | 1,984 |
@@ -70,12 +70,21 @@ Landed changes:
 * `Radar::draw` (w13370): spark `inSight` second bound as subtraction
   (`left > screenX - size*2` instead of `screenX < left + size*2`).
   Raw **6,299 -> 6,298** (-1), aligned 1,798 -> 1,802.
+* `Radar::draw` (w13370 follow-up): landmark screenY upper bound as
+  subtraction (`top > screenY - size` instead of `screenY < top + size`).
+  Raw **6,298 -> 6,297** (-1), aligned 1,802 -> 1,804.
+* `HangarWindow::render` (w13379): faithful upgrade-test operand order
+  `upgTab == 1 && this->upgradeMode` inside the existing
+  `__builtin_expect(..., 1)`. Raw **1,360 -> 1,355** (-5), aligned
+  530 -> 617. `.ARM.extab` 603 -> 606 (+3), so the net total is -2 for
+  this change alone; combined with the Radar -1 the section total moves
+  73,906 -> 73,903 (-3).
 * `Gun::calcCharacterCollision` (w13365): swap the scatter
   `damage`/`damageEmp` order so `damageEmp` is applied before `damage`.
   Raw **458 -> 457** (-1), aligned 63 -> 84.
 
-Section deltas: `.text` **73,283** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
+Section deltas: `.text` **73,277** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **606** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
@@ -84,7 +93,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,906**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,903**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

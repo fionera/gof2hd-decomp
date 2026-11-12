@@ -826,7 +826,7 @@ void HangarWindow::render() {
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
                                 buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                if (__builtin_expect(this->upgradeMode && upgTab == 1, 1)) { // lint: arm_builtin
+                                if (__builtin_expect(upgTab == 1 && this->upgradeMode, 1)) { // lint: arm_builtin
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
                                     (*this->buttons)[2]->setVisible(true);

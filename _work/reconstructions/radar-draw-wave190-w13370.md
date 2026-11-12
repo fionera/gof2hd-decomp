@@ -101,10 +101,59 @@ Scratch `/home/debian/GalaxyOnFire2/scratch/w13370/`: `Radar.base.cpp` (6,308 ba
 `try4.py` (equivalent-spelling sweep), `base.so` / `v2.so`, `secs.py` (section byte diff),
 `cmpbytes.py` (per-run byte diff between two `.so`s).
 
+## 4. Second win (landed separately): landmark crosshair `screenY` upper bound
+
+One more source edit in the landmark crosshair block (line 600):
+
+```cpp
+-                if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
+-                    this->screenY < top + size) {
++                if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
++                    top > this->screenY - size) {
+```
+
+`screenY < top + size` <=> `top > screenY - size` (same `screenY - top < size` bound). This is
+the same subtraction-encoding lever as section 0: clang materialises the upper bound as
+`sub.w reg, screenY, size` instead of `add.w reg, top, size`, which matches the original's
+register/immediate bytes better.
+
+| metric | base (after section 0) | after section 4 |
+|---|---:|---:|
+| raw same-address diff | 6,307 | **6,306** |
+| instruction-index alignment | 1,862 | 1,864 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes | 73,515 | **73,514** |
+| `.ARM.extab` differing bytes | 610 | 610 |
+| `.rel.plt` | byte-identical | byte-identical |
+| build-id differing bytes | 19 | 20 |
+| total differing bytes | 74,145 | **74,144** |
+
+`RATCHET PASS` (byte 4,507 / linked 4,507 / size 4,524 / data 843 / imports 207 / lint CLEAN /
+parity 5,370).
+
+Cumulative for this worker: raw 6,308 -> 6,306, `.text` 73,516 -> 73,514, total 74,146 -> 74,144.
+
+Sites measured around this lever (all on the 6,307 base, all size 9,908 unless noted):
+
+| site | raw |
+|---|---:|
+| **line 600 `top > screenY - size`** | **6,306** |
+| line 600 `left > screenX - size` (A1) | 6,307 |
+| A1 + A2 together | 6,306 (aligned 1,867) |
+| line 847/1016/1116 `screenX < left + size*2` -> subtraction | 6,309 |
+| line 847/1016/1116 `screenY < top + size*2` -> subtraction | 6,310 |
+| line 100 `centerX > screenX - field_0x128` | 8,161 (size 9,896) |
+| line 100 `centerY > screenY - field_0x128` | 8,264 (size 9,896) |
+| line 461 `cx > screenX - field_0x124` | 6,309 |
+| line 461 `cy > screenY - field_0x124` | 6,309 |
+| line 106 `top > screenY - size - size` | 8,469 (size 9,916) |
+| line 106 `(int) left > screenX - size - size` | 8,468 (size 9,916) |
+
 ## Current-master rebase (wave 190 harvest)
 
-Re-applied on current master (`454bc033e`) after the w13371 station-blip/tractor2
-landing. Current master before this change was raw 6,299; after it is raw 6,298
-(-1), aligned 1,798 -> 1,802, size 9,908/9,908. `.text` 73,302 -> 73,289 (-13
-across LevelScript + Radar + Gun), `.ARM.extab` 603 unchanged, total 73,925 ->
-73,912. `check` green, RATCHET PASS.
+Re-applied both w13370 bounds on current master (`17f1b4a79`), after the w13371
+station-blip/tractor2 landing. Current master before the two changes was raw 6,299;
+after the spark bound it was 6,298, and after the landmark bound it is raw **6,297**
+(-2 total), aligned 1,804, size 9,908/9,908. `.text` 73,283 -> 73,277 (-6 across
+Radar + Hangar), `.ARM.extab` 603 -> 606 (+3 from the Hangar change), total
+73,906 -> 73,903 (-3). `check` green, RATCHET PASS.
