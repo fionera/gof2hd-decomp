@@ -739,10 +739,10 @@ bool LevelScript::process(int delta) {
             // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
             m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
             if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                player->player->field_5e = 0;
                 m_pLevel->getPlayer()->setCollide(true);
                 player->setComputerControlled(false);
                 m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-                player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
                 m_nState = 4;
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
@@ -3519,12 +3519,12 @@ bool LevelScript::process(int delta) {
                         TargetFollowCamera *wcamera = m_pCamera;
                         m_pRadar->enabled = 0;
                         m_nState++;
-                        resetCamera(m_pLevel);
                         player->setTurretMode(false);
+                        resetCamera(m_pLevel);
                         if (player->isInRocketControl()) {
                             player->setRocketControl(nullptr, nullptr);
-                            wcamera->setRumblePercentage(0.0f, 0);
                             player->killLiberator();
+                            wcamera->setRumblePercentage(0.0f, 0);
                         }
                         wcamera->enableFirstPersonCam(false);
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
@@ -4677,10 +4677,10 @@ bool LevelScript::process(int delta) {
                         m_nState++;
                         player->setSpeed(0.02f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        camera->setPosition(tv);
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
+                        camera->setPosition(tv);
                         camera->setFixed(false);
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if (__builtin_expect((*enemies)[i]->shipGroup == 9, 1)) { // lint: arm_builtin
@@ -5006,10 +5006,10 @@ bool LevelScript::process(int delta) {
                         m_tempVec = AbyssEngine::AEMath::VectorNormalize(
                                 (*enemies)[stationIndex]->getPosition() + Vector{0.0f, 0.0f, 40000.0f}
                                 - fighter->getPosition());
-                        player->setComputerControlled(true);
                         ((PlayerFighter *) fighter)->setAIDisabled(true);
                         fighter->setVisible(true);
                         fighter->setActive(true);
+                        player->setComputerControlled(true);
                         player->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         player->setFreeze(false);
