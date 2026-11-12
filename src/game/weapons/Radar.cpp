@@ -597,8 +597,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
                 int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
                 int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
-                if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
-                    top + size > this->screenY) {
+                if (this->screenY > top && top + size > this->screenY && this->screenX < left + size &&
+                    this->screenX > left) {
                     if ((int) i == StarSystem::orbitPlanetIndex) {
                         planetHit = false;
                     } else {
@@ -711,9 +711,9 @@ enemies:
                 this->egoPos = player->getPosition();
                 enemy->field_0x76 = 1;
                 this->targetPos = enemy->player->getPosition();
-                if (!(this->egoPos.x - this->targetPos.x > 24000.0f) && !(this->egoPos.x - this->targetPos.x < -24000.0f) &&
-                    !(this->egoPos.y - this->targetPos.y > 24000.0f) && !(this->egoPos.y - this->targetPos.y < -24000.0f) &&
-                    !(this->egoPos.z - this->targetPos.z > 24000.0f) && !(this->egoPos.z - this->targetPos.z < -24000.0f) &&
+                if (!(this->egoPos.x - this->targetPos.x < -24000.0f) && !(this->egoPos.x - this->targetPos.x > 24000.0f) &&
+                    !(this->egoPos.y - this->targetPos.y < -24000.0f) && !(this->egoPos.y - this->targetPos.y > 24000.0f) &&
+                    !(this->egoPos.z - this->targetPos.z < -24000.0f) && !(this->egoPos.z - this->targetPos.z > 24000.0f) &&
                     enemy->getType() != 16917) {
                     if (wreck) {
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
@@ -859,7 +859,7 @@ enemies:
                 }
             }
         tractor:
-            if (this->tractorMode2 && enemy->isDead() && wreck && this->field_0x1c == nullptr) {
+            if (this->tractorMode2 && wreck && enemy->isDead() && this->field_0x1c == nullptr) {
                 this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
                 enemyHit = true;
