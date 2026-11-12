@@ -134,6 +134,8 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/Level.cpp"
 # Layout::Layout (raw 5,658 -> 5,657) and takes the whole-.text diff
 # 82,526 -> 82,525.  Found by the wave-168 round-8 per-TU flag sweep.  See
 # _work/reconstructions/build-provenance-round8-per-tu-flags.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/mission/StatusMissionTable.cpp"
+    PROPERTIES COMPILE_OPTIONS "-marm;-fno-function-sections;-fno-unwind-tables")
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/ui/Layout.cpp"
     PROPERTIES COMPILE_OPTIONS "-Xclang;-target-feature;-Xclang;+prof-unpr")
 
@@ -177,7 +179,7 @@ set(_crtbegin "${_libdir}/crtbegin_so.o")
 # The original was linked without a section-ordering file, so the object order alone reproduces
 # the original .text layout now that TU membership and within-TU function order are faithful.
 # $<TARGET_OBJECTS:gof2> is in tools/source_order.txt order (the original TU order).
-# The Status rank table is emitted into .rodata and must land at the very end of the
+# The Status rank helper is emitted into .rodata and must land at the very end of the
 # .rodata output section (after the archive .rodata inputs) so no existing literal-pool
 # address moves; link that one object after the archives.
 set(_link_objs "$<FILTER:$<TARGET_OBJECTS:gof2>,EXCLUDE,StatusMissionTable>")

@@ -4203,10 +4203,10 @@ bool LevelScript::process(int delta) {
                     *scratch = player->GetDirVector();
                     *tempVec += *scratch * ((float) delta * 2.01f);
                     *scratch = player->geometry->getRightVector();
+                    m_pCamera->setFixed(true);
                     *tempVec += *scratch * ((float) delta * 0.03f);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
                     *tempVec += *scratch * ((float) delta * 0.01f);
-                    m_pCamera->setFixed(true);
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[0]))->isOver()) {
                         player->player->setVulnerable(true);

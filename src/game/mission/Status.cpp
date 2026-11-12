@@ -1313,7 +1313,7 @@ int Status::missionFailed(bool docked, int64_t time) {
 // existing hidden weak crtbegin symbol name so gold's .dynsym name pool order
 // is unchanged; see that file for the placement rationale.
 #pragma GCC visibility push(hidden)
-extern const unsigned char __emutls_unregister_key[192];
+extern "C" unsigned char __emutls_unregister_key(int type); // lint: extern_c
 #pragma GCC visibility pop
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
@@ -1345,7 +1345,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         // `sub`.  The rank values are chosen to keep the original's default
         // slots and the longest run of matching TBH targets.
         // See status-missioncompleted-wave189-w13351.md.
-        switch (__emutls_unregister_key[m->getType()]) {
+        switch (__emutls_unregister_key(m->getType())) {
             case 200:
             case 211:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
@@ -1471,6 +1471,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             case 10:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
+                    (void) m->getProductionGoodIndex();
                     Array<Item *> *cargo = ship->getCargo();
                     int amount = m->getProductionGoodAmount();
                     if (Item::isInList(index, amount, cargo)) {
@@ -1556,8 +1557,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 12:
                 if (m->getStatusValue() == 0) {
-                    if (Globals::status->station->getIndex() != 0x71 || Globals::status->inAlienOrbit() ||
-                        Globals::status->currentCampaignMission != 0x5c) {
+                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
+                        Globals::status->station->getIndex() != 0x71) {
                         m->setWon(true);
                         return m;
                     }
@@ -1573,7 +1574,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 38:
+            case 39:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();

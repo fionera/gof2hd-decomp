@@ -51,8 +51,8 @@ object input order (`tools/source_order.txt`) places every one of the 4,524 expo
 its original address; `.text`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
 content is byte-identical, and all 27 original section headers are exact. `.rodata`'s original
-269,159 B are byte-identical (base exact); its `sh_size` is 269,351 (+0xc0) because the 192 B
-`Status::missionCompleted` rank table is the last `.rodata` input (see below).
+269,159 B are byte-identical (base exact); its `sh_size` is 269,644 (+0x1e5) because the 484 B
+`Status::missionCompleted` rank helper is the last `.rodata` input (see below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -107,14 +107,14 @@ wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
 948 B record was recovered in wave 177 (w12116): row 39 LSDA length is now 152/150
 after the wave-184 w12817 ship-guard operand flip, the record diff is 81, and the
 section stays size- and base-exact. `.rodata`'s original 269,159 B are
-**byte-identical** (base `0x1c9e10`); the 192 B
-`Status::missionCompleted` rank table (`src/game/mission/StatusMissionTable.cpp`)
-is the last `.rodata` input at `0x20b977`, so the section is 269,351 B
-(+0xc0, the table fills the `.rodata`..`.fini_array` gap; the R E LOAD FileSiz
-grows by the same 0xc0). `.fini_array` is back to 8 B @ `0x20cba0`, and
+**byte-identical** (base `0x1c9e10`); the 484 B
+`Status::missionCompleted` rank helper (`src/game/mission/StatusMissionTable.cpp`)
+is the last `.rodata` input at `0x20b978`, so the section is 269,644 B
+(+0x1e5, the helper fills the `.rodata`..`.fini_array` gap; the R E LOAD FileSiz
+grows by the same 0x1e5). `.fini_array` is back to 8 B @ `0x20cba0`, and
 `.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical again (w13358). The
-differing section bytes are `.text` (73,513), `.ARM.extab` (610), `.rodata`
-size +0xc0 (content exact), and `.note.gnu.build-id` (20). `.rel.plt` is
+differing section bytes are `.text` (72,282), `.ARM.extab` (584), `.rodata`
+size +0x1e5 (content exact), and `.note.gnu.build-id` (20). `.rel.plt` is
 **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
