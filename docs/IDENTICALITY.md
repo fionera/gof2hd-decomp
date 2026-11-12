@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,541** | 22,826 | 57,232 |
+| `LevelScript::process` | **51,540** | 22,826 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,233** | 2,712 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,10 +31,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,241**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,240**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `LevelScript::process` (w13516, wave 191b): multi-line d6 shift-4,
+  intro switch group: `player->rotate` + `geometry->setDirection` move
+  before `switchPlanetForIntro`/`switchSkyboxForIntro`/particle resets.
+  Raw **51,541 -> 51,540** (-1), aligned 22,826 unchanged, size
+  57,232/57,232 exact.  `.text` 71,241 -> 71,240 (-1), `.ARM.extab`
+  576 unchanged, `.rodata` 485 unchanged.  `.rel.plt` byte-identical.
+* `Level::createMission` (w13537, wave 191b): note-only pass; pinned the
+  case-1 `enemyRace` post-RA MachineLICM reload mechanism and the
+  two-frame `this` spill root cause of the ~2.2 KB tail.  Raw 2,656
+  unchanged.
 
 * `Layout` C1/C2 (w13546, wave 191b): restate `field_0x184` after its
   first assignment.  Raw **5,234 -> 5,233** (-1, both C1/C2), aligned

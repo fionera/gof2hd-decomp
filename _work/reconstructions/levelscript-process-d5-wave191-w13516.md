@@ -524,3 +524,40 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Fifteenth landing: multi-line d6 shift-4 (intro planet/skybox switch group)
+
+On the 51,612 body, `(6, merged 818) shift 4` (source lines 828-833) was
+landed:
+
+```cpp
++                    m_pLevel->particleRenderBoolPtr->reset();
++                    m_pLevel->particleEmitBoolPtr->reset();
++                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
++                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                     m_pLevel->getStarSystem()->switchPlanetForIntro();
+                     m_pLevel->switchSkyboxForIntro();
+-                    m_pLevel->particleRenderBoolPtr->reset();
+-                    m_pLevel->particleEmitBoolPtr->reset();
+-                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
+-                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+```
+
+`switchPlanetForIntro` / `switchSkyboxForIntro` touch the star-system planet
+texture/scaling, the skybox mesh/texture and asteroid `setDead`; they do not
+read the player transform.  The particle-reset flags and the player
+rotate/direction stores are likewise independent of them.  Semantics
+preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,612 -> 51,611  (-1)
+aligned    22,663
+size       57,232 / 57,232   (exact)
+.text      71,389 -> 71,388  (-1)
+.ARM.extab 577 (unchanged; size/base exact)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical, diff 0)
+```
+
+`check` -> RATCHET PASS.

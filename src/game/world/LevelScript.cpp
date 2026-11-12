@@ -825,12 +825,12 @@ bool LevelScript::process(int delta) {
                 case 9: {
                     player->setPosition(0.0f, 0.0f, 0.0f);
                     // State 9: jump to the intro planet.
+                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
+                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_pLevel->getStarSystem()->switchPlanetForIntro();
                     m_pLevel->switchSkyboxForIntro();
                     m_pLevel->particleRenderBoolPtr->reset();
                     m_pLevel->particleEmitBoolPtr->reset();
-                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
-                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_pGeometry5->setPosition(player->getPosition());
                     m_nState = 10;
                     m_pCamera->setPosition(5000.0f, 500.0f, -10000.0f);
