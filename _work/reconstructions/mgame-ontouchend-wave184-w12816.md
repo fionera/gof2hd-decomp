@@ -8,14 +8,14 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 3,030 | **2,976** |
-| aligned (instruction) diff | 1,446 | 1,590 |
+| raw same-address diff bytes | 3,030 | **2,972** |
+| aligned (instruction) diff | 1,446 | 1,602 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,842 | **74,788** |
+| `.text` differing bytes | 74,842 | **74,784** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 646 | 646 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,508 | **75,454** |
+| total differing bytes | 75,508 | **75,450** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -90,6 +90,10 @@ Globals::status->departStation(...);
 Raw 2,997 -> 2,990 (8 B, `.text` 74,809 -> 74,802), size exact.  The aligned
 (instruction) diff rises to 1,526 because the block's instruction schedule shifts,
 but the raw same-address byte diff — the primary metric — falls.
+
+Eighth, in the shared "back to the station" tail the `this->active = 0` store was
+moved up ahead of the four HP getter/store pairs: raw 2,976 -> 2,972 (4 B,
+`.text` 74,788 -> 74,784), size exact.
 
 Seventh, in the campaign-95 branch the armor and hitpoints stores were swapped
 again (`field_64` before `field_60`), leaving the order hitpoints, shield, armor,

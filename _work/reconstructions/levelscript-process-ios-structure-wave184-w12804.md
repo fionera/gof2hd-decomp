@@ -301,3 +301,34 @@ Measured together: raw **52,216 -> 52,211** (-5 B), size 57,232/57,232 exact,
 `289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
 `RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
 lint CLEAN, drift 0, parity 5370/5370.
+
+## Ninth sweep (non-hot stride-11, offset 9): seven shape moves, wormhole fix
+
+The stride-11 sample at offset 9 (304 candidates) produced seven raw-lowering
+moves, all size-exact / `.rel.plt`-identical, which compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 1765 `player->freeze = 0;` | after `player->setComputerControlled(false)` | 52,210 |
+| 2120 `((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();` | after `(*m_pLevel->getLandmarks())[3]->setPosition(25000.0f, 20000.0f, -55000.0f)` | 52,190 |
+| 2435 `player->hideShipForFirstPersonCameraView(false);` | after `player->setTurretMode(false)` | 52,210 |
+| 2696 `m_tempVec = m_pGeometry6->getPosition();` | after `m_tempVec.z += 1000.0f` | 52,210 |
+| 3406 `player->setRocketControl(nullptr, nullptr);` | after `m_pCamera->setRumblePercentage(0.0f, 0)` | 52,210 |
+| 3719 `player->setFreeLookMode(false);` | after `m_pCamera->setTarget((*enemies)[2]->geometry)` | 52,210 |
+| 4744 `(*m_pLevel->getEnemies())[1]->shipGroup = 8;` | after `m_pCamera->setFixed(false)` | 52,210 |
+
+The 2120 move is a genuine structural fix, not just codegen shape: the
+original mission-125 wormhole-exit block at `0x13ac14-0x13ac34` calls
+`setPosition(25000,20000,-55000)` **before** `PlayerWormHole::open()` (the
+virtual `setPosition` call at `0x13ac26` precedes `open` at `0x13ac34`), while
+the tree had `open()` first.  The other six are behaviour-neutral statement
+sinks (a freeze flag past a camera setter, a hide-ship call past turret mode,
+a vector load past two `+=` offsets, a rocket-control reset past the rumble
+setter, a free-look toggle past a camera target, and a ship-group store past
+`setFixed`).
+
+Measured together: raw **52,211 -> 52,184** (-27 B), size 57,232/57,232 exact,
+`.text` **74,772 -> 74,745**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
+`RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
+lint CLEAN, drift 0, parity 5370/5370.
