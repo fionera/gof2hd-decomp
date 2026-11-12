@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,563** | 22,361 | 57,232 |
+| `LevelScript::process` | **51,561** | 22,361 | 57,232 |
 | `Radar::draw` | **6,015** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,11 +31,14 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,280**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,278**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13516): multi-line d5 shift-3, transport wake
+  group. Raw **51,563 -> 51,561** (-2). `.text` 71,280 -> 71,278 (-2),
+  `.ARM.extab` 576 unchanged.
 * `HangarWindow::render` (w13543): restore the wave-190 ship-body order
   (`setVisible`, `upgTab` snapshot, `draw`, `setPosition`, `buttonOffset`)
   while keeping the w13527 body-scope `upgTab` and the `buttons[10]`-
