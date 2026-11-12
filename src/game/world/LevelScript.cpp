@@ -991,9 +991,9 @@ bool LevelScript::process(int delta) {
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTime >= 10001) {
-                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
                     ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
                     ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     m_nState = 1;
