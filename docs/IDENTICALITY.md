@@ -4,6 +4,53 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-12 (wave 187)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+15 functions remain non-byte-exact, all size-exact.
+
+Wave 187 runs 20 agents on the worst functions. Residual table so far (raw /
+aligned / size; all size-exact):
+
+| function | raw | aligned | size |
+|---|---:|---:|---:|
+| `LevelScript::process` | **51,964** | 20,857 | 57,232 |
+| `Radar::draw` | **6,309** | 1,858 | 9,908 |
+| `Layout` C1/C2 | **5,354** | 2,680 | 7,072 |
+| `Level::createMission` | **3,517** | 1,009 | 17,172 |
+| `MGame::OnTouchEnd` | **2,930** | 1,704 | 8,080 |
+| `HangarWindow::render` | **1,510** | 643 | 9,700 |
+| `Level::createShip` | **1,202** | 484 | 2,764 |
+| `Status::missionCompleted` | **721** | 327 | 1,432 |
+| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `Hud::draw` | **32** | 21 | 9,332 |
+| `Generator::createMission` | **40** | 21 | 1,996 |
+| `ModStation` C1/C2 | **11** | 5 | 1,008 |
+| `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
+| `MGame::OnUpdate` | **15** | 111 | 11,440 |
+
+Landed changes:
+
+* `LevelScript::process` (w13102): branch-layout pass, mission-106 state store
+  before the fighter declaration. Raw **51,968 -> 51,966** (-2).
+* `LevelScript::process` (w13103): data-flow pass, Vector scalar-multiply
+  operand order. Raw **51,966 -> 51,964** (-2), aligned 20,856 -> 20,857.
+* `Radar::draw` (w13109): planet-lock store order plus `||` timer guard. Raw
+  **6,311 -> 6,309** (-2), aligned 1,903 -> 1,858.
+* `HangarWindow::render` (w13117): free-credits `textY` volatile-read re-seat.
+  Raw **1,512 -> 1,510** (-2), aligned unchanged 643.
+
+Section deltas: `.text` **74,266** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **74,933**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-12 (wave 186)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
