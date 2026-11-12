@@ -119,7 +119,7 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScrip
 # -> raw= 52074 aligned= 20766 size= 57232/57232 insn= 20726/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 cmake --build cmake-build-match --target lint  -- -j2   # CLEAN
-cmake --build cmake-match --target drift -- -j2         # 0 fields
+cmake --build cmake-build-match --target drift -- -j2         # 0 fields
 ```
 
 The harnesses (`stmts.py`, `gen.py`, `eval.py`, `apply.py`, `greedy.py`,
