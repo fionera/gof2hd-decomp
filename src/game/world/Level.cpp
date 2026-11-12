@@ -2277,11 +2277,11 @@ case4Tail:
                 case 2: {
                     int coords[6];
                     coords[1] = 0;
-                    coords[2] = 0;
                     coords[3] = 0;
+                    coords[4] = 0;
                     coords[5] = 0;
                     coords[0] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
-                    coords[4] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
+                    coords[2] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
                     int goods = mission->getProductionGoodAmount();
                     this->enemyRoute = new Route(coords, 6);
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
