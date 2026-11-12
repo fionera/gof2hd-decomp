@@ -16,11 +16,11 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,954** | 20,873 | 57,232 |
+| `LevelScript::process` | **51,942** | 20,869 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,354** | 2,680 | 7,072 |
-| `Level::createMission` | **3,517** | 1,009 | 17,172 |
-| `MGame::OnTouchEnd` | **2,930** | 1,704 | 8,080 |
+| `Level::createMission` | **3,510** | 998 | 17,172 |
+| `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -48,13 +48,23 @@ Landed changes:
   statement order. Raw **51,962 -> 51,957** (-5), aligned 20,857 -> 20,870.
 * `LevelScript::process` (w13107): alias pass 1, Array-element alias. Raw
   **51,957 -> 51,954** (-3), aligned 20,870 -> 20,873.
+* `LevelScript::process` (w13104): passes 5b-5c (additive m_tempVec terms plus
+  five safe adjacent swaps). Raw **51,954 -> 51,945** (-9), aligned
+  20,873 -> 20,871.
+* `LevelScript::process` (w13107): alias pass 2, size-compensating pair. Raw
+  **51,945 -> 51,942** (-3), aligned 20,871 -> 20,869.
+* `MGame::OnTouchEnd` (w13116): pass 13, chain 15-before-162 plus 162-block
+  store swap. Raw **2,930 -> 2,929** (-1), aligned 1,704 -> 1,670; `.ARM.extab`
+  content 647 -> 640 (size/base exact).
+* `Level::createMission` (w13115): case4Tail offset[1] cyclic remap. Raw
+  **3,517 -> 3,510** (-7), aligned 1,009 -> 998.
 
-Section deltas: `.text` **74,256** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
+Section deltas: `.text` **74,236** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **640** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,923**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,896**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 186)

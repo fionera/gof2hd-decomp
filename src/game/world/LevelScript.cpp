@@ -2918,8 +2918,8 @@ bool LevelScript::process(int delta) {
                                            Vector{0.0f, 1.0f, 0.0f});
                         m_nState = 6;
                         m_dirVec = player->geometry->getRightVector();
-                        m_tempVec += m_dirVec * 10000.0f;
                         m_tempVec += m_dirVec * 700.0f;
+                        m_tempVec += m_dirVec * 10000.0f;
                         m_dirVec = player->geometry->getDirection();
                         m_pCamera->setTarget(player->geometry);
                         m_pCamera->setPosition(m_tempVec);
@@ -3339,14 +3339,15 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 2001) {
+                        TargetFollowCamera *camera = m_pCamera;
                         m_pLevel->getPlayer()->resetGunDelay();
                         player->setFreeze(false);
                         player->setVisible(true);
                         player->player->setVulnerable(true);
-                        m_pCamera->setLookAtCam(false);
+                        camera->setLookAtCam(false);
                         resetCamera(m_pLevel);
-                        m_pCamera->setTarget(player->geometry);
-                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        camera->setTarget(player->geometry);
+                        camera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                         m_pRadar->enabled = 1;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pHud->visible = 1;
@@ -4572,12 +4573,12 @@ bool LevelScript::process(int delta) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 9) {
                                 KIPlayer *e = (*enemies)[i];
-                                e->setActive(false);
                                 e->setVisible(false);
+                                e->setActive(false);
                             }
                         }
-                        m_pCamera->setTarget(player->geometry);
                         tv = player->getPosition();
+                        m_pCamera->setTarget(player->geometry);
                         tv += Vector{-350.0f, 400.0f, -1500.0f};
                         m_nScriptTimerA = 0;
                         m_pCamera->setPosition(tv);
@@ -4672,8 +4673,8 @@ bool LevelScript::process(int delta) {
                         TargetFollowCamera *camera = m_pCamera;
                         camera->setTarget(player->geometry);
                         tv = player->getPosition();
-                        player->setSpeed(0.02f);
                         tv += Vector{150.0f, 400.0f, -1500.0f};
+                        player->setSpeed(0.02f);
                         m_nState++;
                         camera->setPosition(tv);
                         camera->setFixed(false);
@@ -5237,8 +5238,8 @@ bool LevelScript::process(int delta) {
                         m_pGeometry4->moveForward(step * 2.5f);
                     }
                     if (m_nScriptTimerA > 25000) {
-                        if (!(*enemies)[0]->isVisible()) {
-                            KIPlayer *enemy = (*enemies)[0];
+                        KIPlayer *enemy = (*enemies)[0];
+                        if (!enemy->isVisible()) {
                             enemy->setVisible(true);
                             enemy->setActive(true);
                         }

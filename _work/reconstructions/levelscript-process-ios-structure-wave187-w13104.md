@@ -16,9 +16,9 @@ landed.**
 
 ```
                          base (51,968)    this pass
-process raw diffbytes    51,968           51,961     (-7)
+process raw diffbytes    51,968           51,950     (-18)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
-.text diffbytes          74,274           74,267     (-7)
+.text diffbytes          74,274           74,256     (-18)
 .ARM.extab diffbytes     647              647        (unchanged; size/base exact @0x1a3b78, 156,312 B)
 .ARM.exidx diffbytes     0                0
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
@@ -47,6 +47,12 @@ All three are independent of each other and of the PLT first-reference order
 | 1 | 1368 | `m_nState = 2;` before `PlayerFighter *fighter = …` (mission-106 state 1) | -2 |
 | 2 | 1371 | `(*enemies)[0]->setVisible(true);` before `(*enemies)[0]->awake();` | -4 |
 | 3 | 1729 | `int routePoints[3] = …;` before `m_pCamera->setPosition(camPos);` (mission-29 intro) | -1 |
+| 4 | 2921 | `m_tempVec += m_dirVec * 700.0f;` before `… * 10000.0f;` (two additive terms) | -1 |
+| 5 | 4575 | `e->setVisible(false);` before `e->setActive(false);` | -2 |
+| 6 | 4579 | `tv = player->getPosition();` before `m_pCamera->setTarget(player->geometry);` | -3 |
+| 7 | 4629 | `tvA += Vector{…};` before `m_pCamera->setTarget(player->geometry);` | -1 |
+| 8 | 4632 | `forceUpdate(delta,false);` before `m_pCamera->setPosition(tvA);` | -1 |
+| 9 | 4675 | `tv += Vector{…};` before `player->setSpeed(0.02f);` | -1 |
 
 The `m_pGeometry6` candidate from the sweep (`m_pGeometry6->setPosition(...);`
 before `m_pGeometry6 = intro;`, -1) is a semantic change (it calls setPosition
@@ -101,8 +107,23 @@ to 51,968 (w13001/w13002/w13007).  A fresh d1 sweep was run over lines
 605..2056 of the current body (472 of 1,914 candidates, both directions are the
 same permutation).  It found four size-exact, `.rel.plt`-identical winners:
 `1368` (-2), `1371` (-4), `1729` (-1), `1893` (-1, semantic form above).
-All four compose: the landed combination is **-7** raw bytes.  The remaining
-candidates (2056..5370) were not swept in this pass.
+All four compose: the landed combination is **-7** raw bytes.
+
+A second d1 sweep over lines 2056..3214 of the new body (593 of 1,442
+candidates) found one more safe winner: `2921` (swap the two additive
+`m_tempVec += m_dirVec * {700,10000}.0f;` terms, -1), landed.  Two further
+-1 candidates were rejected as semantic changes: `2532` (`camPos.y += 800.0f;`
+after `setPosition`, but the original adds all three offsets first,
+`13c11e..13c152`) and `2674` (`CameraSetLocal` before `frame->setPosition`,
+but the original calls `setPosition` first, `14160c` then `141626`).  The
+remaining candidates (3214..5370) were not swept in this pass.
+
+A third d1 sweep over lines 3214..4729 of the new body (849 candidates) found
+five more safe winners: `4575` (-2), `4579` (-3), `4629` (-1), `4632` (-1),
+`4675` (-1).  They compose to **-10** (better than the sum of the individual
+deltas).  Candidate `3734` (`*camPos += *tmp * 400.0f;` after `setPosition`)
+was rejected as a semantic change.  The remaining candidates (4729..5370)
+were not swept in this pass.
 
 ## Reproduction
 
@@ -111,7 +132,7 @@ cd /home/debian/GalaxyOnFire2/wt/w13104
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51961 size=57232/57232 text=74267 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51950 size=57232/57232 text=74256 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 
