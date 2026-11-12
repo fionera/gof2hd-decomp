@@ -320,3 +320,36 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Ninth landing: multi-line d6 shift-5 (mission-end statics)
+
+On the 51,621 body, `(6,2136) shift 5` (source lines 2209-2215) was landed:
+
+```cpp
++                        Level::programmedStation = nullptr;
+                         Globals::status->setStation(
+                                 (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
+                         Globals::status->departStation(Globals::status->getStation());
+                         Level::initStreamOutPosition = 1;
+                         Level::comingFromAlienWorld = 1;
+                         Globals::switch_to_target_setting = 1;
+-                        Level::programmedStation = nullptr;
+```
+
+`Status::setStation` / `Status::departStation` do not read
+`Level::programmedStation` (checked in `Status.cpp`), and the other three
+statics are plain stores; nothing between the old and new position reads the
+programmed station.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,621 -> 51,619  (-2)
+aligned    22,623 -> 22,638
+size       57,232 / 57,232   (exact)
+.text      71,398 -> 71,396  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.

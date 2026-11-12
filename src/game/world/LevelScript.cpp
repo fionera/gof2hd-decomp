@@ -2206,13 +2206,13 @@ bool LevelScript::process(int delta) {
                             Globals::status->field_5c = pp->getShieldHP();
                             Globals::status->field_68 = pp->getGammaHP();
                             Globals::status->field_60 = pp->getArmorHP();
+                            Level::programmedStation = nullptr;
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
                             Globals::status->departStation(Globals::status->getStation());
                             Level::initStreamOutPosition = 1;
                             Level::comingFromAlienWorld = 1;
                             Globals::switch_to_target_setting = 1;
-                            Level::programmedStation = nullptr;
                             Globals::appManager->SetCurrentApplicationModule(2);
                             field_0x12 = 0x101;
                             return m_bCinematicBreak != 0;
