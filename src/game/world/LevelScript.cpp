@@ -2144,8 +2144,8 @@ bool LevelScript::process(int delta) {
                         player->hideShipForFirstPersonCameraView(false);
                         m_pRadar->enabled = 0;
                         m_pCamera->setTarget(((PlayerStation *) (*self->getLandmarks())[0])->rootGeometry);
-                        m_pCamera->setLookAtCam(true);
                         m_pCamera->setPosition(player->getPosition());
+                        m_pCamera->setLookAtCam(true);
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
