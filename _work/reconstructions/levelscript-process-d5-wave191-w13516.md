@@ -353,3 +353,33 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Tenth landing: multi-line d6 shift-5 (sound stop/play swap)
+
+On the 51,619 body, `(6,769) shift 5` (source lines 771-778) was landed:
+
+```cpp
++                        Globals::sound->stop(161);
+                         m_nState = 7;
+                         m_pGeometry5->setPosition(player->getPosition());
+                         ((AbyssEngine::Transform *) ...)->SetAnimationState(3, nullptr);
+                         ((AbyssEngine::Transform *) ...)->SetAnimationState(1, nullptr);
+                         Globals::sound->play(160, nullptr, nullptr, 0.0f);
+-                        Globals::sound->stop(161);
+```
+
+Sound 160 and 161 are distinct ids; stopping 161 before starting 160 leaves
+the same final sound state.  The state store and geometry pose are independent
+of both.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,619 -> 51,617  (-2)
+size       57,232 / 57,232   (exact)
+.text      71,396 -> 71,394  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.

@@ -768,11 +768,11 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (((RadioMessage *) ((*messages)[15]))->isOver()) {
+                        Globals::sound->stop(161);
                         m_nState = 7;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                        Globals::sound->stop(161);
                         Globals::sound->play(160, nullptr, nullptr, 0.0f);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
