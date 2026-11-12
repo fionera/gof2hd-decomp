@@ -12,6 +12,15 @@ to its source line, and re-sweeps every adjacent pair of independent
 statements on the current body.  Four size-exact, `.rel.plt`-identical raw
 wins compose.
 
+**Wave-189 rebase (master 630c6962a, 2026-11-12).** The ten reverse
+distance-2 rotations from pass 3 apply on top of the wave-189 body (which
+already contains the w13201 reorders). Measured on current master: raw
+**51,900 -> 51,892 (-8)**, aligned **20,963 -> 21,005**, size 57,232/57,232,
+`.rel.plt` byte-identical, `.ARM.extab` content unchanged 639. `.text`
+differing bytes **74,032 -> 74,017 (-15)**; total differing bytes
+**74,691 -> 74,676**. The numbers below are the original wave-188
+measurement (51,930 -> 51,889); the rebase is the landed form.
+
 ## Result (code win landed)
 
 ```
@@ -125,3 +134,86 @@ cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 Scratch harnesses (`bmap.py`, `opalign.py`, `stmts.py`, `dep.py`, `sweep.py`,
 `measure.py`, `apply2.py`, `apply3.py`, `matchruns.py`, `winlines2.py`) live
 in `/home/debian/GalaxyOnFire2/scratch/w13202/`; they are scratch, not tracked.
+
+## Pass 2: distance-2 rotation harvest (same branch map)
+
+Re-ran the statement sweep on the improved 51,919 body at distance 2
+(`[A,B,C] -> [B,C,A]`, 938 measured candidates; the dependency model was
+tightened to treat compound assignments (`+=`, `-=`, …) and `delete X` as
+writes of their target, and a move is admissible only if the moved statement
+is independent of *every* statement it crosses).  Eight independent,
+semantics-preserving rotations compose:
+
+| source lines (51,919 body) | rotation | raw |
+|---|---|---:|
+| 760-762 | `Vector zero{}` moved after `Vector pos = …; m_nScriptTimerA += delta;` | -3 |
+| 2281-2283 | `setLookAtCam(false)` moved after `setTarget` + `setComputerControlled(false)` | -1 |
+| 2296-2298 | `(*enemies)[0]->field_0x24 = 0;` moved after `routePoints`/`new Route` | -1 |
+| 2337-2339 | `m_bCinematicBreak = 1;` moved after `setTarget` + `setPosition` | -3 |
+| 3188-3190 | `(*enemies)[3]->setActive(false);` moved after `setVisible` + `setVulnerable` | -1 |
+| 3345-3347 | `player->setVisible(true);` moved after `setVulnerable` + `setLookAtCam(false)` | -1 |
+| 3540-3542 | `wcamera->setTarget(...)` moved after `m_nScriptTimerA = 0` + `setPosition(...)` | -3 |
+| 3552-3554 | `m_nScriptTimerA += delta;` moved after `Vector zero{}` + `Vector pos = …` | -1 |
+
+Composed:
+
+```
+                         after pass 1     after pass 2
+process raw diffbytes    51,919           51,905     (-14)
+process aligned insns    20,951           20,988     (+37)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,212           74,198     (-14)
+.ARM.extab diffbytes     639              639        (size/base exact, 156,312 B)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Rejected distance-2 cells (all measured, all semantics-changing):
+`m_tempVec += …` moved past `setPosition(m_tempVec)` (51,918),
+`updateReferenceMatrix` moved past `translate` (51,916; the original emits
+`updateReferenceMatrix` *before* `translate` at `0x13c610`/`0x13c634`, so the
+move contradicts the binary even though it lowers the raw count), and the
+`player->setFreeze/setVisible/setVulnerable` run (all size-exact rotations
+except one measure ≥ +3 on the composed body).
+
+Cumulative for the whole pass: raw **51,930 -> 51,905** (-25), `.text`
+74,223 -> 74,198, size-exact 57,232, `.rel.plt` byte-identical, `.ARM.extab`
+unchanged (639, 156,312 B).
+
+## Pass 3: reverse distance-2 rotations (same branch map)
+
+The distance-2 sweep above only tested `[A,B,C] -> [B,C,A]` (move A after C).
+The opposite rotation `[A,B,C] -> [C,A,B]` (move C before A) was then swept
+separately on the 51,905 body (792 measured candidates; a move is admissible
+only if the moved statement is independent of every statement it crosses).
+Ten independent, semantics-preserving rotations compose:
+
+| source lines (51,905 body) | rotation | raw |
+|---|---|---:|
+| 719-721 | `sound->stop(player->field_0x1c)` before `Vector zero158{}` | -3 |
+| 827-829 | `player->setPosition(0,0,0)` before `switchPlanetForIntro()` | -1 |
+| 889-891 | `m_nScriptTimerA = 0` before `m_tempVec += …` | -1 |
+| 1238-1240 | `m_nState = 12` before `m_tempVec.y += 500.0f` | -1 |
+| 1615-1617 | `m_pCamera->translate(1000,700,1000)` before `setTarget` | -3 |
+| 1962-1964 | `setComputerControlled(false)` before `m_pHud->visible = 1` | -2 |
+| 2075-2077 | `m_pCamera->translate(3000,1000,2000)` before `setPosition` | -1 |
+| 2969-2971 | `player->killLiberator()` before `setRocketControl(nullptr,nullptr)` | -1 |
+| 3088-3090 | `player->setFreeLookMode(true)` before `setRotationAroundTarget(true)` | -1 |
+| 3346-3348 | `player->setVisible(true)` before `camera->setLookAtCam(false)` | -1 |
+
+Composed:
+
+```
+                         after pass 2     after pass 3
+process raw diffbytes    51,905           51,889     (-16)
+process aligned insns    20,988           21,020     (+32)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,198           74,182     (-16)
+.ARM.extab diffbytes     639              639        (size/base exact, 156,312 B)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Cumulative for the whole pass: raw **51,930 -> 51,889** (-41), `.text`
+74,223 -> 74,182, size-exact 57,232, `.rel.plt` byte-identical, `.ARM.extab`
+unchanged (639, 156,312 B).
