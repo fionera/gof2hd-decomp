@@ -173,3 +173,17 @@ process raw diffbytes    51,577             51,574     (-3; total -39 vs wave ba
 .text diffbytes          71,342             71,339     (-3)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 8 — d3/d4-transposition rerun ripple
+
+Re-ran the distance-3/4 transposition sweep on the pass-7 base: one new cell.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 20 | case-154 (~4540) | `m_bCinematicBreak = 1` after the `m_tempVec` build + `m_pCamera->setPosition(m_tempVec)` | -4 |
+
+```
+process raw diffbytes    51,574             51,570     (-4; total -43 vs wave base)
+.text diffbytes          71,339             71,335     (-4)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```

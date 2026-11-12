@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,549** | 22,795 | 57,232 |
+| `LevelScript::process` | **51,545** | 22,795 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,10 +31,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,257**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,253**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `LevelScript::process` (w13524, wave 191b): re-applied the eight
+  cross-control/transposition passes on the merged post-w13516/w13517 body.
+  The branch's own base was 51,613; on master the combined patch keeps the
+  w13516 sound stop/play placement and the w13517 mission-50 `&&` order and
+  lands raw **51,549 -> 51,545** (-4), aligned 22,795 unchanged, size
+  57,232/57,232 exact.  `.text` 71,257 -> 71,253 (-4), `.ARM.extab` 576
+  unchanged, `.rodata` 485 unchanged, build-id 20 unchanged.  `.rel.plt`
+  byte-identical, `.ARM.exidx` 0.
 
 * `Status::missionCompleted` (w13511): dead `hasEquipment(...) < 0`
   comparison in `case 10` (the helper returns `bool`, so the branch is
