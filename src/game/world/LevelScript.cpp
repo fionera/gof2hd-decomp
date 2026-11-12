@@ -4626,8 +4626,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.1f, (float) delta * 0.5f);
                     if (m_nScriptTimerA >= 1001) {
                         m_nState++;
-                        m_pCamera->setTarget(player->geometry);
                         player->setSpeed(0.0f);
+                        m_pCamera->setTarget(player->geometry);
                         tvA = player->getPosition();
                         tvA += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pLevel->lodManager->forceUpdate(delta, false);
