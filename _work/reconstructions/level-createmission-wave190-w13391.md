@@ -141,3 +141,12 @@ Raw **3,054 -> 3,044** (-10), aligned **1,129 -> 1,116**, size exact
 17,172 B. `.text` **73,035 -> 73,025** (-10); `.ARM.extab` 603 and
 build-id 20 unchanged; total (text+extab+build-id) **73,658 -> 73,648**
 (-10). `check` -> RATCHET PASS.
+
+## 9. Follow-up harvest: case-183 default store order
+
+`a237f185f` moves the `default:` arm of the `case 183` convoy switch ahead
+of `case 2:` and reorders the default stores (`offset[0]`, `offset[1]`,
+volatile `offset[2]`). Raw **3,044 -> 3,037** (-7), aligned 1,116
+unchanged, size exact 17,172 B. `.text` **73,025 -> 73,018** (-7);
+`.ARM.extab` 603 and build-id 20 unchanged; total (text+extab+build-id)
+**73,648 -> 73,641** (-7). `check` -> RATCHET PASS.

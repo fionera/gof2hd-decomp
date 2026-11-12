@@ -2209,15 +2209,15 @@ case4Tail:
                             offset[1] = -7000.0f;
                             offset[2] = -30000.0f;
                             break;
+                        default:
+                            offset[0] = 12000.0f;
+                            offset[1] = 6000.0f;
+                            *(volatile float *) (offset + 2) = -45000.0f;
+                            break;
                         case 2:
                             *(volatile float *) (offset + 1) = 0.0f;
                             offset[0] = 25000.0f;
                             offset[2] = -36000.0f;
-                            break;
-                        default:
-                            offset[1] = 6000.0f;
-                            offset[0] = 12000.0f;
-                            *(volatile float *) (offset + 2) = -45000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
