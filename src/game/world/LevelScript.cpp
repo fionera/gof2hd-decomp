@@ -1734,13 +1734,13 @@ bool LevelScript::process(int delta) {
                     for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                         KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                         if (ship != nullptr && ship->shipGroup == 9) {
+                            ship->setRoute(route->clone());
                             ship->setPosition(camPos.x, camPos.y - 2000.0f + (float) Globals::rnd->nextInt(4000),
                                               camPos.z - 2000.0f + (float) Globals::rnd->nextInt(4000));
                             ship->geometry->setDirection(
                                     AbyssEngine::AEMath::VectorNormalize((*m_pLevel->getLandmarks())[3]->getPosition()
                                                                          - ship->getPosition()),
                                     Vector{0.0f, 1.0f, 0.0f});
-                            ship->setRoute(route->clone());
                             ship->player->setEnemies(nullptr);
                         }
                     }
