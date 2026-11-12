@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **3,427** | 1,003 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
-| `Level::createShip` | **1,200** | 484 | 2,764 |
+| `Level::createShip` | **1,195** | 483 | 2,764 |
 | `Status::missionCompleted` | **475** | 187 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -202,7 +202,13 @@ Landed changes:
   the table fills the gap at `0x20b977`), and the R E LOAD FileSiz grows by
   the same 0xc0.  File size, 27/27 headers and `.text`/`.ARM.extab`/build-id
   deltas are unchanged.
-Section deltas: `.text` **73,516** differing bytes (size exact, 1,259,464 B);
+* `Level::createShip` (w13360): introduce `float fx = x;` at the head of
+  the `shipClass == 1` branch and use it in the `PlayerFixedObject`
+  constructor and every `BoundingAAB` call. Raw **1,200 -> 1,195** (-5),
+  aligned 484 -> 483. `.text` 73,516 -> 73,511 (-5); `.ARM.extab`
+  content diff stays 610 (size exact), `.ARM.exidx` 0, `.rel.plt`
+  byte-identical. Total (text+extab+build-id) 74,146 -> 74,141.
+Section deltas: `.text` **73,511** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -213,7 +219,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 cross-TU rank table lives at the end of `.rodata`, so `.fini_array` is back
 to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**74,146**. File size is exact (2,187,328 B), and 27/27 section headers are
+**74,141**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
