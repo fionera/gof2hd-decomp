@@ -92,8 +92,48 @@ linked raw **5,272 -> 5,257** (-15), size exact 7,072/7,072, aligned 2,727
 -> 2,728, instruction count 2,521 -> 2,522 (still size-exact).  `check`
 PASS with the same gate counts.
 
-Further K=5..7 / 3-opt / distance-11..20 passes are recorded below as they
-land.
+### Negative sweeps on the 5,257 order
+
+The landed order is a local optimum for every neighbourhood tested next:
+
+* full 2-opt exhaustive (20,103 valid swaps): no improvement (all 5,191
+  proxy / 5,257 linked),
+* K=4 exhaustive (4,551): no improvement,
+* K=5 exhaustive (23,800): no improvement,
+* 3-opt, all triples within a distance-8 window (~39k): no improvement,
+* single-unit moves at distance 11..20 (3,710): no improvement.
+
+### Fifth win (K=6 exhaustive, windows 0..99)
+
+A K=6 exhaustive sweep over windows 0..99 (71,900 valid permutations) found
+one more move in window 84..89: the four units
+
+```
+field_0x128
+field_0x10c_rowBaseY
+field_0x12c
+field_0x114_strip5c
+field_0x11c
+field_0x124
+```
+
+became
+
+```
+field_0x124
+field_0x10c_rowBaseY
+field_0x12c
+field_0x128
+field_0x114_strip5c
+field_0x11c
+```
+
+i.e. `(5,1,2,0,3,4)` over the six-unit window (units 84..89).  Proxy 5,191
+-> **5,190** (-1); linked raw **5,257 -> 5,256** (-1), size exact
+7,072/7,072, aligned 2,728, instruction count 2,522/2,552.  `check` PASS
+with the same gate counts.
+
+K=7 passes are recorded below if they land.
 
 ## Reproduction
 
@@ -108,3 +148,9 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
 Scratch `/home/debian/GalaxyOnFire2/scratch/w13212/`: `units.py`
 (204-unit parser), `batch_score.py` (batched proxy), `sweep.py`
 (parallel W/K/move search), `prefix.h`, `Layout.base.cpp`.
+
+## Harvest on wave-189 master (`f08f21868`)
+
+Landed: Layout C1/C2 raw 5,256 / 2,728 / 7,072, `.text` 73,982, total 74,617.
+The K=6 window 84..89 reorder is the only landed cell from this branch; the
+earlier negative 2-opt/K4/K5/3-opt/move sweeps are recorded above.
