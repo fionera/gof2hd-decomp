@@ -118,3 +118,38 @@ Scratch `/home/debian/GalaxyOnFire2/scratch/w13440/`: `Radar.base.cpp` (6,288 ba
 `drive.py`, `harness.sh`, `swaps.py` (distance-3 generator), `genexp.py`,
 `v1.py`..`v11.py`, `pairs.log` (465 expect pairs), `d3.log` (160 distance-3 swaps),
 `rawprof.py`, `plateau.py`, `zerodelta.py`, `pools.py`, `secdiff.py`.
+
+## 4. Follow-up win: station-blip call order (raw 6284 -> 6282)
+
+On the post-win base (6,284), the multi-line adjacent-statement sweep (174 cells,
+`stmts.py`) found one more size-exact raw win in the station blip block: moving
+`this->blipSprite->draw(1.0f, 1.0f)` ahead of
+`this->blipSprite->setRefPixelPosition(...)` (the `setFrame` call stays first):
+
+```cpp
+                     blip->setFrame(frame);
++                    this->blipSprite->draw(1.0f, 1.0f);
+                     this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                           (int) PlayerEgo::crosshairPos.y);
+-                    this->blipSprite->draw(1.0f, 1.0f);
+```
+
+This is a codegen lever rather than a behavioural change: the compiler already
+reorders the independent `setFrame`/`setRefPixelPosition` pair, and the reordered
+form makes the enemy-lock blip block at `1304a6` two bytes tighter (whole-function
+raw profile: `130450` 245 -> 243).  The only other 6,282 cell in the sweep is the
+same station-block permutation; every neutral station spelling is 6,284 or worse
+(`rp,sf,dr` 6,387; `rp,sf,dr` via `blip` 6,286; all-`blip` 6,378).
+
+| metric | base | after |
+|---|---:|---:|
+| raw same-address diff | 6,284 | **6,282** |
+| instruction-index alignment | 1,937 | 1,964 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes (whole `.so`) | 72,874 | **72,872** |
+| `.ARM.extab` differing bytes | 601 | 601 (no growth) |
+| `.rel.plt` | byte-identical | **byte-identical** |
+| total (text+extab+build-id) | 73,494 | **73,492** |
+
+`RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
+imports 207 / lint CLEAN / drift 0 / parity 5,370.

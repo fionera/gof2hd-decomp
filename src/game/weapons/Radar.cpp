@@ -514,9 +514,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         frame = blip->getRawFrameCount() - 1;
                     }
                     blip->setFrame(frame);
+                    this->blipSprite->draw(1.0f, 1.0f);
                     this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                           (int) PlayerEgo::crosshairPos.y);
-                    this->blipSprite->draw(1.0f, 1.0f);
                 }
                 landmarkHit = true;
             } else {
