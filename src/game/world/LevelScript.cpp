@@ -2666,9 +2666,9 @@ bool LevelScript::process(int delta) {
                     m_pGeometry6->setPosition(Vector{12487.0f, -11451.0f, 5958.0f});
                     m_pCamera->setLookAtCam(true);
                     m_tempVec = Vector{-28855.0f, -30075.0f, 63820.0f} / 1.7f;
-                    m_pCamera->setPosition(m_tempVec);
                     Vector facing = m_pGeometry6->getPosition() - m_tempVec;
                     m_pHud->visible = 0;
+                    m_pCamera->setPosition(m_tempVec);
                     AEGeometry *frame = new AEGeometry(canvas);
                     unsigned cam = canvas->CameraGetCurrent();
                     frame->setDirection(facing, Vector{0.0f, 1.0f, 0.0f});
@@ -4033,11 +4033,11 @@ bool LevelScript::process(int delta) {
                         player->setFreeze(true);
                         AEGeometry *leader = (*enemies)[4]->geometry;
                         m_tempVec = leader->getPosition();
+                        m_tempVec += leader->getDirection() * 4000.0f;
                         m_pCamera->setTarget(leader);
                         m_tempVec += leader->getUpVector() * -500.0f;
                         m_tempVec += leader->getRightVector() * -500.0f;
                         m_pCamera->setPosition(m_tempVec);
-                        m_tempVec += leader->getDirection() * 4000.0f;
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
