@@ -1673,7 +1673,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::appManager->SetCurrentApplicationModule(5);
                             this->active = 0;
                             return;
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
+                        } else if (Globals::status->getCurrentCampaignMission() == 81 && mission->isCampaignMission()) {
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
@@ -1685,7 +1685,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 134) {
+                        } else if (Globals::status->getCurrentCampaignMission() == 134 && mission->isCampaignMission()) {
                             Globals::switch_to_target_setting = 0;
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();

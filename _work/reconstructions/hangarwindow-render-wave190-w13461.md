@@ -202,3 +202,54 @@ free-credits declaration/statement permutations re-measured neutral
 (1,029 / 72,209) except `canvas` first (9,608 B, row-40 length 128) and
 `width`-before-`rh` (1,078).  Row 40 stays 126 for every size-exact variant,
 so the DUPVB ULEB is still unfixed.
+
+## Wave-190 follow-up sweeps (same worker, no further win)
+
+All numbers below are on the post-pass-3 base (raw **1,038**, `.text`
+72,218, extab 584, size 9,700).
+
+### Full 120-permutation ship-body re-sweep
+
+Re-ran `gen_ship.py` on the new base.  Same ranking as before:
+
+| order | raw | `.text` | extab |
+|---|---:|---:|---:|
+| `D,U,P,V,B` | **1,028** | 72,208 | 1,217 |
+| `V,U,P,D,B` | 1,036 | 72,216 | 1,217 |
+| **`V,U,D,P,B` (base)** | **1,038** | **72,218** | **584** |
+| `D,U,V,P,B` | 1,039 | 72,219 | 585 |
+| `V,D,U,P,B` / `D,V,U,P,B` | 1,070 / 1,071 | — | 1,217 |
+| all eight `U`-first orders | 1,186-1,191 | — | 593-594 |
+
+### 24 upgrade-block permutations (`P`=buttons[10] setPosition, `V`=buttons[2]
+setVisible, `W`=buttons[10] setVisible, `D`=buttons[10] draw)
+
+On the base the current `P,V,W,D` is the unique minimum (1,038).  On the
+`D,U,P,V,B` ship body every `D`-first upgrade order restores the row-40
+2-byte ULEB (row 40 = `(2710,128)`, extab 588) but costs >= 106 raw bytes
+(best `D,P,W,V` = 1,134).  So the DUPVB ULEB remains unfixable without a
+large reallocation.  `D,U,P,V,B` + `this->hintOffsetX + inset + listWidth`
+for the button-1 x gives raw **1,026** (still extab 1,217).
+
+### Other neutral/worse source forms measured
+
+Neutral at 1,038: `baseY` before `baseX`; `row` before `baseX`; `2 *
+rowHeight`; `(rowHeight << 1)`; `(width + rh) + baseX` / `width + (baseX +
+rh)`; `textY` with swapped float operands; `textY` with `0.2f * height`;
+free-credits `y` operand/association swaps; `textX + inset + hint` /
+`inset + textX + hint`; `iconSpace + inset + hint`; `y + iconOffsetY`;
+`y + rh/2 + 2`; `row * (...)` and `baseY + (...)`; `this->field_0x114 + y`
+-> `y + ...`; `iconOffsetY + y` -> `y + iconOffsetY`; buy-list
+`price`/`description` on one line; `switch ((short) count)`;
+`switch ((signed char)(count & 0xff))`; `visible ? true : false`;
+`!!visible`; `setPosition(..., 18u)` / `(short) 18`; `buttonOffset`
+`+ 0` / cast; `int upgTab` `const`/`unsigned`; `tab == 0` -> `!tab`
+(1,173, worse); guard `!(tab == 3 && ship == getShip())` (tie);
+`upgradeMode && upgTab == 1` (tie); `1 == upgTab` (tie).
+
+Worse: free-credits `width` before `rh` (1,088), `height` before `rh`
+(1,041), `width,height,rh` (1,088); `(gsy + gridButtonHeight)` operand swap
+(tie); free-credits `canvas` first (9,608 B, row 40 = 128 but -92 B);
+`textY` before `setVisible` (9,716 B); `draw()` after `setPosition`
+(1,072); `no_button_local` (9,656 B); `no_rh` (1,232); `volatile int
+upgTab` (9,704 B); `signed char upgTab` (9,708 B).

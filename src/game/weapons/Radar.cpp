@@ -541,11 +541,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->planetTargets->data()[i]);
+            int currentStation = Globals::status->getStation()->getIndex();
             if (!this->onScreen) {
                 continue;
             }
             int stationId = stations->data()[i];
-            int currentStation = Globals::status->getStation()->getIndex();
             int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
             int textOffset = 10;
             if (stationId != currentStation && (int) i == warpGate) {
@@ -1199,7 +1199,7 @@ asteroids:
                     if (this->lockedAsteroid == this->field_0x10) {
                         this->lockConfirmed = 1;
                     }
-                    this->lockedAsteroid = nullptr;
+                    this->asteroidLockTimer += mode;
                 }
                 bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
@@ -1211,7 +1211,7 @@ asteroids:
                         this->asteroidLockTimer = 0;
                     }
                 } else {
-                    this->asteroidLockTimer += mode;
+                    this->lockedAsteroid = nullptr;
                     auto hasScanner = this->hasScanner19;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
                         if (!candidateWreck) {

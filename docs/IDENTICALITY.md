@@ -16,10 +16,10 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,696** | 21,928 | 57,232 |
-| `Radar::draw` | **6,177** | 2,025 | 9,908 |
+| `Radar::draw` | **6,150** | 2,036 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
-| `MGame::OnTouchEnd` | **2,895** | 1,712 | 8,080 |
+| `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,183** | 404 | 2,764 |
 | `Status::missionCompleted` | **145** | 173 | 1,432 |
@@ -525,7 +525,27 @@ Landed changes:
   (-1), aligned 620 unchanged. `.text` 72,219 -> 72,218 (-1) on that base,
   `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers, file
   size 2,187,328 exact.
-Section deltas: `.text` **72,082** differing bytes (size exact, 1,259,464 B);
+* `LevelScript::process` (w13442): sink the case-70 `Vector dir`
+  declaration after the `camPos` x/y offsets. Raw **51,708 -> 51,706** (-2)
+  on that base; neutral on current master (51,696) after the w13452 pass 5
+  reorder, kept as the faithful original declaration order. `.rel.plt`
+  byte-identical, 27/27 headers, file size 2,187,328 exact.
+* `Radar::draw` (w13456): swap the asteroid-block `lockedAsteroid = nullptr`
+  and `asteroidLockTimer += mode` statements. Raw **6,177 -> 6,151** (-26),
+  aligned 2,025 -> 2,036. `.text` 72,257 -> 72,231 (-26) on that base,
+  `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers, file
+  size 2,187,328 exact.
+* `MGame::OnTouchEnd` (w13460): put the campaign-81/134
+  `getCurrentCampaignMission()` test before `mission->isCampaignMission()`.
+  Raw **2,895 -> 2,889** (-6), aligned 1,712 unchanged. `.text`
+  72,257 -> 72,251 (-6) on that base, `.ARM.extab` unchanged. `.rel.plt`
+  byte-identical, 27/27 headers, file size 2,187,328 exact.
+* `Radar::draw` (w13465): hoist the planet-loop
+  `currentStation = Globals::status->getStation()->getIndex()` above the
+  `onScreen` check. Raw **6,151 -> 6,150** (-1), aligned 2,036 unchanged.
+  `.text` 72,132 -> 72,131 (-1) on that base, `.ARM.extab` unchanged.
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **72,049** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **578** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -535,7 +555,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,680**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,647**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
