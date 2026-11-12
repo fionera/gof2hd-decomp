@@ -9,7 +9,7 @@ wave-183 `w12712` permutation is landed, raw **5,383**).
 
 | metric | before | after |
 |---|---:|---:|
-| raw same-address bytes | **5,383** | **5,360** (-23) |
+| raw same-address bytes | **5,383** | **5,358** (-25) |
 | aligned (difflib) | 2,560 | 2,626 (+66) |
 | size | 7,072/7,072 | **7,072/7,072** |
 | instructions | 2,517/2,552 | 2,517/2,552 |
@@ -99,6 +99,34 @@ field_0x2fc
 i.e. `(2,4,0,1,3)`.  Raw **5,361 -> 5,360** (-1), size exact, instruction
 count unchanged; proxy 5,295 -> 5,294 (-1).
 
+### 1d. Fourth winning move (K=6 re-sweep, local range)
+
+A K=6 sweep restricted to windows 108..131 on the improved order found one
+more move, units 130..135:
+
+```
+field_0x1d8
+field_0x2c0
+field_0x1d0
+if (iPadHD) field_0x1cc ... else ...
+field_0x1dc
+field_0x1c0
+```
+
+became
+
+```
+field_0x1d0
+field_0x2c0
+field_0x1c0
+if (iPadHD) field_0x1cc ... else ...
+field_0x1d8
+field_0x1dc
+```
+
+i.e. `(2,1,5,3,0,4)`.  Raw **5,360 -> 5,358** (-2), size exact, instruction
+count unchanged; proxy 5,294 -> 5,292 (-2).
+
 ## 2. Method
 
 The ctor was re-parsed into **204 top-level units** (statements / complete
@@ -132,6 +160,9 @@ Searches (all on the post-wave-184 base order):
   the improved order found nothing beyond it.
 * After 1b: **K=4** on the improved order found nothing; **K=5** found the
   units-189..193 `(2,4,0,1,3)` move (proxy 5,295 -> 5,294).
+* After 1c: **W=2** and **distance-11..20** found nothing; a **K=6** sweep of
+  windows 108..131 found the units-130..135 `(2,1,5,3,0,4)` move
+  (proxy 5,294 -> 5,292).
 
 A second W=2/W=3 pass on the landed order was not run (the K=6 sweep had
 already covered every 6-window at the base order); the landed order is a
@@ -154,7 +185,7 @@ cd /home/debian/GalaxyOnFire2/wt/w12912
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
-# raw=5360 aligned=2626 size=7072/7072 insn=2517/2552
+# raw=5358 aligned=2626 size=7072/7072 insn=2517/2552
 ```
 
 Scratch `/home/debian/GalaxyOnFire2/scratch/w12912/`: `units.py` (204-unit
