@@ -16,11 +16,11 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,132** | 20,658 | 57,232 |
+| `LevelScript::process` | **52,122** | 20,678 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
-| `Level::createMission` | **3,584** | 1,140 | 17,172 |
-| `MGame::OnTouchEnd` | **2,972** | 1,602 | 8,080 |
+| `Level::createMission` | **3,538** | 1,140 | 17,172 |
+| `MGame::OnTouchEnd` | **2,961** | 1,602 | 8,080 |
 | `HangarWindow::render` | **1,512** | 723 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -37,13 +37,20 @@ Landed changes:
 * `Level::createMission` (w12914): alienGuns turret-table anchor
   `2 * (i < 0)` -> `(i < 0) + (i < 0)`. Raw **3,588 -> 3,584** (-4),
   aligned unchanged 1,140.
+* `LevelScript::process` (w12903): data-flow pass caches the enemies array
+  pointer. Raw **52,132 -> 52,122** (-10), aligned 20,658 -> 20,678.
+* `Level::createMission` (w12914): move the extraAliens `Vector sp` copy ahead
+  of the `spawnPosition.y` RNG update. Raw **3,584 -> 3,538** (-46), aligned
+  unchanged 1,140.
+* `MGame::OnTouchEnd` (w12916): pass 9 distance-5..8 statement transpositions.
+  Raw **2,972 -> 2,961** (-11), aligned unchanged 1,602.
 
-Section deltas: `.text` **74,587** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,520** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,254**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,187**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 184)

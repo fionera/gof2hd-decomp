@@ -1274,7 +1274,7 @@ bool LevelScript::process(int delta) {
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                    m_pGeometry6->setDirection(-(*m_pLevel->getEnemies())[0]->geometry->getDirection(),
+                    m_pGeometry6->setDirection(-(*enemies)[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
                     m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     return 1;
