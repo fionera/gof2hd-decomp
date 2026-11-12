@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,881** | 21,008 | 57,232 |
+| `LevelScript::process` | **51,874** | 21,005 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,257** | 2,728 | 7,072 |
 | `Level::createMission` | **3,444** | 1,021 | 17,172 |
@@ -68,6 +68,15 @@ Landed changes:
   `messages[7]->isTriggered()` guard hot with `__builtin_expect(..., 1)`.
   Raw **51,884 -> 51,881** (-3), aligned unchanged 21,008. `.text`
   74,009 -> 74,006 (-3), total 74,668 -> 74,665.
+* `LevelScript::process` (w13205 harvest): four statement-order wins from the
+  wave-188 branch, re-tested on current master: hoist `resetCamera(m_pLevel)`
+  above the player flag stores (-2), hoist `m_pCamera->setTarget` above the
+  state-3 staging (-2), hoist `m_pGeometry2->setVisible(false)` above the
+  geometry-3 staging (-2), and sink `camera->setPosition(tv)` below the enemy
+  AI reset (-1). Raw **51,881 -> 51,874** (-7), aligned 21,008 -> 21,005.
+  `.text` 74,006 -> 73,999 (-7), total 74,665 -> 74,658. The branch's
+  `m_pGeometry3->setVisible(true)` hoist was +4 on current master and was
+  rejected.
 * `MGame::OnUpdate` (w13307): reshape the m122 codegen anchor to
   `Status *st = Globals::status; int radioIndex = nextInt(2);
   Status *volatile dummy = st; int radioBase = st->getCurrentCampaignMission()...`.
@@ -75,12 +84,12 @@ Landed changes:
   and makes the m23 64-bit idle compare use the original `r2:r3` pair.
   Raw **15 -> 10**, aligned 111 -> 112, size unchanged.
 
-Section deltas: `.text` **74,006** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,999** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,665**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,658**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 188)

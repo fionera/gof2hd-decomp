@@ -3341,11 +3341,11 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 2001) {
                         TargetFollowCamera *camera = m_pCamera;
                         m_pLevel->getPlayer()->resetGunDelay();
+                        resetCamera(m_pLevel);
                         player->setFreeze(false);
                         player->player->setVulnerable(true);
                         camera->setLookAtCam(false);
                         player->setVisible(true);
-                        resetCamera(m_pLevel);
                         camera->setTarget(player->geometry);
                         camera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                         m_pRadar->enabled = 1;
@@ -4625,10 +4625,10 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.1f, (float) delta * 0.5f);
                     if (m_nScriptTimerA >= 1001) {
+                        m_pCamera->setTarget(player->geometry);
                         m_nState++;
                         tvA = player->getPosition();
                         player->setSpeed(0.0f);
-                        m_pCamera->setTarget(player->geometry);
                         tvA += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pCamera->setFixed(false);
@@ -4677,10 +4677,10 @@ bool LevelScript::process(int delta) {
                         m_nState++;
                         player->setSpeed(0.02f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        camera->setPosition(tv);
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
+                        camera->setPosition(tv);
                         camera->setFixed(false);
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if (__builtin_expect((*enemies)[i]->shipGroup == 9, 1)) { // lint: arm_builtin
@@ -5096,13 +5096,13 @@ bool LevelScript::process(int delta) {
                     if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)) { // lint: arm_builtin
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
                         m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
+                        m_pGeometry2->setVisible(false);
                         m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
                         m_pGeometry3->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         fighter->setVisible(false);
                         player->setVisible(false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        m_pGeometry2->setVisible(false);
                         m_pGeometry3->setVisible(true);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
