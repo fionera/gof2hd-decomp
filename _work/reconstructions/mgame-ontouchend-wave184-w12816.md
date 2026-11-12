@@ -8,14 +8,14 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 3,030 | **2,990** |
-| aligned (instruction) diff | 1,446 | 1,526 |
+| raw same-address diff bytes | 3,030 | **2,985** |
+| aligned (instruction) diff | 1,446 | 1,590 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,842 | **74,802** |
+| `.text` differing bytes | 74,842 | **74,797** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 646 | 646 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,508 | **75,468** |
+| total differing bytes | 75,508 | **75,463** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -90,6 +90,10 @@ Globals::status->departStation(...);
 Raw 2,997 -> 2,990 (8 B, `.text` 74,809 -> 74,802), size exact.  The aligned
 (instruction) diff rises to 1,526 because the block's instruction schedule shifts,
 but the raw same-address byte diff — the primary metric — falls.
+
+Fifth, in the campaign-81 branch, the `switch_to_target_setting = 1` store was
+moved from the head of the block to after the three HP getter/store pairs (before
+`field_68`): raw 2,990 -> 2,985 (5 B, `.text` 74,802 -> 74,797), size exact.
 
 The second full-function sweep (712 candidates, distance 1..4) also measured these
 valid single-swap wins, all rejected in favour of the larger ones above:
