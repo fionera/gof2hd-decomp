@@ -3077,13 +3077,13 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nScriptTimerA >= 2001) {
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget(player->geometry);
+                        player->setFreeLookMode(true);
                         for (int i = 0; i < 3; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             (*enemies)[i]->field_0x38 = 4;
                             ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                         }
-                        player->setFreeLookMode(true);
+                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setLookAtCam(false);
                         bool docked = player->isDockedToDockingPoint();
                         if (docked) {

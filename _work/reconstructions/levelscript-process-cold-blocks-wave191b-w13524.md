@@ -90,3 +90,21 @@ process raw diffbytes    51,605             51,604     (-1; total -9 vs wave bas
 .text diffbytes          71,370             71,369     (-1)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 4 — wider-sweep rerun ripple
+
+Re-ran the pass-2 wider sweep on the pass-3 base.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 7 | case-146 (~3080) | `m_pCamera->setTarget(player->geometry)` after `player->setFreeLookMode(true)` (both sides of the 3-ship re-enable loop) | -2 |
+
+Rejected again (now -2 each): cell 132 (`leader == -1` init must precede the
+`i == leader` dispatch) and cell 180 (`timer < 75001` break must precede
+`m_nState == 2` advance).
+
+```
+process raw diffbytes    51,604             51,602     (-2; total -11 vs wave base)
+.text diffbytes          71,369             71,367     (-2)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```
