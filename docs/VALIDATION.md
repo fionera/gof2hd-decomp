@@ -113,7 +113,7 @@ is the last `.rodata` input at `0x20b978`, so the section is 269,644 B
 (+0x1e5, the helper fills the `.rodata`..`.fini_array` gap; the R E LOAD FileSiz
 grows by the same 0x1e5). `.fini_array` is back to 8 B @ `0x20cba0`, and
 `.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical again (w13358). The
-differing section bytes are `.text` (71,841), `.ARM.extab` (575), `.rodata`
+differing section bytes are `.text` (71,834), `.ARM.extab` (575), `.rodata`
 size +0x1e5 (content exact), and `.note.gnu.build-id` (20). `.rel.plt` is
 **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of

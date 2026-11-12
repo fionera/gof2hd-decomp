@@ -1270,9 +1270,9 @@ bool LevelScript::process(int delta) {
                     (*m_pLevel->getEnemies())[0]->setPosition(m_tempVec);
                     m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
-                            ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
+                            ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward(-10000.0f);
                     m_pGeometry6->setDirection(-(*enemies)[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
