@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,659** | 871 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
-| `HangarWindow::render` | **928** | 469 | 9,700 |
+| `HangarWindow::render` | **1,191** | 600 | 9,700 |
 | `Level::createShip` | **1,167** | 398 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -31,11 +31,20 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,249**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,512**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13527): move the `tab` snapshot from above the
+  ship guard into the guard body and restore the `buttons[10]`-before-
+  `buttons[2]` upgrade order.  Declaring `upgTab` inside the body keeps the
+  `getShip` invoke in the enclosing cleanup scope, so the original's row-39
+  LSDA range is reproduced exactly (2,508 / 150 B) and the render record
+  drops from 677 to 47 differing bytes.  Raw 928 -> **1,191** (+263),
+  aligned 469 -> 600.  `.text` 71,249 -> 71,512 (+263), `.ARM.extab`
+  1,216 -> **586** (-630), text+extab total **-367** (72,465 -> 72,098).
+  Size 9,700/9,700, `.rel.plt` byte-identical, RATCHET PASS.
 * `Level::createMission` (w13526): swap the case-2 loot tail
   `setRotationSpeed(0.0f)` before `setSpeed(0.0f)`. Raw **2,661 ->
   2,659** (-2), aligned 863 -> 871. `.text` 71,253 -> 71,251 (-2),
