@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,320** | 22,316 | 57,232 |
+| `LevelScript::process` | **52,309** | 22,317 | 57,232 |
 | `Radar::draw` | **6,315** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,630** | 1,127 | 17,172 |
@@ -39,6 +39,10 @@ Landed changes:
   operand swaps, and the alias/sub sweep on the current body. Raw
   **52,412 -> 52,320** (-92), aligned 22,050 -> 22,316. w12705's K=4..5
   window (52,397 alone) does not compose and is a superseded note.
+* `LevelScript::process` (wave-183 harvest 4): four whole-condition expect cells
+  (1448 add 0, 3151 remove 1, 4735 add 1, 5184 add 0). Raw **52,320 -> 52,309**
+  (-11), aligned 22,316 -> 22,317. This is the better w12708 variant; its
+  committed 52,402 used the 5177 cell instead.
 * `HangarWindow::render` (w12717): buy-list x factored as
   `w/2-(bw+gsx)*(1-col)` and footer `setAlwaysPressed` plain `options[78]`.
   Raw **1,523 -> 1,514** (-9).
@@ -53,12 +57,12 @@ Landed changes:
 * `Radar::draw` (w12709): revert the second `lockedEnemy` cleanup order.
   Raw **6,322 -> 6,321** (-1).
 
-Section deltas: `.text` **74,885** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,874** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,551**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,540**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 182)
