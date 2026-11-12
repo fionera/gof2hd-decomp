@@ -2670,9 +2670,10 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(m_tempVec);
                     Vector facing = m_pGeometry6->getPosition() - m_tempVec;
                     AEGeometry *frame = new AEGeometry(canvas);
+                    unsigned cam = canvas->CameraGetCurrent();
                     frame->setDirection(facing, Vector{0.0f, 1.0f, 0.0f});
                     frame->setPosition(m_tempVec);
-                    canvas->CameraSetLocal(canvas->CameraGetCurrent(), frame->getMatrix());
+                    canvas->CameraSetLocal(cam, frame->getMatrix());
                     delete frame;
                     m_pGeometry0->setVisible(true);
                     m_nScriptTimerA = 0;
