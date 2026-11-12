@@ -332,3 +332,54 @@ for the stated reason:
 Re-ran all 8 combinations of the three `Vector * float` corrections on the
 post-d2 body (raw 51,854).  Every combination is still a raw regression
 (51,855 … 51,860), so the base spellings are kept.
+
+## Second d2 sweep (post-d1-round-2 body)
+
+A second full d2 sweep was run on the post-d1-round-2 body (raw 51,853).
+New size-exact raw win:
+
+### 19. lines 2372/2374 d2 swap (-1)
+
+`self->lodManager->forceUpdate(delta, false);` moved before
+`resetCamera(self);` (the intervening `m_bCinematicBreak = 0;` stays put).
+Independent camera/LOD state.
+
+Measured: raw **51,853 → 51,852** (-1), aligned unchanged, size exact,
+`.text` 73,978 → 73,977, `.ARM.extab` 639 unchanged, `.rel.plt` unchanged.
+
+The other d2 wins on this body (1238, 5229, 4411, 4834, 2441, 2695, 3234,
+5402) are the same semantic/`.text`-growth candidates rejected above.
+
+## Final state
+
+```
+                         base (cbcdc0bc4)   this pass
+process raw diffbytes    51,884             51,852     (-32)
+process aligned insns    21,008             21,001     (-7)
+orig / ours size         57,232 / 57,232    57,232 / 57,232   (size-exact)
+orig / ours insns        20,830 / 20,726    20,830 / 20,726
+.text diffbytes          74,009             73,977     (-32)
+.ARM.extab diffbytes     639                639        (size/base exact @0x1a3b78, 156,312 B)
+.ARM.exidx               0                  0
+.rodata / .data / .bss   0 / 0 / 0          0 / 0 / 0
+.rel.plt                 md5 289b2a06…      md5 289b2a06…  (byte-identical, 29,392 B)
+.note.gnu.build-id       20                 20
+file size                2,187,328          2,187,328  (exact)
+byte_exact               4507               4507
+linked_exact             4507               4507
+size-exact               4524/4524          4524/4524
+data_exact               843/843            843/843
+imports                  207                207
+lint                     CLEAN ✓            CLEAN ✓
+drift                    0                  0
+symbol parity            5370/5370          5370/5370
+stub_zero_size           0                  0
+missing / wrong_type     0 / 0              0 / 0
+extra                    0                  0
+RATCHET                  PASS               PASS
+```
+
+The 19 landed swaps are all size-exact, `.rel.plt`-identical, and leave
+`.ARM.extab` unchanged.  The three operator-overload corrections are
+structurally right but remain raw regressions on this body, so they are
+recorded rather than landed.
