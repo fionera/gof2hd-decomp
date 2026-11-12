@@ -16,9 +16,9 @@ landed.**
 
 ```
                          base (51,968)    this pass
-process raw diffbytes    51,968           51,950     (-18)
+process raw diffbytes    51,968           51,948     (-20)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
-.text diffbytes          74,274           74,256     (-18)
+.text diffbytes          74,274           74,254     (-20)
 .ARM.extab diffbytes     647              647        (unchanged; size/base exact @0x1a3b78, 156,312 B)
 .ARM.exidx diffbytes     0                0
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
@@ -53,6 +53,8 @@ All three are independent of each other and of the PLT first-reference order
 | 7 | 4629 | `tvA += Vector{…};` before `m_pCamera->setTarget(player->geometry);` | -1 |
 | 8 | 4632 | `forceUpdate(delta,false);` before `m_pCamera->setPosition(tvA);` | -1 |
 | 9 | 4675 | `tv += Vector{…};` before `player->setSpeed(0.02f);` | -1 |
+| 10 | 5015 | `player->setPosition(…);` before `player->setSpeed(4.0f);` | -1 |
+| 11 | 5245 | `m_pCamera->setTarget(…);` before `…geometry->setPosition(…);` | -1 |
 
 The `m_pGeometry6` candidate from the sweep (`m_pGeometry6->setPosition(...);`
 before `m_pGeometry6 = intro;`, -1) is a semantic change (it calls setPosition
@@ -103,27 +105,37 @@ changes the first-reference order of the imported calls (`relplt` becomes
 ## Fresh distance-1 sweep
 
 The wave-186 w13005 d1 sweeps ran on the 52,056 body; the body has since moved
-to 51,968 (w13001/w13002/w13007).  A fresh d1 sweep was run over lines
-605..2056 of the current body (472 of 1,914 candidates, both directions are the
-same permutation).  It found four size-exact, `.rel.plt`-identical winners:
-`1368` (-2), `1371` (-4), `1729` (-1), `1893` (-1, semantic form above).
-All four compose: the landed combination is **-7** raw bytes.
+to 51,968 (w13001/w13002/w13007).  The whole 605..5370 body was re-swept in
+four consecutive segments (1,914 candidates; both directions are the same
+permutation), each segment run on the body produced by the previous landed
+commits.
 
-A second d1 sweep over lines 2056..3214 of the new body (593 of 1,442
-candidates) found one more safe winner: `2921` (swap the two additive
-`m_tempVec += m_dirVec * {700,10000}.0f;` terms, -1), landed.  Two further
--1 candidates were rejected as semantic changes: `2532` (`camPos.y += 800.0f;`
-after `setPosition`, but the original adds all three offsets first,
-`13c11e..13c152`) and `2674` (`CameraSetLocal` before `frame->setPosition`,
-but the original calls `setPosition` first, `14160c` then `141626`).  The
-remaining candidates (3214..5370) were not swept in this pass.
+**Segment 1 (605..2056, 472 candidates).**  Four size-exact,
+`.rel.plt`-identical winners: `1368` (-2), `1371` (-4), `1729` (-1), `1893`
+(-1, semantic form above).  All four compose: **-7** raw bytes.
 
-A third d1 sweep over lines 3214..4729 of the new body (849 candidates) found
-five more safe winners: `4575` (-2), `4579` (-3), `4629` (-1), `4632` (-1),
-`4675` (-1).  They compose to **-10** (better than the sum of the individual
-deltas).  Candidate `3734` (`*camPos += *tmp * 400.0f;` after `setPosition`)
-was rejected as a semantic change.  The remaining candidates (4729..5370)
-were not swept in this pass.
+**Segment 2 (2056..3214, 593 candidates).**  One more safe winner: `2921`
+(swap the two additive `m_tempVec += m_dirVec * {700,10000}.0f;` terms, -1).
+Two further -1 candidates were rejected as semantic changes: `2532`
+(`camPos.y += 800.0f;` after `setPosition`, but the original adds all three
+offsets first, `13c11e..13c152`) and `2674` (`CameraSetLocal` before
+`frame->setPosition`, but the original calls `setPosition` first, `14160c`
+then `141626`).
+
+**Segment 3 (3214..4729, 849 candidates).**  Five more safe winners: `4575`
+(-2), `4579` (-3), `4629` (-1), `4632` (-1), `4675` (-1); they compose to
+**-10** (better than the sum of the individual deltas).  Candidate `3734`
+(`*camPos += *tmp * 400.0f;` after `setPosition`) was rejected as a semantic
+change.
+
+**Segment 4 (4729..5370, 239 candidates).**  Two more safe winners: `5015`
+(setPosition before setSpeed, -1) and `5245` (setTarget before geometry
+setPosition, -1), composing to **-2**.  Candidates `4962`
+(`m_tempVec += Vector{…}` after the dependent `chaser->setPosition`) and
+`5228` (`m_nScriptTimerA += delta;` after `approach` reads it) were rejected
+as semantic changes.
+
+The full d1 space of the 51,968 body is therefore exhausted.
 
 ## Reproduction
 
@@ -132,7 +144,7 @@ cd /home/debian/GalaxyOnFire2/wt/w13104
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51950 size=57232/57232 text=74256 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51948 size=57232/57232 text=74254 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 
