@@ -1199,7 +1199,7 @@ asteroids:
                     if (this->lockedAsteroid == this->field_0x10) {
                         this->lockConfirmed = 1;
                     }
-                    this->asteroidLockTimer = 0;
+                    this->lockedAsteroid = nullptr;
                 }
                 bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
