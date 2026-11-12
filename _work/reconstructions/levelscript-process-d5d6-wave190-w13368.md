@@ -99,57 +99,194 @@ Measured: raw **51,805 → 51,803** (-2), aligned 21,033 unchanged, size exact,
 `.text` 73,501 → 73,499, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
 RATCHET PASS.
 
-## Current-master harvest (wave 190)
+### 6. lines 3573/3579 (d6, -2)
 
-The branch was based on `0f54626b3` (raw 51,820). Re-applied the five d5/d6
-reorders on current master (`5ff423480`) after the w13369/w13361/w13384 harvest.
-Current master before this group was raw 51,784; after it is raw **51,769**
-(-15), aligned 22,259, size 57,232/57,232. `.text` 73,269 -> 73,254 (-15),
-`.ARM.extab` 606 unchanged, total 73,895 -> 73,880 (-15). `check` green,
+`m_pCamera->setPosition(m_dirVec);` moved after
+`m_pCamera->setTarget(player->geometry);`.  `resetCamera` between them only
+sets the camera target/offsets (not its position), and `m_dirVec` is not
+touched between the two statements.
+
+Measured: raw **51,803 → 51,801** (-2), aligned 21,033 → 21,032, size exact,
+`.text` 73,499 → 73,497, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
 RATCHET PASS.
 
-## Current-master harvest (wave 190, follow-up 3)
+### 7. lines 742/747 (d5, -1)
 
-Re-applied the three follow-up d5/d6 reorders on current master (`b65d28c2b`):
-camera `setPosition`/`setTarget`, `m_nState`/`setCollide`, and
-`setLookAtCam`/`resetCamera`. LevelScript raw **51,769 -> 51,765** (-4), aligned
-22,280, size 57,232/57,232. `.text` 73,254 -> 73,250 (-4), `.ARM.extab` 606
-unchanged, build-id diff 20 -> 19, total 73,880 -> 73,875 (-5). `check` green,
+`m_nState = 4;` moved after `m_pLevel->getPlayer()->setCollide(true);`.
+Independent state store vs player collision flag; the intervening
+`setComputerControlled`, timer/field stores and radar enable touch neither.
+
+Measured: raw **51,801 → 51,800** (-1), aligned 21,032 unchanged, size exact,
+`.text` 73,497 → 73,496, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
 RATCHET PASS.
 
-## Current-master harvest (wave 190, follow-up 4)
+### 8. lines 1697/1702 (d5, -1)
 
-Re-applied the last two d5 reorders on current master (`bea73c49b`):
-`hideShipForFirstPersonCameraView`/`setComputerControlled` and camera
-`setTarget`/`lodManager->forceUpdate`. LevelScript raw **51,765 -> 51,763** (-2),
-aligned 22,287, size 57,232/57,232. `.text` 73,250 -> 73,248 (-2),
-`.ARM.extab` 606 unchanged, build-id diff 19 -> 20, total 73,875 -> 73,874 (-1).
-`check` green, RATCHET PASS.
+`cam1688->setLookAtCam(false);` moved after `resetCamera(self);` (same
+independence argument as #3: `resetCamera` sets target/offsets only).
 
-## Current-master harvest (wave 190, follow-up 5)
+Measured: raw **51,800 → 51,799** (-1), aligned 21,032 → 21,054, size exact,
+`.text` 73,496 → 73,495, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
 
-Re-applied the last four d5/d6 reorders plus the one new w13384 d1 reorder on
-current master (`26da752c0`): `setActive`/`hideShipForFirstPersonCameraView`,
-`setVisible`/`hideShipForFirstPersonCameraView`, fighter
-`setDirection`/`setComputerControlled`, `enableFirstPersonCam`/`setFreeLookMode`,
-and `m_pRadar->enabled` before `setLookAtCam` at line 4216. LevelScript raw
-**51,763 -> 51,758** (-5), aligned 22,300, size 57,232/57,232. `.text`
-73,248 -> 73,233 (-15 across LevelScript + createShip + Status), `.ARM.extab`
-606 unchanged, build-id 20 unchanged, total 73,874 -> 73,859 (-15). `check`
-green, RATCHET PASS.
+### 9. lines 1717/1722 (d5, -1)
 
-## Current-master harvest (wave 190)
+`player->hideShipForFirstPersonCameraView(false);` moved after
+`player->setComputerControlled(true);`.  Independent player flags; the
+intervening `m_bCinematicBreak`, `stopShooting`, radar/HUD stores are
+independent.
 
-Applied the final d5 swap (`setVulnerable` down below `m_pRadar->enabled`,
-`setLookAtCam` up after `stopShooting`) on master `8ffa01f05`. Raw
-**51,750 -> 51,748** (-2), aligned **22,477 -> 22,483** (+6), size exact
-57,232 B. `.text` **73,014 -> 73,012** (-2); `.ARM.extab` 603 and
-build-id 20 unchanged; total (text+extab+build-id) **73,637 -> 73,635**
-(-2). `check` -> RATCHET PASS.
+Measured: raw **51,799 → 51,798** (-1), aligned 21,054 unchanged, size exact,
+`.text` 73,495 → 73,494, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
 
-## Current-master harvest 2 (wave 190)
+### 10. lines 2270/2275 (d5, -1)
 
-The `setFreeLookMode`/`m_pRadar->enabled` swap (`46c07d031`) is a -1 raw
-win on current master: raw **51,743 -> 51,742** (-1), aligned
-22,483 -> 22,479, size exact 57,232 B. `.text` **72,976 -> 72,975** (-1);
-`.ARM.extab` 603 and build-id 20 unchanged. `check` -> RATCHET PASS.
+`m_pCamera->setTarget((*enemies)[0]->geometry);` moved after
+`m_pLevel->lodManager->forceUpdate(delta, false);`.  Camera target vs LOD
+update; the intervening `camPos` arithmetic and `setPosition(camPos)` do not
+read the camera target.
+
+Measured: raw **51,798 → 51,797** (-1), aligned 21,054 → 21,091, size exact,
+`.text` 73,494 → 73,493, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 11. lines 2330/2336 (d6, -1)
+
+`player->hideShipForFirstPersonCameraView(false);` moved after
+`m_pCamera->setActive(true);`.  Independent player/camera state; the
+intervening `setLookAtCam`, `stopShooting`, radar/computer/HUD stores are
+independent.
+
+Measured: raw **51,797 → 51,796** (-1), aligned 21,091 → 21,095, size exact,
+`.text` 73,493 → 73,492, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 12. lines 3404/3414 (d5, -1)
+
+`player->setVisible(false);` moved after
+`player->hideShipForFirstPersonCameraView(false);`.  Independent player
+visibility/first-person-hide flags; the intervening `setTurretMode`,
+`setFreeze`, rocket-control block, radar and `setFreeLookMode` are independent.
+
+Measured: raw **51,796 → 51,795** (-1), aligned 21,095 unchanged, size exact,
+`.text` 73,492 → 73,491, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 13. lines 5009/5014 (d5, -1)
+
+`fighter->geometry->setDirection(m_tempVec, Vector{0,1,0});` moved after
+`player->setComputerControlled(true);`.  Different receivers (enemy fighter
+geometry vs player control flag); the intervening `setAIDisabled`,
+`setVisible`, `setActive` and the player's own `setDirection` are independent.
+
+Measured: raw **51,795 → 51,794** (-1), aligned 21,095 → 21,108, size exact,
+`.text` 73,491 → 73,490, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 14. lines 3520/3529 (d5, -1; second parser pass)
+
+Second sweep with compound statements counted as single items (404 additional
+pairs) found one more win on the post-#1 body:
+`wcamera->enableFirstPersonCam(false);` moved after
+`player->setFreeLookMode(false);`.  Independent camera/player flags; the
+intervening `m_nState++`, `resetCamera`, `setTurretMode` and rocket-control
+block are independent.
+
+Measured: raw **51,794 → 51,793** (-1), aligned 21,108 unchanged, size exact,
+`.text` 73,490 → 73,489, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+## Rejected on semantics
+
+* **2757/2770**: the intervening `if (m_nScriptTimerA >= 4001)` reads the timer
+  the moved `m_nScriptTimerA += delta` writes.
+* **872/878**: `PlayEngineSound()` reads `field_0x1c`, which the moved store
+  writes.
+* **3026/3031**: `MatrixSetTranslation(local, m_tempVec)` reads `m_tempVec`
+  updated between the two statements.
+* **4712/4717**: `setPosition(m_tempVec)` reads `m_tempVec` assigned between.
+* **3405/3415**: `stopShooting(0)` early-returns on `turretActive`; moving it
+  before `setTurretMode(false)` skips the `player->stopShooting(0)` call.
+
+### 15. lines 3533/3538 (d5, -2; post-landing re-sweep)
+
+Full union re-sweep (3,869 pairs) on the post-#14 body found one more safe win:
+`player->player->setVulnerable(false);` moved after
+`wcamera->setLookAtCam(true);`.  Player vulnerability vs camera look-at flag;
+the intervening `setFreeze`, `m_bCinematicBreak`, radar/HUD stores are
+independent.
+
+Measured: raw **51,793 → 51,791** (-2), aligned 21,108 → 21,114, size exact,
+`.text` 73,489 → 73,487, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 16. lines 3532/3537 (d5, -1; post-landing re-sweep)
+
+`player->stopShooting(0);` moved after `m_pHud->visible = 0;`.  Independent
+player shooting vs HUD visibility; the intervening `setLookAtCam`,
+`setFreeze`, `m_bCinematicBreak` and radar store are independent.
+
+Measured: raw **51,791 → 51,790** (-1), aligned 21,114 → 21,110, size exact,
+`.text` 73,487 → 73,486, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 17. lines 3531/3536 (d5, -2; second post-landing re-sweep)
+
+`player->hideShipForFirstPersonCameraView(false);` moved after
+`m_pRadar->enabled = 0;`.  Independent player/camera-hide flag vs radar
+enable; the intervening HUD store, `setLookAtCam`, `setFreeze` and
+`m_bCinematicBreak` are independent.
+
+Measured: raw **51,790 → 51,788** (-2), aligned 21,110 → 21,108, size exact,
+`.text` 73,486 → 73,484, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 18. lines 3520/3531 (d5, -1; third post-landing re-sweep)
+
+`player->setFreeLookMode(false);` moved after `m_pRadar->enabled = 0;`.
+Independent player free-look flag vs radar enable; `setTurretMode(false)`
+between them touches neither.
+
+Measured: raw **51,788 → 51,787** (-1), aligned 21,108 unchanged, size exact,
+`.text` 73,484 → 73,483, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+### 19. lines 3535/3540 (d5, -1; fourth post-landing re-sweep)
+
+`m_bCinematicBreak = 1;` moved after the camera `setTarget` of
+`(*enemies)[0]->geometry`.  Independent flag store vs camera target; the
+intervening hide-ship/stop-shooting/vulnerability/visibility calls are
+independent.
+
+Measured: raw **51,787 → 51,786** (-1), aligned 21,108 → 21,101, size exact,
+`.text` 73,483 → 73,482, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged,
+RATCHET PASS.
+
+## Final state
+
+```
+                         base (0f54626b3)   this pass
+process raw diffbytes    51,820             51,786     (-34)
+process aligned insns    20,981             21,101
+orig / ours size         57,232 / 57,232    57,232 / 57,232   (size-exact)
+.text diffbytes          73,516             73,482     (-34)
+.ARM.extab diffbytes     610                610        (size/base exact @0x1a3b78, 156,312 B)
+.ARM.exidx               0                  0
+.rel.plt                 md5 289b2a06…      md5 289b2a06…  (byte-identical, 29,392 B)
+.rodata / .data / .bss   192 / 0 / 2        192 / 0 / 2
+file size                2,187,328          2,187,328  (exact)
+byte_exact               4507               4507
+linked_exact             4507               4507
+size-exact               4524/4524          4524/4524
+data_exact               843/843            843/843
+imports                  207                207
+lint                     CLEAN ✓            CLEAN ✓
+drift                    0                  0
+symbol parity            5370/5370          5370/5370
+RATCHET                  PASS               PASS
+```
+
+19 landed d5/d6 swaps, all size-exact, `.rel.plt`-identical, `.ARM.extab`
+unchanged.  Five further raw wins were rejected as read-after-write semantic
+changes (see above); 1295/1334 was rejected for changing `.rel.plt`.
