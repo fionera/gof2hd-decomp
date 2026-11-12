@@ -2386,12 +2386,12 @@ bool LevelScript::process(int delta) {
                     Route *route = new Route(routePoints, 3);
                     player->setFreeLookMode(false);
                     (*enemies)[10]->setRoute(route);
-                    resetCamera(m_pLevel);
-                    m_pHud->visible = 0;
                     m_pCamera->enableFirstPersonCam(false);
                     m_pRadar->enabled = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
+                    resetCamera(m_pLevel);
+                    m_pHud->visible = 0;
                     (*enemies)[10]->setPosition(origin.x, origin.y, origin.z + 12000.0f);
                     m_pCamera->setLookAtCam(true);
                     player->setComputerControlled(true);

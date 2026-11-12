@@ -121,3 +121,66 @@ raw 51,634 (-2, safe), `(5,1206) shift 2/3` 51,636 (neutral),
 `(5,1236/1237) shift 2` 51,635 but move `m_tempVec.z +=` before the
 `m_tempVec = getPosition()` assignment (rejected), `(5,2409) shift 3` and
 `(5,3008) shift 3` reorder RNG/vector reads (rejected).
+
+## Third landing: d5 shift-2 rotation (hud/radar/target group)
+
+On the 51,633 body, the previously measured `(5,3325) shift 2` cell was
+re-measured and landed.  Source lines 3326-3330:
+
+```cpp
+-                        m_bCinematicBreak = 1;
+-                        player->player->setVulnerable(false);
+                         m_pHud->visible = 0;
+                         m_pRadar->enabled = 0;
+                         m_pCamera->setTarget((*enemies)[0]->geometry);
++                        m_bCinematicBreak = 1;
++                        player->player->setVulnerable(false);
+```
+
+Independent flag stores (cinematic break, player vulnerability) vs HUD/radar
+enables and the camera target; no statement reads what another writes.
+
+Measured alone on the real build:
+
+```
+raw        51,633 -> 51,631  (-2)
+aligned    22,183 -> 22,188
+size       57,232 / 57,232   (exact)
+.text      71,410 -> 71,408  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
+
+## Fourth landing: d6 shift-2 rotation (resetCamera to the tail)
+
+On the 51,631 body, `(6,2388) shift 2` (source lines 2389-2394) was landed:
+
+```cpp
+-                        resetCamera(m_pLevel);
+-                        m_pHud->visible = 0;
+                         m_pCamera->enableFirstPersonCam(false);
+                         m_pRadar->enabled = 0;
+                         player->hideShipForFirstPersonCameraView(false);
+                         player->stopShooting(0);
++                        resetCamera(m_pLevel);
++                        m_pHud->visible = 0;
+```
+
+`resetCamera` only sets the camera target/offsets; the intervening HUD store,
+first-person flag, radar enable, hide-ship flag and stop-shooting call are
+independent of it (same independence argument used by the wave-190 d5/d6
+passes).  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,631 -> 51,630  (-1)
+size       57,232 / 57,232   (exact)
+.text      71,408 -> 71,407  (-1)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
