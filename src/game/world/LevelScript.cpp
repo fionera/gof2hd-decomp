@@ -5063,12 +5063,12 @@ bool LevelScript::process(int delta) {
                     fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                     if (((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr) {
                         m_pExplosion = new Explosion(0);
+                        m_nFlashCountdown = 300;
+                        m_nScriptTimerA = 0;
                         m_pExplosion->setScaling(5.0f);
                         m_pExplosion->addFireStreaks();
                         m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{-2000.0f, 1000.0f, -8000.0f},
                                             Vector{0.0f, 0.0f, 0.0f});
-                        m_nFlashCountdown = 300;
-                        m_nScriptTimerA = 0;
                         Globals::sound->play(2244, nullptr, nullptr, 0.0f);
                     }
                     if (__builtin_expect(m_nFlashCountdown > 0, 1)) { // lint: arm_builtin

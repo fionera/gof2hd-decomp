@@ -383,3 +383,45 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Eleventh landing: multi-line d5 shift-3 (explosion fire-streak group)
+
+After the tenth landing (raw 51,617), the multi-line cyclic-shift sweep was
+re-run on the current body.  `(5, merged 4888) shift 3` (source lines
+5066-5071) was landed:
+
+```cpp
+                         m_pExplosion = new Explosion(0);
+-                        m_pExplosion->setScaling(5.0f);
+-                        m_pExplosion->addFireStreaks();
+-                        m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{-2000.0f, 1000.0f, -8000.0f},
+-                                            Vector{0.0f, 0.0f, 0.0f});
+                         m_nFlashCountdown = 300;
+                         m_nScriptTimerA = 0;
++                        m_pExplosion->setScaling(5.0f);
++                        m_pExplosion->addFireStreaks();
++                        m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{-2000.0f, 1000.0f, -8000.0f},
++                                            Vector{0.0f, 0.0f, 0.0f});
+```
+
+`m_nFlashCountdown` / `m_nScriptTimerA` are plain member stores; `setScaling`,
+`addFireStreaks` and `start` operate on the freshly-allocated `m_pExplosion`
+and do not read either counter.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,617 -> 51,616  (-1)
+aligned    22,633
+size       57,232 / 57,232   (exact)
+.text      71,394 -> 71,393  (-1)
+.ARM.extab 577 (unchanged; size/base exact)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical, diff 0)
+```
+
+`check` -> RATCHET PASS (byte_exact 4507/4524, linked 4507, size 4524/4524,
+data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370).
+
+The sibling cell `(5, merged 4887) shift 4` also measured 51,616 (-1) on the
+51,617 body (moves the same `m_nFlashCountdown = 300;` store to the front of
+the group); it overlaps this landing and is being re-measured on the new body.
