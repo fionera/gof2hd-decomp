@@ -5227,8 +5227,8 @@ bool LevelScript::process(int delta) {
             case 158: {
                 if (m_nState == 1) {
                     // Fly the marker ship in towards the station.
-                    m_nScriptTimerA += delta;
                     float approach = (float) m_nScriptTimerA / -34000.0f + 1.0f;
+                    m_nScriptTimerA += delta;
                     float step = (float) delta;
                     m_pCamera->translate(step * 4.8f * approach, 0.0f, (float) -delta * 0.7f * approach);
                     AEGeometry *marker = m_pGeometry4;

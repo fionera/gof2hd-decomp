@@ -1185,7 +1185,7 @@ asteroids:
             }
             if (best > -1) {
                 if (this->field_0x10 != this->asteroids->data()[best]) {
-                    this->asteroidLockTimer = 0;
+                    this->asteroidLockTimer += mode;
                 }
                 this->field_0x10 = static_cast<PlayerAsteroid *>(this->asteroids->data()[best]);
                 asteroidHit = true;
@@ -1199,7 +1199,7 @@ asteroids:
                     if (this->lockedAsteroid == this->field_0x10) {
                         this->lockConfirmed = 1;
                     }
-                    this->asteroidLockTimer += mode;
+                    this->asteroidLockTimer = 0;
                 }
                 bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
