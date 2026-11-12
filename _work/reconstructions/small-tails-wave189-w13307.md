@@ -151,3 +151,101 @@ size 4524/4524, `stub_zero_size 0`, `missing 0`, `wrong_type 0`, `extra 0`,
 data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
 `.text` diff **74,042** (was 74,047), `.ARM.extab` 639, `.rel.plt` 0,
 `.rodata` 0, build-id 20, total **74,701**.
+
+## 7. Continuation sweep (same wave, after the `MGame` commit)
+
+The remaining four were re-swept with new angles; no further size-exact raw
+win.  The landed `MGame` shape (`126800c09`) is unchanged.  Gate re-run at the
+end: **RATCHET PASS**, same counts as section 6 (`.text` 74,042,
+`.ARM.extab` 639, `.rel.plt` 0, `.rodata` 0, build-id 20, total 74,701).
+
+### 7.1 `Generator::createMission()` — the +4 is one EH landing-pad merge
+
+Decoded the `.ARM.extab` LSDA for the original and for the note shape
+(`int bonus;` + `volatile int rem` + `remCopy`, frame 96, size 2000).  Both
+have the **same 25-entry call-site table**; the difference is entry 16
+(`start=0x5f4`, the `nextInt` at `0x977ac`):
+
+* original: `lp=0x78c` — the `sp+80` (`agentName`) cleanup stub;
+* note:     `lp=0x77a` — the `sp+68` (`Mission` String copy) cleanup stub.
+
+So the note shape has one extra distinct landing pad (`b.n` at `0x97934`)
+plus the literal-pool alignment `nop` at `0x9795e`; the main body
+(`0x97758..0x977b4`) is byte-identical to the original.  Frame 96 requires a
+non-volatile `bonus`, and every non-volatile-`bonus` shape re-swept this
+session is 2000 B:
+
+| shape | raw | size |
+|---|---:|---:|
+| base (`volatile bonus`, `volatile bv`, `volatile rem`) | **40** | 1996 |
+| note (`int bonus`, `volatile rem`, `remCopy`) | 90 | 2000 |
+| `int bonus`, `volatile rem`, no copy | 716 | 2000 |
+| `int bonus`, `int rem` | 181 | 2000 |
+| `volatile bonus`, `volatile rem` (no `bv`) | 582 | 1996 |
+| `volatile bonus`, `volatile rem`, `b=rawBonus+rem` | 127 | 1996 |
+| `volatile bonus`, `volatile remInt` at fn scope | 53 | 1996 |
+| `int bonus = 0` | 716 | 2000 |
+| `volatile short`/`char rem` | 708/709 | 2004 |
+| `volatile long long rem` | 773 | 2008 |
+| `bv` inside the else block | 44 | 1996 |
+| `bv` before the `if` | 40 | 1996 |
+| `bv` after `bonus=b` | 41 | 1996 |
+| `setTargetSystemName` via an explicit `String` | 90 | 2000 |
+| `setTargetName` via an explicit `String` | 419 | 2024 |
+
+The base 40-byte shape remains the only size-exact raw minimum.
+
+### 7.2 `Hud::draw()` — anchors in the other `hitFlags` blocks
+
+The landed damage-block anchor
+(`Status **volatile p = &Globals::status;` inside `if (hitFlags & 0x24)`,
+unbraced) is still the only 9332 B shape.  New anchor placements this session:
+
+| anchor placement | raw | size |
+|---|---:|---:|
+| landed | **32** | 9332 |
+| inside `if (hitFlags & 1)` | 8900 | 9456 |
+| inside `if (hitFlags & 2)` | 8741 | 9636 |
+| inside `if (hitFlags & 0x18)` | 7075 | 9336 |
+| before `if (hitFlags & 1)` | 8070 | 9360 |
+| `volatile int`/`300`/`PlayerEgo *volatile` before the `0x24` if | 3040/3036/2905 | 9332 |
+| `Status *volatile p = Globals::status` inside the `0x24` if | 911 | 9332 |
+| anchor at function tail (`volatile int pad = 0`) | 7019 | 9332 |
+
+The damage anchor's store is doing global register-allocation work, not just
+ballast; no cheap replacement found.
+
+### 7.3 `MenuTouchWindow::OnTouchBegin()` — case-8 sum orderings
+
+The `ip` vs `r4` tie is in condition 4
+(`y < leftMargin + field_0x20_top + listEntryWidth`).  Reordering the sum:
+
+| sum order | raw |
+|---|---:|
+| `left + top + entry` (landed) | **28** |
+| `top + left + entry` | 28 |
+| `top + entry + left` | 28 |
+| `entry + top + left` | 33 |
+| `left + entry + top` | 33 |
+| `entry + left + top` | 33 |
+
+Still 28; the `ip` choice is a global allocation tie (r4 live in the
+original).  The 26-byte case-15 scrollbar rotation is unchanged.
+
+### 7.4 `MGame::OnUpdate()` — m23/m122 re-swept
+
+The landed 10-byte shape is unchanged.  New m23 (4-byte) variants:
+`reinterpret_cast<volatile long long &>` and `*(volatile long long *)` both
+give raw 4960 / size 11444; `3600000 < (a - b)` gives raw 10 (same).
+New m122 variants: `Globals::status->getCurrentCampaignMission()` with the
+`st` anchor kept gives raw 348 / size 11440 / insn 4002 (frame re-layout);
+`Status *volatile dummy = Globals::status` gives raw 5212 / size 11396;
+`Status *st` with no dummy store gives raw 918 / size 11436.
+
+### 7.5 `ModStation::ModStation()` — faithful farKey
+
+Re-confirmed the semantically faithful farKey (`yaw` = bits(pitchBits)) at
+raw **43** / aligned 12 / size 1008.  With the faithful farKey, swapping the
+`pitchTable`/`yawTable` declarations gives 46, swapping the bit-pun reads
+gives 752 / size 1000, and swapping the float casts gives 43.  The landed
+11-byte shape (farKey uses `pitch` = bits(yawBits)) remains best.
