@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,820** | 20,981 | 57,232 |
+| `LevelScript::process` | **51,814** | 21,712 | 57,232 |
 | `Radar::draw` | **6,308** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,427** | 1,003 | 17,172 |
@@ -208,6 +208,11 @@ Landed changes:
   aligned 484 -> 483. `.text` 73,516 -> 73,511 (-5); `.ARM.extab`
   content diff stays 610 (size exact), `.ARM.exidx` 0, `.rel.plt`
   byte-identical. Total (text+extab+build-id) 74,146 -> 74,141.
+* `LevelScript::process` (w13367): rebase and land five of w13338's eight
+  3-statement d2 rotations on current master (lines 2281, 2441, 3188, 4752,
+  5103). Raw **51,820 -> 51,814** (-6), aligned 20,981 -> 21,712. `.text`
+  73,511 -> 73,505 (-6), `.ARM.extab` 610 unchanged, total
+  (text+extab+build-id) 74,141 -> 74,135.
 Section deltas: `.text` **73,511** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
@@ -219,7 +224,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 cross-TU rank table lives at the end of `.rodata`, so `.fini_array` is back
 to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**74,141**. File size is exact (2,187,328 B), and 27/27 section headers are
+**74,135**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
