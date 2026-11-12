@@ -149,11 +149,54 @@ Sites measured around this lever (all on the 6,307 base, all size 9,908 unless n
 | line 106 `top > screenY - size - size` | 8,469 (size 9,916) |
 | line 106 `(int) left > screenX - size - size` | 8,468 (size 9,916) |
 
-## Current-master rebase (wave 190 harvest)
+## 5. Third win: spark `inSight` `screenY` upper bound
 
-Re-applied both w13370 bounds on current master (`17f1b4a79`), after the w13371
-station-blip/tractor2 landing. Current master before the two changes was raw 6,299;
-after the spark bound it was 6,298, and after the landmark bound it is raw **6,297**
-(-2 total), aligned 1,804, size 9,908/9,908. `.text` 73,283 -> 73,277 (-6 across
-Radar + Hangar), `.ARM.extab` 603 -> 606 (+3 from the Hangar change), total
-73,906 -> 73,903 (-3). `check` green, RATCHET PASS.
+Same subtraction lever on the lower half of the spark `inSight` test (line 969):
+
+```cpp
+-                        inSight = this->screenX > left && left > this->screenX - size * 2 && this->screenY > (int) top &&
+-                                  this->screenY < (int) top + size * 2;
++                        inSight = this->screenX > left && left > this->screenX - size * 2 && this->screenY > (int) top &&
++                                  (int) top > this->screenY - size * 2;
+```
+
+`screenY < (int) top + size * 2` <=> `(int) top > screenY - size * 2`.
+
+| metric | base (after sections 0+4) | after section 5 |
+|---|---:|---:|
+| raw same-address diff | 6,306 | **6,303** |
+| instruction-index alignment | 1,864 | 1,864 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes | 73,514 | **73,511** |
+| `.ARM.extab` differing bytes | 610 | 610 |
+| `.rel.plt` | byte-identical | byte-identical |
+| build-id differing bytes | 20 | 20 |
+| total differing bytes | 74,144 | **74,141** |
+
+`RATCHET PASS` (byte 4,507 / linked 4,507 / size 4,524 / data 843 / imports 207 / lint CLEAN /
+parity 5,370).
+
+Cumulative for this worker: raw 6,308 -> 6,303, `.text` 73,516 -> 73,511, total 74,146 -> 74,141.
+
+Other subtraction-rewrite sites measured on the 6,306 base (all size 9,908):
+
+| site | raw |
+|---|---:|
+| **line 969 `(int) top > screenY - size*2`** | **6,303** |
+| line 726 `cx > screenX - field_0x124` | 6,308 |
+| line 728 `cy > screenY - field_0x124` | 6,306 |
+| line 797 `cx > screenX - field_0x124` | 6,308 |
+| line 798 `cy > screenY - field_0x124` | 6,308 |
+| line 1117 `top > screenY - size*2` | 6,309 |
+| line 848/1017 `top > screenY - size*2` | 6,309 |
+| line 847/1016/1116 `left > screenX - size*2` | 6,308 |
+
+## Current-master rebase (wave 190 harvest, all three bounds)
+
+Re-applied all three w13370 bounds on current master (`920479519`), after the
+w13371 station-blip/tractor2 landing. Current master before the three changes was
+raw 6,299; after the spark second bound it was 6,298, after the landmark bound
+6,297, and after the spark screenY upper bound it is raw **6,294** (-5 total),
+aligned 1,804, size 9,908/9,908. `.text` 73,283 -> 73,274 (-9 across Radar +
+Hangar), `.ARM.extab` 603 -> 606 (+3 from the Hangar change), total
+73,906 -> 73,900 (-6). `check` green, RATCHET PASS.
