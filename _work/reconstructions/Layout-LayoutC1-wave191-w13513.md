@@ -131,3 +131,52 @@ Scratch `/home/debian/GalaxyOnFire2/scratch/w13513/`: `Layout.base.cpp`
 (pristine source), `orig.dis`/`ours.dis`, `align.py`/`align.txt`,
 `variants.py`, `expect_sweep.py`/`.log`, `layout_dump3.txt`,
 `gen_b3.cpp`, `cmp.cpp`/`cmp`.
+
+## 9. Additional cells measured after the first commit
+
+### 9.1 Literal-pool tail (baseline, same addresses)
+
+Word dump of `d2b00..d2bc8` (ours vs original) shows the tail is **shifted**,
+not merely reordered:
+
+| addr | original | ours |
+|---|---|---|
+| `d2b80` | `0x12c 8 0x42 0x46` | `0x258 0x10 0x84 0x8c` |
+| `d2b90` | `0x1e 0xa 6 0x154` | `0x12c 8 0x42 0x46` |
+| `d2ba0` | `0xf 5 3 0xaa` | `82.0 41.0 200.0 100.0` |
+| `d2bb0` | `200.0 100.0 150.0 144.0` | `150.0 144.0 150.0 76.0` |
+| `d2bc0` | `150.0 76.0` | `GOT GOT` |
+
+Only 5 words match at the same address (`0x7`, `0x4`, `0x1c2`, `150.0`,
+`76.0`), plus `150.0`/`144.0` at `d2bc0`/`d2bc4` in the original tail.  The
+six-word float tail `200/100/150/144/150/76` is already byte-identical at
+`d2bb0..d2bc4`; the extra `82.0/41.0` pair and the `0x258/0x10/0x84/0x8c`
+group (constants for `0x278/0x25c/0x1c0/0x270`) are the visible shift.  A
+best-shift search over the whole pool (188 words) matches at most 14/188, so
+the pool order is genuinely different, not a constant offset.
+
+### 9.2 `field_0xa8` float-constant chain
+
+The original computes `field_0xa8` with `vmov s0,r2` / `vcvt.f32.s32` /
+`vcvt.s32.f32` from the **int** 82/41 (`d19ca..d19de`).  Ours instead loads
+`82.0f`/`41.0f` from the inline island with `vldr s0,[pc,...]` (`d19e0`) and
+keeps the pair in the end pool.  Converting the `v` chain to int constants
+(`61 * 1.40625f`, `122`, `61`, `61`, `82`, `41`) gives raw **5,477** / size
+**7,016** (V1), or raw **5,496** / size **7,032** with the HD arm as `85`
+(V2/V3): size-fatal and raw-worse.
+
+### 9.3 `0x2d4/0x2d8` `strd` is not the original shape
+
+Variant D (move `0x2d8` after the `0x2d4` if/else) does produce
+`strd r4,r6,[r0,#724]` in the shared tail, but it also **drops the HD-arm
+`str.w r?, [r0,#728]`** that the original keeps at `d1128`.  The original has
+both the early HD store and the shared-tail `strd`; D is therefore not the
+original source shape and its −184 B is not a usable size budget.
+
+### 9.4 Committed-source locals are codegen-neutral
+
+The committed ctor declares `const bool hd = Globals::iPadHD;` and
+`const bool n9f = Globals::n9;` at the top.  Removing them (direct
+`Globals::iPadHD`/`Globals::n9` everywhere) is codegen-identical
+(5,243 / 2,728 / 7,072), so the locals do not explain the `sl`/`lr` HD-flag
+rotation.
