@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,747** | 22,483 | 57,232 |
+| `LevelScript::process` | **51,744** | 22,482 | 57,232 |
 | `Radar::draw` | **6,291** | 1,828 | 9,908 |
 | `Layout` C1/C2 | **5,255** | 2,726 | 7,072 |
 | `Level::createMission` | **3,030** | 1,135 | 17,172 |
@@ -222,7 +222,14 @@ Landed changes:
   (`807205a3c`) applied on current master; most were already present from
   the w13369 follow-up harvest, so the net is raw **51,748 -> 51,747**
   (-1), aligned 22,483 unchanged.
-Section deltas: `.text` **73,003** differing bytes (size exact, 1,259,464 B);
+* `LevelScript::process` (w13380): sink `m_pRadar->enabled = 1` below the
+  `sound->stop` call in the state-4 block. Raw **51,747 -> 51,744** (-3),
+  aligned 22,483 -> 22,482. `.text` 73,003 -> 73,000 (-3), `.ARM.extab`
+  603 and build-id 20 unchanged, total (text+extab+build-id)
+  73,626 -> 73,623 (-3). `.rel.plt` byte-identical, 27/27 headers, file
+  size 2,187,328 exact. The w13368 `hideShip`/`m_pRadar->enabled` swap
+  was +2 raw on this base and was not harvested.
+Section deltas: `.text` **73,000** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -232,7 +239,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,626**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,623**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

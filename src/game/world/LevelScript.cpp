@@ -3266,10 +3266,10 @@ bool LevelScript::process(int delta) {
                             }
                             m_pLevel->lodManager->forceUpdate(delta, false);
                             m_nScriptTimerA = 0;
-                            m_pRadar->enabled = 1;
                             m_pHud->visible = 1;
                             m_bCinematicBreak = 0;
                             Globals::sound->stop(Globals::sound->currentMusicEvent);
+                            m_pRadar->enabled = 1;
                             m_nState++;
                         }
                         break;
