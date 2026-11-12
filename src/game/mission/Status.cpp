@@ -1477,7 +1477,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                         return m;
                     }
                     (void) m->getStatusValue();
-                    if (Globals::status->ship->hasEquipment(index, 1)) {
+                    // Codegen device: hasEquipment() returns bool, so `< 0` is
+                    // always false.  The dead comparison makes clang emit the
+                    // original's unconditional tail here instead of a local
+                    // `cmp; b`, which in turn keeps the case-7 tail merge and
+                    // the shared test block in their original places.
+                    if (Globals::status->ship->hasEquipment(index, 1) < 0) {
                         return m;
                     }
                 }
