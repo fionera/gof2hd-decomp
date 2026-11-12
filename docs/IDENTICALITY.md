@@ -20,7 +20,7 @@ aligned / size; all size-exact):
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,353** | 2,681 | 7,072 |
 | `Level::createMission` | **3,510** | 998 | 17,172 |
-| `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
+| `MGame::OnTouchEnd` | **2,928** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -56,6 +56,9 @@ Landed changes:
 * `MGame::OnTouchEnd` (w13116): pass 13, chain 15-before-162 plus 162-block
   store swap. Raw **2,930 -> 2,929** (-1), aligned 1,704 -> 1,670; `.ARM.extab`
   content 647 -> 640 (size/base exact).
+* `MGame::OnTouchEnd` (w13216): pass 14, mission-162 `field_64`/`field_68`
+  getter-store transposition stacked on pass 13. Raw **2,929 -> 2,928** (-1),
+  aligned unchanged 1,670; `.ARM.extab` content unchanged 639 (size/base exact).
 * `Level::createMission` (w13115): case4Tail offset[1] cyclic remap. Raw
   **3,517 -> 3,510** (-7), aligned 1,009 -> 998.
 * `LevelScript::process` (w13101): regalloc adjacent-pair sweep. Raw
@@ -71,12 +74,12 @@ Landed changes:
   `field_0x110_strip58`/`field_0x120` down). Raw **5,354 -> 5,353** (-1),
   aligned 2,680 -> 2,681.
 
-Section deltas: `.text` **74,223** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,222** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,882**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,881**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 186)
