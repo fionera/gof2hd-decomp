@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,642** | 22,078 | 57,232 |
+| `LevelScript::process` | **51,639** | 22,078 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,669** | 865 | 17,172 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,419**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,416**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -43,10 +43,11 @@ Landed changes:
   `m_pRadar->lockedEnemy = nullptr` stores; landmark-3 escort `setRoute`
   hoist; guard `awake` after `setPosition`; intro `enemies[2]` before
   `[0]` park; cinematic/radar stores after `setTarget`; explosion start
-  after sound/rumble. Raw **51,656 -> 51,642** (-14), aligned
-  22,002 -> 22,078. `.text` 71,433 -> 71,419 (-14), `.ARM.extab`
+  after sound/rumble; mission-81 arrival state/timer before
+  `SetAnimationState(1, nullptr)`. Raw **51,656 -> 51,639** (-17), aligned
+  22,002 -> 22,078. `.text` 71,433 -> 71,416 (-17), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 72,016 (-14). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 72,013 (-17). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
