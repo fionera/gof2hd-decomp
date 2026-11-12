@@ -1763,11 +1763,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         }
                         if (!mission->isCampaignMission() && mission->getType() == 183) {
                             // Escort job handed out right after the previous one.
+                            Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
+                                                          0, Globals::status->getStation()->getIndex(), 1);
                             Item *escortItem = (*Globals::items)[216]->makeItem(10);
                             this->field_0x1e0 = this->level->killCountB;
                             Globals::status->getShip()->setEquipment(escortItem, 0);
-                            Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
-                                                          0, Globals::status->getStation()->getIndex(), 1);
                             Globals::status->setMission(escort);
                             Globals::status->setFreelanceMission(escort);
                             this->active = 0;

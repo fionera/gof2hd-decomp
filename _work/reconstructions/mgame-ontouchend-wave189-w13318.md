@@ -8,17 +8,17 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 2,928 | **2,921** |
-| aligned (instruction) diff | 1,670 | 1,677 |
+| raw same-address diff bytes | 2,928 | **2,920** |
+| aligned (instruction) diff | 1,670 | 1,703 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
 | instructions | 2,861 / 2,865 | 2,861 / 2,865 |
-| `.text` differing bytes | 74,032 | **74,025** |
+| `.text` differing bytes | 74,032 | **74,024** |
 | `.rel.plt` diff | 0 | **0** (byte-identical) |
 | `.ARM.extab` size | 156,312 | **156,312** (base `0x1a3b78` exact) |
-| `.ARM.extab` diff | 639 | **639** |
+| `.ARM.extab` diff | 639 | **637** |
 | `.ARM.exidx` diff | 0 | **0** |
 | build-id diff | 20 | 20 |
-| total differing bytes | 74,691 | **74,684** |
+| total differing bytes | 74,691 | **74,681** |
 | file size | 2,187,328 | **2,187,328** |
 
 Gate (`check`, `RATCHET PASS`): byte_exact **4507/4524**, linked_exact **4507/4524**,
@@ -55,8 +55,21 @@ All six statements are independent:
   order (`setRoute` before `removeRoute`), so the emitted delete-on-null
   behaviour is unchanged.
 
-The function stays exactly 8,080 B; `.rel.plt` is byte-identical and
-`.ARM.extab` content is unchanged (639).
+The function stays exactly 8,080 B; `.rel.plt` is byte-identical.
+
+## Second change: escort-mission creation order
+
+In the `mission->getType() == 183` escort block the `Mission *escort = new
+Mission(183, String("Client"), ...)` construction was moved ahead of
+`Item *escortItem = (*Globals::items)[216]->makeItem(10);`.  The two
+allocations are independent (the `Mission` ctor reads `Globals::items` only
+through `imageFactory`/`status->getStation()`, and `makeItem` does not touch
+`Status`), so the reorder is behaviour-preserving.  A 8x8 single-move sweep of
+the eight independent statements in that block found this as one of two
+raw-2,920 orders; the other (`SetCurrentApplicationModule(2)` moved before
+`setMission`) is riskier because the module switch can invalidate `this`, so the
+allocation reorder was landed instead.  This second change takes raw 2,921 ->
+2,920, `.text` 74,025 -> 74,024 and `.ARM.extab` diff 639 -> 637.
 
 ## Search context (full-body pass)
 
