@@ -2310,9 +2310,9 @@ case4Tail:
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
                         Array<KIPlayer *> *enemies = this->enemies;
                         ((PlayerFighter *) (*enemies)[convoyEnd + j])->crateCaptured() = 0;
+                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                         (*enemies)[convoyEnd + j]->cargo = nullptr;
                         (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
-                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
                     }
