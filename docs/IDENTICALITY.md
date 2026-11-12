@@ -16,13 +16,13 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,122** | 20,678 | 57,232 |
+| `LevelScript::process` | **52,108** | 20,701 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
-| `Level::createMission` | **3,538** | 1,140 | 17,172 |
+| `Level::createMission` | **3,534** | 1,153 | 17,172 |
 | `MGame::OnTouchEnd` | **2,961** | 1,602 | 8,080 |
 | `HangarWindow::render` | **1,512** | 723 | 9,700 |
-| `Level::createShip` | **1,213** | 396 | 2,764 |
+| `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -44,13 +44,27 @@ Landed changes:
   unchanged 1,140.
 * `MGame::OnTouchEnd` (w12916): pass 9 distance-5..8 statement transpositions.
   Raw **2,972 -> 2,961** (-11), aligned unchanged 1,602.
+* `LevelScript::process` (w12904): iOS-structure pass 3, mission-154
+  `setFreeze` sink. Raw **52,122 -> 52,118** (-4).
+* `LevelScript::process` (w12905): K=6..8/d21..40 pass 1 (two of the three
+  moves compose; the third duplicates w12904's setTarget sink) plus pass 2.
+  Raw **52,118 -> 52,111** (-7), aligned 20,678 -> 20,698.
+* `LevelScript::process` (w12907): hoist `self` in the hot state block. Raw
+  **52,111 -> 52,108** (-3), aligned 20,698 -> 20,701.
+* `Level::createMission` (w12915): swap `ox`/`oy` declarations in the
+  stationPirates escort loop and swap the case-183
+  `player->setPosition`/`stationPosition = getPosition()` statements. Raw
+  **3,538 -> 3,534** (-4), aligned 1,140 -> 1,153.
+* `Level::createShip` (w12918): split the coordinate declarations around the
+  `EmpGuard`/`setEmpData` block. Raw **1,213 -> 1,202** (-11), aligned
+  396 -> 484.
 
-Section deltas: `.text` **74,520** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,491** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,187**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,158**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 184)
@@ -65,7 +79,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,132** | 20,658 | 57,232 |
+| `LevelScript::process` | **52,129** | 20,655 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,588** | 1,140 | 17,172 |
@@ -142,6 +156,10 @@ Landed changes:
 * `MGame::OnTouchEnd` (w12816): two store-order passes (instant-action store
   order; shield-HP store after the flag stores). Raw **3,030 -> 3,028** (-2),
   aligned 1,446 -> 1,450.
+* `LevelScript::process` (w12907): hoist the existing `Level *self = m_pLevel;`
+  local to the head of the mission-0 cutscene-exit block and reuse it for the
+  trailing `Objective` argument. Raw **52,132 -> 52,129** (-3), aligned
+  20,658 -> 20,655.
 * `HangarWindow::render` (w12817): flip the ship-guard compound condition to
   `Globals::status->getShip() != this->selectedItem->ship`, which changes the
   live-range/`cmp` form across the `getShip()` call. Raw **1,514 -> 1,512**
@@ -149,12 +167,12 @@ Landed changes:
   `.ARM.extab` content grows 1 byte; total differing bytes still drop
   75,508 -> 75,507 and the section stays size- and base-exact.
 
-Section deltas: `.text` **74,591** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,588** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,258**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,255**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 183)
