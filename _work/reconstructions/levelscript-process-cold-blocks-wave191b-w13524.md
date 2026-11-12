@@ -159,3 +159,17 @@ process raw diffbytes    51,595             51,577     (-18; total -36 vs wave b
 .text diffbytes          71,360             71,342     (-18)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 7 — d2-transposition rerun ripple
+
+Re-ran the distance-2 transposition sweep on the pass-6 base: one new cell.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 19 | case-4 state 8 (~2696) | `m_nScriptTimerA = 0` between `MatrixSetTranslation` and `systemSetMatrix(field_5c, &m_matrix)` — the latter now correctly follows the matrix build | -3 |
+
+```
+process raw diffbytes    51,577             51,574     (-3; total -39 vs wave base)
+.text diffbytes          71,342             71,339     (-3)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```

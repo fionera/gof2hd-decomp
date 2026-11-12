@@ -2693,9 +2693,9 @@ bool LevelScript::process(int delta) {
                         m_pLevel->field_74->systemSetMatrix(m_pLevel->field_58, &m_pGeometry6->getMatrix());
                         m_tempVec.z += 1000.0f;
                         m_pLevel->field_74->enableSystemEmit(m_pLevel->field_58, true);
-                        m_pLevel->field_74->systemSetMatrix(m_pLevel->field_5c, &m_matrix);
-                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
+                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_pLevel->field_74->systemSetMatrix(m_pLevel->field_5c, &m_matrix);
                         m_tempVec = m_pGeometry6->getPosition();
                         m_nState = 9;
                         m_pLevel->field_74->enableSystemEmit(m_pLevel->field_5c, true);
