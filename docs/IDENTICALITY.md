@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,602** | 22,233 | 57,232 |
+| `LevelScript::process` | **51,592** | 22,338 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
-| `Level::createMission` | **2,659** | 871 | 17,172 |
+| `Level::createMission` | **2,656** | 867 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,731 | 8,080 |
 | `HangarWindow::render` | **1,191** | 600 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,506**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,493**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -52,6 +52,12 @@ Landed changes:
   aligned 469 -> 600.  `.text` 71,249 -> 71,512 (+263), `.ARM.extab`
   1,216 -> **586** (-630), text+extab total **-367** (72,465 -> 72,098).
   Size 9,700/9,700, `.rel.plt` byte-identical, RATCHET PASS.
+* `Level::createMission` (w13531): case-2 loot tail order is
+  `crateCaptured() = 0; setSpeed(0.0f); cargo = nullptr;
+  setRotationSpeed(0.0f)`. Raw **2,659 -> 2,656** (-3), aligned
+  871 -> 867. `.text` 71,496 -> 71,493 (-3), `.ARM.extab` 586
+  unchanged, build-id 20 unchanged. `.rel.plt` byte-identical,
+  `.ARM.exidx` 0, size 17,172 exact.
 * `Level::createMission` (w13526): swap the case-2 loot tail
   `setRotationSpeed(0.0f)` before `setSpeed(0.0f)`. Raw **2,661 ->
   2,659** (-2), aligned 863 -> 871. `.text` 71,253 -> 71,251 (-2),
@@ -93,10 +99,11 @@ Landed changes:
   `offset` add before the `*= 1000.0f`; and nine cross-control-boundary
   statement moves (camera translate, `moveForward`, `setLocal`, free-look,
   radar/freeze order); and a second cross-control pass (camera
-  `setFixed`, `enemies[1]->field_0x70`; camera `setTarget` after `setFreeLookMode`). Raw **51,656 -> 51,602** (-54), aligned
-  22,002 -> 22,233. `.text` 71,433 -> 71,379 (-54), `.ARM.extab`
+  `setFixed`, `enemies[1]->field_0x70`; camera `setTarget` after `setFreeLookMode`; a distance-2 transposition
+  pass; and a d5 multi-line rotation with `SetAnimationState(2)` hoist). Raw **51,656 -> 51,592** (-64), aligned
+  22,002 -> 22,338. `.text` 71,433 -> 71,369 (-64), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 71,976 (-54). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 71,966 (-64). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
