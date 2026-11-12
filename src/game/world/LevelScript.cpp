@@ -3822,7 +3822,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (__builtin_expect(player->getHitpoints() >= 1 && // lint: arm_builtin
                         reinterpret_cast<Route *>(player->getRoute()) != nullptr &&
-                        reinterpret_cast<Route *>(player->getRoute())->getWaypoint(0)->state != 0, 0)) {
+                        (uint8_t) reinterpret_cast<Route *>(player->getRoute())->getWaypoint(0)->state, 0)) {
                         player->player->setVulnerable(false);
                         player->stopBoost();
                         m_nState = m_nState + 1; // 9 -> 10
