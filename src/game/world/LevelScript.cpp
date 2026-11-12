@@ -4628,8 +4628,8 @@ bool LevelScript::process(int delta) {
                         m_nState++;
                         tvA = player->getPosition();
                         player->setSpeed(0.0f);
-                        tvA += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setTarget(player->geometry);
+                        tvA += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pCamera->setFixed(false);
                         m_pCamera->setPosition(tvA);
