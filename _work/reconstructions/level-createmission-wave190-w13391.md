@@ -123,3 +123,12 @@ Raw **3,244 -> 3,132** (-112), aligned **1,156 -> 1,145** (-9), size exact
 file size 2,187,328 exact. `check` -> **RATCHET PASS** (byte_exact
 4507/4524, linked_exact 4507/4524, size 4524/4524, data 843/843,
 imports 207, lint CLEAN, drift 0, parity 5370/5370).
+
+## 7. Follow-up harvest: attackerCount before array allocation
+
+`c8315bc48` moves the `int attackerCount = ...` computation ahead of
+`this->enemies = new Array<KIPlayer *>();` in the case-1 pirate body. Raw
+**3,132 -> 3,055** (-77), aligned **1,145 -> 1,128**, size exact 17,172 B.
+`.text` **73,121 -> 73,044** (-77); `.ARM.extab` **606 -> 603** (-3);
+build-id 20 unchanged; total (text+extab+build-id) **73,747 -> 73,667**
+(-80). `check` -> RATCHET PASS.
