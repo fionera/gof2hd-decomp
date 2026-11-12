@@ -541,11 +541,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->planetTargets->data()[i]);
+            int stationId = stations->data()[i];
             int currentStation = Globals::status->getStation()->getIndex();
             if (!this->onScreen) {
                 continue;
             }
-            int stationId = stations->data()[i];
             int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
             int textOffset = 10;
             if (stationId != currentStation && (int) i == warpGate) {
@@ -1319,7 +1319,8 @@ asteroids_done:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                if (Globals::status->getStation()->isAttackedByAliens() || (Globals::status->inAlienOrbit())) {  // lint: arm_builtin
+                if (Globals::status->inAlienOrbit() ||
+                    Globals::status->getStation()->isAttackedByAliens()) {  // lint: arm_builtin
                     Globals::sound->play(145, nullptr, nullptr, 0.0f);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
                     Globals::sound->play(143, nullptr, nullptr, 0.0f);

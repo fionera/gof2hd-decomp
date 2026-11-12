@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,642** | 22,078 | 57,232 |
-| `Radar::draw` | **6,016** | 1,947 | 9,908 |
+| `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,669** | 865 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
@@ -719,8 +719,19 @@ Landed changes:
   `.text` 71,804 -> 71,803 (-1), `.ARM.extab` 582 unchanged, build-id 20
   unchanged, total 72,406 -> 72,405. `.rel.plt` byte-identical, 27/27
   headers, file size 2,187,328 exact.
-Section deltas: `.text` **71,803** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **582** (size- and
+* `Radar::draw` (w13488): two independent order fixes — evaluate
+  `inAlienOrbit()` before `getStation()->isAttackedByAliens()` in the
+  second music branch, and load `stations[i]` before
+  `getStation()->getIndex()` in the planet-target loop. On current master
+  (raw 6,016) this is an alignment-only win: raw **6,016** unchanged,
+  aligned 1,947 -> **1,941**, instructions 3,541 unchanged. The third
+  candidate (`__builtin_expect(carriesFriendCargoFlag, 1)`) was measured
+  and regressed aligned to 1,999, so it was not landed. `.text` 71,419
+  unchanged, `.ARM.extab` 577 unchanged, build-id 20 unchanged, total
+  72,016 unchanged. `.rel.plt` byte-identical, 27/27 headers, file size
+  2,187,328 exact.
+Section deltas: `.text` **71,419** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **577** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,644** (+0x1e5: the 484 B w13431 rank helper fills the first 0x1e5 bytes of the
