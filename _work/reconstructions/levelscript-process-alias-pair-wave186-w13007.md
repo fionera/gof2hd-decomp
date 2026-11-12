@@ -177,3 +177,42 @@ reallocate `enemies[0]`).  Alone it measures 52,064 / 57,232.
 Cumulative wave-186 result: raw **52,075 -> 52,064** (-11), `.text`
 **74,402 -> 74,391**, `.ARM.extab` unchanged at 647, `.rel.plt` byte-identical,
 size 57,232 exact.
+
+## Pass 3 (same wave): second size-compensating pair, 52,064 -> 52,062
+
+The generator was re-run once more on the pass-2 body with data-driven
+pointer-returning getter calls and scalar getter aliases added.  No single
+edit wins, so the size-compensating pair search was repeated on the new body
+(top 45 per side of `-4/+4` and `-8/+8`, top 30 of `-12/+12` and `-16/+16`;
+4,890 pairs).  The best pair is size-exact, `.rel.plt`-identical and
+raw-lowering.
+
+```
+                         pass 2           pass 3
+process raw diffbytes    52,064           52,062     (-2)
+process aligned insns    20,760           20,760
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+orig / ours insns        20,830 / 20,727  20,830 / 20,727
+.text diffbytes          74,391           74,389     (-2)
+.ARM.extab diffbytes     647              647        (unchanged)
+.note.gnu.build-id       20               20
+total differing bytes    75,058           75,056     (-2)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Landed edits:
+
+| # | new line | kind | edit | alone raw / size |
+|---:|---:|---|---|---:|
+| 1 | 4572 | alias | `KIPlayer *e = (*enemies)[i];` in the `shipGroup == 9` inner block (2 uses) | 52,353 / 57,228 (-4) |
+| 2 | 4669 | alias | `TargetFollowCamera *camera = m_pCamera;` in the `m_nScriptTimerA >= 1001` block (3 uses) | 52,403 / 57,236 (+4) |
+| both | | | | **52,062 / 57,232** |
+
+Both are pure pointer copies of an array element / member that are not
+reassigned in their blocks; the pair restores the exact size and lowers the
+raw diff by 2.
+
+Cumulative wave-186 result: raw **52,075 -> 52,062** (-13), `.text`
+**74,402 -> 74,389**, `.ARM.extab` unchanged at 647, `.rel.plt` byte-identical,
+size 57,232 exact.
