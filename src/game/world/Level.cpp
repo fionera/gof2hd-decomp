@@ -2061,7 +2061,8 @@ void Level::createMission() {
         this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
         this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
         this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
-        int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
+        Vector sp = this->spawnPosition;
+        int coords[3] = {(int) sp.x, (int) sp.y, (int) sp.z};
         Route *route = new Route(coords, 3);
         int start = stationPirates + guns + pirateEscorts;
         for (int i = pirates + start + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
