@@ -2327,13 +2327,13 @@ bool LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
-                    player->hideShipForFirstPersonCameraView(false);
+                    m_pCamera->setActive(true);
                     m_pCamera->setLookAtCam(true);
                     player->stopShooting(0);
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pHud->visible = 0;
-                    m_pCamera->setActive(true);
+                    player->hideShipForFirstPersonCameraView(false);
                     m_pCamera->setTarget((*enemies)[10]->geometry);
                     m_pCamera->setPosition((*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 1000.0f});
                     m_bCinematicBreak = 1;
@@ -3401,7 +3401,7 @@ bool LevelScript::process(int delta) {
                             }
                         }
                         resetCamera(m_pLevel);
-                        player->setVisible(false);
+                        player->hideShipForFirstPersonCameraView(false);
                         player->setTurretMode(false);
                         player->setFreeze(true);
                         if (player->isInRocketControl()) {
@@ -3411,7 +3411,7 @@ bool LevelScript::process(int delta) {
                         }
                         m_pRadar->enabled = 0;
                         player->setFreeLookMode(false);
-                        player->hideShipForFirstPersonCameraView(false);
+                        player->setVisible(false);
                         player->stopShooting(0);
                         m_pHud->visible = 0;
                         AEGeometry *leaderShip = (*enemies)[leader]->geometry;
@@ -3517,7 +3517,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
                         TargetFollowCamera *wcamera = m_pCamera;
-                        wcamera->enableFirstPersonCam(false);
+                        player->setFreeLookMode(false);
                         m_nState++;
                         resetCamera(m_pLevel);
                         player->setTurretMode(false);
@@ -3526,7 +3526,7 @@ bool LevelScript::process(int delta) {
                             wcamera->setRumblePercentage(0.0f, 0);
                             player->killLiberator();
                         }
-                        player->setFreeLookMode(false);
+                        wcamera->enableFirstPersonCam(false);
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
@@ -4216,8 +4216,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget(player->geometry);
-                        m_pCamera->setLookAtCam(false);
                         m_pRadar->enabled = 1;
+                        m_pCamera->setLookAtCam(false);
                         resetCamera(m_pLevel);
                         m_pHud->visible = 1;
                         m_pLevel->lodManager->forceUpdate(delta, false);
@@ -5006,12 +5006,12 @@ bool LevelScript::process(int delta) {
                         m_tempVec = AbyssEngine::AEMath::VectorNormalize(
                                 (*enemies)[stationIndex]->getPosition() + Vector{0.0f, 0.0f, 40000.0f}
                                 - fighter->getPosition());
-                        fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
+                        player->setComputerControlled(true);
                         ((PlayerFighter *) fighter)->setAIDisabled(true);
                         fighter->setVisible(true);
                         fighter->setActive(true);
                         player->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
-                        player->setComputerControlled(true);
+                        fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         player->setFreeze(false);
                         player->setPosition(*m_pCamera->getPosition() + Vector{5000.0f, 300.0f, -14000.0f});
                         player->setSpeed(4.0f);

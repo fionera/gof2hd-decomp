@@ -5256,7 +5256,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        if (type == 0x2c || type == 0x31) {
+        if (type == 0x2c) {
+            delete fighter->cargo;
+            fighter->cargo = nullptr;
+        } else if (type == 0x31) {
             delete fighter->cargo;
             fighter->cargo = nullptr;
         } else if (type == 0x33) {

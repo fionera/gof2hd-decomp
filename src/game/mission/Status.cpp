@@ -1471,14 +1471,11 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             case 10:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
+                    Array<Item *> *cargo = ship->getCargo();
                     int amount = m->getProductionGoodAmount();
-                    if (Item::isInList(index, amount, ship->getCargo())) {
+                    if (Item::isInList(index, amount, cargo)) {
                         return m;
                     }
-                    // The original re-queries getProductionGoodIndex() here; reusing
-                    // the local is the same value and keeps this body 4 B shorter,
-                    // which is what keeps the loop latch at the original's 0x522
-                    // (see MISSION_CASE).
                     if (Globals::status->ship->hasEquipment(index, 1)) {
                         return m;
                     }

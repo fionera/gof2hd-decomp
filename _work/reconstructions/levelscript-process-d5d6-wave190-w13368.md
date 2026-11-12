@@ -125,3 +125,15 @@ Re-applied the last two d5 reorders on current master (`bea73c49b`):
 aligned 22,287, size 57,232/57,232. `.text` 73,250 -> 73,248 (-2),
 `.ARM.extab` 606 unchanged, build-id diff 19 -> 20, total 73,875 -> 73,874 (-1).
 `check` green, RATCHET PASS.
+
+## Current-master harvest (wave 190, follow-up 5)
+
+Re-applied the last four d5/d6 reorders plus the one new w13384 d1 reorder on
+current master (`26da752c0`): `setActive`/`hideShipForFirstPersonCameraView`,
+`setVisible`/`hideShipForFirstPersonCameraView`, fighter
+`setDirection`/`setComputerControlled`, `enableFirstPersonCam`/`setFreeLookMode`,
+and `m_pRadar->enabled` before `setLookAtCam` at line 4216. LevelScript raw
+**51,763 -> 51,758** (-5), aligned 22,300, size 57,232/57,232. `.text`
+73,248 -> 73,233 (-15 across LevelScript + createShip + Status), `.ARM.extab`
+606 unchanged, build-id 20 unchanged, total 73,874 -> 73,859 (-15). `check`
+green, RATCHET PASS.

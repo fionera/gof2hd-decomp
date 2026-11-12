@@ -62,3 +62,11 @@ were already landed via w13369; only the new `camPos.y += 800.0f` after
 current master (`01f5edc5d`): LevelScript raw **51,786 -> 51,785** (-1), aligned
 22,208, size 57,232/57,232. `.text` 73,274 -> 73,273 (-1), `.ARM.extab` 606
 unchanged, total 73,900 -> 73,899 (-1). `check` green, RATCHET PASS.
+
+## Current-master harvest (wave 190, second follow-up)
+
+The `Vector zero` hunk was already landed via w13369. Re-applied the one new
+`m_pRadar->enabled = 1` before `m_pCamera->setLookAtCam(false)` reorder at line
+4216 on current master (`26da752c0`). It is part of the combined LevelScript
+**51,763 -> 51,758** (-5) harvest with the w13368 follow-up 5 group. `check`
+green, RATCHET PASS.
