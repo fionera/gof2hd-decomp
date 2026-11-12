@@ -227,13 +227,382 @@ total      74,104 -> 74,103  (-1)
 .rel.plt   byte-identical
 ```
 
-## Current-master harvest (wave 190)
+## Landed change 10 (fresh d=1 sweep on 51,789, corrected 0-based indices)
 
-The `radar enable below sound stop` d24 move is the only one of the three
-that is a win on current master: raw **51,747 -> 51,744** (-3), aligned
-22,483 -> 22,482, size exact 57,232 B. `.text` **73,003 -> 73,000** (-3);
-`.ARM.extab` 603 and build-id 20 unchanged; total (text+extab+build-id)
-**73,626 -> 73,623** (-3). `check` -> RATCHET PASS.
+Source lines 3882-3883 (mission 142? camera marker block):
 
-The w13368 `hideShip`/`m_pRadar->enabled` swap (`6d52e5601`) was measured
-**+2 raw on current master** (51,747 -> 51,749) and was not harvested.
+```c++
+-                            marker->setPosition(player->geometry->getPosition());
+-                            wcamera->setTarget(marker);
++                            wcamera->setTarget(marker);
++                            marker->setPosition(player->geometry->getPosition());
+```
+
+Independent receiver; `setTarget` does not read the marker position.  The
+earlier d=1 sweep reported this as `['down',3881,3882]`; the harness indices
+are 0-based, so the real source lines are 3882/3883 (the previous
+`marker/setTarget/sound` rotation at 3881 was a different, +4-byte variant).
+
+Measured on the post-change-9 body:
+
+```
+raw        51,789 -> 51,788  (-1)
+aligned    22,186 -> 22,178  (-8)
+size       57,232 / 57,232   (exact)
+.text      73,473 -> 73,472  (-1)
+.ARM.extab 610 (unchanged)
+total      74,103 -> 74,102  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 11 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 2532-2533 (mission 70 state-1 camera reframe):
+
+```c++
+-                        camPos.y += 800.0f;
+-                        m_pCamera->setPosition(camPos);
++                        m_pCamera->setPosition(camPos);
++                        camPos.y += 800.0f;
+```
+
+The original emits all four `camPos` adjustments (x += -600, y += 800,
++= dir*2000, z += -1000) before the `setPosition` call (0x13c11e-0x13c152);
+the compiler hoists the pure local-vector adds across the call either way.
+The swap moves one more add across the call and matches one more text byte.
+
+Measured on the post-change-10 body:
+
+```
+raw        51,788 -> 51,787  (-1)
+aligned    22,178 -> 22,178  (unchanged)
+size       57,232 / 57,232   (exact)
+.text      73,472 -> 73,471  (-1)
+.ARM.extab 610 (unchanged)
+total      74,102 -> 74,101  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 12 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 3536-3537 (mission 102 state-0 teardown):
+
+```c++
+-                        m_bCinematicBreak = 1;
+-                        m_pRadar->enabled = 0;
++                        m_pRadar->enabled = 0;
++                        m_bCinematicBreak = 1;
+```
+
+Independent stores (different receivers).  The old wave-189 note called a
+3535/3536 variant neutral; the harness index is 0-based, so the real lines
+are 3536/3537 and it is a one-byte win.
+
+Measured on the post-change-11 body:
+
+```
+raw        51,787 -> 51,786  (-1)
+aligned    22,178 -> 22,178  (unchanged)
+size       57,232 / 57,232   (exact)
+.text      73,471 -> 73,470  (-1)
+.ARM.extab 610 (unchanged)
+total      74,101 -> 74,100  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 13 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 3735-3736:
+
+```c++
+-                        *camPos += *tmp * 400.0f;
+-                        m_pCamera->setPosition(*camPos);
++                        m_pCamera->setPosition(*camPos);
++                        *camPos += *tmp * 400.0f;
+```
+
+The add is a pure local-vector update; the compiler hoists it across the
+call either way.
+
+Measured on the post-change-12 body:
+
+```
+raw        51,786 -> 51,785  (-1)
+aligned    22,178 -> 22,178  (unchanged)
+size       57,232 / 57,232   (exact)
+.text      73,470 -> 73,469  (-1)
+.ARM.extab 610 (unchanged)
+total      74,100 -> 74,099  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 14 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 4542-4543 (mission 154 state-0):
+
+```c++
+-                    m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
+-                    m_pCamera->setPosition(m_tempVec);
++                    m_pCamera->setPosition(m_tempVec);
++                    m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
+```
+
+Pure local-vector add hoisted across the call.
+
+Measured on the post-change-13 body:
+
+```
+raw        51,785 -> 51,784  (-1)
+aligned    22,178 -> 22,178  (unchanged)
+size       57,232 / 57,232   (exact)
+.text      73,469 -> 73,468  (-1)
+.ARM.extab 610 (unchanged)
+total      74,099 -> 74,098  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 15 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 4963-4964:
+
+```c++
+-                        m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
+-                        chaser->setPosition(m_tempVec + Vector{15000.0f, -200.0f, 1000.0f});
++                        chaser->setPosition(m_tempVec + Vector{15000.0f, -200.0f, 1000.0f});
++                        m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
+```
+
+Pure local-vector add hoisted across the call.
+
+Measured on the post-change-14 body:
+
+```
+raw        51,784 -> 51,783  (-1)
+aligned    22,178 -> 22,178  (unchanged)
+size       57,232 / 57,232   (exact)
+.text      73,468 -> 73,467  (-1)
+.ARM.extab 610 (unchanged)
+total      74,098 -> 74,097  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 16 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 3049-3050:
+
+```c++
+-                    wcamera->setTarget(leader);
+-                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
++                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
++                    wcamera->setTarget(leader);
+```
+
+Independent statements.  `aligned` moves +5 but raw (byte-identicality
+ground truth) improves by 1.
+
+Measured on the post-change-15 body:
+
+```
+raw        51,783 -> 51,782  (-1)
+aligned    22,178 -> 22,183  (+5)
+size       57,232 / 57,232   (exact)
+.text      73,467 -> 73,466  (-1)
+.ARM.extab 610 (unchanged)
+total      74,097 -> 74,096  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 17 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 890-891:
+
+```c++
+-                        m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
+-                        m_pCamera->setPosition(m_tempVec);
++                        m_pCamera->setPosition(m_tempVec);
++                        m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
+```
+
+Pure local-vector add hoisted across the call.  `aligned` +5, raw -1.
+
+Measured on the post-change-16 body:
+
+```
+raw        51,782 -> 51,781  (-1)
+aligned    22,183 -> 22,188  (+5)
+size       57,232 / 57,232   (exact)
+.text      73,466 -> 73,465  (-1)
+.ARM.extab 610 (unchanged)
+total      74,096 -> 74,095  (-1)
+.rel.plt   byte-identical
+```
+
+## Landed change 18 (fresh d=1 sweep, corrected 0-based indices)
+
+Source lines 2366-2368 (mission 95 state-5 setup):
+
+```c++
+-                    (*enemies)[10]->setSpeed(8.0f);
+-                    m_pCamera->setTarget(player->geometry);
+-                    player->setComputerControlled(false);
++                    player->setComputerControlled(false);
++                    (*enemies)[10]->setSpeed(8.0f);
++                    m_pCamera->setTarget(player->geometry);
+```
+
+Independent statements.  Measured on the post-change-17 body:
+
+```
+raw        51,781 -> 51,780  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 19 (fresh d=1 sweep on 51,780, `res_d1e.jsonl`)
+
+Source lines 829-830 (mission-0 state 9 intro setup):
+
+```c++
+-                    m_pLevel->switchSkyboxForIntro();
+-                    m_pLevel->particleRenderBoolPtr->reset();
++                    m_pLevel->particleRenderBoolPtr->reset();
++                    m_pLevel->switchSkyboxForIntro();
+```
+
+Independent `Level` calls.  Measured on the post-change-18 body:
+
+```
+raw        51,780 -> 51,779  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 20 (same `res_d1e.jsonl` sweep)
+
+Source lines 3883-3884:
+
+```c++
+-                            wcamera->setTarget(marker);
+-                            Vector zero{0.0f, 0.0f, 0.0f};
++                            Vector zero{0.0f, 0.0f, 0.0f};
++                            wcamera->setTarget(marker);
+```
+
+Local-vector declaration hoisted above the call.  Measured on the
+post-change-19 body:
+
+```
+raw        51,779 -> 51,778  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 21 (rebase of `res_d24b` winner onto 51,778)
+
+Source lines 3790-3793 (mission 105 state-7/8 tail):
+
+```c++
+-                        m_bCinematicBreak = 0; // clear cinematicBreak_ (byte @0x11 = 0)
+-                        m_nState = m_nState + 1; // 7 -> 8
+-                        m_nScriptTimerA = 0;
+-                        m_pLevel->lodManager->forceUpdate(delta, false);
++                        m_nState = m_nState + 1; // 7 -> 8
++                        m_nScriptTimerA = 0;
++                        m_pLevel->lodManager->forceUpdate(delta, false);
++                        m_bCinematicBreak = 0; // clear cinematicBreak_ (byte @0x11 = 0)
+```
+
+Independent stores + a `LODManager` call.  Measured on the post-change-20
+body:
+
+```
+raw        51,778 -> 51,777  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 22 (same `res_d24b` rebase)
+
+Source lines 3552-3554:
+
+```c++
+-                    m_nScriptTimerA += delta;
+-                    Vector zero{0.0f, 0.0f, 0.0f};
+-                    Vector pos = (*enemies)[0]->geometry->getPosition();
++                    Vector zero{0.0f, 0.0f, 0.0f};
++                    Vector pos = (*enemies)[0]->geometry->getPosition();
++                    m_nScriptTimerA += delta;
+```
+
+Independent local declarations and a field increment.  Measured on the
+post-change-21 body:
+
+```
+raw        51,777 -> 51,776  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 23 (same `res_d24b` rebase)
+
+Source lines 3346-3349:
+
+```c++
+-                        camera->setLookAtCam(false);
+-                        player->setVisible(true);
+-                        camera->setTarget(player->geometry);
+-                        m_pLevel->getPlayer()->resetGunDelay();
++                        m_pLevel->getPlayer()->resetGunDelay();
++                        camera->setLookAtCam(false);
++                        player->setVisible(true);
++                        camera->setTarget(player->geometry);
+```
+
+Independent receivers.  Measured on the post-change-22 body:
+
+```
+raw        51,776 -> 51,775  (-1)
+size       57,232 / 57,232   (exact)
+```
+
+## Landed change 24 (rebase of `res_d24b` winner, mission-0 state 8)
+
+Source lines 2695-2697:
+
+```c++
+-                        m_tempVec.x += 4500.0f;
+-                        m_tempVec.z += 1000.0f;
+-                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
++                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
++                        m_tempVec.x += 4500.0f;
++                        m_tempVec.z += 1000.0f;
+```
+
+The two `m_tempVec` component adds are dead for the translation (the
+original emits the `MatrixSetTranslation` first; `m_tempVec` is reassigned
+from `m_pGeometry6->getPosition()` immediately afterwards).  Measured on
+the post-change-23 body:
+
+```
+raw        51,775 -> 51,774  (-1)
+size       57,232 / 57,232   (exact)
+.text      73,459 -> 73,458
+.ARM.extab 610 (unchanged)
+```
+
+## Landed change 25 (same `res_d24b` rebase)
+
+Source lines 3158-3160:
+
+```c++
+-                        v_dirVecA = (*enemies)[3]->geometry->getRightVector();
+-                        m_tempVec += v_dirVecA * 4800.0f;
+-                        m_pCamera->setPosition(m_tempVec);
++                        m_pCamera->setPosition(m_tempVec);
++                        v_dirVecA = (*enemies)[3]->geometry->getRightVector();
++                        m_tempVec += v_dirVecA * 4800.0f;
+```
+
+Measured on the post-change-24 body:
+
+```
+raw        51,774 -> 51,773  (-1)
+size       57,232 / 57,232   (exact)
+.text      73,458 -> 73,457
+.ARM.extab 610 (unchanged)
+```
