@@ -16,11 +16,11 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,172** | 20,667 | 57,232 |
+| `LevelScript::process` | **52,168** | 20,665 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,626** | 1,138 | 17,172 |
-| `MGame::OnTouchEnd` | **2,985** | 1,590 | 8,080 |
+| `MGame::OnTouchEnd` | **2,981** | 1,590 | 8,080 |
 | `HangarWindow::render` | **1,512** | 723 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -70,6 +70,11 @@ Landed changes:
 * `MGame::OnTouchEnd` (w12816): pass 5 moves the campaign-81
   `switch_to_target_setting` store after the HP reads. Raw **2,990 -> 2,985**
   (-5), aligned 1,526 -> 1,590.
+* `LevelScript::process` (w12804): three further shape moves (case-91,
+  case-154, case-157) plus the case-105 shape move and status-store sink. Raw
+  **52,172 -> 52,168** (-4); the chain is size-exact on the combined body.
+* `MGame::OnTouchEnd` (w12816): pass 6 swaps the campaign-95 hitpoints/shield
+  stores. Raw **2,985 -> 2,981** (-4).
 * `Radar::draw` (w12811): commutative hull-bar multiply. Raw **6,315 ->
   6,311** (-4), aligned 1,858 -> 1,903.
 * `MGame::OnTouchEnd` (w12816): two store-order passes (instant-action store
@@ -82,12 +87,12 @@ Landed changes:
   `.ARM.extab` content grows 1 byte; total differing bytes still drop
   75,508 -> 75,507 and the section stays size- and base-exact.
 
-Section deltas: `.text` **74,682** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,674** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,349**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,341**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 183)

@@ -198,3 +198,67 @@ python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
 # -> raw=52245 size=57232/57232 text=74806 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
+
+## Fourth sweep (non-hot stride-11, offset 3): two 1-byte codegen-shape moves
+
+The stride-11 sample of the remaining non-hot candidates (offset 3, 305
+measured) produced exactly two raw-lowering moves, both 1 B and both
+size-exact / `.rel.plt`-identical.  They compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 3842 `player->setFreeLookMode(false);` | after `player->hideShipForFirstPersonCameraView(false)` | 52,244 |
+| 5156 `wcamera->setTarget(m_pGeometry4);` | after `m_nScriptTimerA = 0;` | 52,244 |
+
+Both are behaviour-neutral shape moves: the first swaps two independent
+"disable" calls on the same `PlayerEgo`; the second sinks a camera setter past
+a plain member store.  Measured together: raw **52,245 -> 52,243** (-2 B),
+size 57,232/57,232 exact, `.text` **74,806 -> 74,804**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run after the
+change: `RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843,
+imports 207, lint CLEAN, drift 0, parity 5370/5370.
+
+The rest of the sampled moves were neutral or worse; no further structural
+(state split/collapse, enum, helper) divergence from iOS 1.1.4 was found.
+
+## Fifth sweep (non-hot stride-11, offset 5): two more shape moves
+
+The stride-11 sample at offset 5 (304 candidates) produced two raw-lowering
+moves, both size-exact and `.rel.plt`-identical, which compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 3718 `player->setFreeLookMode(false);` | after `m_pCamera->setLookAtCam(true)` (case 105 state 6) | 52,240 |
+| 5208 `m_nState++;` | after `Globals::status->field_64 = player->player->getHitpoints()` | 52,242 |
+
+Measured together: raw **52,243 -> 52,239** (-4 B), size 57,232/57,232 exact,
+`.text` **74,804 -> 74,800**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
+`RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
+lint CLEAN, drift 0, parity 5370/5370.
+
+Both are shape moves: two independent camera/player setters are swapped in the
+first, and the state increment is sunk past an unrelated status store in the
+second.  The offset-4 sample (304 candidates) produced no win.
+
+## Sixth sweep (non-hot stride-11, offset 6): three more shape moves
+
+The stride-11 sample at offset 6 (304 candidates) produced three raw-lowering
+moves, all size-exact / `.rel.plt`-identical, which compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 2922 `m_dirVec = player->geometry->getDirection();` | after `m_tempVec += m_dirVec * 700.0f;` | 52,238 |
+| 4529 `player->setComputerControlled(true);` | after `field_0xaa = player->autoTurretIsEnabled();` | 52,238 |
+| 5157 `wcamera->setTarget(m_pGeometry4);` | after `(*enemies)[fighterIndex]->setVisible(false);` | 52,234 |
+
+Measured together: raw **52,239 -> 52,232** (-7 B), size 57,232/57,232 exact,
+`.text` **74,800 -> 74,793**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
+`RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
+lint CLEAN, drift 0, parity 5370/5370.
+
+All three are behaviour-neutral shape moves: a local vector-fetch is sunk past
+a `+=`, a `computerControlled` store is sunk past an independent
+`autoTurretEnabled` read, and a camera setter is sunk past an enemy
+`setVisible(false)`.
