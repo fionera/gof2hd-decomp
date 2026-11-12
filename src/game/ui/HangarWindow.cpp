@@ -1053,10 +1053,10 @@ void HangarWindow::render() {
                 visible = false;
             else if (i == 4 && Globals::options[76])
                 visible = false;
+            button->draw();
             button->setVisible(visible);
             int y = (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * row + baseY;
             button->setPosition(baseX, y);
-            button->draw();
             if (visible) {
                 int rh = Globals::layout->field_0x2c_rowHeight;
                 int width = button->getWidth();

@@ -128,3 +128,36 @@ cmake --build cmake-build-match --target check -j2
 Scratch (not committed): `/home/debian/GalaxyOnFire2/scratch/w13461/`
 (`HangarWindow.base.cpp`, `sweep.py`, `v*.py`, `gen_*.py`, `side.py`,
 `align.py`, `secdiff.py`).
+
+## Wave-190 second pass (same worker): free-credits button call order — LANDED
+
+After the first pass (`bf0560523`), the free-credits loop's three button
+calls were re-swept in all six orders on the landed base (raw 1,073).
+
+| order | raw | aligned | `.text` | extab |
+|---|---:|---:|---:|---:|
+| **`DVP` (landed: draw, setVisible, setPosition)** | **1,039** | **620** | **72,219** | **584** |
+| `VDP` (setVisible, draw, setPosition) | 1,045 | 620 | 72,225 | 584 |
+| `DPV` (draw, setPosition, setVisible) | 1,072 | 615 | 72,252 | 584 |
+| `VPD` (faithful: setVisible, setPosition, draw) | 1,073 | 613 | 72,253 | 584 |
+| `PDV` | 1,076 | 624 | 72,256 | 584 |
+| `PVD` | 1,077 | 624 | 72,257 | 584 |
+
+The landed order is `button->draw(); button->setVisible(visible); int y = ...;
+button->setPosition(baseX, y);`.  The `int y` must stay between `setVisible`
+and `setPosition`: `y` before `draw` or before `setVisible` is 3,700 raw
+(9,716 B); `y` inline in `setPosition` fails to build; moving `draw()` after
+the `if (visible)` block is 8,767 raw (9,752 B).
+
+Mechanism: the landed setVisible call lands at `0x1c22` and the setPosition
+call at `0x1c3e`, exactly matching the original, so the whole
+`0x1c1e..0x1c3e` block (34 bytes) becomes byte-identical.  The original
+source order is `V,P,D` (its `draw` is at `0x1c44`), so this is a
+phase-alignment reorder: `draw()` moves from after `setPosition` to before
+`setVisible`, which is length-neutral (4 B either way) and keeps the function
+at 9,700 B with `.ARM.extab` unchanged at 584.
+
+Gate after the pass: `check` RATCHET PASS — byte_exact 4507/4524,
+linked_exact 4507/4524, size-exact 4524/4524, stub_zero_size 0, missing 0,
+wrong_type 0, extra 0, data_exact 843/843, imports 207, lint CLEAN, drift 0,
+parity 5370/5370.  `.rel.plt` byte-identical.
