@@ -10,12 +10,15 @@
 // emitted TBH keeps the original's default slots.  The second group (types 0, 8, 11,
 // 13, 14) uses ranks 200..214 so clang keeps it in a separate 8..14 TBH.
 //
-// The table is ordinary C++ data in a normal (non-OBJECT-library) TU, but it is
-// emitted into .fini_array: gold places that output section at the end of the
-// zero-filled .rodata..fini_array gap, so .rodata keeps its exact 269,159-byte
-// size and the table lands at 0x20cae8 without adding a section header.  The
-// section name also keeps the table out of .rodata, so no existing literal-pool
-// address moves.
+// The table is ordinary C++ data in a normal TU, emitted into .rodata.  It must be
+// the *last* .rodata input (after the archive .rodata), so the CMake link command
+// links this one object after libgcc; the table then lands at 0x20b977, the first
+// byte of the zero-filled .rodata..fini_array gap.  No existing literal-pool
+// address moves (the original 269,159 .rodata bytes are byte-identical), the
+// section header count stays 27, the file size stays exact, and the RELRO group is
+// untouched: .fini_array stays 8 B @ 0x20cba0, so .dynamic and .rel.dyn are
+// byte-identical.  The only cost is .rodata sh_size 269,159 -> 269,351 (+0xc0),
+// which the gap absorbs (the R E LOAD FileSiz grows by the same 0xc0).
 //
 // The symbol name is deliberately an existing weak hidden crtbegin symbol
 // (__emutls_unregister_key).  A *new* name would be inserted into gold's
@@ -23,9 +26,10 @@
 // .dynsym/.dynstr/.hash/.rel.plt; reusing a name that is already in the pool
 // keeps all four byte-identical.  The strong definition here overrides
 // crtbegin's weak stub; the stub's only reference is __on_dlclose_late's tail
-// branch, which is part of the same .fini_array that this table extends.
-// See _work/reconstructions/status-missioncompleted-wave189-w13351.md.
-#pragma clang section rodata=".fini_array"
+// branch (its address is unchanged because the table no longer touches
+// .fini_array).
+// See _work/reconstructions/status-missioncompleted-wave189-w13358.md.
+#pragma clang section rodata=".rodata"
 #pragma GCC visibility push(hidden)
 extern const unsigned char __emutls_unregister_key[192] = {
     200, 250, 250, 250, 250, 250, 250, 250, 208, 250, 250, 211, 250, 213, 214, 250,

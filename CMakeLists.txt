@@ -177,7 +177,11 @@ set(_crtbegin "${_libdir}/crtbegin_so.o")
 # The original was linked without a section-ordering file, so the object order alone reproduces
 # the original .text layout now that TU membership and within-TU function order are faithful.
 # $<TARGET_OBJECTS:gof2> is in tools/source_order.txt order (the original TU order).
-set(_link_objs "$<TARGET_OBJECTS:gof2>")
+# The Status rank table is emitted into .rodata and must land at the very end of the
+# .rodata output section (after the archive .rodata inputs) so no existing literal-pool
+# address moves; link that one object after the archives.
+set(_link_objs "$<FILTER:$<TARGET_OBJECTS:gof2>,EXCLUDE,StatusMissionTable>")
+set(_status_table_obj "$<FILTER:$<TARGET_OBJECTS:gof2>,INCLUDE,StatusMissionTable>")
 set(_link_zlib "${_zlib_out}")
 set(_link_libzip "${_libzip_out}")
 set(_link_openssl "${_openssl_out}")
@@ -211,6 +215,7 @@ add_custom_command(OUTPUT "${_so}"
             ${_link_libcxxabi}
             ${_link_aos}
             ${_link_libgcc}
+            ${_status_table_obj}
             -l dl -l c
             ${_libdir}/crtend_so.o
     # The original was stripped with GNU binutils after the link.  bfd normalizes the section

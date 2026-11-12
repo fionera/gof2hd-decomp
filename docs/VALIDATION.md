@@ -48,11 +48,11 @@ post-processing step; `tools/reorder_shstrtab.py` merely restores gold's own `.s
 no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The
 source tree reproduces the original TU membership and within-TU function order, so the plain
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
-its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
+its original address; `.text`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact. `.rodata` is now
-byte-identical too: the former `Status::missionCompleted` rank table was removed in wave 121
-and the switch is a plain `switch (m->getType())` (see below).
+content is byte-identical, and all 27 original section headers are exact. `.rodata`'s original
+269,159 B are byte-identical (base exact); its `sh_size` is 269,351 (+0xc0) because the 192 B
+`Status::missionCompleted` rank table is the last `.rodata` input (see below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -106,13 +106,16 @@ wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
 `Generator::createMission` is exact at 172 B (wave-121 w7110); `HangarWindow::render`'s
 948 B record was recovered in wave 177 (w12116): row 39 LSDA length is now 152/150
 after the wave-184 w12817 ship-guard operand flip, the record diff is 81, and the
-section stays size- and base-exact. `.rodata` is
-**byte-identical** (269,159 B, base `0x1c9e10`). The 192 B
-`Status::missionCompleted` rank table now lives in `.fini_array`
-(`src/game/mission/StatusMissionTable.cpp`, table at `0x20cae8`), so the switch
-is again a rank-table switch. The differing section bytes are `.text` (73,516),
-`.ARM.extab` (610), `.dynamic` (3), `.rel.dyn` (4), `.fini_array` size 8 -> 200,
-and `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
+section stays size- and base-exact. `.rodata`'s original 269,159 B are
+**byte-identical** (base `0x1c9e10`); the 192 B
+`Status::missionCompleted` rank table (`src/game/mission/StatusMissionTable.cpp`)
+is the last `.rodata` input at `0x20b977`, so the section is 269,351 B
+(+0xc0, the table fills the `.rodata`..`.fini_array` gap; the R E LOAD FileSiz
+grows by the same 0xc0). `.fini_array` is back to 8 B @ `0x20cba0`, and
+`.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical again (w13358). The
+differing section bytes are `.text` (73,516), `.ARM.extab` (610), `.rodata`
+size +0xc0 (content exact), and `.note.gnu.build-id` (20). `.rel.plt` is
+**byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
 `PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
 (its file bytes are linker padding).

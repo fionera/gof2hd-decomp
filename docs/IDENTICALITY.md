@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
 | `Level::createShip` | **1,200** | 484 | 2,764 |
-| `Status::missionCompleted` | **475** | 182 | 1,432 |
+| `Status::missionCompleted` | **475** | 187 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -123,6 +123,18 @@ Landed changes:
   `.rodata` stays byte-identical and size-exact 269,159 B;
   `.dynsym`/`.dynstr`/`.hash`/`.rel.plt` stay byte-identical. Known costs:
   `.fini_array` 8 -> 200 B (+192), `.dynamic` +3 B, `.rel.dyn` +4 B.
+* `Status::missionCompleted` (w13358): move the same 192 B rank table from
+  `.fini_array` to the **end of `.rodata`** (the CMake link command links
+  `StatusMissionTable.cpp` after the archives so it is the last `.rodata`
+  input).  Raw stays **475**, size 1,432; aligned 182 -> 187 (a literal-pool
+  disassembly artifact, the code stream is unchanged).  `.fini_array` is back
+  to **8 B @ `0x20cba0`** and `.dynamic`/`.rel.dyn` are **byte-identical**
+  again, as are `.data.rel.ro`, `.data`, `.dynsym`, `.dynstr`, `.hash`,
+  `.rel.plt`, `.init_array` and `.got`.  Cost: `.rodata` `sh_size`
+  269,159 -> 269,351 (+0xc0, 0 differing bytes over the original 269,159 B;
+  the table fills the gap at `0x20b977`), and the R E LOAD FileSiz grows by
+  the same 0xc0.  File size, 27/27 headers and `.text`/`.ARM.extab`/build-id
+  deltas are unchanged.
 * `LevelScript::process` (w13338): three semantics-preserving 3-statement
   rotations with disjoint receivers: `m_nScriptTimerA = m_nScriptTime`
   before `forceUpdate`/`m_nState` (line 1662), camera `setPosition` before
@@ -178,18 +190,32 @@ Landed changes:
   Raw **3,444 -> 3,427** (-17), aligned 1,021 -> 1,003. `.text`
   73,533 -> 73,516 (-17), `.ARM.extab` 610 unchanged, total
   (text+extab+build-id) 74,163 -> 74,146.
+* `Status::missionCompleted` (w13358): move the same 192 B rank table from
+  `.fini_array` to the **end of `.rodata`** (the CMake link command links
+  `StatusMissionTable.cpp` after the archives so it is the last `.rodata`
+  input).  Raw stays **475**, size 1,432; aligned 182 -> 187 (a literal-pool
+  disassembly artifact, the code stream is unchanged).  `.fini_array` is back
+  to **8 B @ `0x20cba0`** and `.dynamic`/`.rel.dyn` are **byte-identical**
+  again, as are `.data.rel.ro`, `.data`, `.dynsym`, `.dynstr`, `.hash`,
+  `.rel.plt`, `.init_array` and `.got`.  Cost: `.rodata` `sh_size`
+  269,159 -> 269,351 (+0xc0, 0 differing bytes over the original 269,159 B;
+  the table fills the gap at `0x20b977`), and the R E LOAD FileSiz grows by
+  the same 0xc0.  File size, 27/27 headers and `.text`/`.ARM.extab`/build-id
+  deltas are unchanged.
 Section deltas: `.text` **73,516** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
-base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
-size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
+the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
+**269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
+`.rodata`..`.fini_array` gap at `0x20b977`); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
-`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. The w13351
-cross-TU rank table lives in `.fini_array` (8 -> 200 B, table at `0x20cae8`),
-so `.dynamic` differs by **3** B (the `DT_FINI_ARRAY` tag) and `.rel.dyn` by
-**4** B (two `R_ARM_RELATIVE` offsets). Total differing bytes
-(text+extab+build-id) **74,146**; including the `.dynamic`/`.rel.dyn`/
-`.fini_array` deltas, **74,345**. File size is exact (2,187,328 B), and
-27/27 section headers are present (`.fini_array` size 8 -> 200).
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. The w13358
+cross-TU rank table lives at the end of `.rodata`, so `.fini_array` is back
+to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
+and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
+**74,146**. File size is exact (2,187,328 B), and 27/27 section headers are
+present. The only program-header delta is the R E LOAD FileSiz/MemSiz
+`0x20b977 -> 0x20ba37` (+0xc0).
 
 ## Update 2026-11-12 (wave 188)
 
