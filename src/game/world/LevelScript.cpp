@@ -3345,8 +3345,8 @@ bool LevelScript::process(int delta) {
                         player->player->setVulnerable(true);
                         m_pLevel->getPlayer()->resetGunDelay();
                         camera->setLookAtCam(false);
-                        player->setVisible(true);
                         camera->setTarget(player->geometry);
+                        player->setVisible(true);
                         camera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                         m_pRadar->enabled = 1;
                         m_pLevel->lodManager->forceUpdate(delta, false);
