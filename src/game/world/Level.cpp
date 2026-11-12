@@ -2059,8 +2059,8 @@ void Level::createMission() {
     if (extraAliens >= 1) {
         this->spawnPosition = this->player->getPosition();
         this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
-        this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
         Vector sp = this->spawnPosition;
+        this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
         this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
         int coords[3] = {(int) sp.x, (int) sp.y, (int) sp.z};
         Route *route = new Route(coords, 3);
