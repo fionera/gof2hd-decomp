@@ -1204,7 +1204,7 @@ asteroids:
                 bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
                 if (!asteroidHit || this->level->getPlayer()->isDockingToAsteroid()) {
-                    if ((candidateWreck ? this->field_0x1c : this->lockedAsteroid) == nullptr) {
+                    if (candidateWreck ? this->field_0x1c == nullptr : this->lockedAsteroid == nullptr) {
                         this->field_0x10 = 0;
                         this->asteroidLockTimer = 0;
                     } else {
