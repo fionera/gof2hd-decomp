@@ -4878,7 +4878,7 @@ bool LevelScript::process(int delta) {
                         lift = 0.0f;
                     }
                     m_pCamera->translate(0.0f, lift * (float) delta, 0.0f);
-                    for (unsigned int i = 0; i < enemies->count; i++) {
+                    for (unsigned int i = 0; enemies->count > i; i++) {
                         KIPlayer *ship = (*enemies)[i];
                         if (ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44) {
                             ship->geometry->moveForward((float) m_nScriptTimerB * 0.02f);
