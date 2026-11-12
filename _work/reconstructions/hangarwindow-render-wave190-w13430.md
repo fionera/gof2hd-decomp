@@ -161,3 +161,191 @@ size-exact: `nolay` alone is 9,692 B (raw 3,037 — the whole tail shifts -8),
 Other combinations measured this wave: `nolay` + direct `Globals::Canvas->`
 9,716 B (raw 2,938); `nolay` + free-offer call reorder 9,692 B; `nolay` +
 `textY`-before-`textX` 9,692 B; `nolay` + `rh`-before-`width` 9,692 B.
+
+## Landed: free-credits `rh` before `width` (raw 1,324 -> 1,317)
+
+In the free-credits block the declaration order was `width`, `rh`, `height`;
+moving `rh` ahead of `width` matches the original's evaluation order:
+
+```cpp
+int rh = Globals::layout->field_0x2c_rowHeight;
+int width = button->getWidth();
+int height = button->getHeight();
+int textX = width + baseX + rh;
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,324 | **1,317** |
+| instruction-index alignment | 708 | 717 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| instructions | 3,728 / 3,734 | 3,726 / 3,734 |
+| `.text` section diff | 72,849 | **72,842** |
+| `.ARM.extab` section diff | 597 | **596** |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,466 | **73,458** |
+
+Gate: `check` RATCHET PASS — byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub_zero_size 0, missing 0, wrong_type 0, extra 0,
+data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
+`.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+
+### Negative results around this cell
+
+Other declaration orders in the same block were neutral at 1,324:
+`textX` after `width`; `width`/`textX`/`rh`/`height`; `width`/`height`/`rh`;
+`height` before `rh`. `textY`-first was 1,327 and `rh`-first (before the
+free-credits block existed in this order) had been measured earlier at 1,345
+on the 1,324 base with different surrounding code.
+
+## Landed: buy-list String declaration/assignment order (raw 1,317 -> 1,314)
+
+Swapped the two buy-list `String` declarations so `price` is constructed
+before `description`, and swapped every switch-case assignment to match
+(description first):
+
+```cpp
+String price("");
+String description("");
+...
+case 0:
+    description = String(Globals::cItemListDescription_00);
+    price = String(Globals::cItemListPrice_00);
+    break;
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,317 | **1,314** |
+| instruction-index alignment | 717 | 727 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| instructions | 3,726 / 3,734 | 3,726 / 3,734 |
+| `.text` section diff | 72,842 | **72,839** |
+| `.ARM.extab` section diff | 596 | 596 |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,458 | **73,455** |
+
+Gate: `check` RATCHET PASS — byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub_zero_size 0, missing 0, wrong_type 0, extra 0,
+data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
+`.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+
+Declaration swap alone is 1,319 (+2); assignment swap alone is 1,316 (-1);
+the pair is 1,314.  The buy-list String temp still lands in `sl`
+(`add.w sl,sp,#300`), so the 2-byte preheader shift is unchanged; the win is
+in the switch-case body layout.
+
+## Landed: ship guard `tab == 0` empty arm (raw 1,314 -> 1,179)
+
+The ship guard was `if (tab != 0 && __builtin_expect(...))`.  Rewriting the
+zero-tab test as an empty leading arm is semantically identical but gives the
+zero test its own basic block:
+
+```cpp
+if (tab == 0) { } else if (__builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
+    ...
+}
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,314 | **1,179** |
+| instruction-index alignment | 727 | 632 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| instructions | 3,726 / 3,734 | 3,726 / 3,734 |
+| `.text` section diff | 72,839 | **72,704** |
+| `.ARM.extab` section diff | 596 | **583** |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,455 | **73,307** |
+
+Gate: `check` RATCHET PASS — byte_exact 4507/4524, linked_exact 4507/4524,
+size-exact 4524/4524, stub_zero_size 0, missing 0, wrong_type 0, extra 0,
+data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
+`.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+
+### Why it works
+
+The empty arm splits the CFG at the zero-tab test, which changes the global
+register allocation: the buy-list switch case bodies move from
+`mov r0,sl` (price String in `sl`) to the original's `mov r0,r6`, and the
+whole buy-list switch region (function offsets `0x1900..0x1a00`) becomes
+byte-aligned: its diff drops from 71 to 6 bytes, and `0x1800` from 150 to
+83.  The preheader still emits `add.w sl,sp,#300` instead of `add
+r5,sp,#300`, but the case bodies now line up.
+
+Equivalent forms measured: `if (tab != 0) { if (expect(...)) {...} }` is
+1,314 (no change); `if (tab > 0 && expect(...))` is also 1,179 but is only
+equivalent for non-negative tabs, so the `tab == 0` empty arm is used.
+
+## Landed: free-credits `textY` before `canvas` (raw 1,179 -> 1,177)
+
+```cpp
+int textX = width + baseX + rh;
+int textY = (int) ((float) y + (float) height * 0.2f);
+volatile int &textYv = textY;
+PaintCanvas *canvas = Globals::Canvas;
+canvas->SetColor(0xffffffffu);
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,179 | **1,177** |
+| instruction-index alignment | 632 | 634 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| `.text` section diff | 72,704 | **72,702** |
+| `.ARM.extab` section diff | 583 | 583 |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,307 | **73,305** |
+
+Gate: `check` RATCHET PASS.  `textY` before `textX` is the same 1,177;
+`textY` after `SetColor` is 2,887 (9,692 B).
+
+## Landed: buy-list button call order (raw 1,177 -> 1,144)
+
+The buy-list loop issued `setPosition, draw, replaceTextKeepSize,
+setSplitText`.  The original issues `setPosition, replaceTextKeepSize,
+setSplitText, draw` (its `draw` call is at `0x14aae4`, after both String
+setters), so the source now matches:
+
+```cpp
+(*this->buttons)[12 + count]->setPosition(x, y, 68);
+(*this->buttons)[12 + count]->replaceTextKeepSize(description);
+(*this->buttons)[12 + count]->setSplitText(price);
+(*this->buttons)[12 + count]->draw();
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,177 | **1,144** |
+| instruction-index alignment | 634 | 619 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| `.text` section diff | 72,702 | **72,669** |
+| `.ARM.extab` section diff | 583 | 583 |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,305 | **73,272** |
+
+Gate: `check` RATCHET PASS.  Moving the `DrawImage2D(tabIcons[count], ...)`
+call into the reordered block as well (`bl_rsd2`) is 9,688 B — not usable.
+
+## Landed: buy-list `x` expanded (raw 1,144 -> 1,077)
+
+The buy-list grid x was written as a factored product.  Expanding it by the
+distributive law is semantically identical and matches the original's codegen:
+
+```cpp
+int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX +
+        col * (this->buttonWidth + this->gridSpacingX);
+```
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,144 | **1,077** |
+| instruction-index alignment | 619 | 604 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| `.text` section diff | 72,669 | **72,602** |
+| `.ARM.extab` section diff | 583 | 583 |
+| `.note.gnu.build-id` | 20 | 20 |
+| total differing bytes | 73,272 | **73,205** |
+
+Gate: `check` RATCHET PASS.  Swapping the multiplication operands is neutral
+(1,144); `(col - 1)` forms are 1,388.

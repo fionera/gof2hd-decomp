@@ -1353,7 +1353,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 208:
-                if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !atStation) {
+                if (m->isCampaignMission() && currentCampaignMission == 0x8f && !atStation && __builtin_expect(ship != 0, 0)) { // lint: arm_builtin
                     if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
                         for (unsigned j = 0; j < pendingProducts->size(); j++) {
                             PendingProduct *pp = (*pendingProducts)[j];
@@ -1491,7 +1491,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 // The (unsigned short) is a size device, not semantics: mission
                 // status values are 16-bit counters.  It emits one uxth (2 B) that
                 // keeps the loop latch at the original's 0x522.
-                if (Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
+                if (Globals::status->field_178 >= 0 && Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;

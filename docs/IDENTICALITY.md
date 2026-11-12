@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,910** | 1,698 | 8,080 |
 | `HangarWindow::render` | **1,077** | 604 | 9,700 |
 | `Level::createShip` | **1,189** | 397 | 2,764 |
-| `Status::missionCompleted` | **451** | 205 | 1,432 |
+| `Status::missionCompleted` | **241** | 93 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -394,7 +394,17 @@ Landed changes:
   603 and build-id 20 unchanged, total (text+extab+build-id)
   73,622 -> 73,598 (-24). `.rel.plt` byte-identical, 27/27 headers, file
   size 2,187,328 exact.
-Section deltas: `.text` **72,595** differing bytes (size exact, 1,259,464 B);
+* `Status::missionCompleted` (w13444): case 208 reads the `this` members
+  (`currentCampaignMission`/`ship`) with an `__builtin_expect(ship != 0, 0)`
+  guard, so the first literal island is the rank-only 4 B pool at `0xac300`
+  instead of the 8 B rank+Globals pool; case 14 lands on the original
+  `0xac32a`. An implied `field_178 >= 0` conjunct in case 20 emits cmp/blt
+  where the original has its nop+pool, landing case 22 on `0xac3fc` and
+  realigning the whole tail. Raw **451 -> 241** (-210), aligned 205 -> 93.
+  `.text` 72,595 -> 72,385 (-210), `.ARM.extab` 584 unchanged, build-id 20
+  unchanged, total (text+extab+build-id) 73,199 -> 72,989 (-210).
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **72,385** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -404,7 +414,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,199**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,989**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
