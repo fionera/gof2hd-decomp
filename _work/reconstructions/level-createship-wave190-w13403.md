@@ -77,9 +77,41 @@ cmake --build cmake-build-match --target check -j2   # RATCHET PASS
   `race == 0 && type == 14` hull-box arm.
 * this note.
 
-## Current-master harvest (wave 190)
+## 5. Additional cells swept (all size-exact unless noted)
 
-Applied on master `dcb6b809c`: raw **1,192 -> 1,190** (-2), aligned
-396 -> 403, size exact 2,764 B. `.text` **72,999 -> 72,976** (-23,
-combined with the w13399 createMission win); `.ARM.extab` 603 and build-id
-20 unchanged. `check` -> RATCHET PASS.
+Re-measured on the landed base (raw 1,190) with `.ARM.extab` size/base
+exact and `.ARM.exidx` 0 as the acceptance filter:
+
+* coordinate-local placement: all 8 before/after-guard combinations of
+  `x`/`y`/`z` (as `int x`, `float y`, `float z`) x 6 declaration orders.
+  The landed `z` before / `x`,`y` after is best; `y` before is 1,196,
+  `x` before is 1,350, `x`,`y` before is 1,496, all three before is 1,354,
+  `x`,`z` before is 2,242/2,768.
+* `EmpGuard` placement: removing the top guard gives raw 1,154 but
+  `.ARM.extab` shrinks to 156,308 B (size no longer exact) and
+  `.ARM.exidx` changes by 1,307 B - net loss.  Empty guard blocks are
+  optimised away; a function-scope guard is 2,796 B.  Replacing the top
+  guard with a guard around `getLevel`/`gameWon`/`hardCoreMode`/
+  `inAlienOrbit`/`getShipGroup`/`setWreckedMeshId` yields 156,316..156,320 B
+  extab (not exact).
+* tail statement order: all 120 permutations of
+  `setShipGroup` / `g`+`addObject` / `field_0x40` / `setBV` / `ship=fixed`.
+  The landed order is the unique minimum (1,190); `ship=fixed` first also
+  1,190, everything else 1,193..1,198.
+* `race` case-0 hull-box order: all 11 rotations + reverse (1,283..1,324),
+  plus all 120 permutations of the case-1 5-box block (1,216..1,259).
+* `switch (race)` `default:` first/last: neutral.
+* `if (type == 14)` inverted (`!=` with swapped bodies): neutral.
+* `shipClass == 1` block: `empPoints *= 3` before `hitpoints *= ...` and
+  `empTime` first: neutral (compiler canonicalises).
+* `missionPtr` condition: `noexpect` 1,199; `expect` on the second term
+  1,193; flipped order neutral.
+* `level` ternary `<=` form: 1,206; `if`-statement forms: 2,776 B.
+* `empPoints` `> 20 ? 20 : getLevel()` form: 1,197.
+* `armor` inlined into the `Player` ctor: 2,760 B; `player` after `z`:
+  2,780 B; `volumes` before `fixed`: 2,772 B.
+* `Level *self = this;` / `this->missionPtr` / `missionPtr` local: neutral
+  or worse (the `missionPtr` local is 2,748 B).
+* `float zero = 0.0f;` local for the hull-box 4th argument: neutral.
+* `ship = fighter` before the cargo cleanup / before the LOD block:
+  neutral (compiler canonicalises).
