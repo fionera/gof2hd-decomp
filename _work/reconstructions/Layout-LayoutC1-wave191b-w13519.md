@@ -85,3 +85,30 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
 Scratch `/home/debian/GalaxyOnFire2/scratch/w13519/`: `Layout.base.cpp`
 (pre-win source), `measure.sh`, `tern2if.py`, `batch17.py`, `iosorder.py`,
 `trip.py`, `declsweep.py`.
+
+## Addendum — post-win sweeps (all neutral, tree left clean)
+
+Once `field_0x7c` is an if/else chain the baseline is 5,241 / 2,726 / 7,072.
+Re-running the ternary→if/else sweep on the new base finds **no further win**:
+`choiceWindowTitleHeight`, `eventBannerScale`, `field_0x108`, `0x110`, `0x118`,
+`0x11c`, `0x120`, `0x124`, `0x12c`, `0x140`, `0x14c`, `0x170`, … all land on
+5,241 exactly. `field_0x80_touchMargin`, `field_0x84`, `field_0x88` are
+equivalent to `field_0x7c` (each alone = 5,241); pairing them does not stack
+(`0x7c+0x80`, `0x7c+0x84`, `0x80+0x84` = 5,241; `0x7c+0x88` = 5,841).
+Pairwise if/else conversion of the 40 multi-ternary lines around the win: no
+pair beats 5,241.
+
+The winning if/else chain is form-robust: `cond != 0`, fully braced, and
+`else { if … }` nesting all give 5,241 / 2,726 / 7,072.
+
+Other axes measured on the new base (all neutral or size-fatal):
+`(int)(float)` → `(int)` / `(int)(double)` / `(int)(float)(int)` at every cast
+site (neutral); `field_0xa8` `(int)(float)v` variants (7,064); `int v` →
+`float v` (7,064); `0x130`/`0x190`/`field_0x4`/`field_0x280` if/else → ternary
+(7,080 / 6,944 / 5,249 / 5,241); `(A||B) ? X : Y` split into nested ternaries
+for `0x2d8`, `helpWindowX`, `0x114`, `0x2d4` (all size-fatal); duplicate-arm
+merges (`mergearms`) all worse.
+
+Diff of the winning build vs the pre-win build: exactly **one instruction
+moves** (`vldr s0,[r5]` swaps places with `movs r4,#60` at `0xd1956`); no size,
+instruction-count, pool or `.rel.plt` change.
