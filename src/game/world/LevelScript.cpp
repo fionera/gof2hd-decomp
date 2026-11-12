@@ -5139,12 +5139,14 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     wcamera->translate((float) (-3 * delta), 0.0f, (float) -delta * 0.33f);
                     if (m_nScriptTimerA >= 6001) {
+                        AEGeometry *g1A = m_pGeometry1;
+                        AbyssEngine::PaintCanvas *canvasA = Globals::Canvas;
                         if (m_nScriptTimerA - delta <= 6000) {
                             Globals::sound->play(2247, nullptr, nullptr, 0.0f);
                         }
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                        ((AbyssEngine::Transform *) canvasA->TransformGetTransform(g1A->transform))
                                 ->SetVisible(true);
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                        ((AbyssEngine::Transform *) canvasA->TransformGetTransform(g1A->transform))
                                 ->Update((long long) delta, true);
                         if (m_nScriptTimerA >= 10001) {
                             m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());

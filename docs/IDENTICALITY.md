@@ -16,10 +16,10 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,309** | 22,317 | 57,232 |
+| `LevelScript::process` | **52,305** | 22,316 | 57,232 |
 | `Radar::draw` | **6,315** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
-| `Level::createMission` | **3,630** | 1,127 | 17,172 |
+| `Level::createMission` | **3,626** | 1,138 | 17,172 |
 | `MGame::OnTouchEnd` | **3,030** | 1,446 | 8,080 |
 | `HangarWindow::render` | **1,514** | 680 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
@@ -43,6 +43,14 @@ Landed changes:
   (1448 add 0, 3151 remove 1, 4735 add 1, 5184 add 0). Raw **52,320 -> 52,309**
   (-11), aligned 22,316 -> 22,317. This is the better w12708 variant; its
   committed 52,402 used the 5177 cell instead.
+* `LevelScript::process` (wave-183 harvest 5): w12707's size-compensating
+  Canvas/Geometry alias pair at the state-8 camera-move tail (hoist
+  `m_pGeometry1` and `Globals::Canvas` out of the two `TransformGetTransform`
+  calls). Raw **52,309 -> 52,305** (-4), aligned 22,317 -> 22,316.
+* `Level::createMission` (w12714): copy `this->spawnPosition` into a local
+  `Vector sp` before the `extraAliens` `coords[3]` int conversions, giving the
+  three `(int)` conversions one base register. Raw **3,630 -> 3,626** (-4),
+  aligned 1,127 -> 1,138.
 * `HangarWindow::render` (w12717): buy-list x factored as
   `w/2-(bw+gsx)*(1-col)` and footer `setAlwaysPressed` plain `options[78]`.
   Raw **1,523 -> 1,514** (-9).
@@ -57,12 +65,12 @@ Landed changes:
 * `Radar::draw` (w12709): revert the second `lockedEnemy` cleanup order.
   Raw **6,322 -> 6,321** (-1).
 
-Section deltas: `.text` **74,874** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,866** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,540**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,532**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 182)
@@ -80,7 +88,7 @@ aligned / size; all size-exact):
 | `LevelScript::process` | **52,412** | 22,050 | 57,232 |
 | `Radar::draw` | **6,322** | 1,782 | 9,908 |
 | `Layout` C1/C2 | **5,385** | 2,562 | 7,072 |
-| `Level::createMission` | **3,630** | 1,127 | 17,172 |
+| `Level::createMission` | **3,626** | 1,138 | 17,172 |
 | `MGame::OnTouchEnd` | **3,034** | 1,416 | 8,080 |
 | `HangarWindow::render` | **1,523** | 681 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
