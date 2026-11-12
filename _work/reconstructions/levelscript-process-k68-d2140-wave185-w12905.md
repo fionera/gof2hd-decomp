@@ -205,3 +205,28 @@ total differing bytes    75,222           75,217     (-5)
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
 RATCHET                  PASS             PASS
 ```
+
+## Pass 5 (exhaustion re-runs on the 52,091 tree, no win)
+
+The same generators were re-run on the final 52,091 body:
+
+* **K=6..8** (2,475 candidates, 1,821 size-exact/rel-ident): **0** winners
+  below 52,091.
+* **distance-13..20** (898 candidates, 424 size-exact/rel-ident): **0**
+  winners.
+* **K=4..5** (2,428 candidates, 1,869 size-exact/rel-ident): **0** winners.
+* **2-opt of the 47 neutral (raw == 52,091) moves**, restricted to the 86
+  pairs whose statement ranges overlap or are within 8 statements: **0**
+  winners (all 52,091).
+
+The single-move permutation tail on this body is therefore exhausted for the
+K=4..8 / d13..40 windows under the prefix-aware independence model.
+
+## Final cumulative result (wave 185 / w12905)
+
+`process` raw **52,132 -> 52,091** (-41) over five passes; aligned
+**20,658 -> 20,739**; `.text` **74,591 -> 74,550**; `.ARM.extab` unchanged at
+647 (size/base exact at `0x1a3b78`, 156,312 B); `.rel.plt` byte-identical
+(md5 `289b2a069f8504d1e8a3919e43915e04`); size 57,232 exact; all gate counts
+unchanged (`byte_exact` 4507, `linked_exact` 4507, size-exact 4524/4524,
+data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370).

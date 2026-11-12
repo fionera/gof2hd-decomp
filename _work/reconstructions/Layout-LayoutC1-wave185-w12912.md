@@ -9,8 +9,8 @@ wave-183 `w12712` permutation is landed, raw **5,383**).
 
 | metric | before | after |
 |---|---:|---:|
-| raw same-address bytes | **5,383** | **5,361** (-22) |
-| aligned (difflib) | 2,560 | 2,609 (+49) |
+| raw same-address bytes | **5,383** | **5,360** (-23) |
+| aligned (difflib) | 2,560 | 2,626 (+66) |
 | size | 7,072/7,072 | **7,072/7,072** |
 | instructions | 2,517/2,552 | 2,517/2,552 |
 
@@ -73,6 +73,32 @@ field_0x18c
 Raw **5,364 -> 5,361** (-3), size exact, instruction count unchanged; proxy
 5,298 -> 5,295 (-3), again one-for-one with the linked delta.
 
+### 1c. Third winning move (K=5 re-sweep)
+
+A K=5 sweep on the improved order (after 1b) found one more window
+permutation, units 189..193:
+
+```
+field_0x2f4
+field_0x2f8
+field_0x284_sliderSlot5Enabled
+field_0x2fc
+field_0x300
+```
+
+became
+
+```
+field_0x284_sliderSlot5Enabled
+field_0x300
+field_0x2f4
+field_0x2f8
+field_0x2fc
+```
+
+i.e. `(2,4,0,1,3)`.  Raw **5,361 -> 5,360** (-1), size exact, instruction
+count unchanged; proxy 5,295 -> 5,294 (-1).
+
 ## 2. Method
 
 The ctor was re-parsed into **204 top-level units** (statements / complete
@@ -104,6 +130,8 @@ Searches (all on the post-wave-184 base order):
 * After the K=6 win: **W=2** on the improved order found the
   `field_0x19c`/`field_0x1ac` swap (proxy 5,298 -> 5,295); a **W=3** sweep on
   the improved order found nothing beyond it.
+* After 1b: **K=4** on the improved order found nothing; **K=5** found the
+  units-189..193 `(2,4,0,1,3)` move (proxy 5,295 -> 5,294).
 
 A second W=2/W=3 pass on the landed order was not run (the K=6 sweep had
 already covered every 6-window at the base order); the landed order is a
@@ -126,7 +154,7 @@ cd /home/debian/GalaxyOnFire2/wt/w12912
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
-# raw=5361 aligned=2609 size=7072/7072 insn=2517/2552
+# raw=5360 aligned=2626 size=7072/7072 insn=2517/2552
 ```
 
 Scratch `/home/debian/GalaxyOnFire2/scratch/w12912/`: `units.py` (204-unit
