@@ -59,3 +59,22 @@ once the three body edits landed.
 per-unit source ranges and sweeps permutations (`python3 chain.py pairs`).
 All builds `cmake --build cmake-build-match --target link_so -j2` under
 `ulimit -v 12000000` (1.2 s per incremental build).
+
+## Win 2 — campaign-126 `switch_to_target_setting` store moved after `initStreamOutPosition`
+
+On top of win 1, a single-statement move sweep over every chain block (move the
+`Globals::switch_to_target_setting` store to each position in its block) finds
+one improvement in campaign-126: move
+
+```cpp
+Globals::switch_to_target_setting = 1;
+```
+
+from between the Shield and Gamma getters to after `Level::initStreamOutPosition = 0;`.
+Behaviour-preserving (independent stores).  Size 8,080, `.rel.plt` identical,
+raw **2,887 -> 2,886**, `.text` **71,809 -> 71,808**, `.ARM.extab` unchanged (582).
+
+The same -1 is also reachable by moving the campaign-162 switch store to
+position 1 or 2 (raw 2,886), but the changes are not additive: 162 and 126 both
+touch the same diff byte, so only one can be harvested.  The 126 form is the
+smallest textual edit (one line moved two slots down).
