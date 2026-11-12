@@ -811,28 +811,26 @@ void HangarWindow::render() {
                         if (item->isShip()) {
                             // Original guard order: tab == 0 skips the body and a
                             // tab == 3 ship match skips it too.  The branch hint
-                            // keeps the ship body out of line as in the original,
-                            // and the tab snapshot anchors the reload of tab at the
-                            // upgrade check, so the row-39 LSDA range stays 150
-                            // bytes.  The upgrade check lives inside the guard body
-                            // (the original's row-40 cleanup scope covers it), and
-                            // the upgrade button order below is a codegen shape that
-                            // keeps the function at 9,700 B.  The empty `tab == 0`
-                            // arm makes the zero-tab test a separate basic block,
-                            // which is what keeps the buy-list String temporaries in
-                            // r5/r6 instead of spilling `sl`.
+                            // keeps the ship body out of line as in the original.
+                            // Hoisting the `tab` snapshot above the guard keeps
+                            // `this` live in r4 across the getShip call, so the
+                            // body's setPosition/setVisible/draw sequence lands at
+                            // the original's addresses (raw 1,038 -> 928).  The
+                            // upgrade check still lives inside the guard body, and
+                            // the upgrade button order below is a codegen shape
+                            // that keeps the function at 9,700 B.
+                            int upgTab = tab;
                             if (tab == 0) { } else if (__builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
-                                (*this->buttons)[1]->setVisible(true);
-                                int upgTab = tab;
-                                (*this->buttons)[1]->draw();
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
                                 buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
                                 if (__builtin_expect(upgTab == 1 && this->upgradeMode, 1)) { // lint: arm_builtin
+                                    (*this->buttons)[2]->setVisible(this->upgradeMode);
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
-                                    (*this->buttons)[2]->setVisible(this->upgradeMode);
                                     (*this->buttons)[10]->setVisible(true);
                                     (*this->buttons)[10]->draw();
                                 }
