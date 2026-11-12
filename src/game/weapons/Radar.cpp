@@ -742,7 +742,7 @@ enemies:
                         }
                         Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
                                                      this->screenY + this->halfScreenWidth + 2);
-                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) this->field_0x1c8;
+                        float hull = (float) this->field_0x1c8 * ((float) enemy->player->getDamageRate() / 100.0f);
                         Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
                                                       this->screenX + 3 - this->halfScreenHeight,
                                                       this->screenY + this->halfScreenWidth + 3);
