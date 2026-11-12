@@ -78,3 +78,16 @@ The same -1 is also reachable by moving the campaign-162 switch store to
 position 1 or 2 (raw 2,886), but the changes are not additive: 162 and 126 both
 touch the same diff byte, so only one can be harvested.  The 126 form is the
 smallest textual edit (one line moved two slots down).
+
+## Win 3 — campaign-162 `initStreamOutPosition` store moved after the Gamma getter
+
+Same single-statement move sweep, now for `Level::initStreamOutPosition`: in
+campaign-162 move
+
+```cpp
+Level::initStreamOutPosition = 0;
+```
+
+from after the Hitpoints getter to directly after the Gamma getter.  Size 8,080,
+`.rel.plt` identical, raw **2,886 -> 2,885**, `.text` **71,808 -> 71,807**,
+`.ARM.extab` unchanged (582).

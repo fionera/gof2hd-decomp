@@ -1579,9 +1579,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         } else if (Globals::status->getCurrentCampaignMission() == 162 && __builtin_expect(mission->isCampaignMission(), 1)) { // lint: arm_builtin
                             Globals::switch_to_target_setting = 0;
                             Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_64 = this->player->player->getHitpoints();
-                            Level::initStreamOutPosition = 0;
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
                             this->active = 0;
