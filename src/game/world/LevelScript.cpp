@@ -662,11 +662,11 @@ bool LevelScript::process(int delta) {
                 // (0x1384d6) advance to state 3. State 3 (0x1384f8) makes the three intro ships
                 // visible/exhaust-lit, wakes them, parks them (enemy+0x128 = 50000, @0x1384ee) and
                 // marks their pilots as enemies (player->enemyFlagsLo = 1). Falls through to tail.
+                m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
                 if (!Globals::sound->isPlaying(142)) {
                     Globals::sound->stop(Globals::sound->currentMusicEvent);
                     Globals::sound->play(142, nullptr, nullptr, 0.0f);
                 }
-                m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
                 if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                     m_nState = 3;
                     for (int i = 0; i < 3; ++i) {
@@ -1254,6 +1254,7 @@ bool LevelScript::process(int delta) {
         m_pCamera->setTarget(m_pGeometry4);
         m_pLevel->lodManager->forceUpdate(delta, true);
         m_bCinematicBreak = 1;
+        ((PlayerFixedObject *) (*enemies)[11])->moveForward(delta);
         if (m_nState <= 2) {
             float approach = (float) m_nScriptTime / -35000.0f + 1.0f;
             float step = (float) delta;
@@ -1261,7 +1262,6 @@ bool LevelScript::process(int delta) {
             AEGeometry *ship = m_pGeometry4;
             ship->translate(-ship->getRightVector() * step * 7.0f * ((float) m_nScriptTime / -50000.0f + 1.0f));
         }
-        ((PlayerFixedObject *) (*enemies)[11])->moveForward(delta);
         switch (m_nState) {
             case 1:
                 if (m_nScriptTime >= 30001) {
@@ -3060,11 +3060,11 @@ bool LevelScript::process(int delta) {
                     m_tempVec += m_dirVec * ((float) delta * 0.05f * 0.004f);
                     wcamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
-                    wcamera->setLocal(local);
                     for (int i = 0; i < 3; i++) {
                         float speed = (i == 0) ? 2.0f : (i == 1 ? 2.3f : 2.2f);
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
                     }
+                    wcamera->setLocal(local);
                     if (m_nScriptTimerA > 2000) {
                         m_nState++;
                         m_nScriptTimerA = 0;
@@ -3122,12 +3122,12 @@ bool LevelScript::process(int delta) {
                     }
                     resetCamera(m_pLevel);
                     player->setTurretMode(false);
+                    player->setFreeLookMode(false);
                     if (player->isInRocketControl()) {
                         player->killLiberator();
                         player->setRocketControl(nullptr, nullptr);
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
-                    player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     m_bCinematicBreak = 1;
@@ -3404,13 +3404,13 @@ bool LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         player->hideShipForFirstPersonCameraView(false);
                         player->setTurretMode(false);
-                        player->setFreeze(true);
+                        m_pRadar->enabled = 0;
                         if (player->isInRocketControl()) {
                             player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
                             player->setRocketControl(nullptr, nullptr);
                         }
-                        m_pRadar->enabled = 0;
+                        player->setFreeze(true);
                         player->setFreeLookMode(false);
                         player->setVisible(false);
                         player->stopShooting(0);
@@ -4131,7 +4131,6 @@ bool LevelScript::process(int delta) {
                     break; // negative state -> post-switch tail (0x144e36)
                 }
                 // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
-                m_nScriptTimerA += delta;
                 if (__builtin_expect((m_nState == 1), 1)) { // lint: arm_builtin
                     // Advance once the mission's production quota is at least half filled.
                     int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
@@ -4140,6 +4139,7 @@ bool LevelScript::process(int delta) {
                         m_nState++;
                     }
                 }
+                m_nScriptTimerA += delta;
                 if (m_nScriptTimerA < 75001) {
                     break; // -> post-switch tail (0x144e36)
                 }
@@ -4516,13 +4516,13 @@ bool LevelScript::process(int delta) {
             case 154: {
                 // The pirate ambush at the asteroid station: a long camera ride along the player ship.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                    player->player->setVulnerable(false);
                     if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         resetCamera(m_pLevel);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
-                    player->player->setVulnerable(false);
                     player->setTurretMode(false);
                     player->stopShooting(0);
                     player->setFreeLookMode(false);
@@ -4530,10 +4530,10 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     m_pCamera->enableFirstPersonCam(false);
                     field_0xaa = player->autoTurretIsEnabled();
-                    player->setComputerControlled(true);
                     if (field_0xaa) {
                         player->setAutoTurret(false);
                     }
+                    player->setComputerControlled(true);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
@@ -5332,13 +5332,13 @@ bool LevelScript::process(int delta) {
             Vector diff = playerPos - enemyPos;
             int distance = (int) AbyssEngine::AEMath::VectorLength(diff);
             if (distance <= 49999 && player->player->field_5e == 0) {
+                m_nState = 1;
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     (*enemies)[i]->player->setAlwaysEnemy(true);
                     if (i != 0 && (*enemies)[i - 1]->field_0x3e != 0) {
                         break;
                     }
                 }
-                m_nState = 1;
             }
         }
         if (m_nState <= 1) {
