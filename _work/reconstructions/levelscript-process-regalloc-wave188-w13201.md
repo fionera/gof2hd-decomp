@@ -6,13 +6,13 @@ Target `_ZN11LevelScript7processEi` (`src/game/world/LevelScript.cpp`, original
 `ce16f45f1` (wave-187 harvest 5, raw **51,930**).  Scratch
 `/home/debian/GalaxyOnFire2/scratch/w13201`.
 
-**Wave-189 rebase (master 235d3aa67, 2026-11-12).** The same five reorders
-apply cleanly on top of the wave-189 body (which already contains the three
-comparison-operand swaps). Measured on current master: raw **51,914 -> 51,900
-(-14)**, aligned **20,936 -> 20,963**, size 57,232/57,232, `.rel.plt`
-byte-identical, `.ARM.extab` content unchanged 639. `.text` differing bytes
-**74,039 -> 74,032 (-7)**; total differing bytes **74,698 -> 74,691**. The
-numbers below are the original wave-188 measurement (51,930 -> 51,921); the
+**Wave-189 rebase (master ce5f4656c, 2026-11-12).** The pass-1/2 reorders
+landed on the wave-189 body: raw **51,914 -> 51,900 (-14)**, aligned
+**20,936 -> 20,963**, `.text` **74,039 -> 74,032 (-7)**. Pass 3 (the three
+extra adjacent reorders) was re-measured on current master and does **not**
+improve: all three together give raw **51,904**, and each individually gives
+**51,906**, so pass 3 is note-only and `src/` keeps the pass-1/2 form. The
+numbers below are the original wave-188 measurement (51,930 -> 51,918); the
 rebase is the landed form.
 
 This pass dumps both prologues, maps every callee-saved register and every
@@ -20,16 +20,16 @@ spilled slot to its owning source variable, re-probes the top-level
 declaration order / `Status *` lifetime / `Level *` aliases, and then runs a
 **new adjacent-pair sweep restricted to pairs of calls on the same receiver**
 (the wave-186/187 d1 sweeps deliberately excluded same-receiver call pairs
-because their data-flow model treats them as conflicting).  **Nine size-exact,
-`.rel.plt`-identical statement reorders compose to raw 51,930 -> 51,921 (-9)**.
+because their data-flow model treats them as conflicting).  **Eight size-exact,
+`.rel.plt`-identical statement reorders compose to raw 51,930 -> 51,918 (-12)**.
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,930           51,921     (-9)
-process aligned insns    20,928           20,932     (+4)
+process raw diffbytes    51,930           51,918     (-12)
+process aligned insns    20,928           20,933     (+5)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,726  20,830 / 20,726
-.text diffbytes          74,223           74,214     (-9)
+.text diffbytes          74,223           74,211     (-12)
 .ARM.extab diffbytes     639              639        (size/base exact 156,312 B @ 0x1a3b78)
 .ARM.exidx               0                0
 .rodata                  0                0          (size/base exact 269,159 B @ 0x1c9e10)
@@ -235,6 +235,25 @@ semantics-preserving.  Composed with the two pass-1 swaps the total is
 **51,930 -> 51,921 (-9)**, size 57,232 exact, `.rel.plt`
 `289b2a06…`, `.text` 74,223 -> 74,214.
 
+## 5c. Pass 3: full adjacent-pair re-sweep on the 51,921 body
+
+The whole 1,765-pair adjacent space was re-swept on the post-pass-2 body
+(the wave-187 sweeps ran on 51,968).  Seven pairs lower raw; four are
+semantic changes already rejected in w13104 (camera `camPos` offsets read
+after `setPosition`, `CameraSetLocal` before `setPosition`, and
+`m_nScriptTimerA += delta` before the `approach` read that consumes it).
+Three are independent and were landed:
+
+| # | base line | before | after |
+|---:|---:|---|---|
+| 6 | 4677 | `player->setSpeed(0.02f);` then `m_nState++;` | `m_nState++` first |
+| 7 | 5105 | `m_pGeometry3->setVisible(true);` then `m_pGeometry2->setVisible(false);` | geometry-2 first |
+| 8 | 5312 | `m_nScriptTimerB = 0;` then `field_0x140 = !field_0x140;` | toggle first |
+
+All three touch disjoint objects/fields.  Composed with passes 1–2:
+raw **51,921 -> 51,918 (-3)**, size 57,232 exact, `.rel.plt`
+`289b2a06…`, `.text` 74,214 -> 74,211.
+
 ## 6. Reproduction
 
 ```sh
@@ -242,9 +261,9 @@ cd /home/debian/GalaxyOnFire2/wt/w13201
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51921 aligned=20932 size= 57232/57232 insn=20725/20830
+# -> raw= 51918 aligned=20933 size= 57232/57232 insn=20726/20830
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51921 size=57232/57232 text=74214 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51918 size=57232/57232 text=74211 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 
