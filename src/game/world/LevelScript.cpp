@@ -1725,8 +1725,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setActive(true);
                     m_pCamera->setTarget((*m_pLevel->getLandmarks())[3]->geometry);
                     Vector camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
-                    camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
                     int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
+                    camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
                     m_pCamera->setPosition(camPos);
                     camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
                     Route *route = new Route(routePoints, 3);
@@ -4113,8 +4113,8 @@ bool LevelScript::process(int delta) {
                         for (unsigned int i = 0; i < enemies->count; ++i) {
                             if (__builtin_expect(((*enemies)[i]->shipGroup == 8), 0)) { // lint: arm_builtin
                                 Vector playerPos = player->getPosition();
-                                (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                                 (*enemies)[i]->setVisible(true);
+                                (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                                 (*enemies)[i]->player->setEnemy(player->player);
                                 (*enemies)[i]->awake();       // vtable+0xc
                                 delete (*enemies)[i]->cargo;
