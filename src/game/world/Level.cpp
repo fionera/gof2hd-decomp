@@ -1962,8 +1962,8 @@ void Level::createMission() {
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         for (int i = this->friendCount + this->field_164 + this->field_168;
              i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
-            (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
+            (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             gun->player->setMaxHitpoints(1000);
             const float (*t)[6] = (bigAlienWave + (i < 0) + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
@@ -1982,8 +1982,8 @@ void Level::createMission() {
         const float *t = kBaseTurrets[0];
         for (int i = this->field_168 + this->field_164 + this->friendCount;
              i < this->friendCount + this->field_164 + this->field_168 + fortressGuns; i++) {
-            (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
             KIPlayer *gun = (*this->enemies)[i];
+            (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
             gun->player->setMaxHitpoints(1000);
             Vector p = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             v = p;
@@ -2016,8 +2016,8 @@ void Level::createMission() {
                 this->spawnPosition = this->player->getPosition();
                 this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
                 this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
-                this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
                 (*this->enemies)[i]->setPosition(this->spawnPosition);
+                this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
             }
         }
     }

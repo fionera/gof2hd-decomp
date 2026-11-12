@@ -926,28 +926,28 @@ void HangarWindow::render() {
                 Layout *lay = Globals::layout;
                 switch (count) {
                     case 0:
-                        description = String(Globals::cItemListDescription_00);
                         price = String(Globals::cItemListPrice_00);
+                        description = String(Globals::cItemListDescription_00);
                         break;
                     case 1:
-                        description = String(Globals::cItemListDescription_01);
                         price = String(Globals::cItemListPrice_01);
+                        description = String(Globals::cItemListDescription_01);
                         break;
                     case 2:
-                        description = String(Globals::cItemListDescription_02);
                         price = String(Globals::cItemListPrice_02);
+                        description = String(Globals::cItemListDescription_02);
                         break;
                     case 3:
-                        description = String(Globals::cItemListDescription_03);
                         price = String(Globals::cItemListPrice_03);
+                        description = String(Globals::cItemListDescription_03);
                         break;
                     case 4:
-                        description = String(Globals::cItemListDescription_04);
                         price = String(Globals::cItemListPrice_04);
+                        description = String(Globals::cItemListDescription_04);
                         break;
                     default:
-                        description = String("");
                         price = String("");
+                        description = String("");
                         break;
                 }
                 int row = (unsigned char) count / 3;
