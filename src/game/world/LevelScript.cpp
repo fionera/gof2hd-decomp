@@ -4714,9 +4714,9 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                         m_pCamera->setFixed(false);
                         m_tempVec = (*m_pLevel->getEnemies())[0]->geometry->getPosition();
+                        m_nScriptTimerA = 0;
                         player->setSpeed(0.0f);
                         m_pCamera->setPosition(m_tempVec);
-                        m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nState++;
                     }

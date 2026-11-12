@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,545** | 22,795 | 57,232 |
+| `LevelScript::process` | **51,544** | 22,796 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,10 +31,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,253**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,252**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `LevelScript::process` (w13515, wave 191b): d3 store hoist in the
+  mission-0 state-6 arrival block: `m_nScriptTimerA = 0` moves before
+  `player->setSpeed(0.0f)`.  Raw **51,545 -> 51,544** (-1), aligned
+  22,795 -> 22,796, size 57,232/57,232 exact.  `.text` 71,253 -> 71,252
+  (-1), `.ARM.extab` 576 unchanged, `.rodata` 485 unchanged.  `.rel.plt`
+  byte-identical, `.ARM.exidx` 0.
 
 * `LevelScript::process` (w13524, wave 191b): re-applied the eight
   cross-control/transposition passes on the merged post-w13516/w13517 body.
