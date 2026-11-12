@@ -1606,9 +1606,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
-                            Globals::status->field_60 = this->player->player->getArmorHP();
-                            Globals::status->field_68 = this->player->player->getGammaHP();
                             FileRead *reader = new FileRead();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
                             Level::initStreamOutPosition = 1;
                             Globals::status->departStation(reader->loadStation(100));
                             delete reader;
@@ -1845,8 +1845,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                 this->levelScript->skipCutscene();
                                 break;
                             case 1:
-                                Globals::switch_to_target_setting = 0;
                                 Globals::appManager->SetCurrentApplicationModule(5);
+                                Globals::switch_to_target_setting = 0;
                                 this->active = 0;
                                 break;
                             case 0:
