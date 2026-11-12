@@ -137,3 +137,12 @@ and `m_pRadar->enabled` before `setLookAtCam` at line 4216. LevelScript raw
 73,248 -> 73,233 (-15 across LevelScript + createShip + Status), `.ARM.extab`
 606 unchanged, build-id 20 unchanged, total 73,874 -> 73,859 (-15). `check`
 green, RATCHET PASS.
+
+## Current-master harvest (wave 190)
+
+Applied the final d5 swap (`setVulnerable` down below `m_pRadar->enabled`,
+`setLookAtCam` up after `stopShooting`) on master `8ffa01f05`. Raw
+**51,750 -> 51,748** (-2), aligned **22,477 -> 22,483** (+6), size exact
+57,232 B. `.text` **73,014 -> 73,012** (-2); `.ARM.extab` 603 and
+build-id 20 unchanged; total (text+extab+build-id) **73,637 -> 73,635**
+(-2). `check` -> RATCHET PASS.

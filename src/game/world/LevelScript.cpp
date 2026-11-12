@@ -3530,12 +3530,12 @@ bool LevelScript::process(int delta) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
-                        player->player->setVulnerable(false);
+                        wcamera->setLookAtCam(true);
                         player->setFreeze(true);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
-                        wcamera->setLookAtCam(true);
+                        player->player->setVulnerable(false);
                         player->setVisible(false);
                         wcamera->setTarget((*enemies)[0]->geometry);
                         m_nScriptTimerA = 0;
