@@ -5074,13 +5074,13 @@ bool LevelScript::process(int delta) {
                     if (__builtin_expect(m_nFlashCountdown > 0, 1)) { // lint: arm_builtin
                         m_nFlashCountdown -= delta;
                         if (m_nFlashCountdown <= 0) {
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry2->transform))
+                                    ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
                             m_nFlashCountdown = 0;
                             m_pGeometry2->setPosition(
                                     ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
                             m_pGeometry2->setVisible(true);
                             m_pGeometry2->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry2->transform))
-                                    ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
                         }
                     }
                     if (m_pExplosion != nullptr) {
