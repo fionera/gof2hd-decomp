@@ -1534,7 +1534,7 @@ bool LevelScript::process(int delta) {
             Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
             ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
-    } else if (messages != nullptr && Globals::status->getCurrentCampaignMission() == 50) {
+    } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
         // shared exit-wormhole body below (the size/isOver/state gate lives there, once).
         goto wormholeExitBody;
