@@ -15,13 +15,13 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,701** | 21,920 | 57,232 |
-| `Radar::draw` | **6,218** | 2,025 | 9,908 |
+| `LevelScript::process` | **51,700** | 21,920 | 57,232 |
+| `Radar::draw` | **6,177** | 2,025 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,895** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,039** | 620 | 9,700 |
-| `Level::createShip` | **1,189** | 397 | 2,764 |
+| `Level::createShip` | **1,183** | 404 | 2,764 |
 | `Status::missionCompleted` | **145** | 173 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -492,17 +492,34 @@ Landed changes:
   613 -> 620. `.text` 72,169 -> 72,135 (-34), `.ARM.extab` 577 unchanged,
   build-id 20 -> 19, total 72,766 -> 72,731 (-35). `.rel.plt` byte-identical,
   27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **72,135** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **577** (size- and
+* `Level::createShip` (w13451): construct the first race-0 hull `BoundingAAB`
+  before `ArraySetLength(3, *volumes)` and store it into slot 0. Raw
+  **1,189 -> 1,183** (-6), aligned 397 -> 404. `.text` 72,595 -> 72,589
+  (-6) on that base; `.ARM.extab` 584 -> 585 (+1); total
+  (text+extab+build-id) 73,199 -> 73,194 (-5). `.rel.plt` byte-identical,
+  27/27 headers, file size 2,187,328 exact.
+* `LevelScript::process` (w13452 pass 5): move
+  `m_pCamera->enableFirstPersonCam(false)` after the `camPos`/`dir` locals
+  and `camPos += dir * 10000.0f`. Raw **51,701 -> 51,700** (-1), aligned
+  21,920 unchanged. `.text` 72,377 -> 72,376 (-1) on that base, `.ARM.extab`
+  unchanged. `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328
+  exact.
+* `Radar::draw` (w13440 pass 4): hoist the gas-cloud `cloud->field_0x73 = 0`
+  store to just before `cloud->field_0x76 = 1`. Raw **6,218 -> 6,177**
+  (-41), aligned 2,025 unchanged. `.text` 72,825 -> 72,784 (-41) on that
+  base, `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers,
+  file size 2,187,328 exact.
+Section deltas: `.text` **72,087** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **578** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,644** (+0x1e5: the 484 B w13431 rank helper fills the first 0x1e5 bytes of the
 `.rodata`..`.fini_array` gap at `0x20b978`); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
-`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **19**. `.fini_array` is
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,731**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,685**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

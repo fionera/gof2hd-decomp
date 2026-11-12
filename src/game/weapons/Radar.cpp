@@ -993,6 +993,7 @@ enemies:
             }
             if (this->onScreen) {
                 KIPlayer *locked = this->lockedGasCloud;
+                cloud->field_0x73 = 0;
                 cloud->field_0x76 = 1;
                 this->egoPos = player->getPosition();
                 Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
@@ -1003,7 +1004,6 @@ enemies:
                     this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
                     cloud->field_0x73 = 0;
                 }
-                cloud->field_0x73 = 0;
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
                                                          this->cameraX, this->cameraY, camZ);

@@ -146,3 +146,33 @@ setters touch player state.  All four are disjoint, so the rotation is
 semantics-preserving.  Measured alone on the post-pass-3 body: raw
 **51,709 -> 51,706** (-3), size 57,232/57,232 exact, `.text` 72,380 ->
 72,377, `.rel.plt` `289b2a06…` unchanged.  `check` -> RATCHET PASS.
+
+## Pass 5: d=5 rotation sweep (raw 51,706 -> 51,705)
+
+Full 6-statement rotation sweep on the post-pass-4 body (684 candidates).
+One size-exact winner, source lines 2441-2446:
+
+```cpp
+-                    m_pCamera->enableFirstPersonCam(false);
+                     m_pCamera->setLookAtCam(true);
+                     m_pCamera->setActive(true);
+                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                     camPos += dir * 10000.0f;
++                    m_pCamera->enableFirstPersonCam(false);
+```
+
+`enableFirstPersonCam` only writes the camera's first-person fields; the moved
+statements are two other camera setters and two local-vector computations
+(`getPosition`/`getDirection` are reads).  Semantics-preserving.  Measured
+alone: raw **51,706 -> 51,705** (-1), size 57,232/57,232 exact, `.text`
+72,377 -> 72,376, `.rel.plt` `289b2a06…` unchanged.  `check` -> RATCHET PASS.
+
+## d=4 negative result
+
+The only size-exact d=4 cell (`line 4035`, raw 51,705) rotates the
+`m_tempVec = leader->getPosition()` initialiser after the `m_tempVec +=`
+adjustments, i.e. it is a read-after-write rotation, so it was not landed.
+The original emits `setTarget; m_tempVec = getPosition; +=up; +=right;
++=dir*4000; setPosition`; reordering the source to that exact order measures
+raw 51,710 (+4), so the current order is the raw optimum.

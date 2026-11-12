@@ -211,3 +211,49 @@ A *swap* of the asteroid `this->lockedAsteroid = nullptr;` (line 1201) with
 it moves the timer increment inside the `if (lockedAsteroid != nullptr)` block and is
 therefore semantically wrong (the original at `12fde0`-`12fde4` stores `nullptr`
 there; the timer increment lives in the `else` branch at `12fe34`).
+
+## 6. Follow-up win: gas-cloud `field_0x73` store hoist (raw 6235 -> 6194)
+
+Re-running the rotation sweep (distance 6-12) on the new 6,235 base found a second
+size-exact win in the same gas-cloud block: the unconditional
+`cloud->field_0x73 = 0;` that closes the block is hoisted to just before
+`cloud->field_0x76 = 1;`:
+
+```cpp
+             if (this->onScreen) {
+                 KIPlayer *locked = this->lockedGasCloud;
++                cloud->field_0x73 = 0;
+                 cloud->field_0x76 = 1;
+                 this->egoPos = player->getPosition();
+                 Globals::Canvas->DrawImage2D(...);
+                 this->targetPos = cloud->player->getPosition();
+                 if (this->targetPos.x - this->egoPos.x > 24000.0f || ...) {
+                     cloud->field_0x73 = 0;
+                 }
+-                cloud->field_0x73 = 0;
+                 if (__builtin_expect(cloud == locked, 1)) { ... }
+```
+
+`field_0x73` is write-only between the two points (the `DrawImage2D`, the `targetPos`
+store and the far-distance test never read it), so the final value is still 0 and the
+reorder is semantically identical.  The neighbouring cells `rotb_994_1005`,
+`rotb_996_1005` measure the same 6,194; `rotb_997_1005`/`rotb_999_1005` 6,197.
+
+| metric | base | after |
+|---|---:|---:|
+| raw same-address diff | 6,235 | **6,194** |
+| instruction-index alignment | 1,979 | 1,979 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes (whole `.so`) | 72,825 | **72,784** |
+| `.ARM.extab` differing bytes | 601 | 601 (no growth) |
+| `.rel.plt` | byte-identical | **byte-identical** |
+| total (text+extab+build-id) | 73,446 | **73,405** |
+
+`RATCHET PASS`: byte_exact 4,507 / linked_exact 4,507 / size 4,524 / data 843 /
+imports 207 / lint CLEAN / drift 0 / parity 5,370.
+
+Other distance 6-12 rotations on the 6,235 base: `rotb_1199_1210` 6,198 (asteroid
+`lockedAsteroid = nullptr` store moved across the `candidateWreck` block),
+`rotb_731_744` 6,242, `rotb_701_711` 6,245, `rotb_648_661` 6,252; everything else
+>= 6,235 or size-fatal.  Distance 2-5 rotations on the 6,235 base produced no
+strictly-better cell (minimum 6,235, several no-op-equivalent).

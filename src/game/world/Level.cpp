@@ -5289,8 +5289,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     (*volumes)[10] = new BoundingAAB(fx, y, z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
                     fixed->setWreckedMeshId(0x4780);
                 } else {
+                    BoundingVolume *b0 = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
                     ArraySetLength(3, *volumes);
-                    (*volumes)[0] = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
+                    (*volumes)[0] = b0;
                     (*volumes)[1] = new BoundingAAB(fx, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
                     (*volumes)[2] = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
                     fixed->setWreckedMeshId(0x477e);
