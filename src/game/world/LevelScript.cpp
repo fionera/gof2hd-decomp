@@ -1690,8 +1690,8 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 1) {
                     TargetFollowCamera *cam1688 = m_pCamera;
                     Level *self = m_pLevel;
-                    cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
+                    cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         cam1688->setTarget(player->geometry);
                         resetCamera(self);
