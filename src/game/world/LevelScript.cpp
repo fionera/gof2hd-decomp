@@ -2951,8 +2951,8 @@ bool LevelScript::process(int delta) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         Vector ref = (*enemies)[3]->getPosition();
-                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
+                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         m_nScriptTimerA = 0;
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
                         for (int i = 0; i < 3; i++) {
@@ -4674,8 +4674,8 @@ bool LevelScript::process(int delta) {
                         camera->setTarget(player->geometry);
                         tv = player->getPosition();
                         tv += Vector{150.0f, 400.0f, -1500.0f};
-                        player->setSpeed(0.02f);
                         m_nState++;
+                        player->setSpeed(0.02f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         camera->setPosition(tv);
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
@@ -5102,8 +5102,8 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        m_pGeometry3->setVisible(true);
                         m_pGeometry2->setVisible(false);
+                        m_pGeometry3->setVisible(true);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         m_nState = 10;
@@ -5309,8 +5309,8 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerB >= 25001) {
-                        m_nScriptTimerB = 0;
                         ((PlayerFighter *) (*enemies)[0])->field_0x140 = !((PlayerFighter *) (*enemies)[0])->field_0x140;
+                        m_nScriptTimerB = 0;
                     }
                 }
                 break;
