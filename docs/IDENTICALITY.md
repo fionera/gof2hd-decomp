@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,587** | 22,343 | 57,232 |
+| `LevelScript::process` | **51,568** | 22,361 | 57,232 |
 | `Radar::draw` | **6,015** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,656** | 867 | 17,172 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,487**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,468**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -101,10 +101,11 @@ Landed changes:
   radar/freeze order); and a second cross-control pass (camera
   `setFixed`, `enemies[1]->field_0x70`; camera `setTarget` after `setFreeLookMode`; a distance-2 transposition
   pass; a d5 multi-line rotation with `SetAnimationState(2)` hoist; and two
-  d5 shift-2 rotations (hud/radar/target group, pirate route locals)). Raw **51,656 -> 51,587** (-69), aligned
-  22,002 -> 22,343. `.text` 71,433 -> 71,364 (-69), `.ARM.extab`
+  d5 shift-2 rotations (hud/radar/target group, pirate route locals); a distance-3/4
+  transposition pass; and a d6 shift-2 rotation with resetCamera tail). Raw **51,656 -> 51,568** (-88), aligned
+  22,002 -> 22,361. `.text` 71,433 -> 71,345 (-88), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 71,961 (-69). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 71,942 (-88). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
