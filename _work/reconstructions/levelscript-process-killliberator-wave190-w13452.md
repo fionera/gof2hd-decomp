@@ -102,3 +102,47 @@ Three independent stores/calls (a `this` flag, a `Hud` field, a `PlayerEgo`
 setter); none reads what another writes.  Measured alone on the real build:
 raw **51,712 -> 51,711** (-1), size 57,232/57,232 exact, `.text` 72,383 ->
 72,382, `.rel.plt` md5 `289b2a06…` unchanged.  `check` -> RATCHET PASS.
+
+## Pass 3: d=3 rotation sweep (raw 51,711 -> 51,709)
+
+Full 4-statement rotation sweep on the post-pass-2 body (993 candidates).
+Two size-exact cells beat the base; the safe one is source lines 2498-2501
+(mission-14-ish arrival reframe):
+
+```cpp
+-                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                     camPos.x += -600.0f;
+                     camPos.y += -300.0f;
++                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+```
+
+`dir` and `camPos` are independent locals; `dir` is first read at the later
+`camPos += 3000.0f * dir;`, so moving its initialiser below the three `camPos`
+adjustments is semantics-preserving.  Measured alone: raw **51,711 -> 51,709**
+(-2), size 57,232/57,232 exact, `.text` 72,382 -> 72,380, `.rel.plt`
+`289b2a06…` unchanged.  `check` -> RATCHET PASS.
+
+The other cell (`line 2438`, raw 51,708) rotates
+`enableFirstPersonCam / setComputerControlled / setTurretMode / setTarget`
+and is left for a follow-up (camera-mode/target ordering needs an oracle
+check).
+
+## Pass 4: d=3 cell `line 2438` (raw 51,709 -> 51,706)
+
+The remaining d=3 winner, source lines 2438-2441:
+
+```cpp
+-                    m_pCamera->enableFirstPersonCam(false);
+                     player->setComputerControlled(true);
+                     player->setTurretMode(false);
+                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
++                    m_pCamera->enableFirstPersonCam(false);
+```
+
+`enableFirstPersonCam` writes `firstPerson`, `fpOffset`, `shakeAccum`,
+`shakeReference`; `setTarget` writes only `target`; the two `PlayerEgo`
+setters touch player state.  All four are disjoint, so the rotation is
+semantics-preserving.  Measured alone on the post-pass-3 body: raw
+**51,709 -> 51,706** (-3), size 57,232/57,232 exact, `.text` 72,380 ->
+72,377, `.rel.plt` `289b2a06…` unchanged.  `check` -> RATCHET PASS.

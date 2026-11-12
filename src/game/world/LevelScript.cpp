@@ -2435,10 +2435,10 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    m_pCamera->enableFirstPersonCam(false);
                     player->setComputerControlled(true);
                     player->setTurretMode(false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    m_pCamera->enableFirstPersonCam(false);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
@@ -2495,10 +2495,10 @@ bool LevelScript::process(int delta) {
                     radar->enabled = 0;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
-                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     camPos.x += -600.0f;
                     camPos.y += -300.0f;
+                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos.z += -1000.0f;
                     camPos += 3000.0f * dir;
                     player->setFreeLookMode(false);
