@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,844** | 20,992 | 57,232 |
+| `LevelScript::process` | **51,842** | 20,998 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,444** | 1,021 | 17,172 |
@@ -123,6 +123,13 @@ Landed changes:
   `.rodata` stays byte-identical and size-exact 269,159 B;
   `.dynsym`/`.dynstr`/`.hash`/`.rel.plt` stay byte-identical. Known costs:
   `.fini_array` 8 -> 200 B (+192), `.dynamic` +3 B, `.rel.dyn` +4 B.
+* `LevelScript::process` (w13338): three semantics-preserving 3-statement
+  rotations with disjoint receivers: `m_nScriptTimerA = m_nScriptTime`
+  before `forceUpdate`/`m_nState` (line 1662), camera `setPosition` before
+  `setLookAtCam`/`setTarget` (line 4834), and enemy geometry `setPosition`
+  + player `rotate` before `setTarget` (line 5247). Raw **51,844 -> 51,842**
+  (-2), aligned 20,992 -> 20,998. `.text` 73,567 -> 73,565 (-2), total
+  (text+extab+build-id) 74,197 -> 74,195.
 * `LevelScript::process` (w13330): swap the line-721
   `sound->updateEvent3DAttributes(158, ...)` and `sound->play(158, ...)`
   calls. Raw **51,874 -> 51,873** (-1), aligned 21,005 -> 20,997.
@@ -141,7 +148,7 @@ Landed changes:
   and makes the m23 64-bit idle compare use the original `r2:r3` pair.
   Raw **15 -> 10**, aligned 111 -> 112, size unchanged.
 
-Section deltas: `.text` **73,567** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,565** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
@@ -150,8 +157,8 @@ size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 cross-TU rank table lives in `.fini_array` (8 -> 200 B, table at `0x20cae8`),
 so `.dynamic` differs by **3** B (the `DT_FINI_ARRAY` tag) and `.rel.dyn` by
 **4** B (two `R_ARM_RELATIVE` offsets). Total differing bytes
-(text+extab+build-id) **74,197**; including the `.dynamic`/`.rel.dyn`/
-`.fini_array` deltas, **74,396**. File size is exact (2,187,328 B), and
+(text+extab+build-id) **74,195**; including the `.dynamic`/`.rel.dyn`/
+`.fini_array` deltas, **74,394**. File size is exact (2,187,328 B), and
 27/27 section headers are present (`.fini_array` size 8 -> 200).
 
 ## Update 2026-11-12 (wave 188)

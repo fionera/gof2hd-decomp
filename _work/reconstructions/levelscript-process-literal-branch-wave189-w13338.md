@@ -8,26 +8,27 @@ total 74,658).  Scratch `/home/debian/GalaxyOnFire2/scratch/w13338`.
 
 This pass re-maps the literal pools and branch displacements on the current
 51,874 body, re-runs the whole `__builtin_expect` sweep (3,110 cells), a
-comparison-operand swap sweep (524 cells) and a constant-bearing adjacent
-statement sweep (682 cells).  Four independent, semantics-preserving edits
-compose to a size-exact, `.rel.plt`-identical raw win:
-**51,874 -> 51,865 (-9)**.
+comparison-operand swap sweep (524 cells), a constant-bearing adjacent
+statement sweep (682 cells) and a constant-bearing 3-statement rotation sweep
+(1,238 cells).  Seven independent, semantics-preserving edits compose to a
+size-exact, `.rel.plt`-identical raw win:
+**51,874 -> 51,862 (-12)**.
 
 ## Result (code win landed)
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,874           51,865     (-9)
-process aligned insns    21,005           21,011     (+6)
+process raw diffbytes    51,874           51,862     (-12)
+process aligned insns    21,005           21,017     (+12)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,726  20,830 / 20,726
-.text diffbytes          73,999           73,990     (-9)
+.text diffbytes          73,999           73,987     (-12)
 .ARM.extab diffbytes     639              639        (size/base exact @0x1a3b78, 156,312 B)
 .ARM.exidx diffbytes     0                0          (byte-identical)
 .rodata / .data / .bss   0 / 0 / 0        0 / 0 / 0
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical, 29,392 B)
 .note.gnu.build-id       20               20
-total differing bytes    74,658           74,649     (-9)
+total differing bytes    74,658           74,646     (-12)
 file size                2,187,328        2,187,328  (exact)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -121,6 +122,32 @@ do not compose (either one alone gives 51,873).
 The four edits compose additively: raw **51,865** (-9), `.text` **73,990**,
 size 57,232/57,232, `.rel.plt` byte-identical, `.ARM.extab` content unchanged
 (639, 156,312 B).
+
+### E. Three distance-2 rotations (-3 more)
+
+A constant-bearing 3-statement rotation sweep (`scratch/w13338/sweep_rot2.py`,
+1,238 candidates) found three further independent, semantics-preserving
+rotations.  Each is a cyclic rotation of three consecutive simple statements
+with disjoint receivers:
+
+| source line | rotation | raw alone |
+|---:|---|---:|
+| 1662 | `m_nScriptTimerA = m_nScriptTime;` before `forceUpdate` + `m_nState = 4` | -1 |
+| 4834 | `setPosition(wgeometry4->getPosition())` before `setLookAtCam(true)` + `setTarget(wgeometry4)` | -1 |
+| 5247 | `enemies[0]->geometry->setPosition(...)` and `player->geometry->rotate(...)` before `m_pCamera->setTarget(enemies[0]->geometry)` | -1 |
+
+All three receivers are disjoint (`m_nState`/timer vs LOD manager; camera
+position vs look-at flag vs target pointer; enemy geometry position vs player
+geometry rotation vs camera target pointer).  Composed with A-D: raw
+**51,862** (-12), `.text` **73,987**, size 57,232/57,232, `.rel.plt`
+byte-identical, `.ARM.extab` 639 unchanged.
+
+Other size-exact rotation wins were rejected as semantically wrong:
+line 5229 (`approach` must read the incremented timer), line 4411
+(`setPosition` must read the updated `m_tempVec`), line 2531 (`setPosition`
+must read the updated `camPos.x`), line 2674 (`setPosition` after
+`delete frame` is a use-after-free), line 2695 / 3158 / 4603 (matrix/position
+consumers must read the updated vector).
 
 ## Literal-pool map on the current 51,874 body
 
@@ -219,23 +246,23 @@ cd /home/debian/GalaxyOnFire2/wt/w13338
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51865 size=57232/57232 text=73990 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51862 size=57232/57232 text=73987 relplt=289b2a069f8504d1e8a3919e43915e04
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51865 aligned=21011 size= 57232/57232 insn=20726/20830
+# -> raw= 51862 aligned=21017 size= 57232/57232 insn=20726/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 cmake --build cmake-build-match --target lint  -- -j2   # CLEAN
 cmake --build cmake-build-match --target drift -- -j2   # 0 drifted fields
 ```
 
 Scratch harnesses (`fast.py`, `pools.py`, `bmap.py`, `sweep_expect.py`,
-`sweep_adj.py`, `sweep_cmp.py`, `expect_res.jsonl`, `adj_res.jsonl`,
-`cmp_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
+`sweep_adj.py`, `sweep_cmp.py`, `sweep_rot2.py`, `expect_res.jsonl`,
+`adj_res.jsonl`, `cmp_res.jsonl`, `rot2_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
 scratch, not tracked.
 
-## Current-master re-test (2026-11-12, after w13330 d1 pass 2)
+## Current-master re-test (2026-11-12, after w13330/w13351)
 
-Base: `master` `726a685b9`, `LevelScript::process` raw **51,844**, aligned 20,992.
-The four edits were re-tested individually on this base:
+Base: `master` `580751537`, `LevelScript::process` raw **51,844**, aligned 20,992.
+The four literal/branch edits were re-tested individually on this base:
 
 | edit | raw | delta |
 |---|---:|---:|
@@ -245,5 +272,6 @@ The four edits were re-tested individually on this base:
 | all three together | 51,852 | +8 |
 
 The line-721 `play(158)`/`updateEvent3DAttributes(158)` swap was already landed by
-w13330 and is not re-counted. None of the remaining edits is a win on current
-master; the source is left at `726a685b9`.
+w13330 and is not re-counted. The three 3-statement rotations from the later
+`1152150e9` commit do land on current master: raw **51,844 -> 51,842** (-2),
+aligned 20,992 -> 20,998, `.text` 73,567 -> 73,565, size 57,232/57,232.

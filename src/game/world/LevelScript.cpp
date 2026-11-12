@@ -1659,9 +1659,9 @@ bool LevelScript::process(int delta) {
                     Level::initStreamOutPosition = 0;
                     m_nState = 5;
                 } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3) {
+                    m_nScriptTimerA = m_nScriptTime;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 4;
-                    m_nScriptTimerA = m_nScriptTime;
                 }
                 break;
             }
@@ -4831,9 +4831,9 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setFreeze(true);
+                    m_pCamera->setPosition(wgeometry4->getPosition());
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setTarget(wgeometry4);
-                    m_pCamera->setPosition(wgeometry4->getPosition());
                     player->player->setVulnerable(false);
                     m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
                     m_nScriptTimerA = 0;
@@ -5244,9 +5244,9 @@ bool LevelScript::process(int delta) {
                             enemy->setActive(true);
                         }
                     }
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
                     player->geometry->rotate(step / 2000.0f, step / 2000.0f, step / 2000.0f);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     if (m_nScriptTimerA >= 20000) {
                         ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
                         if (m_nScriptTimerA >= 34000) {
