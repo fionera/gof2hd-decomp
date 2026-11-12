@@ -1852,10 +1852,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             case 0:
                                 Globals::status->nextCampaignMission(true);
                                 Globals::status->setKills(3);
+                                Level::initStreamOutPosition = 0;
                                 Globals::switch_to_target_setting = 1;
                                 this->active = 0;
                                 Globals::appManager->SetCurrentApplicationModule(2);
-                                Level::initStreamOutPosition = 0;
                                 break;
                             default:
                                 break;
