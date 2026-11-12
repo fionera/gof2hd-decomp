@@ -15,14 +15,14 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,748** | 22,483 | 57,232 |
+| `LevelScript::process` | **51,747** | 22,483 | 57,232 |
 | `Radar::draw` | **6,291** | 1,828 | 9,908 |
 | `Layout` C1/C2 | **5,255** | 2,726 | 7,072 |
 | `Level::createMission` | **3,030** | 1,135 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,355** | 617 | 9,700 |
 | `Level::createShip` | **1,192** | 396 | 2,764 |
-| `Status::missionCompleted` | **468** | 193 | 1,432 |
+| `Status::missionCompleted` | **466** | 193 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -211,7 +211,18 @@ Landed changes:
   73,007 -> 73,006 (-1), `.ARM.extab` 603 and build-id 20 unchanged,
   total (text+extab+build-id) 73,630 -> 73,629 (-1). `.rel.plt`
   byte-identical, 27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **73,006** differing bytes (size exact, 1,259,464 B);
+* `Status::missionCompleted` (w13396): swap the `case 12` and `case 20`
+  bodies back to the original source order (the literal pool follows the
+  emitted case order). Raw **468 -> 466** (-2), aligned 193 unchanged.
+  `.text` 73,006 -> 73,003 (-3, combined with the w13384 d2 harvest),
+  `.ARM.extab` 603 and build-id 20 unchanged, total
+  (text+extab+build-id) 73,629 -> 73,626 (-3). `.rel.plt` byte-identical,
+  27/27 headers, file size 2,187,328 exact.
+* `LevelScript::process` (w13384): the seven d2 rotation wins
+  (`807205a3c`) applied on current master; most were already present from
+  the w13369 follow-up harvest, so the net is raw **51,748 -> 51,747**
+  (-1), aligned 22,483 unchanged.
+Section deltas: `.text` **73,003** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -221,7 +232,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,629**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,626**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

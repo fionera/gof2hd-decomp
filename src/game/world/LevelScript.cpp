@@ -2293,9 +2293,9 @@ bool LevelScript::process(int delta) {
                         m_nState = 2;
                     }
                 } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && __builtin_expect(m_nState == 2, 1)) { // lint: arm_builtin
-                    (*enemies)[0]->field_0x24 = 0;
                     int routePoints[3] = {500000, 500000, 500000};
                     Route *route = new Route(routePoints, 3);
+                    (*enemies)[0]->field_0x24 = 0;
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         if (!(*enemies)[i]->isWingMan()) {
                             (*enemies)[i]->setSpeed(16.5f);

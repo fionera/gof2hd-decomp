@@ -1487,13 +1487,14 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 12:
-                if (m->getStatusValue() == 0) {
-                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
-                        Globals::status->station->getIndex() != 0x71) {
-                        m->setWon(true);
-                        return m;
-                    }
+            case 20:
+                // The (unsigned short) is a size device, not semantics: mission
+                // status values are 16-bit counters.  It emits one uxth (2 B) that
+                // keeps the loop latch at the original's 0x522.
+                if (Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
+                    m->setWon(true);
+                    Globals::status->field_178 = 0;
+                    return m;
                 }
                 break;
             case 13:
@@ -1553,14 +1554,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 20:
-                // The (unsigned short) is a size device, not semantics: mission
-                // status values are 16-bit counters.  It emits one uxth (2 B) that
-                // keeps the loop latch at the original's 0x522.
-                if (Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
-                    m->setWon(true);
-                    Globals::status->field_178 = 0;
-                    return m;
+            case 12:
+                if (m->getStatusValue() == 0) {
+                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
+                        Globals::status->station->getIndex() != 0x71) {
+                        m->setWon(true);
+                        return m;
+                    }
                 }
                 break;
             case 22:
