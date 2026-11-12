@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,679** | 22,003 | 57,232 |
-| `Radar::draw` | **6,058** | 2,051 | 9,908 |
+| `Radar::draw` | **6,060** | 2,027 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,966** | 1,125 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
