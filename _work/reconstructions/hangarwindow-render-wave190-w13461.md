@@ -161,3 +161,44 @@ Gate after the pass: `check` RATCHET PASS — byte_exact 4507/4524,
 linked_exact 4507/4524, size-exact 4524/4524, stub_zero_size 0, missing 0,
 wrong_type 0, extra 0, data_exact 843/843, imports 207, lint CLEAN, drift 0,
 parity 5370/5370.  `.rel.plt` byte-identical.
+
+## Wave-190 third pass (same worker): free-credits `baseX` operand order — LANDED
+
+The free-credits preheader's `baseX` expression was written
+`this->dialog->x + Globals::layout->buttonInsetX`; the original computes the
+layout inset first (`add.w r8,r6,r2` with `r6 = layout->field_0x28`,
+`r2 = dialog->x`).  Swapping the operands to
+`Globals::layout->buttonInsetX + this->dialog->x` is semantics-preserving.
+
+| metric | before | after |
+|---|---:|---:|
+| raw same-address diff | 1,039 | **1,038** |
+| instruction-index alignment | 620 | 620 |
+| function size | 9,700 / 9,700 | 9,700 / 9,700 |
+| `.text` section diff | 72,219 | **72,218** |
+| `.ARM.extab` section diff | 584 | **584** |
+| build-id | 20 | 20 |
+| total (text+extab+build-id) | 72,823 | **72,822** |
+
+Gate: `check` RATCHET PASS.  `.rel.plt` byte-identical, 27/27 headers,
+file size 2,187,328 exact.
+
+Negative results measured on the same base (all size 9,700 unless noted):
+
+| variant | raw | `.text` | extab |
+|---|---:|---:|---:|
+| **`baseX` inset-first (landed)** | **1,038** | **72,218** | 584 |
+| base (`dialog->x + inset`) | 1,039 | 72,219 | 584 |
+| `baseY` faithful (`dialog->y + top + rh*2`) | 1,043 | 72,223 | 584 |
+| `baseY` `top + dialog->y + rh*2` | 1,043 | 72,223 | 584 |
+| `baseY` `dialog->y + rh*2 + top` | 1,039 | 72,219 | 584 |
+| `baseY` `rh + rh + ...` | 1,039 | 72,219 | 584 |
+| free-credits `width` before `rh` | 1,088 | 72,268 | 585 |
+| free-credits `height` before `rh` | 1,041 | 72,221 | 584 |
+| free-credits `width`,`height`,`rh` | 1,088 | 72,268 | 585 |
+
+On the `D,U,P,V,B` ship body (`DUPVB`, raw 1,029 / extab 1,217) the
+free-credits declaration/statement permutations re-measured neutral
+(1,029 / 72,209) except `canvas` first (9,608 B, row-40 length 128) and
+`width`-before-`rh` (1,078).  Row 40 stays 126 for every size-exact variant,
+so the DUPVB ULEB is still unfixed.
