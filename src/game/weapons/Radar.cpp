@@ -953,8 +953,8 @@ enemies:
                 this->field_0x1c != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
+        const auto camZ = this->cameraZ;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
-            auto camZ = this->cameraZ;
             PlayerGasCloud *cloud = (PlayerGasCloud *) this->gasClouds->data()[i];
             Array<AEGeometry *> *sparks = (Array<AEGeometry *> *) cloud->getSparks();
             if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {

@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,814** | 21,712 | 57,232 |
-| `Radar::draw` | **6,308** | 1,858 | 9,908 |
+| `Radar::draw` | **6,301** | 1,876 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,427** | 1,003 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
@@ -218,18 +218,23 @@ Landed changes:
   Raw stays **1,195**, aligned 483 -> 396, instructions 1,116/1,117 ->
   1,117/1,117. `.text` 73,505 unchanged, `.ARM.extab` 610 unchanged,
   total (text+extab+build-id) 74,135 unchanged.
-Section deltas: `.text` **73,505** differing bytes (size exact, 1,259,464 B);
+* `Radar::draw` (w13364): hoist the loop-invariant `camZ = this->cameraZ`
+  out of the gas-cloud loop. Raw **6,308 -> 6,301** (-7), aligned
+  1,858 -> 1,876. `.text` 73,505 -> 73,498 (-7), `.ARM.extab` 610
+  unchanged, build-id diff 20 -> 19, total (text+extab+build-id)
+  74,135 -> 74,127.
+Section deltas: `.text` **73,498** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
 `.rodata`..`.fini_array` gap at `0x20b977`); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.dynsym`/`.dynstr`/`.hash` **0**; `.data` **0**;
-`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. The w13358
+`.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **19**. The w13358
 cross-TU rank table lives at the end of `.rodata`, so `.fini_array` is back
 to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**74,135**. File size is exact (2,187,328 B), and 27/27 section headers are
+**74,127**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
