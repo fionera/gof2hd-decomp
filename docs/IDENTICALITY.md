@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **2,966** | 1,125 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
-| `Level::createShip` | **1,176** | 404 | 2,764 |
+| `Level::createShip` | **1,174** | 406 | 2,764 |
 | `Status::missionCompleted` | **97** | 54 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
@@ -661,7 +661,17 @@ Landed changes:
   71,821 -> 71,819 (-2), `.ARM.extab` 575 unchanged, build-id 20
   unchanged, total 72,416 -> 72,414. `.rel.plt` byte-identical, 27/27
   headers, file size 2,187,328 exact.
-Section deltas: `.text` **71,819** differing bytes (size exact, 1,259,464 B);
+* `Level::createShip` (w13485): hoist the race-0 hull's second
+  `BoundingAAB` into `b1` and move `ArraySetLength(3, *volumes)` after it
+  (store order `b0`, `b1`, ASL, `[1]`, `[2]`). Raw **1,176 -> 1,174**
+  (-2), aligned 404 -> 406. `.text` 71,819 -> 71,817 (-2), `.ARM.extab`
+  575 unchanged, build-id 20 unchanged, total 72,414 -> 72,412.
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+  Caveat: this is a store/emission-order lever; the original calls
+  `ArraySetLength` before the stores, so the produced `volumes[0]` is
+  zeroed. A future pass should restore the faithful order without losing
+  the size-exact win.
+Section deltas: `.text` **71,817** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -671,7 +681,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,414**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,412**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
