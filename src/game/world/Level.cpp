@@ -2290,7 +2290,7 @@ case4Tail:
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
                     Vector asteroidPos = {0.0f, 0.0f, 0.0f};
-                    volatile int offset = 0;
+                    int offset = 0;
                     for (int i = 0; i < convoyEnd; i++) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
                                                                nullptr, true, false);
@@ -2310,10 +2310,9 @@ case4Tail:
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
                         Array<KIPlayer *> *enemies = this->enemies;
-                        KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
-                        ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
+                        (*enemies)[convoyEnd + j]->cargo = nullptr;
+                        ((PlayerFighter *) (*enemies)[convoyEnd + j])->crateCaptured() = 0;
                         (*enemies)[convoyEnd + j]->setSpeed(0.0f);
-                        convoyShip->cargo = nullptr;
                         (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
