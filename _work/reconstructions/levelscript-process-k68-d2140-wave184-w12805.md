@@ -15,14 +15,14 @@ of the best single moves on the wave-183 body.
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    52,281           52,267     (-14)
-process aligned insns    20,700           20,666     (-34)
+process raw diffbytes    52,281           52,257     (-24)
+process aligned insns    20,700           20,685     (-15)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,725  20,830 / 20,722
-.text diffbytes          74,842           74,828     (-14)
+.text diffbytes          74,842           74,818     (-24)
 .ARM.extab diffbytes     646              646        (unchanged; size/base exact)
 .note.gnu.build-id       20               20         (unchanged)
-total differing bytes    75,508           75,494     (-14)
+total differing bytes    75,508           75,484     (-24)
 .rel.plt                 byte-identical   byte-identical (diff 0, md5 289b2a06…)
 .rodata                  byte-identical   byte-identical
 byte_exact               4507             4507
@@ -103,6 +103,35 @@ when combined, but it reorders `setPosition` past `translate` (observable
 camera state), so the semantically clean `setTarget`/`translate` swap was
 landed instead at the same raw count.
 
+## Second pass on the improved tree (landed)
+
+The same K=6..8 generator/sweep was re-run on the 52,267 tree (2,467
+candidates, 1,836 size-exact, 2,441 rel-ident).  It found 16 winners below
+52,267 (best -3).  Greedy combination of the best distinct moves (including
+`setLookAtCam`/`setVulnerable`/`hideShip` field-store reorders and the
+`switch_to_target_setting` store) reached raw **52,257** (-10 more).
+
+```
+                         after pass 1     after pass 2
+process raw diffbytes    52,267           52,257     (-10)
+process aligned insns    20,666           20,685     (+19)
+.text diffbytes          74,828           74,818     (-10)
+.ARM.extab diffbytes     646              646        (unchanged)
+total differing bytes    75,494           75,484     (-10)
+.rel.plt                 byte-identical   byte-identical
+RATCHET                  PASS             PASS
+```
+
+Line numbers are from the pass-1 tree (`9980db7c8`).
+
+| # | base line | dir | moved statement |
+|---:|---:|---|---|
+| 1 | 1869 | up | `player->hideShipForFirstPersonCameraView(false);` (before `player->setFreeLookMode(false)`) |
+| 2 | 3182 | down | `cam->setLookAtCam(false);` (after `player->player->setVulnerable(true)`) |
+| 3 | 3568 | down | `player->player->setVulnerable(true);` (after `resetCamera(m_pLevel)`) |
+| 4 | 3726 | up | `m_pCamera->setLookAtCam(true);` (before `player->setFreeLookMode(false)`) |
+| 5 | 5214 | up | `Globals::switch_to_target_setting = 1;` (before `m_nState++`) |
+
 ## Reproduction
 
 ```sh
@@ -110,7 +139,7 @@ cd /home/debian/GalaxyOnFire2/wt/w12805
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 52267 aligned= 20666 size= 57232/57232 insn= 20722/20830
+# -> raw= 52257 aligned= 20685 size= 57232/57232 insn= 20722/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 

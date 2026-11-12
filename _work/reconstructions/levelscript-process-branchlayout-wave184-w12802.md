@@ -181,3 +181,54 @@ The 3212-3214 move is the semantically faithful one: the original
 Cumulative for the whole pass: raw **52,281 -> 52,256** (-25), `.text`
 74,842 -> 74,817, aligned 20,700 -> 20,707; size-exact, `.rel.plt`-identical,
 `.ARM.extab` size/base exact and content diff unchanged at 646.
+
+## Pass 4: re-sweep on the improved body
+
+Re-running the same 3-4-statement run sweep on the 52,256 body (128 runs,
+1,432 permutations) finds one further composing win: the cleanup block at
+source lines 3406-3408
+
+```
+player->setRocketControl(nullptr, nullptr);
+player->killLiberator();
+m_pCamera->setRumblePercentage(0.0f, 0);
+```
+-> `killLiberator; setRumblePercentage; setRocketControl`.
+
+Raw **52,256 -> 52,255** (-1), size-exact, `.rel.plt` identical,
+`.ARM.extab` unchanged (646 / 156,312 B).  `.text` 74,817 -> 74,816.
+The other -1 candidate (the `Route *route = new Route` run) still shrinks
+`.ARM.extab` by 4 B and is dropped.
+
+Cumulative for the whole pass: raw **52,281 -> 52,255** (-26), `.text`
+74,842 -> 74,816, aligned 20,700 -> 20,710; size-exact, `.rel.plt`-identical,
+`.ARM.extab` size/base exact and content diff unchanged at 646.
+
+## Pass 5: 5-statement-run permutation harvest
+
+Sweeping every 5-statement run (22 runs, 2,618 permutations, four workers) on
+the 52,255 body finds three composing winners:
+
+| lines | block | new order | raw |
+|---|---|---|---:|
+| 5156-5160 | `wcamera->setTarget` / `timerA=0` / `enemies[i]->setVisible(false)` / `setActive(false)` / `m_nState++` | setTarget, timerA=0, setVisible, setActive, m_nState++ (unchanged) -> actually [1,2,0,3,4]: timerA=0, setVisible, setTarget, setActive, m_nState++ | 52,249 |
+| 1398-1402 | `setFixed(true)` / `setAIDisabled(false)` / `m_nState=5` / `setHitpoints(0)` / `timerA=0` | [4,1,2,3,0]: timerA=0, setAIDisabled, m_nState=5, setHitpoints, setFixed | 52,251 |
+| 4580-4584 | `setPosition` / `setFixed(false)` / `m_nState++` / `forceUpdate` / `timerA=0` | [4,0,2,3,1]: timerA=0, setPosition, m_nState++, forceUpdate, setFixed | 52,252 |
+
+The three compose (each was measured alone and then re-measured together):
+
+```
+                         after pass 4     after pass 5
+process raw diffbytes    52,255           52,242     (-13)
+process aligned insns    20,710           20,739     (+29)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,816           74,803     (-13)
+.ARM.extab diffbytes     646              646        (size/base exact)
+.ARM.exidx diffbytes     0                0
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Cumulative for the whole pass: raw **52,281 -> 52,242** (-39), `.text`
+74,842 -> 74,803, aligned 20,700 -> 20,739; size-exact, `.rel.plt`-identical,
+`.ARM.extab` size/base exact and content diff unchanged at 646.
