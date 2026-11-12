@@ -109,3 +109,10 @@ Scratch `/home/debian/GalaxyOnFire2/scratch/w13457/`: `measure.sh`,
 `units.py`, `search.py`, `k6.py`, `k6b.py`, `k6_*.json`, `cand_p1.cpp`,
 `cand_p2.cpp`, `Layout.cpp.base`, `orig.dis`, `ours.dis`, `ours2.dis`,
 `p0..p3/build` (path-rewritten build copies).
+
+## 7. Pass 2 on current master: neutral
+
+w13457's pass-2 order (`0x1d8, 0x1dc, 0x1d0, 0x1d4, 0x2c0, 0x1cc, 0x1c0`)
+was re-tested on current master `7db4ca023` (after the w13458/w13467 Layout
+changes). It measures raw **5,243** and `.text` **71,859**, exactly neutral
+with the current master order, `.ARM.extab` unchanged at 575. Not landed.
