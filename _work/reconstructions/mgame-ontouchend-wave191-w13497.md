@@ -91,3 +91,34 @@ Level::initStreamOutPosition = 0;
 from after the Hitpoints getter to directly after the Gamma getter.  Size 8,080,
 `.rel.plt` identical, raw **2,886 -> 2,885**, `.text` **71,808 -> 71,807**,
 `.ARM.extab` unchanged (582).
+
+## Negative sweeps on the final base (raw 2,885) — all reverted
+
+All size-exact unless noted; `.rel.plt` identical unless noted.
+
+- **Chain order**: full 153 pair swaps (best tie 2,887), 306 single-block moves
+  (best tie 2,887), exhaustive 816 3-cycles (best 2,892).  The order is a strong
+  local minimum; do not re-sweep without changing a body first.
+- **Getter permutations** (24 per block x 12 blocks): no block beats 2,885.
+  Block 162 is completely insensitive to getter order (all 24 = 2,885).
+- **Single-statement moves** of `switch_to_target_setting` (best 2,886 for 162/126,
+  harvested), `Level::initStreamOutPosition` (best 2,885, harvested), `this->active`
+  (tie 2,885), `SetCurrentApplicationModule` (best 2,887), `departStation`
+  (best 2,887), `new FileRead` (2,932), `delete reader` (2,889).
+- **Adjacent transpositions** over every same-indent simple-statement pair in
+  `OnTouchEnd`: many ties at 2,885, no improvement.
+- **`won` block**: `instantAction`-first (flat / `else if` / nested / `&&` /
+  re-test) is 8,080 but raw 4,462-4,469 and **`.rel.plt` DIFF** (3-slot rotation
+  of the finishMission imports).  Re-testing `isInstantActionMission()` in the
+  `else if` (no saved bool) is 8,080 / rel.plt OK but raw 2,890.  Swapping the
+  `switch=2` / `active=0` stores is 2,886.
+- **Mining condition**: `count != 0` / `if (count)` / `amount != 0` / `||` forms
+  all flip the induction variable to a positive counter: 8,088 / raw 6,638.
+  `count > -1`, `amount < 1`, `amount <= 0` are byte-identical to the base.
+  The original's `beq.n` (skip body when `amount == 0`) is unreachable without
+  the +8 allocation flip; the base `count >= 0` is semantically different (it
+  appends a spurious `0 t ...` line) but is the byte-match minimum.
+- **Escort block**: full 720 permutations, base order optimal (2,885).
+- **Back-to-station tail**: greedy single-statement hill climb, base optimal.
+- **Engine-sound block**: `muted`-first / nested / enabled-first shapes are
+  8,076-8,120 and raw 4,036-6,011.
