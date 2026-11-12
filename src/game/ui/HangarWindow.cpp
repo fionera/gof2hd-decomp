@@ -809,32 +809,29 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // Original guard order: tab == 0 branches to the nearby
-                            // tab == 1 upgrade check and a tab == 3 ship match skips
-                            // the body.  The branch hints keep the ship body out of
-                            // line as in the original, and the tab snapshot anchors
-                            // the reload of tab at the upgrade check, so the row-39
-                            // LSDA range stays 150 bytes and the function 9,700 B.
-                            if (__builtin_expect(tab != 0, 1) && // lint: arm_builtin
-                                __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
+                            // Original guard order: tab == 0 skips the body and a
+                            // tab == 3 ship match skips it too.  The branch hint
+                            // keeps the ship body out of line as in the original,
+                            // and the tab snapshot anchors the reload of tab at the
+                            // upgrade check, so the row-39 LSDA range stays 150
+                            // bytes.  The upgrade check lives inside the guard body
+                            // (the original's row-40 cleanup scope covers it), and
+                            // the upgrade button order below is a codegen shape that
+                            // keeps the function at 9,700 B.
+                            if (tab != 0 && __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
                                 int upgTab = tab;
-                                int shipRh = Globals::layout->field_0x2c_rowHeight;
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->draw();
                                 (*this->buttons)[1]->setVisible(true);
-                                buttonOffset = (*this->buttons)[1]->getWidth() + shipRh;
-                                if (__builtin_expect(upgTab == 1, 0) && this->upgradeMode) { // lint: arm_builtin
-                                    // Draw-first source order is a one-byte raw
-                                    // codegen coincidence (the original block sits at
-                                    // a different address); it leaves the row-39 LSDA
-                                    // and the 9,700 B size untouched.
-                                    (*this->buttons)[2]->setVisible(true);
-                                    (*this->buttons)[10]->setVisible(true);
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                if (this->upgradeMode && upgTab == 1) {
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
                                     (*this->buttons)[10]->draw();
+                                    (*this->buttons)[2]->setVisible(true);
+                                    (*this->buttons)[10]->setVisible(true);
                                 }
                             }
                         } else {
