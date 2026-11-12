@@ -108,3 +108,26 @@ process raw diffbytes    51,604             51,602     (-2; total -11 vs wave ba
 .text diffbytes          71,369             71,367     (-2)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 5 — distance-2 transposition sweep
+
+New class: swap two statements two apart inside a straight-line run (a
+transposition, not a rotation — the d1..d6 rotation sweeps never generate it).
+1,822 candidates, seven size-exact / `.rel.plt`-identical raw wins; three are
+semantics-preserving and landed.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 8 | case-145 (~4263) | swap docking `setDockingType(2)` with `player->setDockingState(2)` around `status->field_178 = 0` | -5 |
+| 9 | case-4 (~775) | `sound->stop(161)` before `SetAnimationState(...)` (independent sound events) | -1 |
+| 10 | case-154 (~4582) | `m_nScriptTimerA = 0` before `m_pCamera->setTarget(player->geometry)` | -1 |
+
+Rejected: cells 1257/1408 (the transposition leaves `*tmp = getRightVector()`
+between the two accumulations, so the first term would read the wrong vector),
+1047 (`m_dirVec` producer/consumer), 1684 (`m_tempVec` producer/consumer).
+
+```
+process raw diffbytes    51,602             51,595     (-7; total -18 vs wave base)
+.text diffbytes          71,367             71,360     (-7)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```

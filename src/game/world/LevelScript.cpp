@@ -772,10 +772,10 @@ bool LevelScript::process(int delta) {
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                        Globals::sound->stop(161);
+                        Globals::sound->play(160, nullptr, nullptr, 0.0f);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                        Globals::sound->play(160, nullptr, nullptr, 0.0f);
-                        Globals::sound->stop(161);
                         m_nScriptTimerA = 0;
                     }
                     break;
@@ -4260,10 +4260,10 @@ bool LevelScript::process(int delta) {
                         PlayerFixedObject *target =
                             (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
                         if (target->getDockingType() == 3 && dockingCount == 1) {
+                            player->setDockingState(2);
+                            Globals::status->field_178 = 0;
                             ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setDockingType(2);
-                            Globals::status->field_178 = 0;
-                            player->setDockingState(2);
                             m_nState++; // shared tail 0x13953c increments m_nState
                         }
                     }
@@ -4579,9 +4579,9 @@ bool LevelScript::process(int delta) {
                             }
                         }
                         tv = player->getPosition();
-                        m_pCamera->setTarget(player->geometry);
-                        tv += Vector{-350.0f, 400.0f, -1500.0f};
                         m_nScriptTimerA = 0;
+                        tv += Vector{-350.0f, 400.0f, -1500.0f};
+                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setPosition(tv);
                         m_nState++;
                         m_pLevel->lodManager->forceUpdate(delta, false);
