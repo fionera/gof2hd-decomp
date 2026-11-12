@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,605** | 22,233 | 57,232 |
+| `LevelScript::process` | **51,604** | 22,233 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
-| `Level::createMission` | **2,661** | 863 | 17,172 |
+| `Level::createMission` | **2,659** | 871 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **928** | 469 | 9,700 |
 | `Level::createShip` | **1,167** | 398 | 2,764 |
@@ -31,11 +31,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,254**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,251**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13526): swap the case-2 loot tail
+  `setRotationSpeed(0.0f)` before `setSpeed(0.0f)`. Raw **2,661 ->
+  2,659** (-2), aligned 863 -> 871. `.text` 71,253 -> 71,251 (-2),
+  `.ARM.extab` 1,216 unchanged, build-id 20 unchanged. `.rel.plt`
+  byte-identical, `.ARM.exidx` 0, size 17,172 exact.
 * `Level::createShip` (w13501): reassociate the spawn-coordinate block
   around the `setEmpData` guard (`z = wpx + wpy - 20000` before it;
   `x = wpz + jitter3 - 20000`, `y = jitter1 + jitter2 + jitter3 - 20000`
@@ -72,10 +77,11 @@ Landed changes:
   `offset` add before the `*= 1000.0f`; and nine cross-control-boundary
   statement moves (camera translate, `moveForward`, `setLocal`, free-look,
   radar/freeze order); and a second cross-control pass (camera
-  `setFixed`, `enemies[1]->field_0x70`). Raw **51,656 -> 51,605** (-51), aligned
-  22,002 -> 22,233. `.text` 71,433 -> 71,382 (-51), `.ARM.extab`
+  `setFixed`, `enemies[1]->field_0x70`; camera `setTarget` before the re-enable
+  loop). Raw **51,656 -> 51,604** (-52), aligned
+  22,002 -> 22,233. `.text` 71,433 -> 71,381 (-52), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 71,979 (-51). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 71,978 (-52). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order

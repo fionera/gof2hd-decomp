@@ -2290,18 +2290,17 @@ case4Tail:
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
                     Vector asteroidPos = {0.0f, 0.0f, 0.0f};
-                    volatile int offset = 0;
-                    for (int i = 0; i < convoyEnd; i++) {
+                    int offset = 0;
+                    for (int i = 0; i < convoyEnd; i++, offset += 2000) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
                                                                nullptr, true, false);
                         KIPlayer *ship = (*this->enemies)[i];
                         ship->setPosition((float) (offset + this->enemyRoute->getWaypoint(0)->x),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->y),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->z));
-                        (*this->enemies)[i]->getRoute()->reachWaypoint(0);
-                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->player->setAlwaysEnemy(true);
-                        offset += 2000;
+                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+                        (*this->enemies)[i]->getRoute()->reachWaypoint(0);
                     }
                     for (int j = 0; (unsigned) (convoyEnd + j) < this->enemies->size(); j++) {
                         (*this->enemies)[convoyEnd + j] = this->createShip(
@@ -2310,11 +2309,10 @@ case4Tail:
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
                         Array<KIPlayer *> *enemies = this->enemies;
-                        KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
-                        ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
-                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
-                        convoyShip->cargo = nullptr;
+                        (*enemies)[convoyEnd + j]->cargo = nullptr;
+                        ((PlayerFighter *) (*enemies)[convoyEnd + j])->crateCaptured() = 0;
                         (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
+                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
                     }
