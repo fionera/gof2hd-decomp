@@ -4079,12 +4079,12 @@ bool LevelScript::process(int delta) {
                 if (m_nState >= 4 && m_nState <= 6) {
                     if (player->isDockedToDockingPoint() && player->hackingWon()
                            && player->getHackingGameDockIndex() >= 0) {
-                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setName(String("", false));
                         ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
                         player->deleteHackingGame();
                         m_nState++;
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                         if (m_nState == 6) {
                             int xOff = 25000;
                             int yOff = 2300;

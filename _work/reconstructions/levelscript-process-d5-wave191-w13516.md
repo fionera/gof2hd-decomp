@@ -289,3 +289,34 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Eighth landing: multi-line d5 shift-1 (hacking dock release)
+
+On the 51,623 body, `(5,3940) shift 1` (source lines 4082-4087) was landed:
+
+```cpp
+-                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                                 ->setName(String("", false));
+                         ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
+                         player->deleteHackingGame();
+                         m_nState++;
++                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+```
+
+The docking target's type store is independent of the target's name, the
+`field_0x74` store, `deleteHackingGame()` and the `m_nState` increment; nothing
+in between reads the docking type.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,623 -> 51,621  (-2)
+aligned    22,188 -> 22,623  (not a gate metric)
+size       57,232 / 57,232   (exact)
+.text      71,400 -> 71,398  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
