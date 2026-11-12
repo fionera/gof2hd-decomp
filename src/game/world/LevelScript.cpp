@@ -2374,11 +2374,11 @@ bool LevelScript::process(int delta) {
                     resetCamera(self);
                 }
                 if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
-                    Vector origin = (*enemies)[0]->getPosition();
-                    (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     int routePoints[3] = {0, 0, 800000};
                     (*enemies)[10]->setSpeed(2.0f);
                     (*enemies)[10]->setActive(true);
+                    Vector origin = (*enemies)[0]->getPosition();
+                    (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     (*enemies)[10]->setVisible(true);
                     delete m_pLevel->objectivesB;
                     player->setTurretMode(false);
