@@ -817,8 +817,11 @@ void HangarWindow::render() {
                             // bytes.  The upgrade check lives inside the guard body
                             // (the original's row-40 cleanup scope covers it), and
                             // the upgrade button order below is a codegen shape that
-                            // keeps the function at 9,700 B.
-                            if (tab != 0 && __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
+                            // keeps the function at 9,700 B.  The empty `tab == 0`
+                            // arm makes the zero-tab test a separate basic block,
+                            // which is what keeps the buy-list String temporaries in
+                            // r5/r6 instead of spilling `sl`.
+                            if (tab == 0) { } else if (__builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
                                 (*this->buttons)[1]->setVisible(true);
                                 int upgTab = tab;
                                 (*this->buttons)[1]->draw();
@@ -917,33 +920,33 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; __builtin_expect(count <= 4, 1); count++) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint, plain form 9700 -> 9696
-                String description("");
                 String price("");
+                String description("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch ((signed char) count) {
                     case 0:
-                        price = String(Globals::cItemListPrice_00);
                         description = String(Globals::cItemListDescription_00);
+                        price = String(Globals::cItemListPrice_00);
                         break;
                     case 1:
-                        price = String(Globals::cItemListPrice_01);
                         description = String(Globals::cItemListDescription_01);
+                        price = String(Globals::cItemListPrice_01);
                         break;
                     case 2:
-                        price = String(Globals::cItemListPrice_02);
                         description = String(Globals::cItemListDescription_02);
+                        price = String(Globals::cItemListPrice_02);
                         break;
                     case 3:
-                        price = String(Globals::cItemListPrice_03);
                         description = String(Globals::cItemListDescription_03);
+                        price = String(Globals::cItemListPrice_03);
                         break;
                     case 4:
-                        price = String(Globals::cItemListPrice_04);
                         description = String(Globals::cItemListDescription_04);
+                        price = String(Globals::cItemListPrice_04);
                         break;
                     default:
-                        price = String("");
                         description = String("");
+                        price = String("");
                         break;
                 }
                 int row = (unsigned char) count / 3;

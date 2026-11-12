@@ -19,8 +19,8 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,271** | 1,942 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,984** | 1,119 | 17,172 |
-| `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
-| `HangarWindow::render` | **1,317** | 717 | 9,700 |
+| `MGame::OnTouchEnd` | **2,910** | 1,698 | 8,080 |
+| `HangarWindow::render` | **1,179** | 632 | 9,700 |
 | `Level::createShip` | **1,189** | 397 | 2,764 |
 | `Status::missionCompleted` | **451** | 205 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -371,14 +371,23 @@ Landed changes:
   `.text` 72,849 -> 72,842 (-7), `.ARM.extab` 597 -> 596 (-1), build-id
   20 unchanged, total (text+extab+build-id) 73,466 -> 73,458 (-8).
   `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+* `HangarWindow::render` (w13430): buy-list String decl/assign order and the
+  `tab == 0` empty arm that keeps the String temporaries in r5/r6. Raw
+  **1,317 -> 1,179** (-138), aligned 717 -> 632.
+* `MGame::OnTouchEnd` (w13441): campaign-65 statement order
+  (`field_64`/`field_5c`/`field_60`/`field_68`/`reader`/switch). Raw
+  **2,913 -> 2,910** (-3), aligned 1,706 -> 1,698. Combined `.text`
+  72,842 -> 72,701 (-141), `.ARM.extab` 596 -> 584 (-12), build-id 20
+  unchanged, total (text+extab+build-id) 73,458 -> 73,305 (-153).
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
 * `LevelScript::process` (w13368): `setFreeLookMode`/`m_pRadar->enabled`
   swap (`46c07d031`). Raw **51,743 -> 51,742** (-1), aligned
   22,483 -> 22,479. `.text` 72,999 -> 72,975 (-24 combined), `.ARM.extab`
   603 and build-id 20 unchanged, total (text+extab+build-id)
   73,622 -> 73,598 (-24). `.rel.plt` byte-identical, 27/27 headers, file
   size 2,187,328 exact.
-Section deltas: `.text` **72,842** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **596** (size- and
+Section deltas: `.text` **72,701** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,351** (+0xc0: the w13358 rank table fills the first 0xc0 bytes of the
@@ -387,7 +396,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,458**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,305**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
