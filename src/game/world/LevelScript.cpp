@@ -3533,9 +3533,9 @@ bool LevelScript::process(int delta) {
                         player->stopShooting(0);
                         wcamera->setLookAtCam(true);
                         player->setFreeze(true);
-                        m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         player->setFreeLookMode(false);
+                        m_bCinematicBreak = 1;
                         player->player->setVulnerable(false);
                         player->setVisible(false);
                         m_nScriptTimerA = 0;
