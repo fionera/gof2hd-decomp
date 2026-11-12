@@ -121,3 +121,72 @@ measure), `chainlib.py` (chain block parser), `bodyperm.py` (per-block body
 permutation), `gettersweep.py` (24-permutation getter sweep), `secdiff.py`
 (section diffs), `rangediff.py` / `nonbranch.txt` (residual classification).
 All builds `ninja -j2` under `ulimit -v 12000000`.
+
+## Win 2 — campaign-mission-65: `initStreamOutPosition` after `departStation` (raw 2909 -> 2907)
+
+After Win 1 the block-65 body is
+
+```cpp
+Globals::status->field_5c = this->player->player->getShieldHP();
+Globals::status->field_60 = this->player->player->getArmorHP();
+Globals::status->field_68 = this->player->player->getGammaHP();
+Globals::status->field_64 = this->player->player->getHitpoints();
+FileRead *reader = new FileRead();
+Globals::switch_to_target_setting = 1;
+Level::initStreamOutPosition = 1;
+Globals::status->departStation(reader->loadStation(100));
+delete reader;
+```
+
+Swapping the two independent stores/calls
+
+```cpp
+Globals::switch_to_target_setting = 1;
+Globals::status->departStation(reader->loadStation(100));
+Level::initStreamOutPosition = 1;
+```
+
+is behaviour-preserving (the store is to a global, the call reads only
+`reader`), size-exact (8,080), `.rel.plt` byte-identical, `.ARM.extab` content
+unchanged (584), and drops raw **2,909 -> 2,907** (`.text` 72,594 -> 72,592),
+a net -2. The instruction-aligned metric rises 1,705 -> 1,778; the raw byte
+count is the objective.
+
+This was found by an exhaustive adjacent-transposition sweep of every chain
+block body (all 18 blocks, ~150 builds). It is the only sub-2,909 cell in that
+sweep; every other block's best adjacent transposition is >= 2,909 (block 162,
+127, 100, 110, 81, 134, 126 have raw-neutral ties at 2,909).
+
+Cumulative for this pass: raw **2,910 -> 2,907**, `.text` 72,595 -> 72,592,
+`.ARM.extab` 584 unchanged, total (text+extab+build-id) 73,199 -> 73,196.
+
+## Win 3 — campaign-mission-65: `delete reader` before `initStreamOutPosition` (raw 2907 -> 2904)
+
+After Win 2 the block-65 tail is
+
+```cpp
+Globals::switch_to_target_setting = 1;
+Globals::status->departStation(reader->loadStation(100));
+Level::initStreamOutPosition = 1;
+delete reader;
+```
+
+Swapping the independent `Level::initStreamOutPosition = 1;` store and
+`delete reader;`:
+
+```cpp
+Globals::status->departStation(reader->loadStation(100));
+delete reader;
+Level::initStreamOutPosition = 1;
+```
+
+is behaviour-preserving, size-exact (8,080), `.rel.plt` byte-identical,
+`.ARM.extab` content unchanged (584), and drops raw **2,907 -> 2,904**
+(`.text` 72,592 -> 72,589), a net -3 (build-id diff also happened to drop
+20 -> 19, total 73,196 -> 73,192).
+
+The block-65 adjacent-transposition sweep was re-run after Win 2; this is the
+only sub-2,907 cell. Re-running it again after Win 3 is the natural next step.
+
+Cumulative for this pass: raw **2,910 -> 2,904**, `.text` 72,595 -> 72,589,
+`.ARM.extab` 584 unchanged.
