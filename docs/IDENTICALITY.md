@@ -26,7 +26,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
-| `Generator::createMission` | **40** | 21 | 1,996 |
+| `Generator::createMission` | **3** | 3 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
@@ -476,8 +476,14 @@ Landed changes:
   (-47), aligned 2,010 -> 2,025. `.text` 72,257 -> 72,210 (-47),
   `.ARM.extab` 584 unchanged, build-id 20, total 72,861 -> 72,814 (-47).
   `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **72,210** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
+* `Generator::createMission` (w13366): hoist `costRem` and remove the
+  volatile bonus anchors; the faithful bonus block keeps `rawBonus`/`b`
+  in the original registers. Raw **40 -> 3** (-37), aligned 21 -> 3.
+  `.text` 72,210 -> 72,173 (-37), `.ARM.extab` 584 -> 577 (-7), build-id
+  20, total 72,814 -> 72,770 (-44). `.rel.plt` byte-identical, 27/27
+  headers, file size 2,187,328 exact.
+Section deltas: `.text` **72,173** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **577** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,644** (+0x1e5: the 484 B w13431 rank helper fills the first 0x1e5 bytes of the
@@ -486,7 +492,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,814**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,770**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

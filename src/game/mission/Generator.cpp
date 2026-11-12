@@ -747,10 +747,7 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
-    volatile int bonus;
-    // Volatile anchor: keeps rawBonus in r6 and b in r5, matching the
-    // original bonus block's register assignment.
-    volatile int bv;
+    int bonus;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -761,6 +758,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     uint32_t race = agent->getRace();
     int itemId;
     int amount;
+    int costRem;
 
     bool selected = false;
     uint32_t type = 0;
@@ -955,10 +953,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         int remVal = rawBonus % 50;
         int b = rawBonus + remVal;
         volatile int rem = remVal;
+        int remCopy = rem;
         if (b % 50 != 0) {
-            b = rawBonus - rem;
+            b = rawBonus - remCopy;
         }
-        bv = rawBonus;  // volatile anchor (dead store; fixes the r6/r5 split)
         bonus = b;
     }
 
@@ -978,7 +976,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
-    int costRem = costs % 50;
+    costRem = costs % 50;
     if ((costs + costRem) % 50 == 0) {
         costs += costRem;
     } else {
