@@ -829,7 +829,7 @@ void HangarWindow::render() {
                                 if (__builtin_expect(upgTab == 1 && this->upgradeMode, 1)) { // lint: arm_builtin
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
-                                    (*this->buttons)[2]->setVisible(true);
+                                    (*this->buttons)[2]->setVisible(this->upgradeMode);
                                     (*this->buttons)[10]->setVisible(true);
                                     (*this->buttons)[10]->draw();
                                 }
@@ -921,7 +921,7 @@ void HangarWindow::render() {
                 String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 Layout *lay = Globals::layout;
-                switch (count) {
+                switch ((signed char) count) {
                     case 0:
                         price = String(Globals::cItemListPrice_00);
                         description = String(Globals::cItemListDescription_00);
