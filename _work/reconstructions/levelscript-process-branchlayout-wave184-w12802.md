@@ -135,3 +135,49 @@ layout prefers this order.
 Cumulative for this pass: raw **52,281 -> 52,271** (-10), `.text`
 74,842 -> 74,832, aligned 20,700 -> 20,694; size-exact, `.rel.plt`-identical,
 `.ARM.extab` unchanged.
+
+## Pass 3: 12-statement-run permutation harvest
+
+The 3-4-statement run sweep above produced 13 composing single-move winners.
+One of them (the `Route *route = new Route(...)` run at source lines
+3976-3979) shrinks `.ARM.extab` by 4 bytes (156,308 vs 156,312) and blows the
+`.ARM.extab` content diff from 646 to 28,848 even though it saves 1 raw byte;
+per the "net loss" rule it was dropped.  The other 12 compose:
+
+```
+                         after pass 2     after pass 3
+process raw diffbytes    52,271           52,256     (-15)
+process aligned insns    20,700           20,707     (+7)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,832           74,817     (-15)
+.ARM.extab diffbytes     646              646        (size/base exact)
+.ARM.exidx diffbytes     0                0
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Landed moves (line numbers are from the pass-2 tree; all are permutations of
+3-4 consecutive independent statements, `[old order] -> [new order]`):
+
+| lines | block | new order |
+|---|---|---|
+| 3401-3404 | `resetCamera` / `setTurretMode` / `setFreeze` / `setVisible` | resetCamera, setVisible, setTurretMode, setFreeze |
+| 5188-5191 | enemy+geometry `setVisible` / `startFade` / `sound->play(2248)` | play, startFade, geometry setVisible, enemy setVisible |
+| 720-723 | `sound->play(158)` / `update(158)` / `stop` / `play(161)` | update(158), stop, play(158), play(161) |
+| 1324-1326 | `startFade(false)` / `enemies[2]->setVisible(true)` / `m_nState=4` | m_nState=4, setVisible, startFade |
+| 1878-1880 | `setLookAtCam` / `setComputerControlled` / `setPosition` | setLookAtCam, setPosition, setComputerControlled |
+| 1994-1996 | `setActive(false)` / `setPosition` / `m_nState=5` | m_nState=5, setPosition, setActive(false) |
+| 2037-2040 | `setTarget` / `setPosition` / `translate` / `forceUpdate` | setTarget, setPosition, forceUpdate, translate |
+| 3125-3127 | `setRocketControl` / `killLiberator` / `setRumblePercentage` | killLiberator, setRocketControl, setRumble |
+| 3212-3214 | `setTurretMode(false)` / `field_0xab=isInTurretMode()` / `resetCamera` | resetCamera, field_0xab=isInTurretMode(), setTurretMode(false) |
+| 3216-3218 | `setRocketControl` / `killLiberator` / `setRumblePercentage` | setRumble, killLiberator, setRocketControl |
+| 4708-4711 | `setSpeed` / `setFixed` / `setTarget` / `m_tempVec=...` | setTarget, setFixed, m_tempVec, setSpeed |
+| 5297-5300 | `revive` / `setActive(true)` / `setPosition` / `turnEnemy` | revive, turnEnemy, setPosition, setActive(true) |
+
+The 3212-3214 move is the semantically faithful one: the original
+`0x13a15c` reads `isInTurretMode()` into `field_0xab` *before*
+`setTurretMode(false)` and `resetCamera`, which the new order reproduces.
+
+Cumulative for the whole pass: raw **52,281 -> 52,256** (-25), `.text`
+74,842 -> 74,817, aligned 20,700 -> 20,707; size-exact, `.rel.plt`-identical,
+`.ARM.extab` size/base exact and content diff unchanged at 646.

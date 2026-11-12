@@ -16,11 +16,11 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,261** | 20,624 | 57,232 |
-| `Radar::draw` | **6,315** | 1,858 | 9,908 |
+| `LevelScript::process` | **52,223** | 20,616 | 57,232 |
+| `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,626** | 1,138 | 17,172 |
-| `MGame::OnTouchEnd` | **3,030** | 1,446 | 8,080 |
+| `MGame::OnTouchEnd` | **3,028** | 1,450 | 8,080 |
 | `HangarWindow::render` | **1,512** | 723 | 9,700 |
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -39,6 +39,21 @@ Landed changes:
 * `LevelScript::process` (w12802): two branch-layout passes (mission-0 state-16
   tail order; shared rocket-control cleanup order). Raw **52,271 -> 52,261**
   (-10). The two workers compose.
+* `LevelScript::process` (w12801): strip the case-142 expect. Raw
+  **52,261 -> 52,260** (-1).
+* `LevelScript::process` (w12804): iOS-structure pass 2 (three composing
+  statement-order moves: hideShip after setLookAtCam, dir*3000 after
+  forceUpdate, dir*2000 after setPosition). Raw **52,260 -> 52,252** (-8).
+* `LevelScript::process` (w12805): K=6..8 + distance-21..40 + 2-opt statement
+  moves. Raw **52,252 -> 52,238** (-14).
+* `LevelScript::process` (w12802): branch-layout passes 3-4 (12-run
+  permutation harvest; re-swept cleanup-block order). Raw **52,238 -> 52,223**
+  (-15).
+* `Radar::draw` (w12811): commutative hull-bar multiply. Raw **6,315 ->
+  6,311** (-4), aligned 1,858 -> 1,903.
+* `MGame::OnTouchEnd` (w12816): two store-order passes (instant-action store
+  order; shield-HP store after the flag stores). Raw **3,030 -> 3,028** (-2),
+  aligned 1,446 -> 1,450.
 * `HangarWindow::render` (w12817): flip the ship-guard compound condition to
   `Globals::status->getShip() != this->selectedItem->ship`, which changes the
   live-range/`cmp` form across the `getShip()` call. Raw **1,514 -> 1,512**
@@ -46,12 +61,12 @@ Landed changes:
   `.ARM.extab` content grows 1 byte; total differing bytes still drop
   75,508 -> 75,507 and the section stays size- and base-exact.
 
-Section deltas: `.text` **74,820** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,776** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,487**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,443**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 183)
@@ -109,6 +124,9 @@ Landed changes:
   Raw **1,523 -> 1,514** (-9).
 * `Radar::draw` (w12711): arithmetic-order/store-scheduling cells. Raw
   **6,322 -> 6,315** (-7), aligned 1,782 -> 1,858.
+* `Radar::draw` (w12811): commutative hull-bar multiply operand swap
+  (`max * (rate/100)` for `(rate/100) * max`; IEEE-identical). Raw
+  **6,315 -> 6,311** (-4), aligned 1,858 -> 1,903.
 * `ModStation::ModStation` (w12719): `nearKey` argument swap + fence removal.
   Raw **27 -> 11** (-16), aligned 15 -> 5.
 * `MGame::OnTouchEnd` (w12716): hoist the instant-action predicate. Raw
@@ -118,7 +136,7 @@ Landed changes:
 * `Radar::draw` (w12709): revert the second `lockedEnemy` cleanup order.
   Raw **6,322 -> 6,321** (-1).
 
-Section deltas: `.text` **74,842** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,838** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **646** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
