@@ -6,9 +6,18 @@ Original `/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so`
 
 Target `_ZN12HangarWindow6renderEv` (`0x1490d8`), 9,700 B, 3,734 insns.
 
-## Result: no size-exact raw win — `src/` left at the base
+## Result: one size-exact raw win on the branch base; not landed on current master (extab net loss)
 
-Entry state (re-measured on this branch):
+The landed pass is documented in
+`_work/reconstructions/hangarwindow-render-wave190-w13468-shipbody.md`:
+the ship-body upgrade-button calls are reordered to
+`draw`, `setPosition`, `setVisible` with `int upgTab = tab;` between
+`draw()` and `setPosition()`.  That took raw **1,038 -> 1,028**
+(aligned 620 -> 509), size still 9,700 B, but on current master it grows
+`.ARM.extab` content 575 -> 1,208 (+633), so it is not landed.  Everything below was measured
+on the pre-pass base (raw 1,038) and remains valid as a negative sweep.
+
+Entry state (pre-pass, re-measured on this branch):
 
 | metric | value |
 |---|---:|
@@ -20,6 +29,19 @@ Entry state (re-measured on this branch):
 | `.ARM.extab` section diff | 578 |
 | build-id | 20 |
 | total differing bytes | 72,816 |
+
+Post-pass base: raw **1,028**, aligned **509**, size 9,700, insn 3,727/3,734.
+Additional negatives measured on the post-pass base: all 24 permutations of
+the `buttons[10]` inner block (base `setPosition`, `setVisible`, `setVisible`,
+`draw` is best), all 6 permutations of every other
+`setPosition`/`setVisible`/`draw` button block (`buttons[0]`, `[5]`, `[6]`,
+`[7]`, `[8]`, `[9]`, `[23]`, `[b]`; base order best), all 24 permutations of
+the buy-list `setPosition`/`replaceTextKeepSize`/`setSplitText`/`draw` block
+(base best), all 24 permutations of the `buttons[11]` footer block (base
+best), all 24 permutations of the `buttons[17]` listMode block (base best),
+the `listModeFlag` branch swap (tie), the `viewMode` block permutations
+(base best), the buy-list `switch` case-order reversal (tie), and 400 random
+2-4-edit combinations from the 37-edit pool (best 1,028).
 
 `check` is green (RATCHET PASS, byte_exact 4507, linked_exact 4507,
 size-exact 4524/4524, data 843/843, imports 207, lint CLEAN, drift 0,
