@@ -1365,11 +1365,12 @@ bool LevelScript::process(int delta) {
         if (m_nState == 1) {
             m_pCamera->translate((float) -delta * 0.3f, (float) -delta * 0.05f, (float) delta * 0.1f);
             if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                PlayerFighter *fighter = (PlayerFighter *) (*enemies)[0];
                 m_nState = 2;
-                ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(false);
+                fighter->setCloakingPossible(false);
                 (*enemies)[0]->awake();
                 (*enemies)[0]->setVisible(true);
-                ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+                fighter->setAIDisabled(true);
                 m_nScriptTimerA = 0;
             }
         } else if (__builtin_expect(m_nState == 2, 0)) { // lint: arm_builtin
@@ -2773,10 +2774,11 @@ bool LevelScript::process(int delta) {
                     }
                     camA->setRumblePercentage(rumble, 100);
                     if (m_nScriptTimerA >= 8001) {
+                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                         m_pGeometry5->setPosition(m_pGeometry1->getPosition() + Vector{0.0f, 0.0f, -10000.0f});
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                        ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                        ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         Globals::sound->play(160, nullptr, nullptr, 0.0f);
                         m_nScriptTimerA = 0;
@@ -4649,11 +4651,10 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
-                        Level *lvl = m_pLevel;
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*lvl->getEnemies())[1]->geometry);
-                        m_tempVec = (*lvl->getEnemies())[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
+                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
