@@ -77,3 +77,78 @@ data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370).
 Note: the multi-line object-file screen under-reports the link delta for
 call-reorder cells (relocation bytes are zero in the object); every cell above
 was re-measured with a full gold link.
+
+## Second landing: d5 shift-2 rotation (mission-? pirate route block)
+
+After the first landing (raw 51,636), the remaining cyclic shifts (shift 2/3/4,
+i.e. the rotations the up/down sweep does not test) were screened on the
+line-based d5/d6 windows and every size-exact candidate was re-measured with a
+full gold link.
+
+Landed: source lines 2377-2381, rotate the 5-statement group by 2:
+
+```cpp
+-                        Vector origin = (*enemies)[0]->getPosition();
+-                        (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                         int routePoints[3] = {0, 0, 800000};
+                         (*enemies)[10]->setSpeed(2.0f);
+                         (*enemies)[10]->setActive(true);
++                        Vector origin = (*enemies)[0]->getPosition();
++                        (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+```
+
+`routePoints` is a local array declaration and `origin` a local Vector; neither
+is read by the intervening `setSpeed`/`setActive` calls on `enemies[10]`, and
+`setDirection` on `enemies[10]->geometry` is independent of both.  Semantics
+preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,636 -> 51,633  (-3)
+aligned    22,183 -> 22,183
+size       57,232 / 57,232   (exact)
+.text      71,413 -> 71,410  (-3)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
+
+Other shift-2/3/4 cells measured on the 51,636 body: `(5,3325) shift 2`
+raw 51,634 (-2, safe), `(5,1206) shift 2/3` 51,636 (neutral),
+`(5,3221) shift 2` 51,637, `(5,689) shift 2` changes `.rel.plt` (rejected),
+`(5,1236/1237) shift 2` 51,635 but move `m_tempVec.z +=` before the
+`m_tempVec = getPosition()` assignment (rejected), `(5,2409) shift 3` and
+`(5,3008) shift 3` reorder RNG/vector reads (rejected).
+
+## Third landing: d5 shift-2 rotation (hud/radar/target group)
+
+On the 51,633 body, the previously measured `(5,3325) shift 2` cell was
+re-measured and landed.  Source lines 3326-3330:
+
+```cpp
+-                        m_bCinematicBreak = 1;
+-                        player->player->setVulnerable(false);
+                         m_pHud->visible = 0;
+                         m_pRadar->enabled = 0;
+                         m_pCamera->setTarget((*enemies)[0]->geometry);
++                        m_bCinematicBreak = 1;
++                        player->player->setVulnerable(false);
+```
+
+Independent flag stores (cinematic break, player vulnerability) vs HUD/radar
+enables and the camera target; no statement reads what another writes.
+
+Measured alone on the real build:
+
+```
+raw        51,633 -> 51,631  (-2)
+aligned    22,183 -> 22,188
+size       57,232 / 57,232   (exact)
+.text      71,410 -> 71,408  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.

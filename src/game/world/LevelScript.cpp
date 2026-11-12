@@ -3323,11 +3323,11 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     player->setVisible(false);
                     player->setFreeze(true);
-                    m_bCinematicBreak = 1;
-                    player->player->setVulnerable(false);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_bCinematicBreak = 1;
+                    player->player->setVulnerable(false);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
                     Globals::sound->play(2240, nullptr, nullptr, 0.0f);
