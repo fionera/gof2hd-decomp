@@ -10,26 +10,27 @@ This pass re-maps the literal pools and branch displacements on the current
 51,874 body, re-runs the whole `__builtin_expect` sweep (3,110 cells), a
 comparison-operand swap sweep (524 cells), a constant-bearing adjacent
 statement sweep (682 cells) and a constant-bearing 3-statement rotation sweep
-(1,238 cells) and a full adjacent-statement sweep (1,701 cells).  Nine
-independent, semantics-preserving edits compose to a size-exact,
-`.rel.plt`-identical raw win:
-**51,874 -> 51,860 (-14)**.
+(1,238 cells), a full adjacent-statement sweep (1,701 cells) and a full
+3-statement rotation sweep (2,496 cells).  Seventeen independent,
+semantics-preserving edits compose to a size-exact, `.rel.plt`-identical raw
+win:
+**51,874 -> 51,851 (-23)**.
 
 ## Result (code win landed)
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,874           51,860     (-14)
-process aligned insns    21,005           21,017     (+12)
+process raw diffbytes    51,874           51,851     (-23)
+process aligned insns    21,005           21,708     (+703)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,726  20,830 / 20,726
-.text diffbytes          73,999           73,985     (-14)
+.text diffbytes          73,999           73,976     (-23)
 .ARM.extab diffbytes     639              639        (size/base exact @0x1a3b78, 156,312 B)
 .ARM.exidx diffbytes     0                0          (byte-identical)
 .rodata / .data / .bss   0 / 0 / 0        0 / 0 / 0
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical, 29,392 B)
 .note.gnu.build-id       20               20
-total differing bytes    74,658           74,644     (-14)
+total differing bytes    74,658           74,635     (-23)
 file size                2,187,328        2,187,328  (exact)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -166,6 +167,28 @@ camera target pointer vs look-at flag).  Composed: raw **51,860** (-14),
 `.ARM.extab` 639 unchanged.  The other size-exact d=1 winners (lines 5229,
 2532, 2674) are the same semantically-wrong/use-after-free cases listed above.
 
+### G. Eight more full d=2 rotations (-9)
+
+The full (unfiltered) 3-statement rotation sweep on the 51,860 body (2,496
+candidates) found eight further safe rotations with disjoint receivers:
+
+| source line | rotation | raw alone |
+|---:|---|---:|
+| 5103 | `m_nScriptTimerA = 0; m_nScriptTimerB = 0;` before `player->setVisible(false)` | -2 |
+| 2281 | camera `setTarget` + player `setComputerControlled` before `setLookAtCam(false)` | -1 |
+| 2326 | `player->setFreeLookMode(false)` before `setTurretMode(false)` + `resetCamera` | -1 |
+| 2441 | camera `setTarget` before `setLookAtCam(true)` + `setActive(true)` | -1 |
+| 2492 | camera `setLookAtCam(true)` before player `setFreeLookMode`/`setComputerControlled` | -1 |
+| 3188 | enemy `setVisible(false)` + player `setVulnerable(true)` before enemy `setActive(false)` | -1 |
+| 3343 | `resetCamera` + `player->setFreeze(false)` before `resetGunDelay()` | -1 |
+| 4752 | enemy0 `setVulnerable(true)` before enemy1 `setAlwaysEnemy` + enemy0 `setEnemies(nullptr)` | -1 |
+
+All eight compose with A-F: raw **51,851** (-23 from 51,874), `.text`
+**73,976**, size 57,232/57,232, `.rel.plt` byte-identical, `.ARM.extab` 639
+unchanged.  The aligned instruction metric rises to 21,708 (the stripped
+objdump linear sweep; the unstripped gold output reports 21,487 because it
+carries ARM mapping symbols), but `aligned` is not part of the gate.
+
 ## Literal-pool map on the current 51,874 body
 
 Reference-clustered pool spans (PC-relative `ldr`/`vldr`/`ldrd` targets,
@@ -263,9 +286,9 @@ cd /home/debian/GalaxyOnFire2/wt/w13338
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51860 size=57232/57232 text=73985 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51851 size=57232/57232 text=73976 relplt=289b2a069f8504d1e8a3919e43915e04
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51860 aligned=21017 size= 57232/57232 insn=20726/20830
+# -> raw= 51851 aligned=21708 size= 57232/57232 insn=20726/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 cmake --build cmake-build-match --target lint  -- -j2   # CLEAN
 cmake --build cmake-build-match --target drift -- -j2   # 0 drifted fields
@@ -273,5 +296,6 @@ cmake --build cmake-build-match --target drift -- -j2   # 0 drifted fields
 
 Scratch harnesses (`fast.py`, `pools.py`, `bmap.py`, `sweep_expect.py`,
 `sweep_adj.py`, `sweep_cmp.py`, `sweep_rot2.py`, `expect_res.jsonl`,
-`adj_res.jsonl`, `adj_all_res.jsonl`, `cmp_res.jsonl`, `rot2_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
+`adj_res.jsonl`, `adj_all_res.jsonl`, `cmp_res.jsonl`, `rot2_res.jsonl`,
+`rot2_all_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
 scratch, not tracked.
