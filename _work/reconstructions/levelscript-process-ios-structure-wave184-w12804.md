@@ -262,3 +262,42 @@ All three are behaviour-neutral shape moves: a local vector-fetch is sunk past
 a `+=`, a `computerControlled` store is sunk past an independent
 `autoTurretEnabled` read, and a camera setter is sunk past an enemy
 `setVisible(false)`.
+
+## Seventh sweep (non-hot stride-11, offset 7): eight shape moves
+
+The stride-11 sample at offset 7 (304 candidates) produced eight raw-lowering
+moves, all size-exact / `.rel.plt`-identical, which compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 2434 `player->setTurretMode(false);` | after `player->stopShooting(0)` | 52,231 |
+| 3125 `player->setRocketControl(nullptr, nullptr);` | after `player->killLiberator()` | 52,231 |
+| 3139 `m_pCamera->setLookAtCam(true);` | after `m_pCamera->setTarget(player->geometry)` | 52,230 |
+| 3403 `player->setFreeze(true);` | after `player->setVisible(false)` | 52,231 |
+| 3722 `m_pCamera->enableFirstPersonCam(false);` | after `m_pCamera->setTarget((*enemies)[2]->geometry)` | 52,231 |
+| 3778 `player->setFreeze(false);` | after `m_pCamera->setFixed(false)` | 52,231 |
+| 3837 `player->setRocketControl(nullptr, nullptr);` | after `player->killLiberator()` | 52,224 |
+| 4747 `(*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);` | after `(*m_pLevel->getEnemies())[1]->field_0x74 = 0` | 52,231 |
+
+Measured together: raw **52,232 -> 52,216** (-16 B), size 57,232/57,232 exact,
+`.text` **74,793 -> 74,777**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
+`RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
+lint CLEAN, drift 0, parity 5370/5370.
+
+## Eighth sweep (non-hot stride-11, offset 8): three shape moves
+
+The stride-11 sample at offset 8 (304 candidates) produced three raw-lowering
+moves, all size-exact / `.rel.plt`-identical, which compose:
+
+| site (base lines) | move | alone raw |
+|---|---|---:|
+| 2261 `player->setFreeLookMode(false);` | after `player->stopShooting(0)` | 52,214 |
+| 2919 `m_dirVec = player->geometry->getRightVector();` | after `m_nState = 6;` | 52,214 |
+| 5209 `m_nState++;` | after `Globals::status->field_5c = player->player->getShieldHP()` | 52,215 |
+
+Measured together: raw **52,216 -> 52,211** (-5 B), size 57,232/57,232 exact,
+`.text` **74,777 -> 74,772**, `.rel.plt` md5
+`289b2a069f8504d1e8a3919e43915e04` (byte-identical).  Gate re-run:
+`RATCHET PASS`, byte/linked 4507, size 4524/4524, data 843/843, imports 207,
+lint CLEAN, drift 0, parity 5370/5370.
