@@ -2298,9 +2298,9 @@ case4Tail:
                         ship->setPosition((float) (offset + this->enemyRoute->getWaypoint(0)->x),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->y),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->z));
-                        (*this->enemies)[i]->getRoute()->reachWaypoint(0);
-                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->player->setAlwaysEnemy(true);
+                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+                        (*this->enemies)[i]->getRoute()->reachWaypoint(0);
                         offset += 2000;
                     }
                     for (int j = 0; (unsigned) (convoyEnd + j) < this->enemies->size(); j++) {
