@@ -140,3 +140,48 @@ Deliberately **not** landed (semantic, despite the -1 raw each):
   assignment it reads.
 * 1707/1710 and 3024/3027 — pairs of stores to the same field (`m_nState`,
   `m_dirVec`); order decides the winner.
+
+## Follow-up 2: distance-4 sweep, nine independent pairs (raw 51,832 -> 51,820)
+
+A fresh distance-4 adjacent-statement sweep over the whole `process` body on
+the 51,832 body (1,144 same-indent quadruples, exact compile+link, 4 workers)
+found one large but semantic-changing pair and a set of independent -1/-2
+pairs.  The independent ones compose additively:
+
+```
+                         after follow-up 1  after follow-up 2
+process raw diffbytes    51,832             51,820     (-12)
+process aligned insns    21,046             20,984     (-62, not a gate metric)
+orig / ours size         57232 / 57232      57232 / 57232   (size-exact)
+.text diffbytes          73,927             73,915     (-12)
+.ARM.extab diffbytes     614                614        (unchanged)
+.rel.plt                 md5 289b2a06…      md5 289b2a06…   (byte-identical)
+total differing bytes    74,561             74,549     (-12)
+RATCHET                  PASS               PASS
+```
+
+Landed pairs (line numbers on the 51,832 body; disjoint receivers, nothing
+between them reads what the other writes):
+
+| lines | statements swapped | alone |
+|---|---|---:|
+| 3297/3301 | `(*enemies)[i]->setVisible(true)` / `(*enemies)[i]->awake()` | -2 |
+| 3877/3881 | `marker->setPosition(...)` / `Vector camPos = *wcamera->getPosition()` | -2 |
+| 4524/4528 | `player->setSpeed(0.0f)` / `player->player->setVulnerable(false)` | -2 |
+| 1206/1210 | `m_pCamera->setTarget(player->geometry)` / `player->setComputerControlled(false)` | -1 |
+| 2259/2263 | `m_pCamera->enableFirstPersonCam(false)` / `m_pCamera->setLookAtCam(true)` | -1 |
+| 2389/2393 | `player->hideShipForFirstPersonCameraView(false)` / `resetCamera(m_pLevel)` | -1 |
+| 2492/2496 | `player->setFreeLookMode(false)` / `m_pCamera->setActive(true)` | -1 |
+| 3134/3138 | `player->setComputerControlled(true)` / `player->setCollide(false)` | -1 |
+| 5034/5038 | `fighter->setVisible(false)` / `fighter->setActive(false)` | -1 |
+
+Not landed (semantic, despite the raw win):
+
+* 4984/4988 — **-22**, but it moves `moveForward` into the `isTriggered`
+  block and `setActive(false)` into the `expect` block (the original at
+  `0x141bdc..0x141c12` has `moveForward` in the `expect` block and
+  `setVisible/setActive` in the `isTriggered` block).
+* 3459/3463 — two stores to `m_dirVec` (`getDirection` / `getUpVector`);
+  order decides the final value.
+* 3752/3756 — the two `moveForward(2.5)` / `moveForward(2.3)` constants live in
+  different `if` arms; swapping the text moves the constants across arms.
