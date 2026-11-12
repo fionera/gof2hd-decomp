@@ -1365,8 +1365,8 @@ bool LevelScript::process(int delta) {
         if (m_nState == 1) {
             m_pCamera->translate((float) -delta * 0.3f, (float) -delta * 0.05f, (float) delta * 0.1f);
             if (((RadioMessage *) ((*messages)[2]))->isOver()) {
-                PlayerFighter *fighter = (PlayerFighter *) (*enemies)[0];
                 m_nState = 2;
+                PlayerFighter *fighter = (PlayerFighter *) (*enemies)[0];
                 fighter->setCloakingPossible(false);
                 (*enemies)[0]->awake();
                 (*enemies)[0]->setVisible(true);
@@ -2501,7 +2501,7 @@ bool LevelScript::process(int delta) {
                     camPos.x += -600.0f;
                     camPos.y += -300.0f;
                     camPos.z += -1000.0f;
-                    camPos += dir * 3000.0f;
+                    camPos += 3000.0f * dir;
                     m_pCamera->setPosition(camPos);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail

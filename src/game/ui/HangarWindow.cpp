@@ -1064,10 +1064,11 @@ void HangarWindow::render() {
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
                 PaintCanvas *volatile canvas = Globals::Canvas;
-                volatile int textY = (int) ((float) y + (float) height * 0.2f);
+                int textY = (int) ((float) y + (float) height * 0.2f);
+                volatile int &textYv = textY;
                 canvas->SetColor(0xffffffffu);
                 canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
-                                            textY, false);
+                                            textYv, false);
                 canvas->SetColor(0x777777ffu);
                 if (i == 0) {
                     canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4, false);
