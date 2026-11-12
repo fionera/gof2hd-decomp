@@ -256,3 +256,36 @@ Rejected in the same batch: `(6,4154) shift 4` raw 51,626 but moves
 `setTurretMode(false)` after `stopShooting(0)` (early-return change);
 `(5,2664) shift 3` moves `facing` before `m_pGeometry6->setPosition`;
 `(6,1810) shift 3` moves `translate` before `setPosition`.
+
+## Seventh landing: multi-line d5 shift-3 (transport wake group)
+
+On the 51,625 body, the remaining multi-line-statement windows were swept over
+*all* cyclic shifts (1,076 candidates, full gold link each).  Landed
+`(5,1879) shift 3` (source lines 1933-1939):
+
+```cpp
+-                        ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
+-                        KIPlayer *transport = (*enemies)[0];
+-                        transport->setPosition(...);
+                         player->setTurretMode(false);
+                         (*enemies)[0]->setVisible(true);
++                        ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
++                        KIPlayer *transport = (*enemies)[0];
++                        transport->setPosition(...);
+```
+
+`transport` is a local declaration, `setTurretMode`/`setVisible` are independent
+player/enemy flags; `setPosition` is on the same enemy but does not depend on
+either.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,625 -> 51,623  (-2)
+size       57,232 / 57,232   (exact)
+.text      71,402 -> 71,400  (-2)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.

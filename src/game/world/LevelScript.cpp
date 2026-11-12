@@ -1930,13 +1930,13 @@ bool LevelScript::process(int delta) {
                 // Escort the transport to the wormhole; the pirates jump in behind it.
                 if (m_nState == 0) {
                     if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                    player->setTurretMode(false);
+                    (*enemies)[0]->setVisible(true);
                     ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
                     KIPlayer *transport = (*enemies)[0];
                     transport->setPosition((float) m_pLevel->getFriendRoute()->getWaypoint(0)->x,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z);
-                    player->setTurretMode(false);
-                    (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->shipGroup = 1;
                     player->player->setVulnerable(false);
                     player->setFreeLookMode(false);
