@@ -122,3 +122,40 @@ cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 The harnesses (`gen.py`, `gen2.py`, `harness.py`, `worker.py`, `adiff.py`) and
 result tables (`cands.json`, `res.jsonl`) live in
 `/home/debian/GalaxyOnFire2/scratch/w13107/`; they are scratch, not tracked.
+
+## Pass 2 (same wave): size-compensating alias pair, 51,965 -> 51,962
+
+The single-edit sweep was re-run on the pass-1 body (1,584 candidates): no
+single edit wins.  The size-compensating pair search was then run over the
+`-4/+4`, `-8/+8`, `-12/+12`, `-16/+16`, `-20/+20`, `-24/+24` spaces (991 pairs,
+individual raw <= base+1000).  One pair is size-exact, `.rel.plt`-identical and
+raw-lowering.
+
+```
+                         pass 1           pass 2
+process raw diffbytes    51,965           51,962     (-3)
+process aligned insns    20,859           20,857
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+orig / ours insns        20,830 / 20,727  20,830 / 20,725
+.text diffbytes          74,271           74,268     (-3)
+.ARM.extab diffbytes     647              647        (unchanged)
+.note.gnu.build-id       20               20
+total differing bytes    74,938           74,935     (-3)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Landed edits (disjoint blocks; neither is a win alone):
+
+| # | new line | kind | edit |
+|---:|---:|---|---|
+| 1 | 3342 | alias | `TargetFollowCamera *camera = m_pCamera;` at the head of the `m_nScriptTimerA >= 2001` block; 3 uses of `m_pCamera` -> `camera` |
+| 2 | 5239 | hoist | hoist the existing `KIPlayer *enemy = (*enemies)[0];` above the `if (!(*enemies)[0]->isVisible())` test and use `enemy` in the condition |
+
+Both are pure pointer copies of a member / array element that are not
+reassigned in their blocks; the pair restores the exact size and lowers the
+raw diff by 3.
+
+Cumulative wave-187 result: raw **51,968 -> 51,962** (-6), `.text`
+**74,274 -> 74,268**, `.ARM.extab` unchanged at 647, `.rel.plt` byte-identical,
+size 57,232 exact.

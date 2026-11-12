@@ -1576,9 +1576,13 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->setStation(reader->loadStation(100));
                             delete reader;
                             Globals::sound->stopAll();
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
+                            FileRead *reader = new FileRead();
+                            Globals::status->setStation(reader->loadStation(98));
+                            delete reader;
                         } else if (__builtin_expect(mission->isCampaignMission(), 1) && Globals::status->getCurrentCampaignMission() == 162) { // lint: arm_builtin
-                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::switch_to_target_setting = 0;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
@@ -1590,10 +1594,6 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(10));
-                            delete reader;
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
-                            FileRead *reader = new FileRead();
-                            Globals::status->setStation(reader->loadStation(98));
                             delete reader;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 42) {
                             delete this->level->objectivesB;
