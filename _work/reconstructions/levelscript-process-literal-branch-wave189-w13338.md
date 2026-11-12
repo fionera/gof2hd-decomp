@@ -10,25 +10,26 @@ This pass re-maps the literal pools and branch displacements on the current
 51,874 body, re-runs the whole `__builtin_expect` sweep (3,110 cells), a
 comparison-operand swap sweep (524 cells), a constant-bearing adjacent
 statement sweep (682 cells) and a constant-bearing 3-statement rotation sweep
-(1,238 cells).  Seven independent, semantics-preserving edits compose to a
-size-exact, `.rel.plt`-identical raw win:
-**51,874 -> 51,862 (-12)**.
+(1,238 cells) and a full adjacent-statement sweep (1,701 cells).  Nine
+independent, semantics-preserving edits compose to a size-exact,
+`.rel.plt`-identical raw win:
+**51,874 -> 51,860 (-14)**.
 
 ## Result (code win landed)
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,874           51,862     (-12)
+process raw diffbytes    51,874           51,860     (-14)
 process aligned insns    21,005           21,017     (+12)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,726  20,830 / 20,726
-.text diffbytes          73,999           73,987     (-12)
+.text diffbytes          73,999           73,985     (-14)
 .ARM.extab diffbytes     639              639        (size/base exact @0x1a3b78, 156,312 B)
 .ARM.exidx diffbytes     0                0          (byte-identical)
 .rodata / .data / .bss   0 / 0 / 0        0 / 0 / 0
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical, 29,392 B)
 .note.gnu.build-id       20               20
-total differing bytes    74,658           74,646     (-12)
+total differing bytes    74,658           74,644     (-14)
 file size                2,187,328        2,187,328  (exact)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -149,6 +150,22 @@ must read the updated `camPos.x`), line 2674 (`setPosition` after
 `delete frame` is a use-after-free), line 2695 / 3158 / 4603 (matrix/position
 consumers must read the updated vector).
 
+### F. Two more adjacent swaps from the full d=1 sweep (-2)
+
+The full (unfiltered) adjacent-statement sweep on the current body (1,701
+candidates) found two further safe swaps beyond the constant-bearing subset:
+
+| source line | swap | raw alone |
+|---:|---|---:|
+| 3348 | `camera->setTarget(player->geometry);` before `player->setVisible(true);` | -1 |
+| 4835 | `m_pCamera->setTarget(wgeometry4);` before `m_pCamera->setLookAtCam(true);` | -1 |
+
+Both pairs touch disjoint state (camera target pointer vs player visibility;
+camera target pointer vs look-at flag).  Composed: raw **51,860** (-14),
+`.text` **73,985**, size 57,232/57,232, `.rel.plt` byte-identical,
+`.ARM.extab` 639 unchanged.  The other size-exact d=1 winners (lines 5229,
+2532, 2674) are the same semantically-wrong/use-after-free cases listed above.
+
 ## Literal-pool map on the current 51,874 body
 
 Reference-clustered pool spans (PC-relative `ldr`/`vldr`/`ldrd` targets,
@@ -246,9 +263,9 @@ cd /home/debian/GalaxyOnFire2/wt/w13338
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51862 size=57232/57232 text=73987 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51860 size=57232/57232 text=73985 relplt=289b2a069f8504d1e8a3919e43915e04
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51862 aligned=21017 size= 57232/57232 insn=20726/20830
+# -> raw= 51860 aligned=21017 size= 57232/57232 insn=20726/20830
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 cmake --build cmake-build-match --target lint  -- -j2   # CLEAN
 cmake --build cmake-build-match --target drift -- -j2   # 0 drifted fields
@@ -256,22 +273,5 @@ cmake --build cmake-build-match --target drift -- -j2   # 0 drifted fields
 
 Scratch harnesses (`fast.py`, `pools.py`, `bmap.py`, `sweep_expect.py`,
 `sweep_adj.py`, `sweep_cmp.py`, `sweep_rot2.py`, `expect_res.jsonl`,
-`adj_res.jsonl`, `cmp_res.jsonl`, `rot2_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
+`adj_res.jsonl`, `adj_all_res.jsonl`, `cmp_res.jsonl`, `rot2_res.jsonl`) live in `/home/debian/GalaxyOnFire2/scratch/w13338/`; they are
 scratch, not tracked.
-
-## Current-master re-test (2026-11-12, after w13330/w13351)
-
-Base: `master` `580751537`, `LevelScript::process` raw **51,844**, aligned 20,992.
-The four literal/branch edits were re-tested individually on this base:
-
-| edit | raw | delta |
-|---|---:|---:|
-| whole-condition `__builtin_expect` at line 1903 | 51,844 | 0 |
-| `int dy` / `KIPlayer *pirate` swap at line 2408 | 51,846 | +2 |
-| `m_pCamera->translate` / `player->setComputerControlled` swap at line 1957 | 51,850 | +6 |
-| all three together | 51,852 | +8 |
-
-The line-721 `play(158)`/`updateEvent3DAttributes(158)` swap was already landed by
-w13330 and is not re-counted. The three 3-statement rotations from the later
-`1152150e9` commit do land on current master: raw **51,844 -> 51,842** (-2),
-aligned 20,992 -> 20,998, `.text` 73,567 -> 73,565, size 57,232/57,232.
