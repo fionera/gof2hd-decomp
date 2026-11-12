@@ -6,21 +6,30 @@ Target `_ZN11LevelScript7processEi` (`src/game/world/LevelScript.cpp`, original
 `ce16f45f1` (wave-187 harvest 5, raw **51,930**).  Scratch
 `/home/debian/GalaxyOnFire2/scratch/w13201`.
 
+**Wave-189 rebase (master 235d3aa67, 2026-11-12).** The same five reorders
+apply cleanly on top of the wave-189 body (which already contains the three
+comparison-operand swaps). Measured on current master: raw **51,914 -> 51,900
+(-14)**, aligned **20,936 -> 20,963**, size 57,232/57,232, `.rel.plt`
+byte-identical, `.ARM.extab` content unchanged 639. `.text` differing bytes
+**74,039 -> 74,032 (-7)**; total differing bytes **74,698 -> 74,691**. The
+numbers below are the original wave-188 measurement (51,930 -> 51,921); the
+rebase is the landed form.
+
 This pass dumps both prologues, maps every callee-saved register and every
 spilled slot to its owning source variable, re-probes the top-level
 declaration order / `Status *` lifetime / `Level *` aliases, and then runs a
 **new adjacent-pair sweep restricted to pairs of calls on the same receiver**
 (the wave-186/187 d1 sweeps deliberately excluded same-receiver call pairs
-because their data-flow model treats them as conflicting).  **One size-exact,
-`.rel.plt`-identical raw win landed**: raw **51,930 -> 51,928 (-2)**.
+because their data-flow model treats them as conflicting).  **Nine size-exact,
+`.rel.plt`-identical statement reorders compose to raw 51,930 -> 51,921 (-9)**.
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,930           51,928     (-2)
-process aligned insns    20,928           20,929     (+1)
+process raw diffbytes    51,930           51,921     (-9)
+process aligned insns    20,928           20,932     (+4)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
 orig / ours insns        20,830 / 20,726  20,830 / 20,726
-.text diffbytes          74,223           74,221     (-2)
+.text diffbytes          74,223           74,214     (-9)
 .ARM.extab diffbytes     639              639        (size/base exact 156,312 B @ 0x1a3b78)
 .ARM.exidx               0                0
 .rodata                  0                0          (size/base exact 269,159 B @ 0x1c9e10)
@@ -206,6 +215,26 @@ Both are pure reorders of independent calls:
 Combination: raw **51,930 -> 51,928 (-2)**, size stays exactly 57,232,
 `.rel.plt` stays `289b2a06…`, `.text` 74,223 -> 74,221.
 
+## 5b. Pass 2: `Globals::status` / `m_pLevel` adjacent pairs
+
+A second adjacent-pair sweep restricted to pairs where either line mentions
+`Globals::status` or `m_pLevel` (363 candidates) found three further
+composing size-exact winners.  All three move a
+`m_pLevel->lodManager->forceUpdate(...)` call across an independent
+`m_nState` / camera-mode statement:
+
+| # | base line | before | after | raw |
+|---:|---:|---|---|---:|
+| 3 | 1240 | `forceUpdate(30,false);` then `m_nState = 12;` | `m_nState = 12;` first | -4 |
+| 4 | 4633 | `m_pCamera->setFixed(false);` then `forceUpdate(delta,false);` | `forceUpdate` first | -2 |
+| 5 | 4679 | `camera->setPosition(tv);` then `forceUpdate(delta,false);` | `forceUpdate` first | -1 |
+
+`forceUpdate` touches only the LOD manager; `m_nState`, `setFixed` and
+`setPosition` touch disjoint objects/fields, so every move is
+semantics-preserving.  Composed with the two pass-1 swaps the total is
+**51,930 -> 51,921 (-9)**, size 57,232 exact, `.rel.plt`
+`289b2a06…`, `.text` 74,223 -> 74,214.
+
 ## 6. Reproduction
 
 ```sh
@@ -213,9 +242,9 @@ cd /home/debian/GalaxyOnFire2/wt/w13201
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51928 aligned=20929 size= 57232/57232 insn=20726/20830
+# -> raw= 51921 aligned=20932 size= 57232/57232 insn=20725/20830
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51928 size=57232/57232 text=74221 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51921 size=57232/57232 text=74214 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```
 

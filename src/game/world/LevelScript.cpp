@@ -1237,8 +1237,8 @@ bool LevelScript::process(int delta) {
                 m_tempVec = (*enemies)[enemies->count - 10]->geometry->getPosition();
                 m_tempVec.y += 500.0f;    // @0x13bdd4
                 m_tempVec.z += -20000.0f; // @0x13bdd8
-                m_pLevel->lodManager->forceUpdate(30, false);
                 m_nState = 12;
+                m_pLevel->lodManager->forceUpdate(30, false);
                 m_tempVec.x += 2000.0f;   // @0x13bdd0
                 m_nScriptTimerA = 0;
                 m_pCamera->setTarget((*enemies)[enemies->count - 10]->geometry);
@@ -4630,8 +4630,8 @@ bool LevelScript::process(int delta) {
                         player->setSpeed(0.0f);
                         tvA += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setTarget(player->geometry);
-                        m_pCamera->setFixed(false);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_pCamera->setFixed(false);
                         m_pCamera->setPosition(tvA);
                         m_nScriptTimerA = 0;
                     }
@@ -4676,8 +4676,8 @@ bool LevelScript::process(int delta) {
                         tv += Vector{150.0f, 400.0f, -1500.0f};
                         player->setSpeed(0.02f);
                         m_nState++;
-                        camera->setPosition(tv);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        camera->setPosition(tv);
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
