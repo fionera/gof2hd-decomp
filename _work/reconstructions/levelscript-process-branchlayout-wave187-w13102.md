@@ -164,3 +164,35 @@ Scratch harnesses (`parse.py`, `calls.py`, `windows.py`, `fullalign.py`,
 `gaps.py`, `linemap.py`, `stmts.py`, `sweep.py`, `variant.py`, `armperm.py`)
 live in `/home/debian/GalaxyOnFire2/scratch/w13102/`; they are scratch, not
 tracked.
+
+## Pass 2: adjacent-pair sweep (whole function)
+
+A full sweep of every adjacent pair of independent single-line statements in
+`process` (1,050 measured candidates; the wave-186 body had already absorbed
+the earlier passes) found two further composing -1 cells in the same
+mission-state block (source lines 4626-4636):
+
+```
+m_pCamera->setTarget(player->geometry);      ->  tvA += Vector{-350.0f, 400.0f, -1500.0f};
+tvA += Vector{-350.0f, 400.0f, -1500.0f};        m_pCamera->setTarget(player->geometry);
+...
+m_pCamera->setPosition(tvA);                 ->  m_pLevel->lodManager->forceUpdate(delta, false);
+m_pLevel->lodManager->forceUpdate(delta, false); m_pCamera->setPosition(tvA);
+```
+
+`tvA` is a reference to `m_tempVec`; `setTarget` and `forceUpdate` do not
+touch it, so both moves are semantics-preserving.  Composed:
+
+```
+                         after pass 1     after pass 2
+process raw diffbytes    51,966           51,964     (-2)
+process aligned insns    20,857           20,855
+.text diffbytes          74,272           74,270     (-2)
+.ARM.extab diffbytes     647              647        (size/base exact)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Cumulative for the whole pass: raw **51,968 -> 51,964** (-4), `.text`
+74,274 -> 74,270, size-exact, `.rel.plt` byte-identical, `.ARM.extab`
+unchanged.

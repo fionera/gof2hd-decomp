@@ -102,6 +102,15 @@ All size-exact and `.rel.plt`-identical unless noted; base 51,968.
   size-changing (57,208).  `(delta<<1)&-16` -> `(delta*2)&-16` neutral.
 * **`Vector / 1.7f`** -> `* (1.0f/1.7f)` neutral.
 * **`(float)(m_nScriptTimerA*delta)*0.001f`** associativity variants neutral.
+* **`vec * (expr)` operand swap** (30 sites: `m_dirVec`/`m_tempVec`/
+  `*tmp`/`*scratch`/`*acc`/`*tempVec` times a parenthesised float expression,
+  rewritten to `(expr) * vec`): every site is worse or size-changing
+  (raw 52,001..53,526; sizes 57,216..57,228).  The vector-first spelling is
+  the local optimum everywhere, unlike the plain `vec * CONSTf` family where
+  the single `3000.0f * dir` site wins.
+* **`scalar * (float) delta` operand swap** (`speed`, `m_tempVec.x`,
+  `leadGun->pitchRate`, `lift`, lines 2999/3035/3065/3075/3172/3197/4437/
+  4865/4879 rewritten to `(float) delta * scalar`): all neutral (51,966).
 * **`m_nScriptTimerA=0; m_nScriptTimerB=0;` merge moves** (lines 3736/3738,
   5251/5253, 5277/5279): moving the second store next to the first is
   neutral or worse (+2..+88); the original has two more NEON zero-vector

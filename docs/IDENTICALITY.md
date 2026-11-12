@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,964** | 20,857 | 57,232 |
+| `LevelScript::process` | **51,954** | 20,873 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,354** | 2,680 | 7,072 |
 | `Level::createMission` | **3,517** | 1,009 | 17,172 |
@@ -42,13 +42,19 @@ Landed changes:
   **6,311 -> 6,309** (-2), aligned 1,903 -> 1,858.
 * `HangarWindow::render` (w13117): free-credits `textY` volatile-read re-seat.
   Raw **1,512 -> 1,510** (-2), aligned unchanged 643.
+* `LevelScript::process` (w13102): branch-layout pass 2, two independent
+  statement swaps. Raw **51,964 -> 51,962** (-2).
+* `LevelScript::process` (w13104): iOS-structure pass 5, mission-106/29
+  statement order. Raw **51,962 -> 51,957** (-5), aligned 20,857 -> 20,870.
+* `LevelScript::process` (w13107): alias pass 1, Array-element alias. Raw
+  **51,957 -> 51,954** (-3), aligned 20,870 -> 20,873.
 
-Section deltas: `.text` **74,266** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,256** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,933**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,923**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 186)
