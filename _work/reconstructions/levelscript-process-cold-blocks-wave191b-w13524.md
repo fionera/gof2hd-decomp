@@ -76,3 +76,17 @@ process raw diffbytes    51,608             51,605     (-3; total -8 vs wave bas
 .text diffbytes          71,373             71,370     (-3)
 size / .rel.plt / gate   exact / identical / RATCHET PASS
 ```
+
+## Pass 3 — adjacency rerun ripple
+
+Re-ran the immediate-adjacency sweep on the pass-2 base: one new cell.
+
+| # | source (new order) | move | raw |
+|---:|---|---|---:|
+| 6 | case-146 (~3080) | `m_pCamera->setTarget(player->geometry);` before the 3-ship re-enable loop (follows the pass-1 `setFixed(false)` move) | -1 |
+
+```
+process raw diffbytes    51,605             51,604     (-1; total -9 vs wave base)
+.text diffbytes          71,370             71,369     (-1)
+size / .rel.plt / gate   exact / identical / RATCHET PASS
+```
