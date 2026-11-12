@@ -2291,7 +2291,7 @@ case4Tail:
                     ArraySetLength(total, *this->enemies);
                     Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int offset = 0;
-                    for (int i = 0; i < convoyEnd; i++) {
+                    for (int i = 0; i < convoyEnd; i++, offset += 2000) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
                                                                nullptr, true, false);
                         KIPlayer *ship = (*this->enemies)[i];
@@ -2301,7 +2301,6 @@ case4Tail:
                         (*this->enemies)[i]->player->setAlwaysEnemy(true);
                         (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->getRoute()->reachWaypoint(0);
-                        offset += 2000;
                     }
                     for (int j = 0; (unsigned) (convoyEnd + j) < this->enemies->size(); j++) {
                         (*this->enemies)[convoyEnd + j] = this->createShip(

@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **51,633** | 22,098 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
-| `Level::createMission` | **2,669** | 865 | 17,172 |
+| `Level::createMission` | **2,661** | 863 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,173** | 468 | 2,764 |
@@ -31,11 +31,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,410**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,402**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13512): move the case-2 convoy escort loop's
+  `offset += 2000` into the `for` increment (`i++, offset += 2000`).  The
+  original stores the running offset to `[sp,#120]` *before* the `i++`,
+  i.e. the offset update is part of the loop latch, not the body tail.
+  Raw **2,669 -> 2,661** (-8), aligned 865 -> 863 (-2), size exact
+  17,172 B.  `.text` 71,478 -> 71,470 (-8), `.ARM.extab` 577 unchanged,
+  `.rodata` sh_size 269,644 unchanged, build-id 20 unchanged,
+  `.rel.plt` byte-identical.
 * `LevelScript::process` (w13466): seven independent statement reorders —
   mission-81 case-1 `m_pCamera->setTarget` after the `Transform`
   `SetAnimationState(1, nullptr)` call; mission-158 exit
