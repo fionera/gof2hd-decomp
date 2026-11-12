@@ -1038,7 +1038,7 @@ void HangarWindow::render() {
         }
     } else if (this->freeCreditsActive) {
         int baseX = this->dialog->x + Globals::layout->buttonInsetX;
-        int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 2;
+        int baseY = Globals::layout->field_0x2c_rowHeight * 2 + this->dialog->y + Globals::layout->windowTopInset;
         int row = 0;
         for (int i = 0; __builtin_expect(i < 5, 1); i++) { // lint: arm_builtin
             TouchButton *button = (*this->buttons)[18 + i];

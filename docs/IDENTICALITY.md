@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,895** | 1,712 | 8,080 |
-| `HangarWindow::render` | **1,077** | 604 | 9,700 |
+| `HangarWindow::render` | **1,073** | 613 | 9,700 |
 | `Level::createShip` | **1,189** | 397 | 2,764 |
 | `Status::missionCompleted` | **145** | 173 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -482,7 +482,12 @@ Landed changes:
   `.text` 72,210 -> 72,173 (-37), `.ARM.extab` 584 -> 577 (-7), build-id
   20, total 72,814 -> 72,770 (-44). `.rel.plt` byte-identical, 27/27
   headers, file size 2,187,328 exact.
-Section deltas: `.text` **72,173** differing bytes (size exact, 1,259,464 B);
+* `HangarWindow::render` (w13461): free-credits `baseY` addition order —
+  `rowHeight * 2` before `dialog->y`/`windowTopInset`. Raw **1,077 -> 1,073**
+  (-4), aligned 604 -> 613. `.text` 72,173 -> 72,169 (-4), `.ARM.extab`
+  577 unchanged, build-id 20, total 72,770 -> 72,766 (-4). `.rel.plt`
+  byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **72,169** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **577** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -492,7 +497,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,770**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,766**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
