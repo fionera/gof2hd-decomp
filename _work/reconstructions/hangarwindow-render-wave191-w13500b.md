@@ -165,3 +165,67 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN12HangarWind
 python3 /home/debian/GalaxyOnFire2/scratch/w13500/secdiff.py
 cmake --build cmake-build-match --target check -j2
 ```
+
+## Addendum (w13500b continuation, same branch)
+
+### The switch operand is `count & 0x7fffffff`, not `(signed char) count`
+
+The original has exactly one `bic.w` in the whole function and ours has none:
+
+```
+orig  14a960  f029 4000  bic.w r0, r9, #0x80000000
+      14a964  2804       cmp   r0, #4
+      14a966  d820       bhi.n 14a9aa
+      14a968  e8df f000  tbb   [pc, r0]
+ours  14a962  f1b9 0f04  cmp.w r9, #4
+      14a966  d820       bhi.n 14a9aa
+      14a968  e8df f009  tbb   [pc, r9]
+```
+
+So the original source is `switch (count & 0x7fffffff)`; the committed
+`switch ((signed char) count)` gets its `sxtb` elided because the loop bound
+already proves `count` is in 0..4, and therefore loses the `bic`.
+
+Adding the mask is a **+4 B** size change, but the whole +4 is accounted for
+and none of it is in the switch:
+
+* **+2 B** free-credits preheader: the second String temp is
+  `add.w sl, sp, #300` (4 B) instead of the original's `add r5, sp, #300`
+  (2 B) -- the same `sl` tie documented above;
+* **+2 B** tbb table alignment: with the 2 B shift the table starts at
+  `14aa80` and needs a `nop` (`14aa7e: bf00`); the original's table is
+  already 4-byte aligned at `14aa7c`.
+
+If the buy-list description String ever lands in `r6` (original:
+`add r6, sp, #312` / `add r5, sp, #300`), the mask becomes size-exact and
+removes the entire 77-byte `0x183b..0x1892` switch-dispatch diff cluster.
+The original's stack slots are description `sp+312`, price `sp+300`
+(`replaceTextKeepSize` reads `sp+312`, `setSplitText` reads `sp+300`), i.e.
+description is declared first -- but `String description(""); String
+price("");` still measures 9,704 B because the allocator keeps description
+in `sl` regardless of declaration order.
+
+### More measured negatives this continuation (base raw 1,038 / 72,408)
+
+All `link_so` + `fn_diff` + section-diff, `-j2`, `ulimit -v 12000000`.
+
+| variant | raw | size | `.text` | extab | total |
+|---|---:|---:|---:|---:|---:|
+| base | **1,038** | 9,700 | 71,806 | 582 | 72,408 |
+| `String price(""), description("");` (one DeclStmt) | 1,038 | 9,700 | 71,806 | 582 | 72,408 |
+| `String price = ""; String description = "";` | 1,038 | 9,700 | 71,806 | 582 | 72,408 |
+| same, description first | 1,040 | 9,700 | 71,808 | 582 | 72,410 |
+| `unsigned int count;` / `int count = 0;` | 1,038 | 9,700 | 71,806 | 582 | 72,408 |
+| ship body `setPosition,setVisible,draw` (PVD) | 6,650 | 9,704 | 382,757 | 1,934 | 384,711 |
+| ship body `setPosition,draw,setVisible` (PDV) | 6,648 | 9,704 | 382,755 | 1,934 | 384,709 |
+| ship body `setVisible,setPosition,draw` (VPD) | 6,621 | 9,708 | 382,757 | 1,934 | 384,711 |
+| ship body `draw,setPosition,setVisible` (DPV) | 6,606 | 9,708 | 382,742 | 1,934 | 384,696 |
+| `switch (count & 0x7fffffff)` | 3,442 | 9,704 | 379,549 | 1,430 | 380,999 |
+| + description-first decl | 3,445 | 9,704 | 379,552 | 1,430 | 381,002 |
+| + one-DeclStmt description-first | 3,445 | 9,704 | 379,552 | 1,430 | 381,002 |
+| + assignment order swapped in all cases | 3,444 | 9,704 | 379,551 | 1,430 | 381,001 |
+| + description-first decl + assignment swap | 3,441 | 9,704 | 379,548 | 1,430 | 380,998 |
+| `signed char count;` / `unsigned char count;` | 3,368 | 9,708 | 379,504 | 1,437 | 380,961 |
+| `Layout *lay` hoisted before `buyCreditsActive` | 8,748 | 9,732 | 389,763 | 1,791 | 391,574 |
+| row/col moved before the switch | 8,536 | 9,704 | 384,643 | 1,755 | 386,418 |
+| row/col/x/y moved before the switch | 8,961 | 9,652 | 391,560 | 1,791 | 393,371 |
