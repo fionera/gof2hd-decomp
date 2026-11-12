@@ -11,19 +11,22 @@ waves 181–187 is re-landed; the edit is on top of the wave-187 tree (raw **3,5
 
 ## 1. Result
 
-**One size-exact code win landed: in the `alienGuns` turret loop, move
-`gun->cargo = nullptr` after `gun->geometry->setRotation(v)`.**
+**Two size-exact code wins landed: (1) in the `alienGuns` turret loop, move
+`gun->cargo = nullptr` after `gun->geometry->setRotation(v)`; (2) in the
+`case183` convoy `switch(k)`, rotate case 0's three `offset[]` stores so
+`offset[2]` is last.**
 
 ```text
                                      size            raw    aligned  insn
 base ce16f45f1                       17172/17172     3510    998     6205/6197
-after (final)                        17172/17172     3508    999     6205/6197
+after win 1 (cargo reorder)          17172/17172     3508    999     6205/6197
+after win 2 (case0 offset rotate)    17172/17172     3506    997     6205/6197
 ```
 
 Section bytes (measured in this worktree):
 
 ```text
-.text        size 1,259,464 / 1,259,464   differing bytes 74,223 -> 74,221  (-2)
+.text        size 1,259,464 / 1,259,464   differing bytes 74,223 -> 74,219  (-4)
 .ARM.extab   size   156,312 /   156,312   differing bytes    639 ->    639  (0)
 .ARM.exidx   size    28,528 /    28,528   differing bytes      0 ->      0
 .rel.plt     size    29,392 /    29,392   byte-identical (diff 0)
@@ -31,7 +34,7 @@ Section bytes (measured in this worktree):
 .note.gnu.build-id 20 (unchanged count)
 ```
 
-Total differing bytes 74,882 -> 74,880. `.ARM.extab` stays size- and base-exact
+Total differing bytes 74,882 -> 74,878. `.ARM.extab` stays size- and base-exact
 (@ `0x1a3b78`, 156,312 B). The function is still non-byte-exact, so the ratcheted
 `byte_exact` count is unchanged (4507/4524).
 
@@ -59,6 +62,27 @@ This is an **address-alignment crutch**, not a semantic reconstruction: moving t
 two bytes into alignment with the original. It is size-exact; the original's
 store order was not separately decoded (the `cargo` store is dead here — the
 turret object is immediately re-created as a `PlayerTurret`).
+
+## 2a. Second edit
+
+`case183` convoy `switch(k)` (`~line 2203`):
+
+```cpp
+                         case 0:
+-                            offset[2] = -50000.0f;
+                             offset[0] = 20000.0f;
+                             offset[1] = 0.0f;
++                            offset[2] = -50000.0f;
+                             break;
+```
+
+With `offset[2]` last in case 0, clang merges case 0's and case 2's final
+`offset[2]` store into one shared `str r1,[sp,#380]` landing pad, exactly the
+shape the original has at `0xb1436`. Raw 3,508 -> 3,506 (-2), size-exact.
+Moving `offset[2]` last in **all** four arms instead makes clang convert the
+whole switch to a table lookup and the function shrinks to 17,164 B
+(size-fatal); the wave-187 `offset[1]` rotation plus this single-arm rotation
+is the size-exact combination.
 
 ## 3. What was swept and did not win
 

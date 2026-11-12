@@ -3341,8 +3341,8 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 2001) {
                         TargetFollowCamera *camera = m_pCamera;
                         m_pLevel->getPlayer()->resetGunDelay();
-                        player->setFreeze(false);
                         player->setVisible(true);
+                        player->setFreeze(false);
                         player->player->setVulnerable(true);
                         camera->setLookAtCam(false);
                         resetCamera(m_pLevel);
@@ -4980,7 +4980,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     KIPlayer *chaser = (*enemies)[chaserIndex];
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (__builtin_expect(chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x, 1)) { // lint: arm_builtin
+                    if (__builtin_expect((*enemies)[stationIndex]->getPosition().x < chaser->getPosition().x, 1)) { // lint: arm_builtin
                         chaser->geometry->moveForward((float) (delta * 3));
                     }
                     if (((RadioMessage *) ((*messages)[10]))->isTriggered()) {
@@ -5300,9 +5300,9 @@ bool LevelScript::process(int delta) {
                             for (unsigned int i = 1; i <= 3; i++) {
                                 if (!(*enemies)[i]->player->isActive()) {
                                     (*enemies)[i]->revive();
-                                    (*enemies)[i]->player->turnEnemy();
                                     (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
                                     (*enemies)[i]->setActive(true);
+                                    (*enemies)[i]->player->turnEnemy();
                                     break;
                                 }
                             }

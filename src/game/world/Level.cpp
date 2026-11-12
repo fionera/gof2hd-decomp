@@ -2025,10 +2025,10 @@ void Level::createMission() {
     for (int i = guns + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
          i < guns + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
         (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-        this->spawnPosition = this->player->getPosition();
         (*this->enemies)[i]->setPosition(this->spawnPosition.x - 80000.0f + (float) Globals::rnd->nextInt(160000),
                                          this->spawnPosition.y - 50000.0f + (float) Globals::rnd->nextInt(100000),
                                          this->spawnPosition.z - 80000.0f + (float) Globals::rnd->nextInt(160000));
+        this->spawnPosition = this->player->getPosition();
     }
     if (stationPirates) {
         Vector pirateBase = {0.0f, 0.0f, 0.0f};
