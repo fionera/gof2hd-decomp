@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **51,563** | 22,361 | 57,232 |
 | `Radar::draw` | **6,015** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
-| `Level::createMission` | **2,656** | 867 | 17,172 |
+| `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,191** | 600 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
@@ -31,11 +31,14 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,461**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,433**, `.ARM.extab` **585**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13538): case-183 convoy switch block order and
+  case-4 dispatch `expect`. Raw **2,656 -> 2,628** (-28), aligned 867 ->
+  844. `.text` 71,461 -> 71,433 (-28), `.ARM.extab` 586 -> 585 (-1).
 * `Layout` C1/C2 (w13519): replace the `field_0x7c` ternary with an
   `if`/`else` chain. Raw **5,243 -> 5,241** (-2), aligned 2,728 ->
   2,726. `.text` 71,463 -> 71,461 (-2), `.ARM.extab` 586 unchanged,
