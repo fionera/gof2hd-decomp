@@ -96,7 +96,7 @@ byte-exact. All **27 original ELF section headers are byte-identical** (no extra
 `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
 `.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. `.ARM.extab` is
 size- and base-exact at `0x26298` (wave-102 LSDA-scope pass). The only
-differing section bytes are `.text` (71,269), `.ARM.extab` (576), `.rodata` (485)
+differing section bytes are `.text` (71,260), `.ARM.extab` (576), `.rodata` (485)
 and `.note.gnu.build-id` (20); `.ARM.exidx` is now byte-identical.
 
 ## Source rules (hard)

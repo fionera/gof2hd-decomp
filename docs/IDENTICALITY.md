@@ -15,14 +15,14 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,554** | 22,800 | 57,232 |
+| `LevelScript::process` | **51,552** | 22,800 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
-| `Status::missionCompleted` | **79** | 57 | 1,432 |
+| `Status::missionCompleted` | **75** | 48 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,269**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,260**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -40,11 +40,13 @@ Landed changes:
   comparison in `case 10` (the helper returns `bool`, so the branch is
   never taken; same semantics).  It makes clang emit the original's
   unconditional tail instead of a local `cmp; b`, which also restores
-  the case-7 tail merge placement.  Raw **86 -> 79** (-7), aligned
-  59 -> 57, size 1,432/1,432 exact, 527/527 insns.  `.text`
+  the case-7 tail merge placement.  Raw **86 -> 75** (-11 on the merged base), aligned
+  59 -> 48, size 1,432/1,432 exact, 527/527 insns.  `.text`
   71,478 -> 71,471 (-7), `.ARM.extab` 577 unchanged, `.rodata`
   sh_size 269,644 unchanged, build-id 20 unchanged, `.rel.plt`
   byte-identical.
+* `LevelScript::process` (w13516): multi-line d6 shift-5, sound
+  stop/play swap. Raw **51,554 -> 51,552** (-2). `.text` -2.
 * `Radar::draw` (w13541): enemy-guard ABCDE order. Raw **6,015 -> 6,013**
   (-2), aligned 1,941 -> 1,965. `.text` 71,276 -> 71,274 (-2).
 * `LevelScript::process` (w13524): pass 7, timer between matrix build and
