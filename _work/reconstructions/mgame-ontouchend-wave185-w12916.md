@@ -8,15 +8,15 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 2,972 | **2,931** |
+| raw same-address diff bytes | 2,972 | **2,930** |
 | aligned (instruction) diff | 1,602 | 1,689 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,591 | **74,550** |
+| `.text` differing bytes | 74,591 | **74,549** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 647 | 647 |
 | `.ARM.exidx` diff | 0 | 0 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,258 | **75,217** |
+| total differing bytes | 75,258 | **75,216** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -128,6 +128,10 @@ more independent wins:
 
 The mission-65 `Level::initStreamOutPosition`/`delete reader` swap (raw 2,933) was
 rejected: it is a use-after-free (`reader->loadStation(100)` after `delete reader`).
+
+A further re-sweep on the 2,931-B base found one more: mission-65
+`switch_to_target_setting = 1` <-> `field_64 = getHitpoints()` (independent store vs
+pure getter), 2,931 -> **2,930**.
 
 ## Method
 
