@@ -11,7 +11,8 @@ Continues `level-createmission-wave191-w13512.md` / `...w13526.md` /
 ```text
                                      size            raw    aligned  insn
 base 23a6ebf8b                       17172/17172     2656    867     6206/6197
-landed                               17172/17172     2629    845     6206/6197
+landed (pass 1)                      17172/17172     2629    845     6206/6197
+landed (pass 2)                      17172/17172     2628    844     6206/6197
 ```
 
 ## 1. Result — landed
@@ -19,11 +20,11 @@ landed                               17172/17172     2629    845     6206/6197
 | metric | before | after |
 |---|---:|---:|
 | size | 17,172 | 17,172 (exact) |
-| raw | 2,656 | **2,629** (-27) |
-| aligned | 867 | **845** (-22) |
+| raw | 2,656 | **2,628** (-28) |
+| aligned | 867 | **844** (-23) |
 | insn | 6206/6197 | 6206/6197 |
-| `.text` diff | 71,487 | **71,460** (-27) |
-| `.ARM.extab` diff | 586 | 586 |
+| `.text` diff | 71,487 | **71,459** (-28) |
+| `.ARM.extab` diff | 586 | **585** (-1) |
 | `.rodata` diff | 485 | 485 |
 | `.rel.plt` diff | 0 | 0 (byte-identical) |
 | `.ARM.exidx` diff | 0 | 0 |
@@ -108,7 +109,27 @@ only the case-183 convoy latch is load-bearing.
   case-4 tail: no raw win (best neutral 2,656; `hunters` before `opt44`
   2,659/861; `enemies=new` before `hunterCount` 2,657/858).
 
-## 5. Reproduce
+## 5. Pass 2: case-4 dispatch expect (raw 2,629 -> 2,628)
+
+The case-4 dispatch
+
+```cpp
+int roll = Globals::rnd->nextInt(2);
+if (__builtin_expect(roll != 0, 1)) { // lint: arm_builtin ...
+    this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
+    goto case4Tail;
+}
+goto case4Else;
+```
+
+is semantically identical to the plain `if (roll != 0)`, but the hint
+reorders the shared exception landing pads after the case-4 tail: the
+`0xb41f2/0xb41f3` pair becomes one byte at `0xb41fc` (raw -1) and the
+`.ARM.extab` LSDA for the block loses one byte (586 -> 585).  Plain
+`if (roll)`, `roll > 0`, `0 != roll` and the branch-swapped form are all
+neutral (2,629); only the expect form wins.
+
+## 6. Reproduce
 
 ```sh
 cd /home/debian/GalaxyOnFire2/wt/w13538
@@ -117,8 +138,8 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Level13crea
 (ulimit -v 12000000; cmake --build cmake-build-match --target check -j2)
 ```
 
-Expected: `raw=2629 aligned=845 size=17172/17172`, `.text` diff 71,460,
-`.rel.plt` diff 0, `RATCHET PASS`.
+Expected: `raw=2628 aligned=844 size=17172/17172`, `.text` diff 71,459,
+`.ARM.extab` diff 585, `.rel.plt` diff 0, `RATCHET PASS`.
 
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13538/`
 (`sbs.py`, `runs.py`, `sweep.py`, `c4sweep.py`, `perm24.py`, `exp2.py`,

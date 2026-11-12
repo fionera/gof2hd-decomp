@@ -2524,7 +2524,7 @@ case4Tail:
                 }
                 case 4: {
                     int roll = Globals::rnd->nextInt(2);
-                    if (roll != 0) {
+                    if (__builtin_expect(roll != 0, 1)) { // lint: arm_builtin anchor: Level::createMission case-4; hint flips the landing-pad order
                         this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
                         goto case4Tail;
                     }
