@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,942** | 20,869 | 57,232 |
+| `LevelScript::process` | **51,935** | 20,913 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,354** | 2,680 | 7,072 |
 | `Level::createMission` | **3,510** | 998 | 17,172 |
@@ -58,13 +58,20 @@ Landed changes:
   content 647 -> 640 (size/base exact).
 * `Level::createMission` (w13115): case4Tail offset[1] cyclic remap. Raw
   **3,517 -> 3,510** (-7), aligned 1,009 -> 998.
+* `LevelScript::process` (w13101): regalloc adjacent-pair sweep. Raw
+  **51,942 -> 51,941** (-1), aligned 20,869 -> 20,902.
+* `LevelScript::process` (w13102): passes 4-6 (five 3-statement reversals,
+  two more reversals, adjacent swap). Raw **51,941 -> 51,935** (-6), aligned
+  20,902 -> 20,913.
+* `LevelScript::process` (w13104): pass 5d (two safe adjacent swaps; neutral
+  on the combined body, kept as a verified size-exact reorder).
 
-Section deltas: `.text` **74,236** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,229** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **640** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,896**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,889**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 186)

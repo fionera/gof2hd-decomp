@@ -196,3 +196,20 @@ RATCHET                  PASS             PASS
 Cumulative for the whole pass: raw **51,968 -> 51,964** (-4), `.text`
 74,274 -> 74,270, size-exact, `.rel.plt` byte-identical, `.ARM.extab`
 unchanged.
+
+## Pass 3: structural re-tests after the wins (all neutral or worse)
+
+* **3-statement window sweep** (all 6 permutations of each pairwise-independent
+  3-run) in the mission-state blocks (605-1500) and the tail (4500-5370):
+  66 runs / 330 permutations, no cell beats raw 51,964 with size 57,232 and
+  `.rel.plt` `289b2a06…`.
+* **Prologue aliases**: `LevelScript *self = this;` (or `*const`) used for the
+  three `m_pLevel` getters is codegen-neutral (51,964, identical body).
+* **Top-level declaration permutations** (`messages/player/enemies/status`,
+  24 orders): `MPES` (current) is best at 51,964; next `EPMS` 51,968,
+  `MEPS/PMES` 51,976.  Confirms w13001 on the current body.
+* **Switch at source 1265** (the second `tbh` range difference, 4 entries in
+  the original vs 6 in ours): moving `case 4`/`case 5` out of the switch to
+  trailing `if (m_nState == 4/5)` blocks gives raw **53,958**, size 57,232,
+  `.rel.plt` `705e22dc…` (DIFF); moving only `case 5` out gives raw **54,710**,
+  size **57,248/57,232** (+16).  Both are gate-fatal, so the merge stays.

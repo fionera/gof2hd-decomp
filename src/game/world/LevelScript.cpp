@@ -1907,9 +1907,9 @@ bool LevelScript::process(int delta) {
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
                     m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
-                    m_pCamera->setLookAtCam(false);
                     m_nState = 2;
+                    m_pCamera->setLookAtCam(false);
+                    player->setComputerControlled(false);
                     m_bCinematicBreak = 0; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                     player->player->setVulnerable(true);
                     if (m_pGeometry6 != nullptr) {
@@ -2109,9 +2109,9 @@ bool LevelScript::process(int delta) {
             case 42: {
                 // Leaving the alien system through the wormhole.
                 if (messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()) {
-                    m_nScriptTime = 0;
-                    Globals::sound->play(153, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
+                    Globals::sound->play(153, nullptr, nullptr, 0.0f);
+                    m_nScriptTime = 0;
                     delete m_pLevel->objectivesB;
                     m_pLevel->objectivesB = nullptr;
                     delete m_pLevel->objectivesA;
@@ -2379,9 +2379,9 @@ bool LevelScript::process(int delta) {
                     (*enemies)[10]->setPosition(origin.x, origin.y, origin.z + 12000.0f);
                     (*enemies)[10]->setSpeed(2.0f);
                     (*enemies)[10]->setActive(true);
+                    int routePoints[3] = {0, 0, 800000};
                     (*enemies)[10]->setVisible(true);
                     delete m_pLevel->objectivesB;
-                    int routePoints[3] = {0, 0, 800000};
                     player->setTurretMode(false);
                     m_pLevel->objectivesB = nullptr;
                     Route *route = new Route(routePoints, 3);
@@ -2393,9 +2393,9 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     resetCamera(m_pLevel);
                     player->stopShooting(0);
-                    m_bCinematicBreak = 1;
-                    player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
+                    player->setComputerControlled(true);
+                    m_bCinematicBreak = 1;
                     m_pCamera->setTarget((*enemies)[10]->geometry);
                     m_pCamera->setPosition((*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 10000.0f});
                     m_pCamera->setActive(true);
@@ -3094,9 +3094,9 @@ bool LevelScript::process(int delta) {
                         } else {
                             m_pCamera->setPosition(m_dirVec);
                         }
+                        m_nScriptTimerA = 0;
                         m_pRadar->enabled = 1;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nScriptTimerA = 0;
                         m_pHud->visible = 1;
                         m_bCinematicBreak = 0;
                         m_nState++;
@@ -5013,8 +5013,8 @@ bool LevelScript::process(int delta) {
                         player->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         player->setComputerControlled(true);
                         player->setFreeze(false);
-                        player->setSpeed(4.0f);
                         player->setPosition(*m_pCamera->getPosition() + Vector{5000.0f, 300.0f, -14000.0f});
+                        player->setSpeed(4.0f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_pCamera->setTarget(station->rootGeometry);
@@ -5244,8 +5244,8 @@ bool LevelScript::process(int delta) {
                             enemy->setActive(true);
                         }
                     }
-                    (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
                     m_pCamera->setTarget((*enemies)[0]->geometry);
+                    (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
                     player->geometry->rotate(step / 2000.0f, step / 2000.0f, step / 2000.0f);
                     if (m_nScriptTimerA >= 20000) {
                         ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
