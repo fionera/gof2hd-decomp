@@ -3076,12 +3076,12 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
                     }
                     if (m_nScriptTimerA >= 2001) {
+                        m_pCamera->setFixed(false);
                         for (int i = 0; i < 3; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             (*enemies)[i]->field_0x38 = 4;
                             ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                         }
-                        m_pCamera->setFixed(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setFreeLookMode(true);
                         m_pCamera->setLookAtCam(false);
@@ -4543,6 +4543,7 @@ bool LevelScript::process(int delta) {
                     m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
                     m_pCamera->setPosition(m_tempVec);
                     ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+                    (*enemies)[1]->field_0x70 = 1;
                     for (unsigned int i = 0; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroup == 9) {
                             KIPlayer *enemy = (*enemies)[i];
@@ -4553,7 +4554,6 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) enemy)->setAIDisabled(true);
                         }
                     }
-                    (*enemies)[1]->field_0x70 = 1;
                     m_nScriptTimerA = 0;
                     m_nState++;
                     m_pLevel->lodManager->forceUpdate(delta, false);
