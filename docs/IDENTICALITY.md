@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **51,706** | 21,914 | 57,232 |
 | `Radar::draw` | **6,265** | 2,010 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
-| `Level::createMission` | **2,984** | 1,119 | 17,172 |
+| `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,895** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,077** | 604 | 9,700 |
 | `Level::createShip` | **1,189** | 397 | 2,764 |
@@ -459,7 +459,13 @@ Landed changes:
   `.text` 72,269 -> 72,264 (-5), `.ARM.extab` 584 unchanged, build-id 20,
   total 72,873 -> 72,868 (-5). `.rel.plt` byte-identical, 27/27 headers,
   file size 2,187,328 exact.
-Section deltas: `.text` **72,264** differing bytes (size exact, 1,259,464 B);
+* `Level::createMission` (w13450): case-2 `coords[6]` slot order — the
+  first `nextInt(20000)` result goes to slot 0 (not slot 2); the second
+  stays in slot 4. Raw **2,984 -> 2,982** (-2), aligned 1,119 -> 1,123.
+  `.text` 72,264 -> 72,262 (-2), `.ARM.extab` 584 unchanged, build-id 20,
+  total 72,868 -> 72,866 (-2). `.rel.plt` byte-identical, 27/27 headers,
+  file size 2,187,328 exact.
+Section deltas: `.text` **72,262** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -469,7 +475,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,868**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,866**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 

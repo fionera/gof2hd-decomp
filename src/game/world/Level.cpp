@@ -2275,7 +2275,7 @@ case4Tail:
                     return;
                 }
                 case 2: {
-                    int coords[6] = {0, 0, (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0,
+                    int coords[6] = {(int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0, 0, 0,
                                      (int) (float) (-20000 - Globals::rnd->nextInt(20000)), 0};
                     int goods = mission->getProductionGoodAmount();
                     this->enemyRoute = new Route(coords, 6);

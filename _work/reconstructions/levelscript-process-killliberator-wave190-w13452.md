@@ -81,3 +81,24 @@ Ours at `0x1380c0` (25 words), original at `0x1380a4` (27 words), +0x1c.  Words
 mission-81 rumble divide).  The island boundary follows the post-pool block
 order (original lays the mission-5 block before the intro mission-81 block;
 ours the reverse), not a wrong constant.
+
+## Pass 2: d=2 rotation sweep (raw 51,712 -> 51,711)
+
+Full 3-statement rotation sweep on the post-pass-1 body (1,273 candidates).
+Two size-exact cells beat the base; `line 5230` is the same
+`m_nScriptTimerA`/`approach` read-after-write rotation (raw 51,709, unsafe).
+The safe cell is source lines 3536-3538:
+
+```cpp
+-                        m_bCinematicBreak = 1;
+-                        m_pHud->visible = 0;
+-                        player->setFreeLookMode(false);
++                        m_pHud->visible = 0;
++                        player->setFreeLookMode(false);
++                        m_bCinematicBreak = 1;
+```
+
+Three independent stores/calls (a `this` flag, a `Hud` field, a `PlayerEgo`
+setter); none reads what another writes.  Measured alone on the real build:
+raw **51,712 -> 51,711** (-1), size 57,232/57,232 exact, `.text` 72,383 ->
+72,382, `.rel.plt` md5 `289b2a06…` unchanged.  `check` -> RATCHET PASS.
