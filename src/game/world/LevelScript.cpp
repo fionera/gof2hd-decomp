@@ -3733,8 +3733,8 @@ bool LevelScript::process(int delta) {
                         *tmp = ref2->getRightVector();
                         *camPos += *tmp * 1200.0f;
                         *tmp = ref2->getUpVector();
-                        *camPos += *tmp * 400.0f;
                         m_pCamera->setPosition(*camPos);
+                        *camPos += *tmp * 400.0f;
                         m_nScriptTimerB = 0;
                         m_pCamera->setLookAtCam(true);
                         m_nScriptTimerA = 0;

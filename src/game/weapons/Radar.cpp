@@ -1282,11 +1282,11 @@ asteroids_done:
                 } else if (bossSeen) {
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
-                    Globals::sound->play(140, nullptr, nullptr, 0.0f);
+                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 }
             } else if (__builtin_expect(this->field_0x1bc < 5, 0)) {  // lint: arm_builtin
                 if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
-                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
+                    Globals::sound->play(140, nullptr, nullptr, 0.0f);
                 } else if (__builtin_expect(bossSeen, 1)) {  // lint: arm_builtin
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
