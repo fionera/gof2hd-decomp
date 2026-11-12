@@ -819,19 +819,19 @@ void HangarWindow::render() {
                             // the upgrade button order below is a codegen shape that
                             // keeps the function at 9,700 B.
                             if (tab != 0 && __builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
-                                int upgTab = tab;
                                 (*this->buttons)[1]->setVisible(true);
+                                int upgTab = tab;
                                 (*this->buttons)[1]->draw();
                                 (*this->buttons)[1]->setPosition(
                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
                                 buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                if (this->upgradeMode && upgTab == 1) {
+                                if (__builtin_expect(this->upgradeMode && upgTab == 1, 1)) { // lint: arm_builtin
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
-                                    (*this->buttons)[10]->draw();
                                     (*this->buttons)[2]->setVisible(true);
                                     (*this->buttons)[10]->setVisible(true);
+                                    (*this->buttons)[10]->draw();
                                 }
                             }
                         } else {
