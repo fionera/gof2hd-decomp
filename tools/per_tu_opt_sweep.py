@@ -84,7 +84,7 @@ def one_tu(tu, targets, levels, build_root):
             results.append({'tu': tu, 'level': lvl, 'error': 'configure',
                             'log': (r.stdout + r.stderr)[-1200:]})
             continue
-        r = run('cmake --build %s --target link_so -j8' % bd)
+        r = run('cmake --build %s --target link_so -j2' % bd)
         if r.returncode != 0:
             results.append({'tu': tu, 'level': lvl, 'error': 'build',
                             'log': (r.stdout + r.stderr)[-1200:]})
@@ -123,7 +123,7 @@ def one_tu(tu, targets, levels, build_root):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--build-root', default='/dev/shm/per_tu_opt_sweep')
-    ap.add_argument('--jobs', type=int, default=len(RESIDUAL))
+    ap.add_argument('--jobs', type=int, default=4)
     ap.add_argument('--levels', default=','.join(LEVELS))
     ap.add_argument('--controls', nargs='*', default=[])
     ap.add_argument('--out', default=None)

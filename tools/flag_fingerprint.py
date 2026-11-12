@@ -17,17 +17,17 @@ change at another -O level is positive proof that that TU was compiled at -Oz.
 Usage
 -----
   # whole-.so differential matrix (the default)
-  python3 tools/flag_fingerprint.py --mode variants --jobs 8
+  python3 tools/flag_fingerprint.py --mode variants --jobs 4
 
   # per-TU optimization-level spot check
-  python3 tools/flag_fingerprint.py --mode per-tu --jobs 8
+  python3 tools/flag_fingerprint.py --mode per-tu --jobs 4
 
   # broad -mllvm screen on the TUs that own non-exact functions (object bytes only)
   python3 tools/flag_fingerprint.py --mode llvm-screen \
-      --llvm-candidates /dev/shm/flags.txt --jobs 8
+      --llvm-candidates /dev/shm/flags.txt --jobs 4
 
   # both
-  python3 tools/flag_fingerprint.py --mode all --jobs 8
+  python3 tools/flag_fingerprint.py --mode all --jobs 4
 
   # explicit full-link variant list (JSON [{name, flags, cmake_args}, ...])
   python3 tools/flag_fingerprint.py --mode variants --variants-file variants.json --jobs 4
@@ -257,7 +257,7 @@ def build_variant(workdir, wrapper, spec, baseline_rows, orig_sections, jobs, fa
     bd = workdir / f"build-{name}"
     bd.mkdir(parents=True, exist_ok=True)
     configure_variant(workdir, wrapper, bd, flags, spec.get("cmake_args", ()))
-    run(["cmake", "--build", bd, "--target", "link_so", "-j", str(jobs)],
+    run(["cmake", "--build", bd, "--target", "link_so", "-j", "2"],
         log=bd / "build.log")
     so = bd / "libgof2hdaa.so"
     report = verify_so(bd, so, fast=fast)
@@ -665,7 +665,7 @@ def main():
                                        "llvm-screen", "all"), default="variants")
     ap.add_argument("--workdir", default=str(DEFAULT_WORKDIR))
     ap.add_argument("--baseline-build", default=str(ROOT / "cmake-build-match"))
-    ap.add_argument("--jobs", type=int, default=8)
+    ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--variants", default=None,
                     help="comma-separated subset of variant names (default: all)")
     ap.add_argument("--variants-file", default=None,
