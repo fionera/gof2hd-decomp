@@ -5117,11 +5117,11 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(0.0f, 0);
                     if (m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
                         m_pExplosion->setScaling(10.0f);
+                        Globals::sound->play(2243, nullptr, nullptr, 0.0f);
+                        m_pCamera->setRumblePercentage(100.0f, 30);
                         m_pExplosion->start((*enemies)[stationIndex]->getPosition()
                                             - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
                                             Vector{0.0f, 0.0f, 0.0f});
-                        Globals::sound->play(2243, nullptr, nullptr, 0.0f);
-                        m_pCamera->setRumblePercentage(100.0f, 30);
                     }
                     m_pExplosion->update(delta, nullptr);
                     m_pCamera->translate((float) (-2 * delta), 0.0f, (float) -delta * 0.33f);
