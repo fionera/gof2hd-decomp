@@ -94,3 +94,48 @@ cmake --build cmake-build-match --target check -j2   # RATCHET PASS
   CBA.
 * `docs/IDENTICALITY.md` — wave-190 residual table and section totals.
 * this note.
+
+## 6. Follow-up sweep (same worktree, after landing CBA)
+
+After the CBA win was committed (`df06f0d0e`), a further sweep looked for
+another size-exact lever.  Everything below is size-exact 1,432 unless
+noted and none beats raw **451**:
+
+* `case 12:` re-expressed as three early-return `if`s, as a negated
+  `&&` chain, as `if (getStatusValue() != 0) break;`, with a cached
+  `idx`/`orbit`/`camp` local, or with the outer `getStatusValue()` check
+  hoisted inside the `||`: all byte-identical to CBA (451).
+* `case 10:` body order sweep (all 6 permutations of `index`, `cargo`,
+  `amount`) × `case 20` device (`(unsigned short)`, `(short)`,
+  `(unsigned char)`, `& 0xffff`, no cast) × `case 12` order (CBA/ABC) ×
+  rank-table form (extern GOT vs absolute `0x20b977`) × null-check
+  on/off: 54 size-exact combinations, best is the committed
+  `idx-cargo-amt` / `(unsigned short)` / CBA / extern at **451**;
+  next is `amt-cargo-idx` at 452.
+* `case 10:` re-query of `getProductionGoodIndex()` for `hasEquipment`
+  (the original's shape), `Ship *gship` local, `idx2` local, and
+  `hasEquipment` first: 1440 or worse.
+* `case 6:` tail (`hasGood && hasSpecial`) rewritten as a `bool both`
+  local, `int both`, ternary, `&`, reversed nesting, `!(...) break`,
+  and two early `!` breaks: all byte-identical (451).  Declaration
+  swap 458, `for (unsigned j = ...)` 477, cached `size()` 1215.
+* Simple comparison flips (`missionCount >= v` -> `v <= missionCount`,
+  same for `kills`/`stationsVisited`/`getCurrentLoad`/`goodsProduced`/
+  `getProductionGoodAmount`, and `1 == getStatusValue()`): 964..1163
+  except `case 11` (451).
+* `case 16` combined into one `||` condition: 451; the `extra`-first
+  order is 925/1444.
+* `case 208` inner `&&` swaps (pendingProducts, blueprintIndex),
+  `case 213`, `case 19`, `case 23`/`38`, `case 2`/`13`/`15` loop
+  conditions: 538..1333, none exact.
+* Loop counter type (`int`, `unsigned long`, `i = i + 1`) and
+  `Mission *const m`: byte-identical (451).
+* Forcing a 40-entry TBH (`case 39:` fallthrough to `case 38:`, table
+  default 39): size 1436, raw 1197.
+
+The residual is the documented layout lock-in: the rank-table dispatch
+is 2 B longer than the original's `sub/cmp`, the inline constant island
+is 2 words (rank table + `Globals::status`) where the original has one
+word at the end, the `case 10:` body is 6 B short (64 vs 70 B), and the
+`case 20:` `uxth` is a 2 B size device.  Raw 451 / aligned 205 is the
+best measured size-exact point.
