@@ -34,7 +34,7 @@ imports                  207              207
 lint                     CLEAN ✓          CLEAN ✓
 drift                    0                0
 symbol parity            5370/5370        5370/5370
-stub_zero_status         0                0
+stub_zero_size         0                0
 missing / wrong_type     0 / 0            0 / 0
 extra                    0                0
 RATCHET                  PASS             PASS

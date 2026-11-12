@@ -216,3 +216,38 @@ raw diff by 2.
 Cumulative wave-186 result: raw **52,075 -> 52,062** (-13), `.text`
 **74,402 -> 74,389**, `.ARM.extab` unchanged at 647, `.rel.plt` byte-identical,
 size 57,232 exact.
+
+## Pass 4 (same wave): two Vector-reference aliases, 52,062 -> 52,060
+
+The generator was re-run on the pass-3 body.  Two single edits are
+size-exact, `.rel.plt`-identical and raw-lowering; their blocks are disjoint
+and they compose additively.
+
+```
+                         pass 3           pass 4
+process raw diffbytes    52,062           52,060     (-2)
+process aligned insns    20,760           20,763
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+orig / ours insns        20,830 / 20,727  20,830 / 20,727
+.text diffbytes          74,389           74,387     (-2)
+.ARM.extab diffbytes     647              647        (unchanged)
+.note.gnu.build-id       20               20
+total differing bytes    75,056           75,054     (-2)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+Landed edits:
+
+| # | new line | kind | edit | alone raw |
+|---:|---:|---|---|---:|
+| 1 | 4558 | aliasref | `Vector &tv = m_tempVec;` in the `m_nState == 1` block (3 uses) | 52,061 |
+| 2 | 4664 | aliasref | `Vector &tv = m_tempVec;` in the `m_nState == 5` block (3 uses) | 52,061 |
+| both | | | | **52,060** |
+
+`m_tempVec` is a value member, so the reference reads/writes the same storage;
+the aliases are semantics-preserving.
+
+Cumulative wave-186 result: raw **52,075 -> 52,060** (-15), `.text`
+**74,402 -> 74,387**, `.ARM.extab` unchanged at 647, `.rel.plt` byte-identical,
+size 57,232 exact.
