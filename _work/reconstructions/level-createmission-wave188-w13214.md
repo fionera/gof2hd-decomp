@@ -12,18 +12,19 @@ size-exact, `.rel.plt`-identical raw wins.
 
 ## 1. Result
 
-**One size-exact raw win landed: raw 3,510 -> 3,502 (-8), aligned 998 -> 996.**
+**Two size-exact raw wins landed: raw 3,510 -> 3,493 (-17), aligned 998 -> 990.**
 
 ```text
                                      size            raw    aligned  insn
 base ce16f45f1                       17172/17172     3510   998      6205/6197
 after case-183 offset reorder        17172/17172     3502   996      6205/6197
+after case-1 opt44 hoist (final)     17172/17172     3493   990      6205/6197
 ```
 
 Section bytes (measured in this worktree):
 
 ```text
-.text        size 1,259,464 / 1,259,464   differing bytes 74,223 -> 74,215  (-8)
+.text        size 1,259,464 / 1,259,464   differing bytes 74,223 -> 74,206  (-17)
 .ARM.extab   size   156,312 /   156,312   differing bytes    639 ->    639  (0)
 .ARM.exidx   size    28,528 /    28,528   differing bytes      0 ->      0
 .rel.plt     size    29,392 /    29,392   byte-identical (diff 0)
@@ -31,7 +32,7 @@ Section bytes (measured in this worktree):
 .note.gnu.build-id  36 B, 20 differing bytes (hash of the file)
 ```
 
-Total differing bytes **74,882 -> 74,874**. `check` green:
+Total differing bytes **74,882 -> 74,865**. `check` green:
 `byte_exact 4507/4524`, `linked_exact 4507/4524`, `size_exact 4524/4524`,
 `stub_zero_size 0`, `missing 0`, `wrong_type 0`, `extra 0`, `data_exact
 843/843`, imports **207**, lint **CLEAN**, drift **0**, symbol parity
@@ -80,7 +81,28 @@ pool, matching the original's pool order more closely. It is not a semantic
 reconstruction: the shipped values are a permutation of the original's
 (the original case 1 is `o2=-30000`, case 2 is `o2=-36000`).
 
-## 3. How it was found
+## 3. Second landed edit: case-1 `Globals::options[44]` hoist (~line 2255)
+
+```cpp
+                     float attackers = (float) ((int) difficulty + 3);
++                    float opt44 = *(float *) &Globals::options[44];
+                     this->enemies = new Array<KIPlayer *>();
+-                    int attackerCount = (int) (attackers + (*(float *) &Globals::options[44] - 0.5f) * attackers);
++                    int attackerCount = (int) (attackers + (opt44 - 0.5f) * attackers);
+                     ArraySetLength(attackerCount + friends + 3, *this->enemies);
+```
+
+The original loads `Globals::options[44]` at `0xb1570` *before* the
+`new Array<KIPlayer*>` call at `0xb159a`; the base body sank the load into the
+`attackerCount` expression after the call. Hoisting the load above the `new`
+matches the original load position and moves the float math earlier:
+raw **3,502 -> 3,493** (-9), aligned 996 -> 990, size exact.
+
+Measured alternatives (same anchor): moving the whole `attackerCount`
+declaration above `new Array` is 3,511; hoisting `opt44` *and* moving
+`attackerCount` is 3,511. Only the load hoist wins.
+
+## 4. How it was found
 
 Coordinate descent over two neighbourhoods on the case-183 `switch (k)` block,
 each candidate a real `link_so` + `tools/fn_diff.py` (2 s/build, `-j2`,
@@ -95,9 +117,9 @@ The descent converged in one iteration at **3,502**; no further neighbour
 `case0 order (0,1,2)` (3,510 -> 3,508) and `o2 perm (-50000,-36000,-30000)`
 (3,508 -> 3,505), then `case1 order (2,1,0)` (3,505 -> 3,502).
 
-## 4. Sweeps that did NOT land (real `link_so` + `fn_diff`)
+## 5. Sweeps that did NOT land (real `link_so` + `fn_diff`)
 
-### 4a. `case 2` `Vector asteroidPos` declaration order
+### 5a. `case 2` `Vector asteroidPos` declaration order
 
 The original zeroes `asteroidPos` (`sp#272..280`) *before* computing the
 `coords[6]` aggregate at `0xb16f8`; ours zeroes it after `escorts` at
@@ -115,7 +137,7 @@ asteroidPos at base (after escorts) 3510
 So the base scheduling is the best of the five even though the local region
 looks closer to the original in the "before coords" variant.
 
-### 4b. `ArraySetLength` sum-term order (the `sp#44`/`sp#48` spill swap)
+### 5b. `ArraySetLength` sum-term order (the `sp#44`/`sp#48` spill swap)
 
 Reordering the 12-term sum `pirateEscorts + stationPirates + blueprint +
 extraAliens + ...` cannot move the `pirateEscorts`/`extraAliens` spill slots:
@@ -131,14 +153,14 @@ reverse order                               5757
 The two locals are still swapped relative to the original at
 `sp#44`/`sp#48`; slot assignment is not reachable from the sum order.
 
-### 4c. Other store orders on the landed base
+### 5c. Other store orders on the landed base
 
 With the landed case-183 block, all remaining store permutations of cases
 1/2/default and all `offset[0]`/`offset[1]` value permutations were measured;
 every one is neutral-or-worse (best neutral 3,502, next 3,507). The `o2`
 permutation that produced the win is unique.
 
-## 5. Reproduce
+## 6. Reproduce
 
 ```sh
 cd /home/debian/GalaxyOnFire2/wt/w13214
@@ -148,7 +170,7 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Level13crea
 cmake --build cmake-build-match --target check -j2
 ```
 
-Expected: `raw=3502 aligned=996 size=17172/17172`, `.text` diff 74,215,
+Expected: `raw=3493 aligned=990 size=17172/17172`, `.text` diff 74,206,
 `.ARM.extab` diff 639, `.rel.plt` diff 0, `RATCHET PASS`.
 
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13214/`
