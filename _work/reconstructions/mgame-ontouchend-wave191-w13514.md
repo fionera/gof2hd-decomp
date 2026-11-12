@@ -3,7 +3,7 @@
 Function: `_ZN5MGame10OnTouchEndEiiPv` @ `0x17a144`, size 8,080 B.
 File: `src/game/menu/MGame.cpp` (cinematic-steer switch, `case 0:`).
 
-## Landed
+## Landed (win 1)
 
 Move the `Level::initStreamOutPosition = 0;` store from the end of the
 `cinematicSteerActive` `case 0:` body (after `SetCurrentApplicationModule(2)`)
@@ -29,6 +29,38 @@ Position 3 (after `switch_to_target_setting = 1;`) measures identically
 | raw diff | 2,885 | **2,884** |
 | aligned diff | 1,717 | 1,725 |
 | `.text` diff bytes | 71,434 | **71,433** |
+| `.ARM.extab` diff | 577 | 577 |
+| `.rel.plt` | OK | OK |
+
+## Landed (win 2) — full 24-permutation sweep of the `case 0:` tail
+
+On top of win 1, a full permutation sweep of the four independent `case 0:`
+tail stores (`switch_to_target_setting = 1`, `active = 0`, `initStreamOutPosition
+= 0`, `SetCurrentApplicationModule(2)`) finds one improvement: put
+`this->active = 0;` first, i.e.
+
+```cpp
+case 0:
+    Globals::status->nextCampaignMission(true);
+    Globals::status->setKills(3);
+    this->active = 0;
+    Globals::switch_to_target_setting = 1;
+    Level::initStreamOutPosition = 0;
+    Globals::appManager->SetCurrentApplicationModule(2);
+    break;
+```
+
+Size 8,080, `.rel.plt` identical, raw **2,884 -> 2,882**, `.text` **71,433 ->
+71,431**, `.ARM.extab` unchanged (577).  All 24 permutations measured; the next
+best are the base order and `(init, switch, active, module)` at 2,884, then
+2,885.  `(init, module, switch, active)` is size-fatal (8,076).
+
+| metric | after win 1 | after win 2 |
+|---|---:|---:|
+| size | 8,080 | 8,080 |
+| raw diff | 2,884 | **2,882** |
+| aligned diff | 1,725 | 1,731 |
+| `.text` diff bytes | 71,433 | **71,431** |
 | `.ARM.extab` diff | 577 | 577 |
 | `.rel.plt` | OK | OK |
 
