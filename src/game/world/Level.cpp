@@ -2039,9 +2039,9 @@ void Level::createMission() {
             int coords[3] = {c[0], c[1], c[2]};
             Route *route = new Route(coords, 3);
             pirateBase = route->getWaypoint()->getPosition();
-            (*this->enemies)[i] = this->createStaticObject(route->getWaypoint(), 14243, true);
             (*this->enemies)[i]->setToSleep();
             (*this->enemies)[i]->name = *Globals::gameText->getText(441);
+            (*this->enemies)[i] = this->createStaticObject(route->getWaypoint(), 14243, true);
         }
         int escortsEnd = pirateEscorts + first + pirates;
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
