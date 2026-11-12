@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,552** | 22,800 | 57,232 |
+| `LevelScript::process` | **51,551** | 22,795 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,260**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,259**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -45,6 +45,8 @@ Landed changes:
   71,478 -> 71,471 (-7), `.ARM.extab` 577 unchanged, `.rodata`
   sh_size 269,644 unchanged, build-id 20 unchanged, `.rel.plt`
   byte-identical.
+* `LevelScript::process` (w13516): multi-line d5 shift-3, explosion
+  counters hoist. Raw **51,552 -> 51,551** (-1). `.text` -1.
 * `LevelScript::process` (w13516): multi-line d6 shift-5, sound
   stop/play swap. Raw **51,554 -> 51,552** (-2). `.text` -2.
 * `Radar::draw` (w13541): enemy-guard ABCDE order. Raw **6,015 -> 6,013**
