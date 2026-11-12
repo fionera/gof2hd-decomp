@@ -4089,10 +4089,10 @@ bool LevelScript::process(int delta) {
                             int xOff = 25000;
                             int yOff = 2300;
                             for (int i = 6; i < 8; i++) {
-                                (*enemies)[i]->awake();
                                 KIPlayer *guard = (*enemies)[i];
                                 guard->setPosition(player->getPosition()
                                                    + Vector{(float) xOff, (float) yOff, 25000.0f});
+                                (*enemies)[i]->awake();
                                 xOff += 1000;
                                 yOff += 50;
                             }
