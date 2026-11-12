@@ -16,9 +16,9 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,935** | 20,913 | 57,232 |
+| `LevelScript::process` | **51,930** | 20,928 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
-| `Layout` C1/C2 | **5,354** | 2,680 | 7,072 |
+| `Layout` C1/C2 | **5,353** | 2,681 | 7,072 |
 | `Level::createMission` | **3,510** | 998 | 17,172 |
 | `MGame::OnTouchEnd` | **2,929** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,510** | 643 | 9,700 |
@@ -65,13 +65,18 @@ Landed changes:
   20,902 -> 20,913.
 * `LevelScript::process` (w13104): pass 5d (two safe adjacent swaps; neutral
   on the combined body, kept as a verified size-exact reorder).
+* `LevelScript::process` (w13105): K=4..8/d9..12/d13..40 re-sweep plus greedy
+  2/3-opt. Raw **51,935 -> 51,930** (-5), aligned 20,913 -> 20,928.
+* `Layout` C1/C2 (w13112): three-store reorder (`field_0x12c` up,
+  `field_0x110_strip58`/`field_0x120` down). Raw **5,354 -> 5,353** (-1),
+  aligned 2,680 -> 2,681.
 
-Section deltas: `.text` **74,229** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **640** (size- and
+Section deltas: `.text` **74,223** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **74,889**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **74,882**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 186)
