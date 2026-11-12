@@ -2954,8 +2954,8 @@ bool LevelScript::process(int delta) {
                         Vector ref = (*enemies)[3]->getPosition();
                         m_nScriptTimerA = 0;
                         (*enemies)[1]->setPosition((*enemies)[3]->getPosition() + Vector{-79000.0f, 4900.0f, 7500.0f});
-                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
+                        (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         for (int i = 0; i < 3; i++) {
                             (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                             (*enemies)[i]->field_0x38 = 3;
