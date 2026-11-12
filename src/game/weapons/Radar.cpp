@@ -508,8 +508,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     Sprite *blip = this->blipSprite;
                     int frame;
                     if (this->field_0x28 != 0 && this->field_0x28 != this->lockedStation) {
-                        frame = (int) ((float) (blip->getRawFrameCount() - 1) *
-                                       ((float) this->stationLockTimer / (float) this->field_0x1b8));
+                        frame = (int) ((float) this->stationLockTimer * (float) (blip->getRawFrameCount() - 1) /
+                                       (float) this->field_0x1b8);
                     } else {
                         frame = blip->getRawFrameCount() - 1;
                     }
@@ -858,7 +858,7 @@ enemies:
                 }
             }
         tractor:
-            if (this->tractorMode2 && wreck && enemy->isDead() && this->field_0x1c == nullptr) {
+            if (this->tractorMode2 && enemy->isDead() && wreck && this->field_0x1c == nullptr) {
                 this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
                 enemyHit = true;
