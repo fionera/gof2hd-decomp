@@ -2307,11 +2307,11 @@ case4Tail:
                         Array<KIPlayer *> *enemies = this->enemies;
                         KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
                         ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
+                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
                         convoyShip->cargo = nullptr;
+                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
-                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
-                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                     }
                     this->objectivesA = new Objective(18, 0, convoyEnd, this);
                     this->objectivesB = new Objective(18, convoyEnd, total, this);
