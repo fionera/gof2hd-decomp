@@ -804,16 +804,15 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 8: {
-                    TargetFollowCamera *wcamera = m_pCamera;
                     m_nScriptTimerA += delta;
                     float rumble = (float) m_nScriptTimerA / -3000.0f + 1.0f;
                     if (rumble < 0.0f) {
                         rumble = 0.0f;
                     }
-                    wcamera->setRumblePercentage(rumble, 20);
+                    m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
                         m_nState = 9;
-                        wcamera->setRumblePercentage(0.0f, 0);
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                         m_nScriptTimerA = 0;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -935,11 +934,11 @@ bool LevelScript::process(int delta) {
             // after the switch -- otherwise the mission-0 intro never ends.
             if (m_nState == 16) {
                 if (!Globals::layout->isFading()) {
-                    Level::initStreamOutPosition = 1;
-                    Globals::status->nextCampaignMission(true);
-                    Globals::switch_to_target_setting = 1;
                     Globals::appManager->SetCurrentApplicationModule(2);
                     Globals::layout->enableFillScreen(true);
+                    Level::initStreamOutPosition = 1;
+                    Globals::switch_to_target_setting = 1;
+                    Globals::status->nextCampaignMission(true);
                     return 0;
                 }
             }
@@ -1170,14 +1169,13 @@ bool LevelScript::process(int delta) {
             case 10: { // s10 @0x13b948: pan the camera further, ramp the rumble DOWN over the frame
                        // timer, re-aim the docking model along the current camera direction, then at
                        // timer>=4001 advance to s11 and clear the rumble.
-                TargetFollowCamera *camera10 = m_pCamera;
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 4000.0f; // @0x13b930
-                camera10->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
+                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
                 if (!(rumble < 1.0f)) {
                     rumble = 1.0f;
                 }
-                camera10->setRumblePercentage(1.0f - rumble, 100);
+                m_pCamera->setRumblePercentage(1.0f - rumble, 100);
                 AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                 Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
                         *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
@@ -3147,15 +3145,16 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nState++;
                 } else if (__builtin_expect(m_nState == 8, 0)) { // lint: arm_builtin
+                    Vector &v_dirVecA = m_dirVec;
                     m_nScriptTimerA += delta;
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
                     if ((m_nScriptTimerA >= 8001)) { // lint: arm_builtin
-                        m_dirVec = (*enemies)[3]->geometry->getDirection();
+                        v_dirVecA = (*enemies)[3]->geometry->getDirection();
                         resetCamera(m_pLevel);
                         m_pCamera->setTarget((*enemies)[3]->geometry);
-                        m_tempVec += m_dirVec * 10000.0f;
-                        m_dirVec = (*enemies)[3]->geometry->getRightVector();
-                        m_tempVec += m_dirVec * 4800.0f;
+                        m_tempVec += v_dirVecA * 10000.0f;
+                        v_dirVecA = (*enemies)[3]->geometry->getRightVector();
+                        m_tempVec += v_dirVecA * 4800.0f;
                         m_pCamera->setPosition(m_tempVec);
                         m_nState++;
                         m_nScriptTimerA = 0;
@@ -3834,8 +3833,8 @@ bool LevelScript::process(int delta) {
                     resetCamera(m_pLevel);
                     if (player->isInRocketControl()) {
                         m_pCamera->setRumblePercentage(0.0f, 0);
-                        player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
+                        player->setRocketControl(nullptr, nullptr);
                     }
                     m_pCamera->enableFirstPersonCam(false);
                     player->player->setVulnerable(false);
@@ -3912,9 +3911,8 @@ bool LevelScript::process(int delta) {
                     if (!Globals::layout->isFading()) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
                         m_pCamera->setTarget(player->geometry);
-                        AEGeometry *geo = player->geometry;
-                        Vector dir = geo->getDirection();
-                        geo->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
+                        Vector dir = player->geometry->getDirection();
+                        player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
                         if (m_pGeometry6 != nullptr) {
                             delete m_pGeometry6; // 0x144df6
                         }
