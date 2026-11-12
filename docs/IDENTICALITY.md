@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,661** | 863 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
-| `HangarWindow::render` | **1,038** | 620 | 9,700 |
+| `HangarWindow::render` | **928** | 469 | 9,700 |
 | `Level::createShip` | **1,173** | 468 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -31,11 +31,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,378**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,268**, `.ARM.extab` **1,216**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13522): hoist the `tab` snapshot above the
+  ship guard and reorder the upgrade-button body (`setPosition` before
+  `setVisible`/`draw`, `buttons[2]->setVisible` before `buttons[10]`).
+  Raw **1,038 -> 928** (-110), aligned 620 -> 469. `.text` 71,378 ->
+  71,268 (-110), but the `getShip` cleanup scope grows the render LSDA
+  record: `.ARM.extab` 577 -> **1,216** (+639), so the text+extab total
+  is **+529** (72,006 -> 72,535). Raw/same-address win only; the extab
+  record is the next target.
 * `Level::createMission` (w13512): move the case-2 convoy escort loop's
   `offset += 2000` into the `for` increment (`i++, offset += 2000`).  The
   original stores the running offset to `[sp,#120]` *before* the `i++`,
