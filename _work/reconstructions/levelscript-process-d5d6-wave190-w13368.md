@@ -146,3 +146,10 @@ Applied the final d5 swap (`setVulnerable` down below `m_pRadar->enabled`,
 57,232 B. `.text` **73,014 -> 73,012** (-2); `.ARM.extab` 603 and
 build-id 20 unchanged; total (text+extab+build-id) **73,637 -> 73,635**
 (-2). `check` -> RATCHET PASS.
+
+## Current-master harvest 2 (wave 190)
+
+The `setFreeLookMode`/`m_pRadar->enabled` swap (`46c07d031`) is a -1 raw
+win on current master: raw **51,743 -> 51,742** (-1), aligned
+22,483 -> 22,479, size exact 57,232 B. `.text` **72,976 -> 72,975** (-1);
+`.ARM.extab` 603 and build-id 20 unchanged. `check` -> RATCHET PASS.

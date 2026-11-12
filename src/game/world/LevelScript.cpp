@@ -3517,7 +3517,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
                         TargetFollowCamera *wcamera = m_pCamera;
-                        player->setFreeLookMode(false);
+                        m_pRadar->enabled = 0;
                         m_nState++;
                         resetCamera(m_pLevel);
                         player->setTurretMode(false);
@@ -3534,7 +3534,7 @@ bool LevelScript::process(int delta) {
                         player->setFreeze(true);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
-                        m_pRadar->enabled = 0;
+                        player->setFreeLookMode(false);
                         player->player->setVulnerable(false);
                         player->setVisible(false);
                         wcamera->setTarget((*enemies)[0]->geometry);

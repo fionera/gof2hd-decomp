@@ -2293,8 +2293,8 @@ case4Tail:
                         ship->setPosition((float) (offset + this->enemyRoute->getWaypoint(0)->x),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->y),
                                           (float) (offset + this->enemyRoute->getWaypoint(0)->z));
-                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->getRoute()->reachWaypoint(0);
+                        (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
                         (*this->enemies)[i]->player->setAlwaysEnemy(true);
                         offset += 2000;
                     }
@@ -5285,8 +5285,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     (*volumes)[6] = new BoundingAAB(fx, y, z, 0.0f, -5088.0f, -7962.0f, 1300.0f, 2900.0f, 13210.0f);
                     (*volumes)[7] = new BoundingAAB(fx, y, z, 0.0f, -11604.0f, 3526.0f, 3260.0f, 880.0f, 10640.0f);
                     (*volumes)[8] = new BoundingAAB(fx, y, z, 0.0f, 5212.0f, -12332.0f, 3260.0f, 2640.0f, 8410.0f);
-                    (*volumes)[9] = new BoundingAAB(fx, y, z, 0.0f, -15852.0f, 2004.0f, 15860.0f, 2510.0f, 10910.0f);
                     (*volumes)[10] = new BoundingAAB(fx, y, z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
+                    (*volumes)[9] = new BoundingAAB(fx, y, z, 0.0f, -15852.0f, 2004.0f, 15860.0f, 2510.0f, 10910.0f);
                     fixed->setWreckedMeshId(0x4780);
                 } else {
                     ArraySetLength(3, *volumes);
