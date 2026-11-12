@@ -1556,8 +1556,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 12:
                 if (m->getStatusValue() == 0) {
-                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
-                        Globals::status->station->getIndex() != 0x71) {
+                    if (Globals::status->station->getIndex() != 0x71 || Globals::status->inAlienOrbit() ||
+                        Globals::status->currentCampaignMission != 0x5c) {
                         m->setWon(true);
                         return m;
                     }

@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,355** | 617 | 9,700 |
 | `Level::createShip` | **1,190** | 403 | 2,764 |
-| `Status::missionCompleted` | **466** | 193 | 1,432 |
+| `Status::missionCompleted` | **451** | 205 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
@@ -262,13 +262,20 @@ Landed changes:
   build-id 20 unchanged, total (text+extab+build-id) 73,588 -> 73,582
   (-6). `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328
   exact.
+* `Status::missionCompleted` (w13396): case-12 `||` operands reordered to
+  `station->getIndex() != 0x71 || inAlienOrbit() ||
+  currentCampaignMission != 0x5c`. Raw **466 -> 451** (-15), aligned
+  193 -> 205. `.text` 72,959 -> 72,944 (-15), `.ARM.extab` 603 and
+  build-id 20 unchanged, total (text+extab+build-id) 73,582 -> 73,567
+  (-15). `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328
+  exact.
 * `LevelScript::process` (w13368): `setFreeLookMode`/`m_pRadar->enabled`
   swap (`46c07d031`). Raw **51,743 -> 51,742** (-1), aligned
   22,483 -> 22,479. `.text` 72,999 -> 72,975 (-24 combined), `.ARM.extab`
   603 and build-id 20 unchanged, total (text+extab+build-id)
   73,622 -> 73,598 (-24). `.rel.plt` byte-identical, 27/27 headers, file
   size 2,187,328 exact.
-Section deltas: `.text` **72,959** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **72,944** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -278,7 +285,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,582**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,567**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
