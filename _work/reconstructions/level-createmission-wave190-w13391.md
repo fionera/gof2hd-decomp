@@ -132,3 +132,12 @@ imports 207, lint CLEAN, drift 0, parity 5370/5370).
 `.text` **73,121 -> 73,044** (-77); `.ARM.extab` **606 -> 603** (-3);
 build-id 20 unchanged; total (text+extab+build-id) **73,747 -> 73,667**
 (-80). `check` -> RATCHET PASS.
+
+## 8. Follow-up harvest: case-183 descending offset store order
+
+`b5bacf3d8` reorders the `case 183` convoy `offset[0..2]` stores to the
+descending original order (`offset[0]` before `offset[1]`) in cases 0 and 1.
+Raw **3,054 -> 3,044** (-10), aligned **1,129 -> 1,116**, size exact
+17,172 B. `.text` **73,035 -> 73,025** (-10); `.ARM.extab` 603 and
+build-id 20 unchanged; total (text+extab+build-id) **73,658 -> 73,648**
+(-10). `check` -> RATCHET PASS.
