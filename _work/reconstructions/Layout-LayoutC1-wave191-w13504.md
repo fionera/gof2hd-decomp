@@ -133,6 +133,10 @@ no-op), and forcing the outer `0x130` tests makes the body smaller.
 * `t_field_0x2d0` local (mirror of `t_field_0x2c8`): 5,399 / 7,080.
 * `t_field_0x2d0` local + `field_0x1f4` HD arm `22` (int): 5,310 / **7,072**
   (size-exact, raw worse).
+* 400 random single-statement moves to arbitrary positions (real builds,
+  `scratch/w13504/rand.py`): **no** size-exact raw improvement and not even an
+  aligned improvement; best is identity.  (The best non-identity size-exact
+  move is the `0x2c8`-store move above: raw 5,250, aligned 2,691.)
 
 ### 3.6 Equal-arm boolean simplifications (new cells)
 
