@@ -3389,11 +3389,11 @@ bool LevelScript::process(int delta) {
                                     fighter->setPosition(playerPos + Vector{(float) x, (float) (dy - 5000), (float) z});
                                 }
                                 enemy->player->setEnemies(nullptr);
+                                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                                ((PlayerFighter *) enemy)->setAIDisabled(true);
                                 int target = Globals::rnd->nextInt(5);
                                 enemy->player->setEnemy(target == 4 ? player->player : (*enemies)[target + 2]->player);
                                 enemy->awake();
-                                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
-                                ((PlayerFighter *) enemy)->setAIDisabled(true);
                             } else if (ship->shipGroupFlag == 51) {
                                 Array<Player *> *targets = new Array<Player *>();
                                 ArrayAdd((*enemies)[0]->player, *targets);

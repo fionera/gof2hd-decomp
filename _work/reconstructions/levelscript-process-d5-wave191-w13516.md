@@ -490,3 +490,37 @@ size       57,232 / 57,232   (exact)
 ```
 
 `check` -> RATCHET PASS.
+
+## Fourteenth landing: multi-line d5 shift-3 (wake/AI-disable group)
+
+On the 51,613 body, `(5, merged 3288) shift 3` (source lines 3392-3396) was
+landed:
+
+```cpp
++                                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
++                                ((PlayerFighter *) enemy)->setAIDisabled(true);
+                                 int target = Globals::rnd->nextInt(5);
+                                 enemy->player->setEnemy(target == 4 ? player->player : (*enemies)[target + 2]->player);
+                                 enemy->awake();
+-                                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+-                                ((PlayerFighter *) enemy)->setAIDisabled(true);
+```
+
+`nextInt(5)` is the only RNG call in the group, so moving it past the direction
+store and `setAIDisabled` keeps the drawn value identical.  `awake()` sets
+`state`/`active`/exhaust visibility but does not touch `aiDisabled` or the
+geometry direction; `setAIDisabled` is a plain `aiDisabled = v` store.
+Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,613 -> 51,612  (-1)
+aligned    22,663
+size       57,232 / 57,232   (exact)
+.text      71,390 -> 71,389  (-1)
+.ARM.extab 577 (unchanged; size/base exact)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical, diff 0)
+```
+
+`check` -> RATCHET PASS.

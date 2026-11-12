@@ -127,3 +127,15 @@ cmake --build cmake-build-match --target check -j2   # RATCHET PASS
 Scratch `/home/debian/GalaxyOnFire2/scratch/w13546/`: `measure.py`, `parse.py`,
 `iosorder.py`, `ioswin.py`, `adj.py`, `rnd.py`, `v1.py`..`v5.py`, `combo20.py`,
 `counts.py`, `sizediff.py`, `regionmatch.py`, `base.dis`, `win1.dis`.
+
+## Win 2 — re-state `field_0x184` after itself
+
+Duplicating the `field_0x184` ternary immediately after itself is CSE-neutral
+but changes materialisation: the `n9/iPad` arm's separate `movs r1,#173` +
+`b.n` pair folds into the shared 232/116 path (`d214c`), and the merged block
+gains a `str.w r1,[r0,#388]`.  Net −1 raw / −2 insns.
+
+* before: raw 5,234 / aligned 2,709 / insn 2,519
+* after:  raw 5,233 / aligned 2,712 / insn 2,517 / size 7,072:7,072
+* `.text` delta 71,259 → 71,251; `.ARM.extab` 576 (unchanged);
+  `.rel.plt` byte-identical; `check` RATCHET PASS.

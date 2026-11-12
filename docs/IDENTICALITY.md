@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,542** | 22,809 | 57,232 |
+| `LevelScript::process` | **51,541** | 22,826 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
-| `Layout` C1/C2 | **5,234** | 2,709 | 7,072 |
+| `Layout` C1/C2 | **5,233** | 2,712 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
@@ -31,10 +31,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,243**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,241**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `Layout` C1/C2 (w13546, wave 191b): restate `field_0x184` after its
+  first assignment.  Raw **5,234 -> 5,233** (-1, both C1/C2), aligned
+  2,709 -> 2,712, insn 2,519 -> 2,517, size 7,072/7,072 exact.
+  `.text` -1, `.rel.plt` byte-identical.
+* `LevelScript::process` (w13516, wave 191b): multi-line d5 shift-3,
+  wake/AI-disable group: `setDirection` + `setAIDisabled` move before
+  the `rnd->nextInt(5)`/`setEnemy`/`awake` group.  Raw
+  **51,542 -> 51,541** (-1), aligned 22,809 -> 22,826, size
+  57,232/57,232 exact.  `.text` -1, `.ARM.extab` 576 unchanged,
+  `.rodata` 485 unchanged.  `.rel.plt` byte-identical.
 
 * `Layout` C1/C2 (w13546, wave 191b): restate `footerTextInset` after the
   opening if/else block.  The redundant assignment is CSE'd, but it makes
