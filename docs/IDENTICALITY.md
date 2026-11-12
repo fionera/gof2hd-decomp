@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **3,427** | 1,003 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
-| `Level::createShip` | **1,195** | 483 | 2,764 |
+| `Level::createShip` | **1,195** | 396 | 2,764 |
 | `Status::missionCompleted` | **475** | 187 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -213,7 +213,12 @@ Landed changes:
   5103). Raw **51,820 -> 51,814** (-6), aligned 20,981 -> 21,712. `.text`
   73,511 -> 73,505 (-6), `.ARM.extab` 610 unchanged, total
   (text+extab+build-id) 74,141 -> 74,135.
-Section deltas: `.text` **73,511** differing bytes (size exact, 1,259,464 B);
+* `Level::createShip` (w13376): reorder the three independent
+  `nextInt(40000)` jitter declarations to `jitter3, jitter1, jitter2`.
+  Raw stays **1,195**, aligned 483 -> 396, instructions 1,116/1,117 ->
+  1,117/1,117. `.text` 73,505 unchanged, `.ARM.extab` 610 unchanged,
+  total (text+extab+build-id) 74,135 unchanged.
+Section deltas: `.text` **73,505** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
