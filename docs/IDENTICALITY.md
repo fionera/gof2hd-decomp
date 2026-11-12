@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **51,748** | 22,483 | 57,232 |
 | `Radar::draw` | **6,291** | 1,828 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
-| `Level::createMission` | **3,035** | 1,116 | 17,172 |
+| `Level::createMission` | **3,030** | 1,135 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,355** | 617 | 9,700 |
 | `Level::createShip` | **1,192** | 396 | 2,764 |
@@ -199,7 +199,13 @@ Landed changes:
   build-id 20 unchanged, total (text+extab+build-id) 73,637 -> 73,635
   (-2). `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328
   exact.
-Section deltas: `.text` **73,012** differing bytes (size exact, 1,259,464 B);
+* `Level::createMission` (w13359 follow-up): the `stationPirates` 4-line
+  rotation (`pirateBase = ...` moved below the `name` store) also wins on
+  current master. Raw **3,035 -> 3,030** (-5), aligned 1,116 -> 1,135.
+  `.text` 73,012 -> 73,007 (-5), `.ARM.extab` 603 and build-id 20
+  unchanged, total (text+extab+build-id) 73,635 -> 73,630 (-5).
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **73,007** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -209,7 +215,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,635**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,630**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

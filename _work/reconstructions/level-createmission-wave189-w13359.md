@@ -131,3 +131,12 @@ aligned **1,128 -> 1,129** (+1), size exact 17,172 B. `.text`
 **73,036 -> 73,035** (-1); `.ARM.extab` 603 and build-id 20 unchanged;
 total (text+extab+build-id) **73,659 -> 73,658** (-1). `check` ->
 RATCHET PASS.
+
+## Current-master harvest 2 (wave 190)
+
+The follow-up 4-line rotation (`pirateBase = route->getWaypoint()->getPosition();`
+moved below the `name` store) also wins on current master: raw
+**3,035 -> 3,030** (-5), aligned **1,116 -> 1,135** (+19), size exact
+17,172 B. `.text` **73,012 -> 73,007** (-5); `.ARM.extab` 603 and
+build-id 20 unchanged; total (text+extab+build-id) **73,635 -> 73,630**
+(-5). `check` -> RATCHET PASS.
