@@ -40,8 +40,8 @@ Landed changes:
   clamp arm (`(getLevel() <= 20 ? getLevel() * 5 : 100); empPoints += 40;`)
   so the `add.w r0, r0, r0, lsl #2` lands in the then-arm, matching the
   original. Raw **1,167 -> 1,164** (-3), aligned 398 -> 400. `.text`
-  71,512 -> 71,509 (-3), `.ARM.extab` 582 unchanged, build-id 20 -> 19,
-  total (text+extab+build-id) 72,883 -> 72,879 (-4). `.rel.plt`
+  71,512 -> 71,509 (-3), `.ARM.extab` 586 unchanged, build-id 20 unchanged,
+  total (text+extab+build-id) 72,098 -> 72,095 (-3). `.rel.plt`
   byte-identical, `.ARM.exidx` 0, size 2,764 exact.
 * `HangarWindow::render` (w13527): move the `tab` snapshot from above the
   ship guard into the guard body and restore the `buttons[10]`-before-
