@@ -190,3 +190,87 @@ only sub-2,907 cell. Re-running it again after Win 3 is the natural next step.
 
 Cumulative for this pass: raw **2,910 -> 2,904**, `.text` 72,595 -> 72,589,
 `.ARM.extab` 584 unchanged.
+
+## Post-win sweeps exhausted (raw 2904 is a deep local minimum)
+
+After the three landed wins the base is raw **2,904** / aligned 1,704 / size
+8,080. Every sweep below was run on this post-win base and reverted; the base
+is the best cell in each.
+
+### New exhaustive / targeted cells (all reverted)
+
+| cell | builds | best raw | notes |
+|---|---:|---:|---|
+| chain block 155, **all 120 permutations** of its first 5 statements | 120 | **2,904** (base) | the only chain block whose full body permutation had not been swept (w13323/w13344 only split 96/127) |
+| "Back to the station" block (post-chain, 7 statements), **all 720 permutations** | 720 | **2,904** (base) | first full permutation of this block |
+| simulated annealing over the 18-block chain order (swap / move / 3-cycle proposals, T0=200, 300 builds) | 300 | **2,904** (base; SA never beat it) | confirms w13421's "1/2/3-cycle local minimum" |
+| block 110 reordered to the original 110 order (HP,Shield,Armor,Gamma,switch,initStream,depart,module,enterSpaceLounge,active) | 1 | 2,930 | size-exact, +26 |
+| chain swap 95↔110 (alone) | 1 | 3,200 | size-exact |
+| chain swap 95↔110 + block-110 original order | 1 | 3,198 | size-exact |
+| block 95 reordered to original-110 order (switch after Gamma) | 48 (24 getter perms × 2 tails) | 3,871 | **size-fatal** (+4 or +32) |
+| block 110 `enterSpaceLounge` moved after `SetCurrentApplicationModule` | 1 | 2,927 | size-exact |
+| block 110 `enterSpaceLounge` after `active` / last | 2 | 3,669 / 3,564 | +4 / -12 size |
+| `finishMission` `if (goingToWaypoint())` moved after `setMission`+`setRoute` (matches the original 110/162 block order at `0x112c`) | 1 | 2,913 | size-exact; local fidelity fix, global raw +9 |
+
+Notes on the last row: the original `finishMission` body emits
+`removeObjectives; setMission; setRoute; if(goingToWaypoint) setAutoPilot;
+removeRoute; setPlayerRoute` (ORIG `0x112c`), while our source tests
+`goingToWaypoint()` before `setMission`/`setRoute`.  Reordering to the original
+order is size-exact but the block sits at a different address than ORIG
+(ours `0x129a`, ORIG `0x112c`), so the same-address raw count rises 2,904 ->
+2,913.  Not landed under the raw-first rule.
+
+### Mining-loop condition / schedule (re-confirmed, no new lever)
+
+The 24-byte pre-chain residual is exactly `0x48b` (`beq` vs `bgt`, 1 B),
+`0x4a4..0x4ba` (22-byte `String("t ")` schedule) and `0x6b4` (1 B literal).
+New spellings measured on the post-win base:
+
+| form | raw | size |
+|---|---:|---:|
+| base (`count >= 0`, `String(count)`) | **2,904** | 8,080 |
+| `amount != 0` + `String(-amount)` | 6,615 | 8,088 |
+| `amount < 0` + `String(-amount)` | 6,553 | 8,084 |
+| `amount < 0` + `String(count)` | 2,906 | 8,080 |
+| `count != 0` + `String(-amount)` | 6,615 | 8,088 |
+| `__builtin_expect(count != 0, 1)` | 7,460 | 8,072 |
+| `__builtin_expect(count != 0, 0)` | 7,296 | 8,084 |
+| `if (count == 0) {} else { ... }` | 6,615 | 8,088 |
+| `if (count == 0) goto skip;` | 6,615 | 8,088 |
+| `count > -1` (byte-identical to base) | 2,904 | 8,080 |
+
+Mining-report expression shapes (all keep the same string content):
+
+| form | raw | size |
+|---|---:|---:|
+| base `a + b + String("t ") + *getText(...)` | **2,904** | 8,080 |
+| `a + b + (String("t ") + *getText(...))` | 3,222 | 8,072 |
+| `(a + b) + (String("t ") + *getText(...))` | 3,222 | 8,072 |
+| `a + (b + String("t ")) + *getText(...)` | 6,394 | 8,076 |
+| `a + (b + (String("t ") + *getText(...)))` | 6,515 | 8,084 |
+
+The `beq` and the original `add.w r8, sp, #80` schedule are both produced by
+`count != 0`, but that spelling flips the global `sl`/`r9` allocation
+(`this`↔`Globals::status`) and costs 8 B / raw 6,615.  No source spelling was
+found that decouples the schedule from the branch polarity.
+
+### Residual map (unchanged)
+
+First differing byte is `count >= 0` emitting `bgt.n` where the original emits
+`beq.n` at `+0x48b`; then the 22-byte String-ctor schedule at `+0x4a4` and its
+literal-pool word at `+0x6b4`.  Everything from `+0xba6` to the end is campaign
+chain block placement; `cmp r0,#N` test addresses differ from `0xfd0` onward.
+Mnemonic-level comparison shows the instruction *set* is identical (no
+instruction-length differences at matching addresses outside the mining
+schedule), so the remaining raw delta is branch-displacement / literal-pool
+addressing driven by block placement.
+
+### Reproduction
+
+Scratch `/home/debian/GalaxyOnFire2/scratch/w13447/`: `perm155.py` (block-155
+120-perm), `permback.py` (back-to-station 720-perm), `sa.py` (chain SA),
+`b110.py`/`b110b.py`/`b110c.py`/`b110d.py` (block-110/95 reorders),
+`b95c.py` (block-95 getter×tail sweep), `cond2.py`/`cond3.py`/`cond4.py`
+(condition spellings), `minevar.py` (report-expression shapes), `dd.py`
+(range disassembly), `mi.txt` (machine-instr dump).  All builds `ninja -j2`
+under `ulimit -v 12000000`.

@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
-| `Level::createShip` | **1,183** | 404 | 2,764 |
+| `Level::createShip` | **1,180** | 408 | 2,764 |
 | `Status::missionCompleted` | **145** | 173 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
@@ -582,7 +582,17 @@ Landed changes:
 * `LevelScript::process` (w13453 follow-up): case-69 `enableFirstPersonCam`
   defer. This is the same move already landed from w13452 pass 5, so it is
   note-only on current master.
-Section deltas: `.text` **71,959** differing bytes (size exact, 1,259,464 B);
+* `Level::createShip` (w13462): transpose the `ey`/`ez` operands of the
+  race-0/type-14 wreck boxes `[9]`/`[10]` so the `{2004, -15852}` literal
+  pair matches the original pool. Raw **1,183 -> 1,180** (-3), aligned
+  404 -> 408. `.text` 72,257 -> 72,254 (-3) on that base, `.ARM.extab`
+  unchanged. Caveat: this is a pool-order lever; the produced call passes
+  `ey = -15852`, `ez = 2004` for `[9]` (and `ey = -15852`, `ez = -2610`
+  for `[10]`), while the original call is `ey = 2004`, `ez = -15852`
+  (`ey = -2610`, `ez = -15852`). A future pass should restore the
+  semantic values and the pool order together. `.rel.plt` byte-identical,
+  27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **71,956** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **578** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -592,7 +602,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,557**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,554**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
