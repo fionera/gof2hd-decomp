@@ -90,3 +90,60 @@ Expected: `raw=2982 aligned=1123 size=17172/17172`, `.rel.plt` diff 0,
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13450/`
 (`try.py`, `rundiff.py`, `dis.py`, `firstlen2.py`, `sweep_rot.py`,
 `sweep_c2coords.py`, `secdiff.py`, `Level.base.cpp`, `v*.json`).
+
+## 5. Follow-up sweep on the landed base (raw 2,982)
+
+All measured size-exact at 17,172 B unless noted.
+
+* **`case 2` coords full 15-pair sweep** (which two of the six slots hold the
+  two `nextInt` draws): `0_4` (landed) **2,982**; `0_3` 2,983; `2_4` 2,984;
+  `0_2` 2,985; `2_3` 2,985; `2_5` 2,987; `1_4` 2,988; `3_4` 2,989; `1_3`
+  2,990; `1_2`/`1_5`/`3_5` 2,992; `0_1` size-fatal 17,180 / raw 10,415;
+  `0_5` size-fatal 17,164 / raw 6,440; `4_5` raw 9,380.  The binary's own
+  layout is `0_2` (first draw to `coords[0]`, second to `coords[2]`, per
+  `0xb16fc..0xb1720`), so `0_4` is a codegen crutch.
+* **`case 183` switch arm order**: all 24 source permutations.  Base
+  (`c0,c1,default,c2`) is 2,982; `c0,c1,c2,default` 2,983; `c0,default,
+  c1,c2` 2,984; everything else >= 2,985 or ~5,288.  The emitted body
+  order is `k0,k2,k1,default` for *every* source order (checked in the
+  LLVM IR: the IR block order follows source, `MachineBlockPlacement`
+  still emits `k0,k2,k1,default`), so the original's `k0,k1,k2,default`
+  body order is not reachable from source.  The original's literal pool
+  order (`-3000,20000,-50000,-7000,10000,-30000,25000,-36000,6000,12000,
+  -45000`) follows that body order and is likewise unreachable.
+* **`case 2` second-loop loot statements** (full 24 permutations of
+  `crateCaptured`/`setSpeed`/`cargo`/`setRotationSpeed`): current
+  `C S G R` 2,982 best; `C S R G` 2,986; `C R S G` 3,004; `C R G S`
+  3,005; `S...`/`G...`/`R...` first 4,853..4,928; `C G S R`/`C G R S`
+  size-fatal 17,180.
+* **Raid-block `spawnPosition`**: moving `spawnPosition.z += ...` ahead
+  of `setPosition(spawnPosition)` (the order the binary emits,
+  `0xb394e..0xb396e`) is size-exact but raw 2,983 (aligned 1,093).
+* **`case 2` goods-after-Route** (the binary's own order, `0xb1736`
+  store then `0xb173a` read): raw 2,999.
+* **`case 2` `asteroidPos` placement**: hoisting the zero-init to the top
+  of the case (the binary interleaves it before the first `nextInt`),
+  or `= {}` / no initialiser, all neutral 2,982.
+* **`case 1` `enemyRace` reload**: `int race = enemyRace;` /
+  `const int &race = enemyRace;` / `const int enemyRace` / `const int
+  localRace` inside or outside the loop are all neutral 2,982; a
+  `volatile` read is size-fatal 17,256.
+* **`hasWanted` loop**: `!(hasWanted && i <= n)` neutral 2,982;
+  `i > n || !hasWanted` 15,465; `hasWanted && !i` size-fatal 17,164;
+  `hasWanted && 0 == i` neutral.
+* **alien-turret `t` selector**: `(i < 0 ? 1 : 0) + (i < 0 ? 1 : 0)`
+  and `+ (i < 0) + (i < 0) + 0` neutral 2,982; `2 * (i < 0)` size-fatal
+  17,168.
+* **raid `hard`**: `int hard` / `int hard = ... ? 1 : 0` neutral; `8 ==
+  raidRace` neutral.
+* **`case 2` `total`/`convoyEnd`**: `goods + convoyEnd`,
+  `2 + escorts`, inlined `ArraySetLength(convoyEnd + goods, ...)` all
+  neutral.
+* **`case 183` switch `k` forms**: `unsigned k`, `switch ((unsigned) k)`,
+  `k != 4`, `k <= 3`, `switch (k + 0)` neutral; `char k`, `switch
+  ((unsigned char) k)` 3,353; `switch (k & 3)` 2,985.
+* **`case 2` `offset`**: `offset = offset + 2000`, `+= 0x7d0`,
+  `+= 2000u`, moving the increment to the top / after `ship` / after
+  `setPosition` all worse (2,982..3,016); `volatile int total` 11,388.
+* **`case 2` `asteroidPos` index**: `size()/2 + j` and `size() >> 1`
+  neutral.
