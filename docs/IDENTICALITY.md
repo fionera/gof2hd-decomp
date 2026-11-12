@@ -21,7 +21,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createMission` | **2,659** | 871 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,191** | 600 | 9,700 |
-| `Level::createShip` | **1,167** | 398 | 2,764 |
+| `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
@@ -31,11 +31,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,512**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,509**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createShip` (w13501, pass 2): fold the `* 5` into the `getLevel()`
+  clamp arm (`(getLevel() <= 20 ? getLevel() * 5 : 100); empPoints += 40;`)
+  so the `add.w r0, r0, r0, lsl #2` lands in the then-arm, matching the
+  original. Raw **1,167 -> 1,164** (-3), aligned 398 -> 400. `.text`
+  71,512 -> 71,509 (-3), `.ARM.extab` 582 unchanged, build-id 20 -> 19,
+  total (text+extab+build-id) 72,883 -> 72,879 (-4). `.rel.plt`
+  byte-identical, `.ARM.exidx` 0, size 2,764 exact.
 * `HangarWindow::render` (w13527): move the `tab` snapshot from above the
   ship guard into the guard body and restore the `buttons[10]`-before-
   `buttons[2]` upgrade order.  Declaring `upgTab` inside the body keeps the

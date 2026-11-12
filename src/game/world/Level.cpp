@@ -5223,7 +5223,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = (Globals::status->getLevel() <= 20 ? Globals::status->getLevel() : 20) * 5 + 40;
+    int empPoints = (Globals::status->getLevel() <= 20 ? Globals::status->getLevel() * 5 : 100);
+    empPoints += 40;
     int empTime;
     if (shipClass == 1) {
         hitpoints *= type == 14 ? 25 : 5;

@@ -124,3 +124,39 @@ Scratch: `probe_best3.py`, `measure_full.sh`, `secdiff.py`, `insdiff.py`.
   expressions around the `setEmpData` guard.
 * `docs/IDENTICALITY.md` — wave-191 createShip row and `.text` delta.
 * this note.
+
+## 6. Pass 2 (same wave): `empPoints` clamp arm
+
+The `empPoints` clamp was
+
+```cpp
+int empPoints = (Globals::status->getLevel() <= 20 ? Globals::status->getLevel() : 20) * 5 + 40;
+```
+
+Folding the `* 5` into the clamped arm and peeling the `+ 40`:
+
+```cpp
+int empPoints = (Globals::status->getLevel() <= 20 ? Globals::status->getLevel() * 5 : 100);
+empPoints += 40;
+```
+
+is semantically identical (`min(level,20)*5 + 40`) and moves the
+`add.w r0, r0, r0, lsl #2` from the join block into the then-arm, matching
+the original's `0xc0328` placement.  Raw **1,167 -> 1,164** (-3), aligned
+398 -> 400, size **2,764/2,764** exact, insns 1,117/1,117.  `.text` diff
+**71,796 -> 71,793** (-3); `.ARM.extab` 582 unchanged; `.ARM.exidx` 0;
+`.rel.plt` byte-identical; build-id 20 -> 19; TOTAL **72,883 -> 72,879**.
+`check` green (RATCHET PASS).
+
+Remaining clamp-region diff (16 B): the `this` spill `str.w r9,[sp,#56]`
+is still hoisted before the branch (original places it at `0xc0332`), and
+the branch polarity is `bgt` vs the original's `ble`.  Every form that
+restores the `ble` polarity loses the `add` placement and measures worse
+(`>`-form 1,174; `A` 1,174).  Moving the spill needs a register-pressure
+change that no tested source form provides.
+
+Other measured forms on this base (all size-exact): `40 + (...)` 1,164
+(72,880), `20 >= level` / `level < 21` 1,164 (72,880), `empPoints += 40`
+with the `*5` folded 1,164 (72,879, landed), `5 * level` 1,164 (72,880),
+`5 * 20` 1,164 (72,880).  `missionPtr != 23` first 1,165 (72,881);
+`EmpGuard` with a `dummy` member neutral (72,880); `setBV` first 1,170.
