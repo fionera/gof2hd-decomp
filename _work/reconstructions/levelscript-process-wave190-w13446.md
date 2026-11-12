@@ -9,10 +9,10 @@ Target `_ZN11LevelScript7processEi` (`src/game/world/LevelScript.cpp`, original
 
 ```
                          base (HEAD)      this pass
-process raw diffbytes    51,714           51,708     (-6)
-process aligned insns    21,911           21,920     (+9)
+process raw diffbytes    51,714           51,707     (-7)
+process aligned insns    21,911           21,922     (+11)
 orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
-.text diffbytes          72,701           72,695     (-6)
+.text diffbytes          72,701           72,694     (-7)
 .rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
 byte_exact               4507             4507
 linked_exact             4507             4507
@@ -51,7 +51,10 @@ and `.so` change) and with the mission-5 `else if -> if` experiment
 
 Each is a pure statement reorder; size stays exactly 57,232 and `.rel.plt`
 stays byte-identical.  Combining the three is additive: -3, -2, -1 = **-6 raw
-bytes**.  A fourth d=1 candidate (`m_pLevel->particleRenderBoolPtr->reset()`
+bytes**.  A d=2 follow-up sweep found one more independent-store reorder
+(`m_bCinematicBreak = 1;` moved below `m_pHud->visible = 0;` and
+`player->setFreeLookMode(false);`, -1), landed as a second commit: total
+**-7 raw bytes**.  A fourth d=1 candidate (`m_pLevel->particleRenderBoolPtr->reset()`
 before `switchSkyboxForIntro()`, -1) was **not** landed because it reorders
 the first reference to those two symbols and changes `.rel.plt`
 (md5 `67676b5f…`); the other three keep `289b2a06…`.
@@ -94,8 +97,8 @@ cd /home/debian/GalaxyOnFire2/wt/w13446
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN11LevelScript7processEi
-# -> raw= 51708 aligned=21920 size=57232/57232 insn=20726/20830
+# -> raw= 51707 aligned=21922 size=57232/57232 insn=20726/20830
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=51708 size=57232/57232 text=72695 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=51707 size=57232/57232 text=72694 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```

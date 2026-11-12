@@ -573,6 +573,15 @@ Landed changes:
   Raw **51,692 -> 51,691** (-1), aligned 21,937 -> 21,967. `.text` -1,
   `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27 headers, file
   size 2,187,328 exact.
+* `LevelScript::process` (w13446 follow-up): move the
+  `m_bCinematicBreak = 1` store below `m_pHud->visible = 0` and
+  `player->setFreeLookMode(false)`. Raw **51,708 -> 51,707** (-1) on that
+  base; neutral on current master (51,691), kept as the faithful store
+  order. `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328
+  exact.
+* `LevelScript::process` (w13453 follow-up): case-69 `enableFirstPersonCam`
+  defer. This is the same move already landed from w13452 pass 5, so it is
+  note-only on current master.
 Section deltas: `.text` **71,959** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **578** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
