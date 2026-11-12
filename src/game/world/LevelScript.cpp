@@ -3878,8 +3878,8 @@ bool LevelScript::process(int delta) {
                             m_pGeometry6 = marker;
                             marker->setDirection(player->geometry->getDirection(),
                                                  Vector{0.0f, 1.0f, 0.0f});
-                            Vector zero{0.0f, 0.0f, 0.0f};
                             marker->setPosition(player->geometry->getPosition());
+                            Vector zero{0.0f, 0.0f, 0.0f};
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
                             wcamera->setTarget(marker);
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
