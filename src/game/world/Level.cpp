@@ -2280,11 +2280,11 @@ case4Tail:
                     this->enemyRoute = new Route(coords, 6);
                     int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int convoyEnd = escorts + 2;
                     this->enemies = new Array<KIPlayer *>();
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     volatile int offset = 0;
                     for (int i = 0; i < convoyEnd; i++) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),

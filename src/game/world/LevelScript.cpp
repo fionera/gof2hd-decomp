@@ -2262,11 +2262,11 @@ bool LevelScript::process(int delta) {
                     resetCamera(m_pLevel);
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
-                    m_bCinematicBreak = 1;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     Vector camPos = (*enemies)[0]->getPosition();
                     m_pCamera->setActive(true);
+                    m_bCinematicBreak = 1;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     camPos.z += 3000.0f;
                     camPos += (*enemies)[0]->geometry->getDirection() * 10000.0f;
