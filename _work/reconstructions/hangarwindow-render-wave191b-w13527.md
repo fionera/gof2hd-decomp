@@ -110,6 +110,43 @@ compensates: the function stays 9,700 B.  Keeping `buttons[2]` first gives
   `.text` 71,378, `.ARM.extab` 577, total 71,977 (net -529 vs w13522).
   That is a larger byte win but loses the original's body order
   (`setVisible`/`draw`/`setPosition`) and does not reproduce row 39 = 150.
+  Its render LSDA record is still only 38 differing bytes: row 39 is
+  `(2508, 172, 9664)` -- the range differs from the original's 150 but
+  both encode as two uleb bytes, so the call-site table stays aligned.
+
+## Additional sweeps (same wave, after the commit)
+
+All size 9,700 unless stated; the target remains the impossible
+`raw 928` + `extab 577` combination.
+
+* `tab == 0u`, `tab < 1`, `if (tab == 0) { ; }`, an unused local in the
+  empty arm: byte-identical to the committed variant (raw 1,191,
+  extab 586).  The lone `72,138` total is a one-byte
+  `.note.gnu.build-id` hash change, not a real win.
+* Upgrade check without `__builtin_expect`: 9,700 B, raw 1,213,
+  `.text` 71,553, `.ARM.extab` 583, total 72,158 (slightly worse).
+* `if (tab != 0 && ...)`, nested `if (tab != 0) { if (...) }`,
+  `if (tab == 0) {} else { ... }`, `goto upgCheck`, `switch (tab)`:
+  all byte-identical to the committed variant (raw 1,191, extab 586).
+* `__builtin_expect(tab == 0, 0/1)` on the zero-tab arm: 9,668-9,720 B,
+  not size-exact.
+* Hoisting `getShip` into a `Ship *ship` local before the `upgTab`
+  declaration (conditional or unconditional): 9,696-9,704 B.
+* Declaring `upgTab` before `tab` (line 495), at the top of `render()`,
+  or before the `if (item->isShip())` block: falls back to the
+  w13522-free 6,88x-raw shape (9,680-9,704 B).
+* Duplicating the body for the `tab != 3` and `tab == 3` arms: 9,776 B.
+* `volatile int upgTab`: 9,668 B.
+
+Why `cbz` is unreachable in this shape: at `-O0`-style codegen the
+`if (tab == 0) { }` empty arm branches to the join of the `if`, which is
+the end of the `if (item->isShip())` statement (`14a6d0`), not the
+upgrade check.  The original's `cbz r0, 149b96` targets the check, so its
+`tab` value must be unprovable at the check (the check reloads the same
+stack slot).  Every source form that keeps the check reachable from
+`tab == 0` lets SimplifyCFG thread it to `14a6d0` and emit
+`cmp+beq.w` (+4 B).  The `+4` is the only reason row 40 starts at
+2,700 instead of 2,696.
 
 ## Reproduction
 
