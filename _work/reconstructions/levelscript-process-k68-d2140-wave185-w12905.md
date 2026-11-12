@@ -180,3 +180,28 @@ RATCHET                  PASS             PASS
 All nine moves are pure field stores, pure declarations, or calls on a
 receiver untouched by the crossed statements (player state vs camera/hud/radar,
 enemy hitpoints vs player state, `Globals::status` field store vs `setStation`).
+
+## Pass 4 (K=4..5 re-run on the 52,096 tree, landed)
+
+The K=4..5 sweep was re-run on the new body (2,428 candidates, 1,866
+size-exact/rel-ident).  It found 7 winners (best -2); greedy combination of
+the distinct moves reached raw **52,091** (-5) with 4 moves:
+
+| # | base line (1-based) | dir | moved statement | across |
+|---:|---:|---|---|---|
+| 1 | 4750 | down | `m_pCamera->setLookAtCam(false);` | `player->setPosition(0.0f, 0.0f, 90000.0f);` (4754) |
+| 2 | 2005 | down | `player->setFreeLookMode(false);` | `resetCamera(m_pLevel);` (2010) |
+| 3 | 3573 | up | `player->player->setVulnerable(true);` | `m_pHud->visible = 1;` (3569) |
+| 4 | 3931 | down | `Level::initStreamOutPosition = 1;` | `Globals::status->field_68 = ...` (3936) |
+
+```
+                         after pass 3     after pass 4
+process raw diffbytes    52,096           52,091     (-5)
+process aligned insns    20,708           20,739     (+31)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,555           74,550     (-5)
+.ARM.extab diffbytes     647              647        (unchanged)
+total differing bytes    75,222           75,217     (-5)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
