@@ -1067,11 +1067,11 @@ bool LevelScript::process(int delta) {
         // 0x138378: dispatch on (m_nState - 1) -> substates s1..s12 (states 0 / >12 do nothing).
         switch (m_nState) {
             case 1: { // s1 @0x1383a0: lock camera onto the station and start its approach animation.
-                m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                         Globals::Canvas->TransformGetTransform(
                                 ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry->transform);
                 t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                 m_nState = 2;
                 break;
             }
