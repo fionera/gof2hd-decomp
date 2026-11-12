@@ -4,6 +4,29 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-12 (wave 189)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+15 functions remain non-byte-exact, all size-exact. The wave-188 residual
+table below still applies except where noted.
+
+Landed changes:
+
+* `LevelScript::process` (w13309): two comparison-operand swaps
+  (`i < count` -> `count > i`, `getEmpPoints() < getMaxEmpPoints()` ->
+  `getMaxEmpPoints() > getEmpPoints()`). Raw **51,917 -> 51,915** (-2),
+  aligned unchanged 20,935.
+
+Section deltas: `.text` **74,045** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **639** (size- and
+base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
+size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. Total differing bytes **74,704**. File size is
+exact (2,187,328 B), and all **27/27** original section headers are exact.
+
 ## Update 2026-11-12 (wave 188)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
