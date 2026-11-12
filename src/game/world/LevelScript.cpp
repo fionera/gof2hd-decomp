@@ -1488,8 +1488,8 @@ bool LevelScript::process(int delta) {
             Status *st = Globals::status;
             m_pCamera->setLookAtCam(false);
             lvl->getPlayer()->setCollide(true);
-            m_bStartSequenceOver = 1; // startSequenceIsOver = true
             m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
+            m_bStartSequenceOver = 1; // startSequenceIsOver = true
             lvl->getPlayer()->player->setVulnerable(true);
 
             if (Level::programmedStation != 0) {
@@ -1606,8 +1606,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);
                     player->setSpeed(0.0f);
                     m_pHud->visible = 0;
-                    m_pRadar->enabled = 0;
                     player->stopShooting(0);
+                    m_pRadar->enabled = 0;
                     m_bCinematicBreak = 1;
                     m_pCamera->setLookAtCam(true);
                     player->setComputerControlled(true);
@@ -1938,8 +1938,8 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->shipGroup = 1;
-                    player->setFreeLookMode(false);
                     player->player->setVulnerable(false);
+                    player->setFreeLookMode(false);
                     m_pHud->visible = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     m_pCamera->enableFirstPersonCam(false);
@@ -3046,8 +3046,8 @@ bool LevelScript::process(int delta) {
                     TargetFollowCamera *wcamera = m_pCamera;
                     m_nScriptTimerA += delta;
                     AEGeometry *leader = (*enemies)[0]->geometry;
-                    wcamera->setTarget(leader);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    wcamera->setTarget(leader);
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
@@ -3533,8 +3533,8 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                         player->setFreeze(true);
                         m_bCinematicBreak = 1;
-                        m_pRadar->enabled = 0;
                         m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
                         player->player->setVulnerable(false);
                         wcamera->setLookAtCam(true);
                         wcamera->setTarget((*enemies)[0]->geometry);
@@ -3879,8 +3879,8 @@ bool LevelScript::process(int delta) {
                             marker->setDirection(player->geometry->getDirection(),
                                                  Vector{0.0f, 1.0f, 0.0f});
                             marker->setPosition(player->geometry->getPosition());
-                            wcamera->setTarget(marker);
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
+                            wcamera->setTarget(marker);
                             Vector zero{0.0f, 0.0f, 0.0f};
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                         }

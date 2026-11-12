@@ -72,6 +72,96 @@ flag); semantics-preserving.  Measured on top of change 1: raw **51,818 ->
 51,816** (-2), size 57,232/57,232 exact, `.text` 73,514 -> 73,512,
 `.ARM.extab` 610 unchanged, `.rel.plt` md5 unchanged.
 
+## Landed change 3
+
+Source lines 1491/1492 (mission-0 state-3 teardown):
+
+```cpp
+-            lvl->getPlayer()->setCollide(true);
+-            m_bStartSequenceOver = 1; // startSequenceIsOver = true
++            m_bStartSequenceOver = 1; // startSequenceIsOver = true
++            lvl->getPlayer()->setCollide(true);
+```
+
+Disjoint receivers (player collide flag vs `m_bStartSequenceOver` store).
+Measured on top of changes 1-2: raw **51,816 -> 51,815** (-1), size exact,
+`.text` 73,512 -> 73,511, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
+## Landed change 4
+
+Source lines 1609/1610:
+
+```cpp
+-                    m_pRadar->enabled = 0;
+-                    player->stopShooting(0);
++                    player->stopShooting(0);
++                    m_pRadar->enabled = 0;
+```
+
+Disjoint receivers (`Radar` enabled flag vs `PlayerEgo` shooting state).
+Measured on top of changes 1-3: raw **51,815 -> 51,814** (-1), size exact,
+`.text` 73,511 -> 73,510, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
+## Landed change 5
+
+Source lines 1941/1942:
+
+```cpp
+-                    player->setFreeLookMode(false);
+-                    player->player->setVulnerable(false);
++                    player->player->setVulnerable(false);
++                    player->setFreeLookMode(false);
+```
+
+Disjoint player flags (`freeLookMode` vs `vulnerable`).  Measured on top of
+changes 1-4: raw **51,814 -> 51,813** (-1), size exact, `.text` 73,510 ->
+73,509, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
+## Landed change 6
+
+Source lines 3049/3050:
+
+```cpp
+-                    wcamera->setTarget(leader);
+-                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
++                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
++                    wcamera->setTarget(leader);
+```
+
+`Globals::Canvas` is a pure read and `setTarget` does not write it.
+Measured on top of changes 1-5: raw **51,813 -> 51,812** (-1), size exact,
+`.text` 73,509 -> 73,508, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
+## Landed change 7
+
+Source lines 3536/3537:
+
+```cpp
+-                        m_pRadar->enabled = 0;
+-                        m_pHud->visible = 0;
++                        m_pHud->visible = 0;
++                        m_pRadar->enabled = 0;
+```
+
+Disjoint receivers (`Hud` visibility vs `Radar` enabled flag).  Measured on
+top of changes 1-6: raw **51,812 -> 51,811** (-1), size exact, `.text`
+73,508 -> 73,507, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
+## Landed change 8
+
+Source lines 3882/3883:
+
+```cpp
+-                            wcamera->setTarget(marker);
+-                            Globals::sound->play(14, nullptr, nullptr, 0.0f);
++                            Globals::sound->play(14, nullptr, nullptr, 0.0f);
++                            wcamera->setTarget(marker);
+```
+
+Disjoint receivers (camera target pointer vs `FModSound`).  Measured on top
+of changes 1-7: raw **51,811 -> 51,810** (-1), size exact, `.text` 73,507 ->
+73,506, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
 ## Sweep
 
 The w13352 harness (`stmts.py`/`model.py`/`gen.py`/`eval.py`/`sweep.py`,
@@ -120,8 +210,11 @@ Scratch harnesses (`stmts.py`, `model.py`, `gen.py`, `eval.py`, `elfread.py`,
 
 ## Current-master rebase (wave 190 harvest)
 
-Re-applied both reorders on current master (`454bc033e`). Current master before the
-three LevelScript harvests was raw 51,803; after this note's two reorders plus the
-w13361 mission-89 state-1 reorder it is raw 51,792 (-11), aligned 22,193 -> 22,211,
-size 57,232/57,232. `.text` 73,302 -> 73,289 (-13 across LevelScript + Radar + Gun),
-`.ARM.extab` 603 unchanged, total 73,925 -> 73,912 (-13). `check` green, RATCHET PASS.
+Re-applied all eight w13369 reorders on current master (`dd8cf7a29`), together with
+the w13361 mission-89 state-1 reorder. The eight w13369 reorders alone are -10
+(51,803 -> 51,793); with w13361's -7 the current master is raw **51,786**
+(-17 from 51,803), aligned 22,208, size 57,232/57,232. `.text`
+73,289 -> 73,283 (-6 for the six follow-up reorders; -13 total from the
+pre-harvest 73,302), `.ARM.extab` 603 unchanged, total 73,912 -> 73,906 (-6).
+`check` green: byte_exact 4507/4524, linked_exact 4507/4524, size_exact 4524/4524,
+data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370, RATCHET PASS.
