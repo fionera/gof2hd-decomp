@@ -15,14 +15,14 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,633** | 22,098 | 57,232 |
+| `LevelScript::process` | **51,632** | 22,101 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,661** | 863 | 17,172 |
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,173** | 468 | 2,764 |
-| `Status::missionCompleted` | **86** | 55 | 1,432 |
+| `Status::missionCompleted` | **82** | 50 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,402**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,397**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -53,10 +53,11 @@ Landed changes:
   `[0]` park; cinematic/radar stores after `setTarget`; explosion start
   after sound/rumble; mission-81 arrival state/timer before
   `SetAnimationState(1, nullptr)`; state-11 `m_tempVec` group rotated
-  around `forceUpdate` (z add before y add). Raw **51,656 -> 51,633** (-23), aligned
-  22,002 -> 22,098. `.text` 71,433 -> 71,410 (-23), `.ARM.extab`
+  around `forceUpdate` (z add before y add); camera right-vector
+  `offset` add before the `*= 1000.0f`. Raw **51,656 -> 51,632** (-24), aligned
+  22,002 -> 22,101. `.text` 71,433 -> 71,409 (-24), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 72,007 (-23). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 72,006 (-24). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
@@ -74,8 +75,11 @@ Landed changes:
   layout is unchanged (the high-type rank order is preserved); the new
   rank values are the DP optimum for the 40-entry type-indexed TBH, so
   the table diff drops 35 -> 24 B (notably `167 -> 17`, `174 -> 24`,
-  which makes the peeled-body slots match).  Raw **97 -> 86** (-11),
-  aligned 54 -> 59.  `.text` 71,503 -> 71,492 (-11), `.ARM.extab` 577
+  which makes the peeled-body slots match).  w13523 then changed the
+  helper to take `Mission *` and moved the labels to `150 + rank`, which
+  reproduces the original `sub #150; cmp #39; bhi; tbh` dispatch and the
+  low-group `sub #8; cmp #6; tbh` second level.  Raw **97 -> 82** (-15),
+  aligned 54 -> 50.  `.text` 71,503 -> 71,492 (-11), `.ARM.extab` 577
   unchanged, `.rodata` sh_size 269,644 unchanged, build-id 19 -> 20,
   `.rel.plt` byte-identical.
 * `Level::createMission` (w13373): exact 56 B `case 183` convoy switch
