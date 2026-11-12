@@ -4710,11 +4710,11 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
+                        m_tempVec += Vector{200.0f, 300.0f, 1800.0f};
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                         m_pCamera->setFixed(false);
                         m_tempVec = (*m_pLevel->getEnemies())[0]->geometry->getPosition();
                         player->setSpeed(0.0f);
-                        m_tempVec += Vector{200.0f, 300.0f, 1800.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
