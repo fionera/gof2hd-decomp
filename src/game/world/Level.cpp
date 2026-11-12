@@ -2249,8 +2249,8 @@ case4Tail:
                     return;
                 }
                 case 1: {
-                    int coords[9] = {Globals::rnd->nextInt(100000) - 50000, 0, 75000,
-                                     Globals::rnd->nextInt(100000) - 50000, 0, 50000,
+                    int coords[9] = {Globals::rnd->nextInt(100000) - 50000, 0, 50000,
+                                     Globals::rnd->nextInt(100000) - 50000, 0, 75000,
                                      Globals::rnd->nextInt(100000) - 50000, 0, 100000};
                     this->enemyRoute = new Route(coords, 9);
                     float difficulty = (float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f;
@@ -2301,17 +2301,17 @@ case4Tail:
                     for (int j = 0; (unsigned) (convoyEnd + j) < this->enemies->size(); j++) {
                         (*this->enemies)[convoyEnd + j] = this->createShip(
                                 localRace, 0, Globals::globals->getRandomEnemyFighter(localRace), nullptr, true, false);
+                        (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
-                        (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                         Array<KIPlayer *> *enemies = this->enemies;
                         KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
                         convoyShip->cargo = nullptr;
                         ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
                         Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
-                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                         (*enemies)[convoyEnd + j]->setSpeed(0.0f);
+                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                     }
                     this->objectivesA = new Objective(18, 0, convoyEnd, this);
                     this->objectivesB = new Objective(18, convoyEnd, total, this);
