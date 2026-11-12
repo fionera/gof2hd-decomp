@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,845** | 20,997 | 57,232 |
 | `Radar::draw` | **6,309** | 1,858 | 9,908 |
-| `Layout` C1/C2 | **5,256** | 2,728 | 7,072 |
+| `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,444** | 1,021 | 17,172 |
 | `MGame::OnTouchEnd` | **2,928** | 1,670 | 8,080 |
 | `HangarWindow::render` | **1,494** | 523 | 9,700 |
@@ -87,6 +87,10 @@ Landed changes:
   after `field_0x12c` and `field_0x124` before `field_0x10c_rowBaseY`).
   Raw **5,257 -> 5,256** (-1 each; C1/C2 share the code), aligned 2,728.
   `.text` 73,983 -> 73,982 (-1), total 74,618 -> 74,617.
+* `Layout` C1/C2 (w13314): fix the `field_0x190` iPad/retina priority
+  (`retinaDisplay ? (iPad ? -4 : -2) : (iPad ? -4 : -1)`). Raw neutral
+  **5,256**, aligned 2,728 -> **2,726**, instructions 2,522 -> 2,520.
+  `.text` 73,953 unchanged, total 74,588 unchanged.
 * `LevelScript::process` (w13330): swap the line-721
   `sound->updateEvent3DAttributes(158, ...)` and `sound->play(158, ...)`
   calls. Raw **51,874 -> 51,873** (-1), aligned 21,005 -> 20,997.

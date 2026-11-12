@@ -171,11 +171,9 @@ Layout::Layout() {
     } else if (Globals::n9) {
         this->field_0x190 = -4;
     } else if (Globals::retinaDisplay) {
-        this->field_0x190 = -2;
-    } else if (Globals::iPad) {
-        this->field_0x190 = -4;
+        this->field_0x190 = Globals::iPad ? -4 : -2;
     } else {
-        this->field_0x190 = -1;
+        this->field_0x190 = Globals::iPad ? -4 : -1;
     }
     this->field_0x19c = Globals::iPadHD ? 90 : (Globals::iPadLarge ? 128 : (Globals::iPad ? 64 : (Globals::n9 ? 54 : (Globals::retinaDisplay ? 90 : 45))));
     this->field_0x184 = Globals::iPadHD ? 163 : (Globals::iPadLarge ? 346 : (Globals::n9 ? (Globals::iPad ? 173 : 210) : (Globals::iPad ? 173 : (Globals::retinaDisplay ? 232 : 116))));
