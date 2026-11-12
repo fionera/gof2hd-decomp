@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,632** | 22,101 | 57,232 |
+| `LevelScript::process` | **51,613** | 22,143 | 57,232 |
 | `Radar::draw` | **6,016** | 1,941 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,661** | 863 | 17,172 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,397**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,378**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -54,10 +54,12 @@ Landed changes:
   after sound/rumble; mission-81 arrival state/timer before
   `SetAnimationState(1, nullptr)`; state-11 `m_tempVec` group rotated
   around `forceUpdate` (z add before y add); camera right-vector
-  `offset` add before the `*= 1000.0f`. Raw **51,656 -> 51,632** (-24), aligned
-  22,002 -> 22,101. `.text` 71,433 -> 71,409 (-24), `.ARM.extab`
+  `offset` add before the `*= 1000.0f`; and nine cross-control-boundary
+  statement moves (camera translate, `moveForward`, `setLocal`, free-look,
+  radar/freeze order). Raw **51,656 -> 51,613** (-43), aligned
+  22,002 -> 22,143. `.text` 71,433 -> 71,390 (-43), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 72,006 (-24). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 71,987 (-43). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
