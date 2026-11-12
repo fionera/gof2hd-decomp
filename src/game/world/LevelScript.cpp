@@ -4198,12 +4198,12 @@ bool LevelScript::process(int delta) {
                     Vector *tempVec = &m_tempVec;
                     Vector *scratch = &m_dirVec;
                     *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    *scratch = player->GetUpVector();
                     *scratch = player->GetDirVector();
                     *tempVec += *scratch * ((float) delta * 2.01f);
                     *scratch = player->geometry->getRightVector();
                     *tempVec += *scratch * ((float) delta * 0.03f);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
-                    *scratch = player->GetUpVector();
                     *tempVec += *scratch * ((float) delta * 0.01f);
                     m_pCamera->setFixed(true);
                     m_pCamera->setLocal(local);
