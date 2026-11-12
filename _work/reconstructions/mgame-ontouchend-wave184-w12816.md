@@ -8,14 +8,14 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 3,030 | **3,028** |
-| aligned (instruction) diff | 1,446 | 1,450 |
+| raw same-address diff bytes | 3,030 | **2,997** |
+| aligned (instruction) diff | 1,446 | 1,459 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,842 | **74,840** |
+| `.text` differing bytes | 74,842 | **74,809** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 646 | 646 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,508 | **75,506** |
+| total differing bytes | 75,508 | **75,475** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -57,6 +57,23 @@ Globals::status->departStation(...);
 All six stores/getters are independent and `departStation` still follows them, so
 the swap is behaviour-preserving.  Raw 3,029 -> 3,028, size exact.
 
+Third, in the campaign-95 branch, the `switch_to_target_setting = 1` store was
+moved from the head of the block to after the three HP getter/store pairs (it now
+sits just before `Level::initStreamOutPosition = 1;`):
+
+```cpp
+Globals::status->field_64 = this->player->player->getHitpoints();
+Globals::status->field_5c = this->player->player->getShieldHP();
+Globals::status->field_60 = this->player->player->getArmorHP();
+Globals::switch_to_target_setting = 1;   // was first
+Globals::status->field_68 = this->player->player->getGammaHP();
+Level::initStreamOutPosition = 1;
+...
+```
+
+Again all stores/getters are independent.  This is the single largest residual win
+found: raw 3,028 -> 2,997 (31 B, `.text` 74,840 -> 74,809), size exact.
+
 ## Search context (this wave)
 
 - Re-derived the original campaign-chain order from the `cmp #N` immediates:
@@ -73,7 +90,10 @@ the swap is behaviour-preserving.  Raw 3,029 -> 3,028, size exact.
 - Adjacent-statement transposition sweep over the `won`/campaign block found the
   first swap as the only size-exact raw improvement (3,029).  A same-block
   distance-1..4 transposition sweep (brace-depth and intervening-statement checks)
-  found the second swap (3,028).  Other measured swaps:
+  found the second swap (3,028).  A full-function same-block distance-1..3
+  transposition sweep (613 candidates over the whole `OnTouchEnd` body) found the
+  third swap (2,997); the same relative move in the campaign-65 block was only
+  raw 3,027, so the win is block-specific register allocation.  Other measured swaps:
   block-100 hitpoints/shield order -> 3,031; block-96/127 shield/armor order ->
   3,031; block-65 `initStreamOutPosition`/`FileRead` order -> 3,031;
   `count != 0` -> size-fatal 8,088; `count > 0` -> size-exact raw 3,032.  String
