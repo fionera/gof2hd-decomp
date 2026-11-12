@@ -2494,7 +2494,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLookAtCam(true);
                     radar->enabled = 0;
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    player->setFreeLookMode(false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
@@ -2502,6 +2501,7 @@ bool LevelScript::process(int delta) {
                     camPos.y += -300.0f;
                     camPos.z += -1000.0f;
                     camPos += 3000.0f * dir;
+                    player->setFreeLookMode(false);
                     m_pCamera->setPosition(camPos);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail

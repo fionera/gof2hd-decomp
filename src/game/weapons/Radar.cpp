@@ -605,8 +605,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         if (this->field_0x18 != this->planetTargets->data()[i]) {
                             this->planetLockTimer = 0;
                         }
-                        this->planetDockIndex = i;
                         this->field_0x18 = this->planetTargets->data()[i];
+                        this->planetDockIndex = i;
                         planetHit = true;
                     }
                     if (stationId != currentStation) {
