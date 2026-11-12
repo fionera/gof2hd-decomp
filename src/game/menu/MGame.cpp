@@ -2814,8 +2814,11 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
-                    Status *volatile st = Globals::status;
+                    // Codegen anchor: the dead volatile store pins the status pointer
+                    // in r4 across nextInt and keeps the m23 64-bit compare in r2:r3.
+                    Status *st = Globals::status;
                     int radioIndex = Globals::rnd->nextInt(2);
+                    Status *volatile dummy = st;
                     int radioBase = st->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     Level *level = this->level;
                     level->createRadioMessage(28, radioIndex + radioBase);
