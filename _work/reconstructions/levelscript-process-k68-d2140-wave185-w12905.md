@@ -139,3 +139,44 @@ free-look mode, the `ref2`/`camPos`/`tmp` locals and their `m_tempVec` /
 `m_dirVec` arithmetic, the hud store, and the two timer stores); the only
 other camera calls crossed are `setTarget`/`enableFirstPersonCam`, and the
 measured ordering places `setLookAtCam` after them.
+
+## Pass 3 (K=4..5 on the improved tree + greedy 9-move combination, landed)
+
+The K=4..5 sweep had last run on the wave-182 body, so it was re-run here on
+the 52,124 tree (2,430 candidates, 1,871 size-exact/rel-ident).  It found
+**16** raw winners; the best single move is `player->setFreeLookMode(false)`
+down past the `ref2`/`camPos` setup (base line 3719 -> after line 3724),
+worth -9.
+
+A greedy combination of the distinct winners reached raw **52,096** (-28) with
+**9 moves** (each measured alone first, then added one at a time, keeping only
+size-exact, `.rel.plt`-identical, raw-lowering combinations and re-checking
+independence in the current order):
+
+| # | base line (1-based) | dir | moved statement | across |
+|---:|---:|---|---|---|
+| 1 | 3719 | down | `player->setFreeLookMode(false);` | `m_pHud->visible = 0;` (3724) |
+| 2 | 4752 | down | `player->setSpeed(2.0f);` | `lodManager->forceUpdate(delta, false);` (4757) |
+| 3 | 3722 | up | `m_pCamera->enableFirstPersonCam(false);` | `player->hideShipForFirstPersonCameraView(false);` (3717) |
+| 4 | 2903 | down | `(*enemies)[0]->player->setHitpoints(0);` | `self->getPlayer()->setCollide(false);` (2907) |
+| 5 | 3567 | down | `m_pLevel->getPlayer()->resetGunDelay();` | `m_pRadar->enabled = 1;` (3571) |
+| 6 | 1907 | down | `m_nState = 2;` | `player->setComputerControlled(false);` (1911) |
+| 7 | 2011 | up | `player->stopShooting(0);` | `player->freeze = 1;` (2006) |
+| 8 | 3737 | up | `m_pCamera->setPosition(*camPos);` | `m_nScriptTimerA = 0;` (3733) |
+| 9 | 3937 | up | `Globals::status->setStation(...getStation(0x6f));` | `Globals::status->field_64 = ...` (3932) |
+
+```
+                         after pass 2     after pass 3
+process raw diffbytes    52,124           52,096     (-28)
+process aligned insns    20,674           20,708     (+34)
+orig / ours size         57232 / 57232    57232 / 57232   (size-exact)
+.text diffbytes          74,583           74,555     (-28)
+.ARM.extab diffbytes     647              647        (unchanged)
+total differing bytes    75,250           75,222     (-28)
+.rel.plt                 md5 289b2a06…    md5 289b2a06…   (byte-identical)
+RATCHET                  PASS             PASS
+```
+
+All nine moves are pure field stores, pure declarations, or calls on a
+receiver untouched by the crossed statements (player state vs camera/hud/radar,
+enemy hitpoints vs player state, `Globals::status` field store vs `setStation`).

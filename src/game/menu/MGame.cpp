@@ -1644,10 +1644,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
-                            Level::initStreamOutPosition = 0;
+                            Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::switch_to_target_setting = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
-                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Level::initStreamOutPosition = 0;
                             this->active = 0;
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 95) {
@@ -1662,15 +1662,15 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 110) {
-                            Globals::status->field_64 = this->player->player->getHitpoints();
-                            Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::switch_to_target_setting = 0;
-                            Globals::enterSpaceLounge = 1;
                             Level::initStreamOutPosition = 0;
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::enterSpaceLounge = 1;
+                            Globals::status->field_68 = this->player->player->getGammaHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
                             Globals::appManager->SetCurrentApplicationModule(5);
-                            Globals::status->field_68 = this->player->player->getGammaHP();
                             this->active = 0;
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
@@ -1708,10 +1708,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
-                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
-                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::switch_to_target_setting = 1;
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
@@ -1719,8 +1719,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 155) {
-                            Globals::switch_to_target_setting = 1;
                             Level::initStreamOutPosition = 1;
+                            Globals::switch_to_target_setting = 1;
                             Globals::status->departStation(
                                 (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
                             this->active = 0;
@@ -1744,9 +1744,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         Globals::status->field_64 = this->player->player->getHitpoints();
                         this->active = 0;
                         Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
                         Globals::switch_to_target_setting = 0;
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
                         this->applicationManager->SetCurrentApplicationModule(5);
                         return;
 
