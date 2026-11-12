@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,174** | 406 | 2,764 |
-| `Status::missionCompleted` | **97** | 54 | 1,432 |
+| `Status::missionCompleted` | **86** | 59 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -31,11 +31,20 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,503**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
-`.rodata` **485** (sh_size +485), `.note.gnu.build-id` **19**.
+Current section deltas: `.text` **71,492**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+`.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Status::missionCompleted` (w13503): re-permute the cross-TU rank helper
+  (`StatusMissionTable.cpp`) and the caller's `case` labels.  The body
+  layout is unchanged (the high-type rank order is preserved); the new
+  rank values are the DP optimum for the 40-entry type-indexed TBH, so
+  the table diff drops 35 -> 24 B (notably `167 -> 17`, `174 -> 24`,
+  which makes the peeled-body slots match).  Raw **97 -> 86** (-11),
+  aligned 54 -> 59.  `.text` 71,503 -> 71,492 (-11), `.ARM.extab` 577
+  unchanged, `.rodata` sh_size 269,644 unchanged, build-id 19 -> 20,
+  `.rel.plt` byte-identical.
 * `Level::createMission` (w13373): exact 56 B `case 183` convoy switch
   (original values, `offset[1]`/`offset[0]`/`offset[2]` store order, two
   `volatile` stores to keep the common o2 store from sinking), the original
