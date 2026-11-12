@@ -110,7 +110,7 @@ section stays size- and base-exact. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`). The 192 B
 `Status::missionCompleted` rank table now lives in `.fini_array`
 (`src/game/mission/StatusMissionTable.cpp`, table at `0x20cae8`), so the switch
-is again a rank-table switch. The differing section bytes are `.text` (73,565),
+is again a rank-table switch. The differing section bytes are `.text` (73,564),
 `.ARM.extab` (610), `.dynamic` (3), `.rel.dyn` (4), `.fini_array` size 8 -> 200,
 and `.note.gnu.build-id` (20). `.rel.plt` is **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of

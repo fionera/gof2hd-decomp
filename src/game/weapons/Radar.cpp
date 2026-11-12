@@ -453,7 +453,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 if (i != 3) {
                     Globals::Canvas->DrawImage2D(this->image_0x88, this->screenX, this->screenY, 17, 68);
                 }
-                int offset = i == 0 ? this->originX : this->originY;
+                int offset = i != 0 ? this->originY : this->originX;
                 unsigned int lmFont = radarFont();
                 Globals::Canvas->DrawString(lmFont, *this->labelStrings->data()[i], this->screenX + offset,
                                             this->screenY, false);
