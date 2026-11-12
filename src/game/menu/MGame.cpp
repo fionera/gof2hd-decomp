@@ -1576,10 +1576,6 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->setStation(reader->loadStation(100));
                             delete reader;
                             Globals::sound->stopAll();
-                        } else if (Globals::status->getCurrentCampaignMission() == 15 && mission->isCampaignMission()) {
-                            FileRead *reader = new FileRead();
-                            Globals::status->setStation(reader->loadStation(98));
-                            delete reader;
                         } else if (Globals::status->getCurrentCampaignMission() == 162 && __builtin_expect(mission->isCampaignMission(), 1)) { // lint: arm_builtin
                             Globals::switch_to_target_setting = 0;
                             Globals::status->field_68 = this->player->player->getGammaHP();
@@ -1591,6 +1587,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(5);
                             return;
+                        } else if (Globals::status->getCurrentCampaignMission() == 15 && mission->isCampaignMission()) {
+                            FileRead *reader = new FileRead();
+                            Globals::status->setStation(reader->loadStation(98));
+                            delete reader;
                         } else if (Globals::status->getCurrentCampaignMission() == 43 && mission->isCampaignMission()) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(10));
