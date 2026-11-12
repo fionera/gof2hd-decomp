@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,656** | 22,002 | 57,232 |
+| `LevelScript::process` | **51,648** | 22,028 | 57,232 |
 | `Radar::draw` | **6,016** | 1,947 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,669** | 865 | 17,172 |
@@ -31,11 +31,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,433**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,425**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13466): mission-81 case-1 `m_pCamera->setTarget`
+  after the `Transform` `SetAnimationState(1, nullptr)` call, and mission-158
+  exit `SetAnimationState(1, nullptr)` after the `m_nScriptTimerA = 0` /
+  `m_pRadar->lockedEnemy = nullptr` stores. Raw **51,656 -> 51,648** (-8),
+  aligned 22,002 -> 22,028. `.text` 71,433 -> 71,425 (-8), `.ARM.extab`
+  577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
+  72,030 -> 72,022 (-8). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
