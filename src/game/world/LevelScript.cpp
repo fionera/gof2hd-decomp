@@ -2665,10 +2665,10 @@ bool LevelScript::process(int delta) {
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     m_pGeometry6->setPosition(Vector{12487.0f, -11451.0f, 5958.0f});
                     m_pCamera->setLookAtCam(true);
-                    m_pHud->visible = 0;
                     m_tempVec = Vector{-28855.0f, -30075.0f, 63820.0f} / 1.7f;
                     m_pCamera->setPosition(m_tempVec);
                     Vector facing = m_pGeometry6->getPosition() - m_tempVec;
+                    m_pHud->visible = 0;
                     AEGeometry *frame = new AEGeometry(canvas);
                     unsigned cam = canvas->CameraGetCurrent();
                     frame->setDirection(facing, Vector{0.0f, 1.0f, 0.0f});

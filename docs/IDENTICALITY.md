@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,713** | 21,913 | 57,232 |
+| `LevelScript::process` | **51,712** | 21,914 | 57,232 |
 | `Radar::draw` | **6,265** | 2,010 | 9,908 |
 | `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
 | `Level::createMission` | **2,984** | 1,119 | 17,172 |
@@ -418,7 +418,13 @@ Landed changes:
   72,383 -> 72,382 (-1), `.ARM.extab` 584 unchanged, build-id 20, total
   (text+extab+build-id) 72,986 unchanged (the build-id hash byte moved).
   `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **72,382** differing bytes (size exact, 1,259,464 B);
+* `LevelScript::process` (w13442 pass 2): sink `m_pHud->visible = 0` past
+  the `m_tempVec`/`setPosition`/`facing` block in the state-6 Hud frame.
+  Raw **51,713 -> 51,712** (-1), aligned 21,913 -> 21,914. `.text`
+  72,382 -> 72,381 (-1), `.ARM.extab` 584 unchanged, build-id 20, total
+  72,986 -> 72,985 (-1). `.rel.plt` byte-identical, 27/27 headers, file size
+  2,187,328 exact.
+Section deltas: `.text` **72,381** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **584** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -428,7 +434,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,986**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,985**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
