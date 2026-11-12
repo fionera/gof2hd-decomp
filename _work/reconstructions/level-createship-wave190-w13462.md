@@ -7,10 +7,11 @@ Target `_ZN5Level10createShipEiiiP8Waypointbb` (`src/game/world/Level.cpp`,
 (NDK r18b clang 7.0.2, `-Oz`).  Scratch
 `/home/debian/GalaxyOnFire2/scratch/w13462`.
 
-**Status: landed a size-exact, `.rel.plt`/`.ARM.exidx`-identical raw win.**
-Raw **1,189 -> 1,186** (-3), aligned **397 -> 401** (+4), size
+**Status: landed two size-exact, `.rel.plt`/`.ARM.exidx`-identical raw
+wins (1,189 -> 1,186 -> 1,182).**
+Raw **1,189 -> 1,182** (-7), aligned **397 -> 397**, size
 **2,764/2,764** exact, insns 1,117/1,117.  `.text` diff
-**72,257 -> 72,254** (-3); `.ARM.extab` content diff stays **584**
+**72,257 -> 72,250** (-7); `.ARM.extab` content diff stays **584**
 (size- and base-exact 156,312 B @ `0x1a3b78`); `.ARM.exidx` **0**
 (byte-identical); `.rel.plt` byte-identical; `.rodata` content exact
 over the original 269,159 B.
@@ -56,7 +57,23 @@ for a larger win.
 | base (w13419: `[9]`=2004,-15852, `[10]`=-2610,-15852) | 1,189 | 397 | 2,764 |
 | `[9]`=-15852,2004, `[10]`=-2610,-15852 | 1,187 | 401 | 2,764 |
 | `[9]`=2004,-15852, `[10]`=-15852,-2610 | 1,187 | 401 | 2,764 |
-| **`[9]`=-15852,2004, `[10]`=-15852,-2610 (landed)** | **1,186** | **401** | **2,764** |
+| `[9]`=-15852,2004, `[10]`=-15852,-2610 | 1,186 | 401 | 2,764 |
+| **`[9]`=-15852,2004 dims (2510,10910,15860), `[10]`=-15852,-2610 (landed)** | **1,182** | **397** | **2,764** |
+
+### 1a. Second win: `[9]` width/height/depth cyclic permutation
+
+With the `[9]`/`[10]` `ey`/`ez` swap in place, permuting the last three
+`BoundingAAB` arguments of box `[9]` from `(15860, 2510, 10910)` to
+`(2510, 10910, 15860)` makes the **entire** literal pool at
+`0xc0814..0xc0838` byte-identical to the original (verified with
+`objdump -s -j .text`).  Raw **1,186 -> 1,182** (-4), aligned
+**401 -> 397** (-4).  A full 6x6 sweep of the `[9]`/`[10]` width/
+height/depth permutations found four 1,182 ties; this is one of them
+(`[10]` left at its original `(15860, 2510, 10910)`).
+
+**Caveat:** this permutes box `[9]`'s half-extents, so it too is a
+pool-order lever rather than a semantic reconstruction — the original
+binary's `[9]` call passes `(w,h,d) = (15860, 2510, 10910)`.
 
 ## 2. Neutral cells re-confirmed this session
 

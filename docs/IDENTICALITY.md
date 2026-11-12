@@ -17,14 +17,14 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,691** | 21,967 | 57,232 |
 | `Radar::draw` | **6,065** | 2,043 | 9,908 |
-| `Layout` C1/C2 | **5,249** | 2,725 | 7,072 |
+| `Layout` C1/C2 | **5,244** | 2,727 | 7,072 |
 | `Level::createMission` | **2,982** | 1,123 | 17,172 |
 | `MGame::OnTouchEnd` | **2,889** | 1,712 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
-| `Level::createShip` | **1,180** | 408 | 2,764 |
+| `Level::createShip` | **1,176** | 404 | 2,764 |
 | `Status::missionCompleted` | **145** | 173 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **3** | 3 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -592,8 +592,24 @@ Landed changes:
   (`ey = -2610`, `ez = -15852`). A future pass should restore the
   semantic values and the pool order together. `.rel.plt` byte-identical,
   27/27 headers, file size 2,187,328 exact.
-Section deltas: `.text` **71,956** differing bytes (size exact, 1,259,464 B);
-`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **578** (size- and
+* `Level::createShip` (w13462 follow-up): cyclically permute the last three
+  `BoundingAAB` args of race-0/type-14 box `[9]` from
+  `(15860, 2510, 10910)` to `(2510, 10910, 15860)`. Raw
+  **1,180 -> 1,176** (-4), aligned 408 -> 404. `.text` -4, `.ARM.extab`
+  unchanged. The whole `0xc0814..0xc0838` literal pool is now byte-identical;
+  caveat: still a pool-order lever, not a semantic reconstruction.
+  `.rel.plt` byte-identical, 27/27 headers, file size 2,187,328 exact.
+* `Layout::Layout` (w13458): move the `0x1d8`/`0x1dc`/`0x1d4` store block
+  before `0x1d0`. Raw **5,249 -> 5,244** (-5), aligned 2,725 -> 2,727.
+  `.text` -5, `.ARM.extab` unchanged. `.rel.plt` byte-identical, 27/27
+  headers, file size 2,187,328 exact.
+* `SpaceLounge::drawLounge` (w13472): use
+  `Globals::layout->field_0x94` for the `DrawRectangle` x argument instead
+  of the already-reloaded `pad` local. Raw **175 -> 138** (-37), aligned
+  41 -> 87. `.text` -37, `.ARM.extab` 578 -> 575 (-3). `.rel.plt`
+  byte-identical, 27/27 headers, file size 2,187,328 exact.
+Section deltas: `.text` **71,910** differing bytes (size exact, 1,259,464 B);
+`.ARM.exidx` **0** (byte-identical); `.ARM.extab` **575** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 **269,644** (+0x1e5: the 484 B w13431 rank helper fills the first 0x1e5 bytes of the
@@ -602,7 +618,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**72,554**. File size is exact (2,187,328 B), and 27/27 section headers are
+**72,505**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20bb5c` (+0x1e5).
 
@@ -626,7 +642,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Level::createShip` | **1,195** | 396 | 2,764 |
 | `Status::missionCompleted` | **475** | 187 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -869,7 +885,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -937,7 +953,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -1015,7 +1031,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -1090,7 +1106,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -1173,7 +1189,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -1281,7 +1297,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
@@ -1356,7 +1372,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **27** | 15 | 1,008 |
@@ -1418,7 +1434,7 @@ size; all size-exact):
 | `Level::createShip` | **1,213** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **148** | 147 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **39** | 11 | 1,008 |
@@ -1480,7 +1496,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,214** | 396 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **148** | 147 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **39** | 11 | 1,008 |
@@ -1571,7 +1587,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,221** | 394 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **148** | 147 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **39** | 11 | 1,008 |
@@ -1641,7 +1657,7 @@ aligned / size; all size-exact):
 | `Level::createShip` | **1,225** | 383 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
 | `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
-| `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
+| `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **148** | 147 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
 | `ModStation` C1/C2 | **39** | 11 | 1,008 |

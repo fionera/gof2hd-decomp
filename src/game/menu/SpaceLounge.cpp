@@ -1228,7 +1228,7 @@ void SpaceLounge::drawLounge() {
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
         Globals::Canvas->SetColor(0x193043ffu);
-        Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
+        Globals::Canvas->DrawRectangle(x - Globals::layout->field_0x94, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
         Globals::Canvas->SetColor(0xffffffffu);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                     name + (agent->isKnown() ? String("  ") : String("")), x,
