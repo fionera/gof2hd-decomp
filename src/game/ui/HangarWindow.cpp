@@ -920,7 +920,6 @@ void HangarWindow::render() {
                 String description("");
                 String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
-                Layout *lay = Globals::layout;
                 switch ((signed char) count) {
                     case 0:
                         price = String(Globals::cItemListPrice_00);
@@ -950,13 +949,13 @@ void HangarWindow::render() {
                 int row = (unsigned char) count / 3;
                 int col = (unsigned char) count % 3;
                 int x = Globals::w / 2 - (this->buttonWidth + this->gridSpacingX) * (1 - col);
-                int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * lay->field_0x20_top) -
+                int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->draw();
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 (*this->buttons)[12 + count]->setSplitText(price);
-                Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - lay->field_0x2c_rowHeight, 17,
+                Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
                     Globals::Canvas->DrawImage2D(
@@ -1060,7 +1059,7 @@ void HangarWindow::render() {
                 int rh = Globals::layout->field_0x2c_rowHeight;
                 int height = button->getHeight();
                 int textX = width + baseX + rh;
-                PaintCanvas *volatile canvas = Globals::Canvas;
+                PaintCanvas *canvas = Globals::Canvas;
                 int textY = (int) ((float) y + (float) height * 0.2f);
                 volatile int &textYv = textY;
                 canvas->SetColor(0xffffffffu);
