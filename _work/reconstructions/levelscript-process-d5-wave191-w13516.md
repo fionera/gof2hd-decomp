@@ -218,3 +218,41 @@ size       57,232 / 57,232   (exact)
 Rejected in the same batch: `(6,3766) shift 2` raw 51,629 but rotates the
 `*tmp = getDirection/getRightVector/getUpVector` reads against the
 `*acc +=` uses (wrong vectors); `(6,3221) shift 2` raw 51,631 (+1).
+
+## Sixth landing: d6 shift-3 rotation (turret/HUD/shoot group)
+
+On the 51,628 body, `(6,2004) shift 3` (source lines 2005-2010) was landed:
+
+```cpp
+-                        player->setTurretMode(false);
+-                        m_pHud->visible = 0;
+-                        player->stopShooting(0);
+                         player->freeze = 1;
+                         camera41->setLookAtCam(true);
+                         resetCamera(m_pLevel);
++                        player->setTurretMode(false);
++                        m_pHud->visible = 0;
++                        player->stopShooting(0);
+```
+
+Independent player/camera flags and HUD state; `setTurretMode(false)` still
+precedes `stopShooting(0)` (which early-returns when the turret is active), so
+the shooting semantics are unchanged.  Semantics preserving.
+
+Measured alone on the real build:
+
+```
+raw        51,628 -> 51,625  (-3)
+size       57,232 / 57,232   (exact)
+.text      71,405 -> 71,402  (-3)
+.ARM.extab 577 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+```
+
+`check` -> RATCHET PASS.
+
+Rejected in the same batch: `(6,4154) shift 4` raw 51,626 but moves
+`delete cargo` before `revive()` (cargo lifetime); `(5,2628) shift 2` moves
+`setTurretMode(false)` after `stopShooting(0)` (early-return change);
+`(5,2664) shift 3` moves `facing` before `m_pGeometry6->setPosition`;
+`(6,1810) shift 3` moves `translate` before `setPosition`.

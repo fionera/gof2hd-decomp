@@ -2002,12 +2002,12 @@ bool LevelScript::process(int delta) {
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
                     TargetFollowCamera *camera41 = m_pCamera;
                     camera41->enableFirstPersonCam(false);
-                    player->setTurretMode(false);
-                    m_pHud->visible = 0;
-                    player->stopShooting(0);
                     player->freeze = 1;
                     camera41->setLookAtCam(true);
                     resetCamera(m_pLevel);
+                    player->setTurretMode(false);
+                    m_pHud->visible = 0;
+                    player->stopShooting(0);
                     player->setFreeLookMode(false);
                     player->hideShipForFirstPersonCameraView(false);
                     m_pRadar->enabled = 0;
