@@ -3719,10 +3719,10 @@ bool LevelScript::process(int delta) {
                         }
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
-                        m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
-                        m_pRadar->enabled = 0;
                         AEGeometry *ref2 = (*enemies)[2]->geometry;
                         m_pCamera->setTarget((*enemies)[2]->geometry);
+                        m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
+                        m_pRadar->enabled = 0;
                         Vector *camPos = &m_tempVec; // tempVec @0x28
                         m_pHud->visible = 0;
                         player->setFreeLookMode(false);
