@@ -833,10 +833,10 @@ enemies:
                 goto tractor;
             }
             if (!this->level->getPlayer()->isAutoPilot() &&
-                __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
-                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) &&
                 (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
-                (!wreck || enemy->isDead())) {
+                (!wreck || enemy->isDead()) &&
+                __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
+                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck)) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
                     this->field_0x1c = enemy;
                     this->dockNavPtr = enemy;
