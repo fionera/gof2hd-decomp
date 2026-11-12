@@ -1571,16 +1571,16 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                         this->levelScript->m_nTimeLimit = 0;
 
-                        if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 74) {
+                        if (Globals::status->getCurrentCampaignMission() == 74 && mission->isCampaignMission()) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(100));
                             delete reader;
                             Globals::sound->stopAll();
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
+                        } else if (Globals::status->getCurrentCampaignMission() == 15 && mission->isCampaignMission()) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(98));
                             delete reader;
-                        } else if (__builtin_expect(mission->isCampaignMission(), 1) && Globals::status->getCurrentCampaignMission() == 162) { // lint: arm_builtin
+                        } else if (Globals::status->getCurrentCampaignMission() == 162 && __builtin_expect(mission->isCampaignMission(), 1)) { // lint: arm_builtin
                             Globals::switch_to_target_setting = 0;
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
@@ -1591,7 +1591,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(5);
                             return;
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
+                        } else if (Globals::status->getCurrentCampaignMission() == 43 && mission->isCampaignMission()) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(10));
                             delete reader;
@@ -1602,7 +1602,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->level->objectivesA = nullptr;
                             goto finishMission;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 65) {
+                        } else if (Globals::status->getCurrentCampaignMission() == 65 && mission->isCampaignMission()) {
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
@@ -1626,9 +1626,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(5);
                             return;
-                        } else if (mission->isCampaignMission() &&
-                                   (Globals::status->getCurrentCampaignMission() == 96 ||
-                                    Globals::status->getCurrentCampaignMission() == 127)) {
+                        } else if ((Globals::status->getCurrentCampaignMission() == 96 ||
+                                    Globals::status->getCurrentCampaignMission() == 127) &&
+                                   mission->isCampaignMission()) {
                             Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_60 = this->player->player->getArmorHP();
