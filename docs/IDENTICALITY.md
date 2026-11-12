@@ -19,7 +19,7 @@ aligned / size; all size-exact):
 | `LevelScript::process` | **52,074** | 20,765 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,358** | 2,626 | 7,072 |
-| `Level::createMission` | **3,526** | 1,187 | 17,172 |
+| `Level::createMission` | **3,517** | 1,009 | 17,172 |
 | `MGame::OnTouchEnd` | **2,930** | 1,704 | 8,080 |
 | `HangarWindow::render` | **1,512** | 643 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
@@ -38,15 +38,20 @@ Landed changes:
   read. Raw **52,075 -> 52,074** (-1), aligned 20,766 -> 20,765.
 * `Level::createMission` (w13014): three scheduling swaps. Raw
   **3,534 -> 3,526** (-8), aligned 1,153 -> 1,187.
+* `Level::createMission` (w13014): pass 2 alienGuns rotation swap. Raw
+  **3,526 -> 3,519** (-7), aligned 1,187 -> 1,009.
+* `Level::createMission` (w13015): passes 1-4 (6774/6772 turret stale-read
+  swaps, spawnPosition.z swap, case4Tail Globals::options hoist). Raw
+  **3,519 -> 3,517** (-2), aligned unchanged 1,009.
 * `HangarWindow::render` (w13017): buy-list price-before-description order.
   Raw unchanged 1,512, aligned 723 -> 643 (stepping stone).
 
-Section deltas: `.text` **74,393** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,384** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,060**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,051**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 185)

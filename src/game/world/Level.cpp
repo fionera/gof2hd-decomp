@@ -1967,9 +1967,9 @@ void Level::createMission() {
             gun->player->setMaxHitpoints(1000);
             const float (*t)[6] = (bigAlienWave + (i < 0) + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
-            gun->geometry->setRotation(v);
-            gun->cargo = nullptr;
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
+            gun->cargo = nullptr;
+            gun->geometry->setRotation(v);
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = localRace;
@@ -2122,9 +2122,10 @@ case4Else:
     }
 case4Tail:
     {
+    float opt44 = *(float *) &Globals::options[44];
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
     this->enemies = new Array<KIPlayer *>();
-    int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
+    int hunterCount = (int) (hunters + (opt44 - 0.5f) * hunters);
     ArraySetLength(hunterCount, *this->enemies);
     Globals *globals = Globals::globals;
     Array<KIPlayer *> *enemies = this->enemies;
