@@ -1,4 +1,4 @@
-# MGame::OnTouchEnd — wave 185 (w12916): distance-5..8 statement transpositions
+# MGame::OnTouchEnd — wave 185 (w12916): statement-transposition sweeps
 
 Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,080 B
 @ `0x17a144`, Thumb, NDK r18b clang 7.0.2 `-Oz`). Worktree `wt/w12916`, branch
@@ -9,7 +9,7 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 | metric | base | after |
 |---|---:|---:|
 | raw same-address diff bytes | 2,972 | **2,930** |
-| aligned (instruction) diff | 1,602 | 1,689 |
+| aligned (instruction) diff | 1,602 | 1,704 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
 | `.text` differing bytes | 74,591 | **74,549** |
 | `.rel.plt` diff | 0 | 0 |
