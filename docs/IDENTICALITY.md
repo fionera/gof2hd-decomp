@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **51,820** | 20,981 | 57,232 |
 | `Radar::draw` | **6,308** | 1,858 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
-| `Level::createMission` | **3,444** | 1,021 | 17,172 |
+| `Level::createMission` | **3,427** | 1,003 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
 | `Level::createShip` | **1,200** | 484 | 2,764 |
@@ -171,7 +171,14 @@ Landed changes:
   and makes the m23 64-bit idle compare use the original `r2:r3` pair.
   Raw **15 -> 10**, aligned 111 -> 112, size unchanged.
 
-Section deltas: `.text` **73,533** differing bytes (size exact, 1,259,464 B);
+* `Level::createMission` (w13363): drop both `__builtin_expect(..., 1)`
+  branch hints in the hidden-blueprint block (outer `if (blueprint)` and
+  inner `stationHasHiddenBlueprint(false)`). The hints are non-additive:
+  outer-only is 3,601 raw, inner-only is neutral, both removed is the win.
+  Raw **3,444 -> 3,427** (-17), aligned 1,021 -> 1,003. `.text`
+  73,533 -> 73,516 (-17), `.ARM.extab` 610 unchanged, total
+  (text+extab+build-id) 74,163 -> 74,146.
+Section deltas: `.text` **73,516** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **610** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
@@ -180,8 +187,8 @@ size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 cross-TU rank table lives in `.fini_array` (8 -> 200 B, table at `0x20cae8`),
 so `.dynamic` differs by **3** B (the `DT_FINI_ARRAY` tag) and `.rel.dyn` by
 **4** B (two `R_ARM_RELATIVE` offsets). Total differing bytes
-(text+extab+build-id) **74,163**; including the `.dynamic`/`.rel.dyn`/
-`.fini_array` deltas, **74,362**. File size is exact (2,187,328 B), and
+(text+extab+build-id) **74,146**; including the `.dynamic`/`.rel.dyn`/
+`.fini_array` deltas, **74,345**. File size is exact (2,187,328 B), and
 27/27 section headers are present (`.fini_array` size 8 -> 200).
 
 ## Update 2026-11-12 (wave 188)

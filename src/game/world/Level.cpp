@@ -2084,7 +2084,7 @@ void Level::createMission() {
         (*this->enemies)[this->miningPlantIndex]->player->setAlwaysFriend(true);
         ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setName(*Globals::gameText->getText(3210));
     }
-    if (__builtin_expect(blueprint, 1)) { // lint: arm_builtin
+    if (blueprint) {
         int slot = extraAliens + pirateEscorts + stationPirates + pirates + convoy + fortressGuns + alienGuns +
                    this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
         int index = Globals::status->getStation()->getHiddenBlueprintIndex();
@@ -2098,7 +2098,7 @@ void Level::createMission() {
                                             kBlueprintPositions[index][2]);
         delete wreck->cargo;
         wreck->cargo = nullptr;
-        if (__builtin_expect(Globals::status->getStation()->stationHasHiddenBlueprint(false), 1)) { // lint: arm_builtin
+        if (Globals::status->getStation()->stationHasHiddenBlueprint(false)) {
             Generator *generator = new Generator();
             wreck->cargo = generator->getLootList(115, 1);
             delete generator;
