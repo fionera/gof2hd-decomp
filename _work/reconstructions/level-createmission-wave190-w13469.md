@@ -92,3 +92,97 @@ Expected: `raw=2966 aligned=1125 size=17172/17172`.
 
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13469/`
 (`batch6.py`, `Level.base.cpp`, `orig.txt`, `ours.txt`, `obj.dis`).
+
+## Additional angles tried after the landed win (raw 2966 base)
+
+All measured on top of the landed `case-2` coords change (raw **2,966**,
+size 17,172). None beat 2,966; recorded so the next pass does not repeat them.
+
+### `case 2` goods / Route / `new Array` / `total` orders
+
+| variant | shape | raw | size |
+|---|---|---:|---:|
+| `g_a` | Route, escorts, goods, convoyEnd, new Array, total | 4,836 | 17172 |
+| `g_b` | goods, Route, escorts, convoyEnd, total, new Array | 4,887 | 17172 |
+| `g_c` | goods, Route, escorts, new Array, total=escorts+2+goods | build fail | — |
+| `g_d` | goods, escorts, Route, convoyEnd, new Array, total | 10,432 | 17180 |
+| `h1` | Route, goods, escorts, convoyEnd, new Array, total | 2,983 | 17172 |
+| `h2` | Route, goods, escorts, convoyEnd, total, new Array | 4,904 | 17172 |
+| `h3` | Route, goods, escorts, total, new Array, convoyEnd | 4,904 | 17172 |
+
+`h1` is the faithful "goods after Route" order and improves *aligned*
+(1,125 -> 1,118) but loses raw; the `int total` placement relative to
+`new Array` is a large RA lever (+1,900 raw when moved before the allocation).
+
+### `case 2` coords interleavings (`i1`-`i6`)
+
+Tried every plausible interleaving of the two `nextInt` stores and the four
+zero stores (including the original's own schedule: `coords[1]` after the
+first call, `coords[2,3,5]` after the second): 2,985 / 2,992 / 2,985 / 2,992
+/ 2,988; the `{0,0,0,0,0,0}` aggregate form is 9,380. The landed
+"all zeros first" form remains best.
+
+### `case 2` `asteroidPos` / `offset` declarations
+
+Full placement sweep of `Vector asteroidPos = {0,0,0}` among the seven
+statements (`p0`-`p7`): 3,015 / 2,989 / 2,992 / 4,820 / 4,814 / 4,886 /
+4,886 / **2,966** (`p7` = current, after `ArraySetLength`, before `offset`).
+`offset` before `asteroidPos`, split declarations, and `Vector asteroidPos;`
+are all neutral (2,966).
+
+`volatile` on `offset` is load-bearing for **size**: `int offset = 0` is
+17,164 (-8 B) and raw 10,711 (aligned 936). `volatile int offset; offset=0;`
+is identical to the base. Capturing the volatile read once per iteration
+(`int off = offset;` before `setPosition`) reproduces the original's
+`ldr.w r9,[sp,#120]` shape: size-exact 17,172, aligned **950**, but raw
+4,900 (the loop is 8 B short of the original and shifts the tail).
+
+### Root cause of the `case 2` first-loop 8 B gap
+
+The original keeps `convoyEnd` in `fp` across the loop and spills `ship` to
+`[sp,#108]` (`str r1,[sp,#108]` at `0xb17d6`, plus `mov r4,fp` /
+`mov fp,r4` around the `x` component). Our build keeps `ship` in `r4` and
+spills `convoyEnd`, saving exactly 8 B. Forcing the spill with
+`ship->getRoute()->reachWaypoint(0)` costs +8 B (17,180, raw 10,372);
+combining it with the non-volatile `offset` (-8 B) is nonlinear
+(17,156 / 17,140 / 17,196). The `ship`-spill + `convoyEnd`-in-`fp` shape is
+the remaining faithful form if a future pass can pin the 8 B.
+
+### `nameLeader` tail
+
+`if (!nameLeader) return;` compiles identically to the current
+`if (...) {...} else { return; }` (2,966). `if (...) { ...; return; }` is
+2,982 at 17,172 (raw 3,109); the faithful unconditional `return;` after the
+`if` is 17,176 (raw 3,982) and needs a -4 B compensation.
+
+### Tail and misc
+
+- `case 4` convoy condition forms: swapping `hasWanted && i == 0` is
+  17,164 (-8 B, raw 12,669); `else if` operand swap 15,466; `*bigShipsCount`
+  operand swap 17,184. `localRace == 1 && *bigShipsCount >= 1` reorder is
+  neutral.
+- `case 4` tail `Globals::options[44]` load: moving the read after
+  `getDifficulty`/`new Array` is 2,967-2,968 (aligned 1,116-1,125).
+- `case 4` `case4Else` coords: statement-by-statement, `Vector pos` copy,
+  and y/z swap are all neutral 2,966.
+- `case 183` switch source order `0,1,2,default` is 2,967; explicit
+  `case 3` is 5,342.
+- `case 2` loop-bound spellings (`convoyEnd > i`, `i != convoyEnd`,
+  `escorts + 2`, `unsigned`) are 2,966-2,967.
+- `localRace` as `const` / `unsigned` / split declaration: neutral.
+- `int total = goods + convoyEnd` / `const int total`: neutral.
+- Second convoy loop: dropping the `enemies` local is 10,732 (17,188);
+  using `convoyShip` for all accesses is 6,186 (size-exact) / 10,660.
+- Adjacent-line swap sweeps over source lines 1838-1900, 1900-1970 and
+  1970-2030: no size-exact win (best 2,966).
+
+### Reproduce the residual
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w13469
+ulimit -v 12000000
+cmake --build cmake-build-match --target link_so -j2
+python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Level13createMissionEv
+```
+
+Expected: `raw=2966 aligned=1125 size=17172/17172`.
