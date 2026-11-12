@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,568** | 22,361 | 57,232 |
+| `LevelScript::process` | **51,563** | 22,361 | 57,232 |
 | `Radar::draw` | **6,015** | 1,941 | 9,908 |
-| `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
+| `Layout` C1/C2 | **5,241** | 2,726 | 7,072 |
 | `Level::createMission` | **2,656** | 867 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,191** | 600 | 9,700 |
@@ -31,11 +31,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,468**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,461**, `.ARM.extab` **586**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13519): replace the `field_0x7c` ternary with an
+  `if`/`else` chain. Raw **5,243 -> 5,241** (-2), aligned 2,728 ->
+  2,726. `.text` 71,463 -> 71,461 (-2), `.ARM.extab` 586 unchanged,
+  build-id 20 unchanged. `.rel.plt` byte-identical, `.ARM.exidx` 0,
+  size 7,072 exact.
 * `Level::createShip` (w13501, pass 2): fold the `* 5` into the `getLevel()`
   clamp arm (`(getLevel() <= 20 ? getLevel() * 5 : 100); empPoints += 40;`)
   so the `add.w r0, r0, r0, lsl #2` lands in the then-arm, matching the
@@ -102,10 +107,11 @@ Landed changes:
   `setFixed`, `enemies[1]->field_0x70`; camera `setTarget` after `setFreeLookMode`; a distance-2 transposition
   pass; a d5 multi-line rotation with `SetAnimationState(2)` hoist; and two
   d5 shift-2 rotations (hud/radar/target group, pirate route locals); a distance-3/4
-  transposition pass; and a d6 shift-2 rotation with resetCamera tail). Raw **51,656 -> 51,568** (-88), aligned
-  22,002 -> 22,361. `.text` 71,433 -> 71,345 (-88), `.ARM.extab`
+  transposition pass; a d6 shift-2 rotation with resetCamera tail; and two more d6
+  shift-2/shift-3 rotations (free-look/FP flags, turret/HUD/shoot)). Raw **51,656 -> 51,563** (-93), aligned
+  22,002 -> 22,361. `.text` 71,433 -> 71,340 (-93), `.ARM.extab`
   577 unchanged, build-id 20 unchanged, total (text+extab+build-id)
-  72,030 -> 71,942 (-88). `.rel.plt` byte-identical, `.ARM.exidx` 0.
+  72,030 -> 71,937 (-93). `.rel.plt` byte-identical, `.ARM.exidx` 0.
 * `Level::createShip` (w13499): restore the faithful `race == 0 &&
   type != 14` hull shape — `ArraySetLength(3, *volumes)` before all three
   stores, each `BoundingAAB` in its own local, stores in index order
