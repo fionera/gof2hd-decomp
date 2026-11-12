@@ -15,15 +15,15 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,803** | 22,193 | 57,232 |
-| `Radar::draw` | **6,299** | 1,798 | 9,908 |
+| `LevelScript::process` | **51,792** | 22,211 | 57,232 |
+| `Radar::draw` | **6,298** | 1,802 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,244** | 1,156 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
 | `HangarWindow::render` | **1,360** | 530 | 9,700 |
 | `Level::createShip` | **1,195** | 396 | 2,764 |
 | `Status::missionCompleted` | **475** | 187 | 1,432 |
-| `Gun::calcCharacterCollision` | **458** | 63 | 1,984 |
+| `Gun::calcCharacterCollision` | **457** | 84 | 1,984 |
 | `SpaceLounge::drawLounge` | **175** | 41 | 1,948 |
 | `Hud::draw` | **32** | 21 | 9,332 |
 | `Generator::createMission` | **40** | 21 | 1,996 |
@@ -46,8 +46,27 @@ Landed changes:
   2,187,328 exact. The `volatile int offset` in the `case 2` convoy loop is
   a codegen lever (same values, same RNG consumption) that restores the
   original 17,172 B literal-pool alignment.
+* `Radar::draw` (w13371): station-blip frame reassociation
+  `(count-1)*(timer/max)` -> `timer*(count-1)/max`, plus the enemy tractor2
+  guard order `tractorMode2 && isDead() && wreck && ...`. On current master
+  (after the w13364 `camZ` hoist) raw **6,301 -> 6,299** (-2), aligned
+  1,876 -> 1,798. `.text` 73,304 -> 73,302 (-2), `.ARM.extab` 603
+  unchanged, build-id 20 unchanged, total (text+extab+build-id)
+  73,927 -> 73,925 (-2).
+* `LevelScript::process` (w13369/w13361): three independent statement
+  reorders: `forceUpdate` before `setFreeLookMode`, `setVulnerable` before
+  `setLookAtCam`, and the mission-89 state-1 `m_pGeometry6->setPosition`
+  move ahead of the `Transform`/`moveForward` block with `m_nState = 2`
+  sunk to the end. Raw **51,803 -> 51,792** (-11), aligned
+  22,193 -> 22,211.
+* `Radar::draw` (w13370): spark `inSight` second bound as subtraction
+  (`left > screenX - size*2` instead of `screenX < left + size*2`).
+  Raw **6,299 -> 6,298** (-1), aligned 1,798 -> 1,802.
+* `Gun::calcCharacterCollision` (w13365): swap the scatter
+  `damage`/`damageEmp` order so `damageEmp` is applied before `damage`.
+  Raw **458 -> 457** (-1), aligned 63 -> 84.
 
-Section deltas: `.text` **73,302** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,289** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **603** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -57,7 +76,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,925**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,912**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 

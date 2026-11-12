@@ -1268,7 +1268,7 @@ bool LevelScript::process(int delta) {
                     m_tempVec = *m_pCamera->getPosition();
                     m_tempVec.y += 500.0f;
                     (*m_pLevel->getEnemies())[0]->setPosition(m_tempVec);
-                    m_nState = 2;
+                    m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
@@ -1276,7 +1276,7 @@ bool LevelScript::process(int delta) {
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward(-10000.0f);
                     m_pGeometry6->setDirection(-(*enemies)[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
-                    m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
+                    m_nState = 2;
                     return 1;
                 }
                 break;
@@ -2493,8 +2493,8 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     radar->enabled = 0;
-                    player->setFreeLookMode(false);
                     m_pLevel->lodManager->forceUpdate(delta, false);
+                    player->setFreeLookMode(false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
@@ -3535,8 +3535,8 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 1;
                         m_pRadar->enabled = 0;
                         m_pHud->visible = 0;
-                        wcamera->setLookAtCam(true);
                         player->player->setVulnerable(false);
+                        wcamera->setLookAtCam(true);
                         wcamera->setTarget((*enemies)[0]->geometry);
                         m_nScriptTimerA = 0;
                         wcamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});

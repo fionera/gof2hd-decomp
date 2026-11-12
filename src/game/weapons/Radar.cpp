@@ -965,7 +965,7 @@ enemies:
                         int size = this->turretScopeHalfWidth;
                         int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                         float top = PlayerEgo::crosshairPos.y - (float) size;
-                        inSight = this->screenX > left && this->screenX < left + size * 2 && this->screenY > (int) top &&
+                        inSight = this->screenX > left && left > this->screenX - size * 2 && this->screenY > (int) top &&
                                   this->screenY < (int) top + size * 2;
                     }
                     if (inSight) {

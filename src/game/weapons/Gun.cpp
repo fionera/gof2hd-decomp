@@ -735,10 +735,10 @@ void Gun::calcCharacterCollision() {
                         } else if (falloff < 0.0f) {
                             falloff = 0.0f;
                         }
-                        enemy->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
                         if (this->empDamage > 0) {
                             enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
+                        enemy->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
                     }
                 }
             }
