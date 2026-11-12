@@ -76,6 +76,28 @@ only one that beats 6,058.  Other measured cells, all reverted:
 - `== nullptr -> == 0`, `!= nullptr -> != 0`, `!ptr`: byte-identical.
 - all 30 `__builtin_expect` remove/flip variants: neutral or worse.
 
+### Additional negative cells (same wave, base 6,057)
+
+- swapped operands of every `==`/`!=` comparison in the draw body (124 sites,
+  simple operands): all neutral at 6,057 or worse.
+- tractor guard nestings (`field_0x1c == nullptr` outer, `wreck`/`tractorMode2`
+  inner, both nestings): byte-identical to base.
+- tractor guard bitwise forms `(a & b & c)` / `(a && (b & c))`: 7,649 / 6,918
+  (size 9,940 / 9,900, size-fatal).
+- `int otherLockFlag` / `int otherLock` / ternary-init `otherLock`: all
+  byte-identical to each other, raw 9,437, size 9,900 (size-fatal) — the
+  `bool`-to-`int` normalisation in our source is worth 8 bytes that the
+  original spends elsewhere.
+- `float damageRate = getDamageRate(); float hull = field_0x1c8 * (rate/100)`:
+  6,061 raw, aligned 2,006; same for the EMP rate: 6,058 raw, aligned 1,996;
+  both: 6,062 / 1,994.  Size-exact but raw-negative (aligned improves).
+- `asteroidLockTimer = 0` instead of `+= mode` (line 1188; the original stores
+  `movne r1,#0; strne r1,[r4,#412]` at `12fd88`): raw 9,101, aligned 2,130,
+  size 9,892 (size-fatal, -16).  A faithfulness fix that needs 16 bytes of
+  compensation elsewhere before it can land.
+- `if (navWreck) { if (field_0x1c == nullptr) ... } else { if (lockedEnemy ==
+  nullptr) ... }` for the `*(navWreck ? ...)` store: 6,058 raw (one worse).
+
 ## 2. Reproduction
 
 ```sh
