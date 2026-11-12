@@ -20,7 +20,7 @@ aligned / size; all size-exact):
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,534** | 1,153 | 17,172 |
-| `MGame::OnTouchEnd` | **2,936** | 1,689 | 8,080 |
+| `MGame::OnTouchEnd` | **2,931** | 1,695 | 8,080 |
 | `HangarWindow::render` | **1,512** | 723 | 9,700 |
 | `Level::createShip` | **1,202** | 484 | 2,764 |
 | `Status::missionCompleted` | **721** | 327 | 1,432 |
@@ -64,13 +64,16 @@ Landed changes:
   reorders. Raw **2,961 -> 2,936** (-25), aligned 1,602 -> 1,689.
 * `LevelScript::process` (w12905): pass 4 K=4..5 rerun. Raw
   **52,080 -> 52,075** (-5), aligned 20,735 -> 20,766.
+* `MGame::OnTouchEnd` (w12916): pass 11 whole-function 1..4 re-sweep (two
+  independent transpositions). Raw **2,936 -> 2,931** (-5), aligned
+  1,689 -> 1,695.
 
-Section deltas: `.text` **74,433** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,428** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **19**. Total differing bytes **75,099**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,095**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-12 (wave 184)

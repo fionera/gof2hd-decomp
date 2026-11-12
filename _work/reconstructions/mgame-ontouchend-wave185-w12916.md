@@ -8,15 +8,15 @@ Target: `_ZN5MGame10OnTouchEndEiiPv` in `src/game/menu/MGame.cpp` (original 8,08
 
 | metric | base | after |
 |---|---:|---:|
-| raw same-address diff bytes | 2,972 | **2,936** |
+| raw same-address diff bytes | 2,972 | **2,931** |
 | aligned (instruction) diff | 1,602 | 1,689 |
 | function size | 8,080 / 8,080 | 8,080 / 8,080 |
-| `.text` differing bytes | 74,591 | **74,555** |
+| `.text` differing bytes | 74,591 | **74,550** |
 | `.rel.plt` diff | 0 | 0 |
 | `.ARM.extab` diff | 647 | 647 |
 | `.ARM.exidx` diff | 0 | 0 |
 | build-id diff | 20 | 20 |
-| total differing bytes | 75,258 | **75,222** |
+| total differing bytes | 75,258 | **75,217** |
 
 Gate after the change (`check`, `RATCHET PASS`): byte_exact **4507/4524**,
 linked_exact **4507/4524**, size-exact **4524/4524**, stub_zero_size 0, missing 0,
@@ -115,6 +115,19 @@ initStreamOutPosition, switch_to_target_setting, departStation`.  All are indepe
 stores or pure `Player::get*HP` reads, so the reorders are behaviour-preserving.
 The aligned metric rises to 1,689 (the schedule moves), but raw — the primary
 metric — falls by 36 bytes total.
+
+## Third round (whole-function 1..4 re-sweep)
+
+A fresh whole-function distance-1..4 transposition sweep on the 2,936-B base found two
+more independent wins:
+
+- `cinematicSteerActive` switch, `case 1`: `SetCurrentApplicationModule(5)` moved ahead
+  of `switch_to_target_setting = 0` (independent store vs call): 2,936 -> 2,932.
+- Mission-65 block: `FileRead *reader = new FileRead()` moved ahead of
+  `field_60 = getArmorHP()`: 2,932 -> **2,931**.
+
+The mission-65 `Level::initStreamOutPosition`/`delete reader` swap (raw 2,933) was
+rejected: it is a use-after-free (`reader->loadStation(100)` after `delete reader`).
 
 ## Method
 
