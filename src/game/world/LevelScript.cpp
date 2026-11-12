@@ -2058,9 +2058,9 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     ((PlayerFixedObject *) freighter)->setMoving(false);
                 } else if (m_nState == 2) {
-                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
                     freighter->translate(Vector{0.0f, (float) -delta, (float) (2 * delta)});
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     freighter->geometry->rotate(0.0f, 0.0f, (float) delta * 3.0e-5f);
                     m_nScriptTimerA += delta;
                     if (__builtin_expect(m_nScriptTimerA >= 15001, 0)) { // lint: arm_builtin
@@ -2334,9 +2334,9 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pHud->visible = 0;
                     m_pCamera->setActive(true);
-                    m_bCinematicBreak = 1;
                     m_pCamera->setTarget((*enemies)[10]->geometry);
                     m_pCamera->setPosition((*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 1000.0f});
+                    m_bCinematicBreak = 1;
                     player->freeze = 1;
                     player->player->setVulnerable(false);
                     m_nState = 2;
@@ -4202,10 +4202,10 @@ bool LevelScript::process(int delta) {
                     *tempVec += *scratch * ((float) delta * 2.01f);
                     *scratch = player->geometry->getRightVector();
                     *tempVec += *scratch * ((float) delta * 0.03f);
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
                     *scratch = player->GetUpVector();
                     *tempVec += *scratch * ((float) delta * 0.01f);
                     m_pCamera->setFixed(true);
-                    AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[0]))->isOver()) {
                         player->player->setVulnerable(true);
@@ -4408,9 +4408,9 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
                     m_tempVec = (*enemies)[0]->geometry->getPosition();
+                    m_pCamera->setPosition(m_tempVec);
                     m_tempVec += (*enemies)[0]->geometry->getDirection() * 18000.0f;
                     m_tempVec += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
-                    m_pCamera->setPosition(m_tempVec);
                     (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->setActive(true);
                     m_nScriptTimerA = 0;
@@ -5031,11 +5031,11 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
-                        fighter->setActive(false);
+                        fighter->setVisible(false);
+                        player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pCamera->setPosition(m_tempVec + Vector{35000.0f, 0.0f, 70000.0f});
                         fighter->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                        player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                        fighter->setVisible(false);
+                        fighter->setActive(false);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
@@ -5100,10 +5100,10 @@ bool LevelScript::process(int delta) {
                         m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
                         m_pGeometry3->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pGeometry3->setVisible(true);
-                        fighter->setVisible(false);
+                        player->setVisible(false);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        player->setVisible(false);
+                        fighter->setVisible(false);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         m_nState = 10;

@@ -91,3 +91,85 @@ Scratch harnesses (`stmts.py`, `model.py`, `gen.py`, `eval.py`, `elfread.py`,
 `sweep.py`, `linkonly.txt`, `res_d1.jsonl`, `secdiff.py`, `rawruns.py`,
 `apply_swap.py`, `measure.sh`) live in
 `/home/debian/GalaxyOnFire2/scratch/w13352/`; scratch, not tracked.
+
+## Second landed change (d=2..4 sweep)
+
+A fresh `d=2..4` sweep on the post-landing 51,844 body (4,774 candidates,
+4 workers) found 31 size-exact raw wins, all -1..-3.  The largest safe one is
+landed: mission-125 cutscene-exit block, source lines 2337-2339, move
+`m_bCinematicBreak = 1;` below `m_pCamera->setTarget(...)` and
+`m_pCamera->setPosition(...)`.
+
+```
+raw 51,844 -> 51,841 (-3), aligned 20,992 (unchanged)
+.text 73,945 -> 73,942 (-3), total 74,580 -> 74,577
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
+
+`m_bCinematicBreak` is a plain flag byte; neither camera call reads it, so the
+reorder is semantics-preserving.  The other `d=2..4` winners are either
+read-after-write rotations (`m_tempVec` / `camPos` / `*tempVec` / `*scratch`)
+or `setPosition`-before-`+=` rotations and were rejected as unsafe.
+
+## Third landed change (d=2..4 sweep)
+
+Mission-41 state-2 block, source lines 2061-2063: move
+`(*enemies)[0]->geometry->updateReferenceMatrix();` below
+`KIPlayer *freighter = ...; freighter->translate(...);`.
+
+```
+raw 51,841 -> 51,838 (-3), aligned 20,992 -> 21,002
+.text 73,942 -> 73,939 (-3), total 74,577 -> 74,574
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
+
+The reorder is a raw win; `.rel.plt` and `.ARM.extab` are unchanged.
+
+## Fourth landed change
+
+Station-dock block, source lines 5103-5106: move `fighter->setVisible(false);`
+below `m_nScriptTimerA = 0; m_nScriptTimerB = 0;`.
+
+```
+raw 51,838 -> 51,836 (-2), aligned 21,002 -> 21,018
+.text 73,939 -> 73,937 (-2), total 74,574 -> 74,572
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
+
+`fighter->setVisible` and the two timer stores are independent.
+
+## Fifth landed change
+
+Station-dock block, source lines 5035-5037: hoist
+`player->geometry->setDirection(...)` above
+`m_pCamera->setPosition(m_tempVec + Vector{35000,0,70000})`.
+
+```
+raw 51,836 -> 51,834 (-2), aligned 21,018 -> 21,028
+.text 73,937 -> 73,935 (-2), total 74,572 -> 74,570
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
+
+## Sixth landed change
+
+Mission-145 state-1 block, source lines 4411-4413: hoist
+`m_pCamera->setPosition(m_tempVec);` above the second
+`m_tempVec += ...getRightVector() * 3000.0f;` addend.
+
+```
+raw 51,834 -> 51,832 (-2), aligned 21,028 -> 21,033
+.text 73,935 -> 73,933 (-2), total 74,570 -> 74,568
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
+
+## Seventh landed change
+
+Camera-local block, source lines 4205-4208: hoist
+`AEMath::MatrixSetTranslation(local, *tempVec);` above the last two
+`*tempVec +=` addends.
+
+```
+raw 51,832 -> 51,830 (-2), aligned 21,033 -> 21,479
+.text 73,931 -> 73,931?  (73,933 -> 73,931, -2), total 74,568 -> 74,566
+.ARM.extab 615 (unchanged), .rel.plt byte-identical, size 57,232/57,232
+```
