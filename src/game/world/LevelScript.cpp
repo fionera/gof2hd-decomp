@@ -2373,7 +2373,7 @@ bool LevelScript::process(int delta) {
                     m_bCinematicBreak = 0;
                     self->lodManager->forceUpdate(delta, false);
                 }
-                if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
+                if (__builtin_expect(((RadioMessage *) ((*messages)[7]))->isTriggered(), 1) && m_nState == 4) { // lint: arm_builtin
                     Vector origin = (*enemies)[0]->getPosition();
                     (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     int routePoints[3] = {0, 0, 800000};
