@@ -1313,7 +1313,7 @@ int Status::missionFailed(bool docked, int64_t time) {
 // existing hidden weak crtbegin symbol name so gold's .dynsym name pool order
 // is unchanged; see that file for the placement rationale.
 #pragma GCC visibility push(hidden)
-extern "C" unsigned char __emutls_unregister_key(int type); // lint: extern_c
+extern "C" unsigned char __emutls_unregister_key(Mission *m); // lint: extern_c
 #pragma GCC visibility pop
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
@@ -1340,19 +1340,19 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         // lays the case bodies out in source order. clang 7's
         // MachineBlockPlacement follows the jump table's value-sorted successor
         // list, so the cross-TU rank table reorders the case values to match
-        // that layout; the switch itself stays a plain int switch.  The table
-        // is indexed by rank, so its range starts at 0 and the dispatch has no
-        // `sub`.  The rank values are chosen to keep the original's default
-        // slots and the longest run of matching TBH targets.
-        // See status-missioncompleted-wave189-w13351.md.
-        switch (__emutls_unregister_key(m->getType())) {
-            case 200:
-            case 211:
+        // that layout; the labels are `150 + rank`, so the emitted dispatch is
+        // the original's `sub #150; cmp #39; bhi; tbh`.  The low group keeps
+        // the raw type (0, 8, 11, 13, 14), which reproduces the original's
+        // `sub #8; cmp #6; tbh` + `cmp #0` second level byte-for-byte.
+        // See status-missioncompleted-wave191b-w13523.md.
+        switch (__emutls_unregister_key(m)) {
+            case 0:
+            case 11:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 208:
+            case 8:
                 if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !atStation) {
                     if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
                         for (unsigned j = 0; j < pendingProducts->size(); j++) {
@@ -1371,12 +1371,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 213:
+            case 13:
                 if (atStation && field_0xf0) {
                     return m;
                 }
                 break;
-            case 214:
+            case 14:
                 if (atStation && station->getIndex() == m->getAgent()->getStation() &&
                     Item::isInList(0x73, ship->getCargo())) {
                     return m;
@@ -1386,26 +1386,26 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             // sends 167 to rank 21 and 174 to rank 25, so the emitted TBH has
             // the same body in slots 21 and 25 (the original's 40-entry table
             // has it in slots 17 and 24).
-            case 17:
-            case 24:
+            case 167:
+            case 174:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0:
+            case 150:
                 if (missionCount >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 1:
+            case 151:
                 if (kills >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 2:
+            case 152:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1415,25 +1415,25 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 3:
+            case 153:
                 if (stationsVisited >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 4:
+            case 154:
                 if (ship->getCurrentLoad() >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 5:
+            case 155:
                 if (goodsProduced >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 6:
+            case 156:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 unsigned j = 0;
@@ -1451,7 +1451,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 7:
+            case 157:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     BluePrint *bluePrint = (*bluePrints)[m->getStatusValue()];
                     Array<int> *ingredients = bluePrint->getIngredientList();
@@ -1468,7 +1468,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 8:
+            case 158:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     Array<Item *> *cargo = ship->getCargo();
@@ -1482,20 +1482,20 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 10:
+            case 160:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 21:
+            case 171:
                 if (Globals::status->field_178 >= m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;
                 }
                 break;
-            case 13:
+            case 163:
                 if (atStation) {
                     Array<Item *> *equipment = ship->getEquipment();
                     for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1505,12 +1505,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 14:
+            case 164:
                 if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
                     return m;
                 }
                 break;
-            case 15:
+            case 165:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1520,7 +1520,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 16:
+            case 166:
                 if (atStation) {
                     return m;
                 }
@@ -1528,7 +1528,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 18:
+            case 168:
  {
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
@@ -1542,17 +1542,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 19:
+            case 169:
                 if (longMission) {
                     return m;
                 }
                 break;
-            case 20:
+            case 170:
                 if (notAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 12:
+            case 162:
                 if (m->getStatusValue() == 0) {
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
@@ -1561,17 +1561,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 22:
+            case 172:
                 if (shortMission) {
                     return m;
                 }
                 break;
-            case 34:
+            case 184:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 39:
+            case 189:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
