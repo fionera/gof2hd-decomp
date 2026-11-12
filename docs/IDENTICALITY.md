@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,059** | 2,027 | 9,908 |
 | `Layout` C1/C2 | **5,243** | 2,728 | 7,072 |
 | `Level::createMission` | **2,964** | 1,124 | 17,172 |
-| `MGame::OnTouchEnd` | **2,886** | 1,717 | 8,080 |
+| `MGame::OnTouchEnd` | **2,885** | 1,717 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,174** | 406 | 2,764 |
 | `Status::missionCompleted` | **97** | 54 | 1,432 |
@@ -31,7 +31,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,802**, `.ARM.extab` **582**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,801**, `.ARM.extab` **582**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
