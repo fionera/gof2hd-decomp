@@ -16,7 +16,7 @@ aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,223** | 20,616 | 57,232 |
+| `LevelScript::process` | **52,203** | 20,614 | 57,232 |
 | `Radar::draw` | **6,311** | 1,903 | 9,908 |
 | `Layout` C1/C2 | **5,383** | 2,560 | 7,072 |
 | `Level::createMission` | **3,626** | 1,138 | 17,172 |
@@ -49,6 +49,8 @@ Landed changes:
 * `LevelScript::process` (w12802): branch-layout passes 3-4 (12-run
   permutation harvest; re-swept cleanup-block order). Raw **52,238 -> 52,223**
   (-15).
+* `LevelScript::process` (w12804): case-42 delete/null order. Raw
+  **52,223 -> 52,203** (-20).
 * `Radar::draw` (w12811): commutative hull-bar multiply. Raw **6,315 ->
   6,311** (-4), aligned 1,858 -> 1,903.
 * `MGame::OnTouchEnd` (w12816): two store-order passes (instant-action store
@@ -61,12 +63,12 @@ Landed changes:
   `.ARM.extab` content grows 1 byte; total differing bytes still drop
   75,508 -> 75,507 and the section stays size- and base-exact.
 
-Section deltas: `.text` **74,776** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **74,756** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **647** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes and
 size-exact **269,159 B** (base `0x1c9e10` exact); **`.rel.plt` 0
 (byte-identical, 29,392 B)**; `.data` **0**; `.comment` **0**; `.bss` **0**;
-`.note.gnu.build-id` **20**. Total differing bytes **75,443**. File size is
+`.note.gnu.build-id` **20**. Total differing bytes **75,423**. File size is
 exact (2,187,328 B), and all **27/27** original section headers are exact.
 
 ## Update 2026-11-11 (wave 183)

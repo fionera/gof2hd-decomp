@@ -99,8 +99,8 @@ size-exact, `.rel.plt`-identical raw wins were found.  Three compose:
 | 2502 `camPos += dir * 3000.0f;` | after `m_pLevel->lodManager->forceUpdate(delta,false)` (still before `setPosition`) | 52,276 |
 | 2533 `camPos += dir * 2000.0f;` | after `m_pCamera->setPosition(camPos)` | 52,277 |
 
-Measured together: raw **52,281 -> 52,273** (-8 B), size 57,232/57,232 exact,
-`.text` **74,842 -> 74,834** (-8), `.rel.plt` md5
+Measured together: raw **52,281 -> 52,253** (-28 B), size 57,232/57,232 exact,
+`.text` **74,842 -> 74,814** (-28), `.rel.plt` md5
 `289b2a069f8504d1e8a3919e43915e04` (byte-identical).  The first two moves are
 behaviour-neutral (the `setPosition` calls still see every offset).  The third
 is a codegen-shape move: the original disassembly applies `dir*2000` before
@@ -108,6 +108,34 @@ is a codegen-shape move: the original disassembly applies `dir*2000` before
 local `camPos` addition past the const-ref call; the moved form matches one
 more byte.  A behaviour-neutral variant (move after `camPos.y += 800.0f`,
 before `setPosition`) also wins but only 1 B (raw 52,274).
+
+## Second sweep (non-hot candidates): case-42 delete order
+
+The same sweep was then run over a 1-in-11 sample (305) of the 3,348
+candidate moves whose source line is *not* in the mismatch map.  It found
+150 raw-lowering moves (most are neutral 1-2 B codegen-shape permutations).
+One is a genuine structural fix worth 20 B, in the mission-42 wormhole-exit
+arm:
+
+```cpp
+// before
+delete m_pLevel->objectivesB;
+delete m_pLevel->objectivesA;
+m_pLevel->objectivesB = nullptr;
+m_pLevel->objectivesA = nullptr;
+// after (matches the original 0x13abe6-0x13ac12 exactly)
+delete m_pLevel->objectivesB;
+m_pLevel->objectivesB = nullptr;
+delete m_pLevel->objectivesA;
+m_pLevel->objectivesA = nullptr;
+```
+
+The original disassembly deletes `objectivesB` (`+0x2c`), stores
+`objectivesB = nullptr`, then deletes `objectivesA` (`+0x28`), then stores
+`objectivesA = nullptr` -- i.e. each pointer is nulled immediately after its
+own delete, not both deletes first.  Measured: raw **52,273 -> 52,253**
+(-20 B), size 57,232/57,232 exact, `.text` **74,834 -> 74,814**, `.rel.plt`
+unchanged.
 
 ## Gate (after the win)
 
@@ -120,7 +148,7 @@ symbol parity            5370/5370   missing/wrong_type/extra 0/0/0
 RATCHET                  PASS
 ```
 
-`.text` 74,834; `.ARM.extab` unchanged (size/base exact at `0x1a3b78`,
+`.text` 74,814; `.ARM.extab` unchanged (size/base exact at `0x1a3b78`,
 156,312 B); `.rel.plt` byte-identical; 27/27 section headers; file size
 2,187,328 exact.
 
@@ -131,6 +159,6 @@ cd /home/debian/GalaxyOnFire2/wt/w12804
 ulimit -v 12000000
 cmake --build cmake-build-match --target link_so -- -j2
 python3 _work/reconstructions/measure_w11901.py cmake-build-match/libgof2hdaa.so
-# -> raw=52273 size=57232/57232 text=74834 relplt=289b2a069f8504d1e8a3919e43915e04
+# -> raw=52253 size=57232/57232 text=74814 relplt=289b2a069f8504d1e8a3919e43915e04
 cmake --build cmake-build-match --target check -- -j2   # RATCHET PASS
 ```

@@ -2112,8 +2112,8 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(153, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     delete m_pLevel->objectivesB;
-                    delete m_pLevel->objectivesA;
                     m_pLevel->objectivesB = nullptr;
+                    delete m_pLevel->objectivesA;
                     m_pLevel->objectivesA = nullptr;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     (*m_pLevel->getLandmarks())[3]->setPosition(25000.0f, 20000.0f, -55000.0f);
