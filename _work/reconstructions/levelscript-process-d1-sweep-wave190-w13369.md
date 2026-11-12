@@ -162,6 +162,21 @@ Disjoint receivers (camera target pointer vs `FModSound`).  Measured on top
 of changes 1-7: raw **51,811 -> 51,810** (-1), size exact, `.text` 73,507 ->
 73,506, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
 
+## Landed change 9
+
+Source lines 3883/3884 (second d1 sweep on the 51,810 body):
+
+```cpp
+-                            wcamera->setTarget(marker);
+-                            Vector zero{0.0f, 0.0f, 0.0f};
++                            Vector zero{0.0f, 0.0f, 0.0f};
++                            wcamera->setTarget(marker);
+```
+
+The local `zero` construction is independent of the camera target write.
+Measured on top of changes 1-8: raw **51,810 -> 51,809** (-1), size exact,
+`.text` 73,506 -> 73,505, `.ARM.extab` 610 unchanged, `.rel.plt` unchanged.
+
 ## Sweep
 
 The w13352 harness (`stmts.py`/`model.py`/`gen.py`/`eval.py`/`sweep.py`,
@@ -208,13 +223,10 @@ Scratch harnesses (`stmts.py`, `model.py`, `gen.py`, `eval.py`, `elfread.py`,
 `sweep.py`, `linkonly.txt`, `res_d1.jsonl`) live in
 `/home/debian/GalaxyOnFire2/scratch/w13369/`; scratch, not tracked.
 
-## Current-master rebase (wave 190 harvest)
+## Current-master harvest (wave 190, zero-vector reorder)
 
-Re-applied all eight w13369 reorders on current master (`dd8cf7a29`), together with
-the w13361 mission-89 state-1 reorder. The eight w13369 reorders alone are -10
-(51,803 -> 51,793); with w13361's -7 the current master is raw **51,786**
-(-17 from 51,803), aligned 22,208, size 57,232/57,232. `.text`
-73,289 -> 73,283 (-6 for the six follow-up reorders; -13 total from the
-pre-harvest 73,302), `.ARM.extab` 603 unchanged, total 73,912 -> 73,906 (-6).
-`check` green: byte_exact 4507/4524, linked_exact 4507/4524, size_exact 4524/4524,
-data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370, RATCHET PASS.
+Re-applied the new `Vector zero` before `wcamera->setTarget(marker)` reorder on
+current master (`5ff423480`). LevelScript raw **51,785 -> 51,784** (-1), aligned
+22,210. It composes with the w13368 d5/d6 group to raw **51,769** (-16 from
+51,785). `.text` 73,273 -> 73,254 (-19 across LevelScript + Radar), `.ARM.extab`
+606 unchanged, total 73,899 -> 73,880 (-19). `check` green, RATCHET PASS.

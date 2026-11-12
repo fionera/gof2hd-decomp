@@ -439,7 +439,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     float left = PlayerEgo::crosshairPos.x - (float) size;
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     bool topOk = top < this->screenY;
-                    if (this->screenY < top + size + size && topOk && this->screenX < (int) left + size + size &&
+                    if (this->screenY < top + size + size && topOk && (int) left + size + size > this->screenX &&
                         (int) left < this->screenX) {
                         if (this->field_0x28 != this->landmarks->data()[i]) {
                             this->stationLockTimer = 0;
@@ -833,9 +833,10 @@ enemies:
                 goto tractor;
             }
             if (!this->level->getPlayer()->isAutoPilot() &&
+                (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
+                (!wreck || enemy->isDead()) &&
                 __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
-                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
-                (!wreck || enemy->isDead())) {
+                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck)) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
                     this->field_0x1c = enemy;
                     this->dockNavPtr = enemy;

@@ -2143,13 +2143,13 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         m_pRadar->enabled = 0;
-                        m_bCinematicBreak = 1;
+                        m_pCamera->setTarget(((PlayerStation *) (*self->getLandmarks())[0])->rootGeometry);
                         m_pCamera->setLookAtCam(true);
                         m_pCamera->setPosition(player->getPosition());
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
-                        m_pCamera->setTarget(((PlayerStation *) (*self->getLandmarks())[0])->rootGeometry);
+                        m_bCinematicBreak = 1;
                         m_tempVec = 5000.0f * AbyssEngine::AEMath::VectorNormalize(player->getPosition());
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         ((PlayerWormHole *) (*self->getLandmarks())[3])->freeMissionLock();
@@ -2432,12 +2432,12 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     player->setFreeLookMode(false);
                     player->stopShooting(0);
-                    player->setTurretMode(false);
+                    m_pRadar->enabled = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pCamera->enableFirstPersonCam(false);
                     player->setComputerControlled(true);
-                    m_pRadar->enabled = 0;
+                    player->setTurretMode(false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -3517,7 +3517,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
                         TargetFollowCamera *wcamera = m_pCamera;
-                        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
+                        wcamera->enableFirstPersonCam(false);
                         m_nState++;
                         resetCamera(m_pLevel);
                         player->setTurretMode(false);
@@ -3527,16 +3527,16 @@ bool LevelScript::process(int delta) {
                             player->killLiberator();
                         }
                         player->setFreeLookMode(false);
-                        wcamera->enableFirstPersonCam(false);
+                        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
-                        player->setVisible(false);
+                        player->player->setVulnerable(false);
                         player->setFreeze(true);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
-                        player->player->setVulnerable(false);
                         wcamera->setLookAtCam(true);
+                        player->setVisible(false);
                         wcamera->setTarget((*enemies)[0]->geometry);
                         m_nScriptTimerA = 0;
                         wcamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
@@ -3880,8 +3880,8 @@ bool LevelScript::process(int delta) {
                                                  Vector{0.0f, 1.0f, 0.0f});
                             marker->setPosition(player->geometry->getPosition());
                             Globals::sound->play(14, nullptr, nullptr, 0.0f);
-                            wcamera->setTarget(marker);
                             Vector zero{0.0f, 0.0f, 0.0f};
+                            wcamera->setTarget(marker);
                             Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
                         }
                         if (m_nScriptTimerA >= 9001) {
@@ -4756,13 +4756,13 @@ bool LevelScript::process(int delta) {
                         m_pLevel->getPlayer()->resetGunDelay();
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
-                        m_pCamera->setLookAtCam(false);
+                        resetCamera(m_pLevel);
                         m_pHud->visible = 1;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         player->setPosition(0.0f, 0.0f, 90000.0f);
                         player->setSpeed(2.0f);
                         m_pRadar->enabled = 1;
-                        resetCamera(m_pLevel);
+                        m_pCamera->setLookAtCam(false);
                         m_bCinematicBreak = 0;
                         if (field_0xaa) {
                         m_pCamera->setTarget(player->geometry);

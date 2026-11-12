@@ -191,12 +191,48 @@ Other subtraction-rewrite sites measured on the 6,306 base (all size 9,908):
 | line 848/1017 `top > screenY - size*2` | 6,309 |
 | line 847/1016/1116 `left > screenX - size*2` | 6,308 |
 
-## Current-master rebase (wave 190 harvest, all three bounds)
+## 6. Fourth win: landmark crosshair `screenX` upper bound operand swap
 
-Re-applied all three w13370 bounds on current master (`920479519`), after the
-w13371 station-blip/tractor2 landing. Current master before the three changes was
-raw 6,299; after the spark second bound it was 6,298, after the landmark bound
-6,297, and after the spark screenY upper bound it is raw **6,294** (-5 total),
-aligned 1,804, size 9,908/9,908. `.text` 73,283 -> 73,274 (-9 across Radar +
-Hangar), `.ARM.extab` 603 -> 606 (+3 from the Hangar change), total
-73,906 -> 73,900 (-6). `check` green, RATCHET PASS.
+One source edit in the landmark crosshair block (line 442):
+
+```cpp
+-                    if (this->screenY < top + size + size && topOk && this->screenX < (int) left + size + size &&
++                    if (this->screenY < top + size + size && topOk && (int) left + size + size > this->screenX &&
+                         (int) left < this->screenX) {
+```
+
+Pure operand swap (`screenX < (int)left + size + size` <=> `(int)left + size + size > screenX`).
+
+| metric | base (after sections 0+4+5) | after section 6 |
+|---|---:|---:|
+| raw same-address diff | 6,303 | **6,302** |
+| instruction-index alignment | 1,864 | 1,864 |
+| function size | 9,908 / 9,908 | 9,908 / 9,908 |
+| `.text` differing bytes | 73,511 | **73,510** |
+| `.ARM.extab` differing bytes | 610 | 610 |
+| `.rel.plt` | byte-identical | byte-identical |
+| build-id differing bytes | 20 | 20 |
+| total differing bytes | 74,141 | **74,140** |
+
+`RATCHET PASS` (byte 4,507 / linked 4,507 / size 4,524 / data 843 / imports 207 / lint CLEAN /
+parity 5,370).
+
+Cumulative for this worker: raw 6,308 -> 6,302, `.text` 73,516 -> 73,510, total 74,146 -> 74,140.
+
+Other landmark-crosshair spellings measured on the 6,303 base:
+
+| spelling | raw |
+|---|---:|
+| **`(int) left + size + size > screenX`** | **6,302** |
+| `(int) left < screenX` -> `screenX > (int) left` | 6,303 |
+| `screenY < top + size + size` -> `screenY - top < size + size` | 8,487 (size 9,904) |
+| `screenX < (int) left + size + size` -> `screenX - (int) left < size + size` | 8,473 (size 9,904) |
+| `screenY < top + size + size` -> `top + size + size > screenY` | 8,469 (size 9,916) |
+
+## Current-master harvest (wave 190, landmark crosshair screenX bound)
+
+Re-applied the new landmark crosshair `screenX` upper-bound operand swap on
+current master (`5ff423480`). Radar raw **6,294 -> 6,293** (-1), aligned 1,828.
+It composes with the w13381 tractor-guard reorder to raw **6,291** (-3 from
+6,294). `.text` 73,273 -> 73,254 (-19 across LevelScript + Radar), `.ARM.extab`
+606 unchanged, total 73,899 -> 73,880 (-19). `check` green, RATCHET PASS.

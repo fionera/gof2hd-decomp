@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,785** | 22,208 | 57,232 |
-| `Radar::draw` | **6,294** | 1,804 | 9,908 |
+| `LevelScript::process` | **51,769** | 22,259 | 57,232 |
+| `Radar::draw` | **6,291** | 1,828 | 9,908 |
 | `Layout` C1/C2 | **5,256** | 2,726 | 7,072 |
 | `Level::createMission` | **3,244** | 1,156 | 17,172 |
 | `MGame::OnTouchEnd` | **2,913** | 1,706 | 8,080 |
@@ -93,8 +93,24 @@ Landed changes:
 * `Gun::calcCharacterCollision` (w13365): swap the scatter
   `damage`/`damageEmp` order so `damageEmp` is applied before `damage`.
   Raw **458 -> 457** (-1), aligned 63 -> 84.
+* `LevelScript::process` (w13368): five d5/d6 adjacent-statement
+  reorders: `setType`/`enableFirstPersonCam`, `setTurretMode`/
+  `m_pRadar->enabled`, `setLookAtCam`/`resetCamera`,
+  `m_bCinematicBreak`/`setTarget`, and `setVisible`/`setVulnerable`.
+  Raw **51,784 -> 51,769** (-15), aligned 22,259. `.text`
+  73,269 -> 73,254 (-15), total 73,895 -> 73,880 (-15).
+* `LevelScript::process` (w13369 follow-up 2): move `Vector zero` before
+  `wcamera->setTarget(marker)` in the mission-89 camera block. Raw
+  **51,785 -> 51,784** (-1), aligned 22,210; it composes with w13368 to
+  **51,769**.
+* `Radar::draw` (w13370 follow-up 3): landmark crosshair `screenX`
+  upper-bound operand swap. Raw **6,294 -> 6,293** (-1), aligned 1,828.
+* `Radar::draw` (w13381): rotate the enemy tractor-guard operands
+  (`!enemyHit`/`!wreck` before the docked/`countsAsEnemy` tests). Raw
+  **6,293 -> 6,291** (-2), aligned 1,828. The w13375 Hangar commit was a
+  duplicate of the already-landed w13379 operand order.
 
-Section deltas: `.text` **73,273** differing bytes (size exact, 1,259,464 B);
+Section deltas: `.text` **73,254** differing bytes (size exact, 1,259,464 B);
 `.ARM.exidx` **0** (byte-identical); `.ARM.extab` **606** (size- and
 base-exact **156,312 B** @ `0x1a3b78`); `.rodata` **0** differing bytes over
 the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
@@ -104,7 +120,7 @@ the original **269,159 B** (base `0x1c9e10` exact), but `sh_size` is
 `.comment` **0**; `.bss` **0**; `.note.gnu.build-id` **20**. `.fini_array` is
 back to **8 B @ `0x20cba0`**, `.dynamic` and `.rel.dyn` are **byte-identical**,
 and `.data.rel.ro` is exact. Total differing bytes (text+extab+build-id)
-**73,899**. File size is exact (2,187,328 B), and 27/27 section headers are
+**73,880**. File size is exact (2,187,328 B), and 27/27 section headers are
 present. The only program-header delta is the R E LOAD FileSiz/MemSiz
 `0x20b977 -> 0x20ba37` (+0xc0).
 
