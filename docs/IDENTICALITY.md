@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,095** | 20,486 | 57,232 |
-| `Radar::draw` | **6,958** | 1,400 | 9,908 |
+| `LevelScript::process` | **53,097** | 20,484 | 57,232 |
+| `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
-| `Level::createMission` | **2,588** | 653 | 17,172 |
+| `Level::createMission` | **2,627** | 605 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,26 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,674**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,717**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13768, wave 191b): pirates `spawnPosition`
+  assigned before the `setPosition` `nextInt` arguments, and the alienGuns
+  loop restored to the original create-first order (`createStaticObject`
+  call, store, reload gun, `setMaxHitpoints`, tail `setRotation` /
+  `shipGroup` / `setPosition` / `setScaling` / `cargo`).  Raw
+  **2,588 -> 2,627** (+39), aligned **653 -> 605** (-48), size
+  17,172/17,172 exact.
+* `LevelScript::process` (w13769, wave 191b): mission-157
+  `initStreamOutPosition` / `switch_to_target_setting` store order.  Raw
+  **53,095 -> 53,097** (+2), aligned **20,486 -> 20,484** (-2), size
+  57,232/57,232 exact.
+* `Radar::draw` (w13758 pass 9, wave 191b): EMP rate multiply order.
+  Raw **6,958 -> 6,960** (+2), aligned **1,400 -> 1,397** (-3), size
+  9,908/9,908 exact.  This batch moves `.text` 74,674 -> 74,717;
+  `.ARM.extab` stays 561.
 * `Level::createMission` (w13761, wave 191b): case-4 attacker
   `setPosition` +2 before +3, matching the original literal-pool order at
   b3a98.  Raw **2,582 -> 2,588** (+6), aligned **680 -> 653** (-27), size

@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 40.1,
+   "pct": 40.0,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -72,20 +72,20 @@
    "usize": 1948
   },
   {
-   "name": "_ZN5Level13createMissionEv",
-   "pct": 93.3,
-   "byte": false,
-   "linked": false,
-   "osize": 17172,
-   "usize": 17172
-  },
-  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 93.4,
    "byte": false,
    "linked": false,
    "osize": 1984,
    "usize": 1984
+  },
+  {
+   "name": "_ZN5Level13createMissionEv",
+   "pct": 93.7,
+   "byte": false,
+   "linked": false,
+   "osize": 17172,
+   "usize": 17172
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
