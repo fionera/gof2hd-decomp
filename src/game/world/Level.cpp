@@ -5325,11 +5325,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 fixed->setWreckedMeshId(0x477f);
                 break;
         }
+        fixed->setBV(volumes);
         fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
         AEGeometry *g = fixed->geometry;
         lodManager->addObject(g);
         fixed->field_0x40 = 1;
-        fixed->setBV(volumes);
         ship = fixed;
     }
     ship->setLevel(this);
