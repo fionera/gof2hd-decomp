@@ -644,7 +644,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if ((missionBlocksPlanets != 0) || (this->planetLockTimer < 1)) {
+                if ((missionBlocksPlanets != 0) | (this->planetLockTimer < 1)) {
                     goto enemies;
                 }
                 Sprite *blip;
