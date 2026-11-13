@@ -95,3 +95,63 @@ Buy-list `description`-first is the best aligned shape (306) but costs +3 raw.
 `check` green after the landing: byte_exact 4508/4524, linked_exact 4508/4524,
 size-exact 4524/4524, stub_zero_size 0, missing 0, wrong_type 0, extra 0,
 data_exact 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
+
+## Checkpoint 3 (w13823 continuation): RA-tie probes, still no further win
+
+Baseline re-confirmed after every experiment: raw **2,018**, aligned **317**,
+size **9,700/9,700**, insn **3,734/3,734**, `.text` **76,711**,
+`.ARM.extab` **623**, `.ARM.exidx`/`.rodata`/`.rel.plt` 0.  The landed win
+above is unchanged; `src/` is clean.
+
+The remaining aligned clusters are all downstream of the single
+`this` ↔ `&Globals::layout` RAGreedy tie at `0x1496da`
+(`ldrd r9, sl` vs the original `ldrd sl, r9`; `[sp+132]` = `&Globals::layout`,
+`[sp+136]` = `this`, so ours gives layout→`r9`/this→`sl`, the original the
+reverse).  The whole pre-block `0x1496b0..0x1496de` is byte-identical, so the
+tie is pure post-RA register choice, not statement order.
+
+### New probes this checkpoint (full `link_so`, `-j2`)
+
+All size 9,700 unless noted.  Base = landed (`raw 2,018 / aligned 317 /
+.text 76,711 / extab 623`).
+
+| variant | raw | aligned | `.text` | extab | notes |
+|---|---:|---:|---:|---:|---|
+| **landed (base)** | **2,018** | **317** | **76,711** | **623** | insn 3,734 |
+| progress `DrawImage2D` x-term `layout` first | 2,018 | 317 | 76,711 | 623 | canonicalised |
+| progress `DrawImage2D` y-term `layout` first | 2,018 | 317 | 76,711 | 623 | canonicalised |
+| progress `DrawImage2D` x/y args swapped | 2,027 | 341 | 76,720 | 623 | ldrd **not** flipped |
+| progress `DrawImage2D` image/y args swapped | 2,036 | 342 | 76,729 | 623 | ldrd not flipped |
+| `DrawRegion2D` x-term `layout` first | 2,689 | 548 | 77,382 | 640 | insn 3,733 |
+| progress `int hintX = this->hintOffsetX` local | 8,511 | 898 | — | 19,457 | size **9,704** |
+| `buttons[17]` y `- top * 3` / `-(top*3)` / `h/2-3*top-gbh/2` | 2,018 | 317 | 76,711 | 623 | canonicalised |
+| `buttons[17]` y split `(h/2-gbh/2) - (3*top)` | 2,621 | 490 | — | 1,423 | size **9,708** |
+| ship body `P,V,D` (`upgTab` mid) | 6,740 | 655 | — | 1,942 | size **9,708**, insn 3,736 |
+| ship body `P,V,D` (`upgTab` before `P`) | 6,557 | 637 | — | 1,498 | size **9,704**, insn 3,736 |
+| ship body `P,D,V` (`upgTab` mid) | 6,738 | 657 | — | 1,942 | size **9,708**, insn 3,736 |
+| ship body + hoisted `px`/`py` locals | 8,075 | 687 | — | 28,064 | size **9,712**, insn 3,736 |
+
+Conclusions:
+
+- **The `ldrd` tie is not statement-orderable.**  Reordering the
+  `DrawImage2D`/`DrawRegion2D` operands (evaluation order) leaves the
+  `ldrd r9, sl` unchanged; the allocator's choice follows the live-range
+  spill weights (`this` ~12 uses / `layout` ~4 uses), not the block order.
+  Every shape that perturbs the weights (a `this`- or `layout`-caching local)
+  changes the function size.
+- **The ship guard body order is size-locked.**  The original's
+  `setPosition → setVisible → draw` order (which would also hoist the
+  `ldrd r5,r4,[sp,#132]` above the `cbz`) is **not** size-exact at this base:
+  every `{P,V,D}` permutation is 9,704–9,712 B / 3,736 insns.  The landed
+  `V,D,P` with `upgTab` in the middle is the unique size-exact anchor.
+- **`buttons[17]` y scheduling** (`sub.w r1,r6,r6,lsl#2` hoisted before
+  `vmov s0,r5` vs after) is a machine-scheduler artifact; `- top * 3`,
+  `-(top * 3)` and `Globals::h/2 - 3*top - gbh/2` all canonicalise back to
+  the landed stream.  Splitting the int/float casts changes size (9,708).
+- The `0x14961c`/`0x149812`/`0x14a85a`/`0x149c0a` single-insn diffs are
+  literal-pool address shifts (code-size phase), and `0x14b614..0x14b698`
+  are LSDA landing pads / jump-table `b.n` offsets (+2 B) — neither is
+  source-orderable without changing size.
+
+No further measured win; `src/` left clean.  The landed commit
+`0a4ad9abd` stands as the net minimum at this base.
