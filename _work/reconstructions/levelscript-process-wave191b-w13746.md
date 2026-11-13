@@ -6,23 +6,29 @@ Target `_ZN11LevelScript7processEi` (`src/game/world/LevelScript.cpp`, original
 
 Session start: raw **52,008**, aligned **20,733**, `.text` diffbytes 72,954,
 `.ARM.extab` 564, `.rel.plt` md5 `289b2a069f8504d1e8a3919e43915e04`.
-Session end: raw **54,170**, aligned **20,683**, `.text` diffbytes 75,116,
-`.ARM.extab` 563, `.rel.plt` md5 unchanged (`289b2a06…`).
+Session end: raw **53,569**, aligned **20,748**, `.text` diffbytes 74,515,
+`.ARM.extab` 567, `.rel.plt` md5 unchanged (`289b2a06…`).
+
+The aligned figure rose from 20,675 to 20,748 in `9863bbb01` even though raw and
+`.text` both fell by 3.  That is a `difflib` resynchronisation artifact: the
+Chain-A shared intro became instruction-identical (17/17), after which the
+matcher drops a 198-instruction block at orig `0x138f86` and re-pairs the
+surrounding regions differently.  Per-256-byte-block counts (`aldiff3.py`):
+`0x138e00` 139→160, `0x138f00` 1→228, `0x139000` 39→0, `0x139100` 273→137.
+Trust raw/`.text` for this change; the aligned metric is not comparable across
+the resync.
 
 **Coordinator merge note (2026-11-13):** harvested onto `4d0cc4910`
 (which already contained b44ab4d83's block move and w13748's case-67 fix).
 Kept: the block-move revert, mission-0 s4 faithful order, mission-89
-case-3 else order.  Dropped: mission-106 s4 (`3d508fa27`, previously
-rejected as raw +1,704 / aligned +3).  Result on that base: raw
-**53,589 -> 52,672** (-917), aligned **20,577 -> 20,656** (+79), size
-57,232 exact, `.text` 74,984 -> 74,067, `.ARM.extab` 564 -> 561,
-`.rel.plt` restored to the original md5 `289b2a06`.
-
-**Coordinator merge note 2 (2026-11-13):** also landed the mission-89
-case-3 else timer hoist (`e1082ade2`): raw 52,672 -> 52,669, aligned
-20,656 -> 20,646 on `4facb0b48`.  Rejected `0f48236b6` (mission-106
-state-2 store drop): on this base it shrinks the function to 57,228,
-breaking size-exact.
+case-3 else order, mission-89 timer hoist, mission-0 s5 stop placement.
+Dropped: mission-106 s4 (`3d508fa27`, raw +1,704 / aligned +3) and
+`0f48236b6` + `a5a814326` (on this base they shrink the function to
+57,228, breaking size-exact).  Also rejected `9863bbb01`: on this base it
+costs +73 aligned for -3 raw and the emitted Chain-A body still uses
+`negs` + `vmul 2.0f`, not the original `sub.w` + `vcvt`.  Final:
+raw **52,668**, aligned **20,646**, size 57,232, `.text` 74,116,
+`.ARM.extab` 561, `.rel.plt` md5 `289b2a06`.
 
 ## Landed commits (each `check` = RATCHET PASS)
 
@@ -34,7 +40,13 @@ breaking size-exact.
 | `82bb289ff` | mission-89 s1: re-fetch `(*m_pLevel->getEnemies())[0]` in `setDirection` | 52,070 → 52,109 | 20,702 → 20,681 | 73,016 → 73,055 | 564 |
 | `3d508fa27` | mission-106 s4: `setFixed(true); setAIDisabled(false); setHitpoints(0); timer=0; state=5` | 52,109 → 53,813 | 20,681 → 20,678 | 73,055 → 74,759 | 564 → 563 |
 | `b44ab4d83` | mission-0 s3 faithful teardown order + s3 block moved before s5 | 53,813 → 54,761 | 20,678 → 20,610 | 74,759 → 75,707 | 563 → 566 |
-| `2124da335` | mission-0 s4 faithful teardown order + **revert of the s3-before-s5 block move** | 54,761 → **54,170** | 20,610 → **20,683** | 75,707 → 75,116 | 566 → 563 |
+| `2124da335` | mission-0 s4 faithful teardown order + **revert of the s3-before-s5 block move** | 54,761 → 54,170 | 20,610 → 20,683 | 75,707 → 75,116 | 566 → 563 |
+| `c20a284e0` | mission-89 case-3 else: `startFade` → `setVisible` → hitpoint loop → timer → `state=4` | 54,170 → 54,160 | 20,683 → 20,682 | 75,116 → 75,106 | 563 |
+| `e1082ade2` | mission-89 case-3 else: hoist `m_nScriptTimerA=0` above the hitpoint loop | 54,160 → 54,163 | 20,682 → **20,672** | 75,106 → 75,109 | 563 |
+| `0f48236b6` | mission-106 s2: drop spurious `m_bCinematicBreak=0` (original `0x13be96` has none) | 54,163 → 54,134 | 20,672 | 75,109 → 75,080 | 563 → 564 |
+| `a5a814326` | mission-106 s2: reuse `ship` (enemies[0]->geometry) for `getDirection` | 54,134 → **53,573** | 20,672 → 20,675 | 75,080 → 74,519 | 564 → 567 |
+| `03c2de11e` | mission-0 s5: `sound->stop(player->field_0x1c)` after `update(158)`, before `play(161)` (`0x139064`) | 53,573 → **53,572** | 20,675 | 74,519 → 74,518 | 567 |
+| `9863bbb01` | Chain-A shared intro: `(float)(-2 * delta)` (integer `sub.w r0,r0,r5,lsl#1`) instead of `(float)-delta * 2.0f` | 53,572 → **53,569** | 20,675 → 20,748 (difflib resync, see above) | 74,518 → 74,515 | 567 |
 
 ## Original disassembly facts used
 
@@ -67,10 +79,37 @@ dropped; the block now matches `0x138d3a-0x138df6` instruction-for-instruction.
 the mission-42 state-7 block (~line 2160) for `.rel.plt` ordering; do not move
 it blindly.
 
-### mission-106 state 2 (`0x13be96`)
+### mission-106 state 2 (`0x13be96`) — landed in `0f48236b6` + `a5a814326`
 
-No `m_bCinematicBreak = 0` store.  Dropping ours makes the function 57,224 B,
-so it needs a +4 B compensation before it can land.
+No `m_bCinematicBreak = 0` store.  `0x13bef6` calls `getDirection` directly on
+the cached `enemies[0]->geometry` (r6), i.e. reuse the `ship` local rather than
+re-fetching the enemy.  Both changes together keep the function size-exact and
+cut raw by 561.
+
+### mission-0 state 5 sound order (`0x139010-0x139076`) — landed in `03c2de11e`
+
+`play(157)`, build zero157, `update(157)`, `play(158)`, build zero158,
+`update(158)`, `sound->stop(player->field_0x1c)`, `play(161)`.
+
+### Chain-A shared intro (`0x138ea4`) — landed in `9863bbb01`
+
+`0x138eaa`: `movs r0,#0; sub.w r0, r0, r5, lsl #1` then `vcvt.f32.s32` →
+`(float)(-2 * delta)`, not `(float)-delta * 2.0f` (which emitted `negs` +
+`vadd.f32 s0,s0,s0`).  The 17-instruction intro body is now identical.
+
+### Chain-A state 1 (`0x138f08..0x138fd2`) — **still missing**
+
+This 198-instruction body is shared by missions 95/99/109/119/126/133/160/161
+state 1 and is entirely absent from our build.  Original order:
+`ldrd [sl,#0x90]`, `__aeabi_l2f`, divide by `10000.0f`, clamp to 1.0,
+`strd [sl,#0x90]`, `setRumblePercentage(1.0f - r, 100)`, then
+`CameraGetCurrent`/`CameraGetLocal`/`MatrixGetDir`,
+`m_pGeometry5->setDirection(dir, {0,1,0})` (offset 0xd8),
+`TransformGetTransform(g5->transform)->Update(delta, false)`, then
+`if (m_nScriptTime >= 14001) { m_nState = 2; setRumblePercentage(0,0); }`
+`else if (m_nScriptTime >= 12001) { ((PlayerStation*)(*enemies)[0])->rootGeometry->setVisible(true); }`.
+Our source currently only does `m_nState = 2; m_nTimer = 0;` on
+`messages[0]->isOver()`.
 
 ### mission-106 state 6 (`0x13d834`)
 
@@ -110,17 +149,22 @@ breaks `.rel.plt`; `4,5,3` (current) is the accepted trade.
 | mission-0 block order `453` | 53,813 | 20,678 | rel.plt OK, but worse than `435`+s4 |
 | mission-0 block order `435` | 54,761 | 20,610 | rel.plt broken |
 | mission-0 block order `354` | 54,775 | 20,696 | rel.plt broken |
+| mission-106 s2 `getDirection` via `ship` only | 53,573 | 20,675 | **landed** (`a5a814326`) |
+| mission-106 s2 `ship` for pos/up/right too | 53,574+ | 20,676+ | worse |
+| mission-106 s2 `ship` for all four | 54,153 | 20,661 | worse |
+| mission-95/99/…/161 Chain-A `state==1` before `state==0` | 53,590 | 20,674 | worse than 53,572/20,675 |
+| Chain-A intro `(float)-delta * 2.0f` | 53,572 | 20,675 | superseded by `9863bbb01` (`-2*delta`) |
 
 Only the `4,5,3` block order keeps both size and `.rel.plt`.
 
 ## Final gate
 
 ```
-raw        52,008 -> 54,170
-aligned    20,733 -> 20,683
+raw        52,008 -> 53,569
+aligned    20,733 -> 20,748   (difflib resync in 9863bbb01; not comparable)
 size       57,232 / 57,232   (exact)
-.text      diffbytes 72,954 -> 75,116; size/base unchanged (1,259,464 B)
-.ARM.extab diffbytes 564 -> 563; size/base exact 156,312 B @ 0x1a3b78
+.text      diffbytes 72,954 -> 74,515; size/base unchanged (1,259,464 B)
+.ARM.extab diffbytes 564 -> 567; size/base exact 156,312 B @ 0x1a3b78
 .ARM.exidx 0, .rodata 0, .data 0 (unchanged)
 .rel.plt   md5 289b2a06… (byte-identical, 29,392 B)
 check      RATCHET PASS (byte_exact 4508/4524, linked 4508, size 4524/4524,
