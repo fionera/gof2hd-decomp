@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,997** | 19,531 | 57,232 |
 | `Radar::draw` | **6,925** | 1,303 | 9,908 |
-| `Layout` C1/C2 | **5,577** | 2,011 | 7,072 |
+| `Layout` C1/C2 | **5,572** | 2,012 | 7,072 |
 | `Level::createMission` | **3,495** | 472 | 17,172 |
 | `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
 | `HangarWindow::render` | **1,456** | 386 | 9,700 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,057**, `.ARM.extab` **596**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,052**, `.ARM.extab` **596**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13816, wave 191b): independent-store order — `field_0x2a4_metricA`/`field_0xf0`, the `orbitInfoTextX`/`field_0x20c`/`field_0x200` block, and `field_0x1ec` before `field_0x300` (with `field_0x94` restored before `field_0x140`).  Raw **5,577 -> 5,572** (-5), aligned **2,011 -> 2,012** (+1), size 7,072/7,072 exact.  `.text` 76,057 -> 76,052; `.ARM.extab` 596.
 * `HangarWindow::render` (w13799, wave 191b): the `count` dispatch is a signed 16-bit switch; change `switch ((unsigned char) count)` to `switch ((short) count)`.  Raw **2,021 -> 1,456** (-565), aligned **306 -> 386** (+80), size 9,700/9,700 exact.  `.text` 76,622 -> 76,057; `.ARM.extab` 623 -> 596.
 * `Level::createShip` (w13804, wave 191b): `empPoints` level clamp polarity (`getLevel() <= 20 ? getLevel() : 20`).  Raw **1,184 -> 1,177** (-7), aligned **370 -> 372** (+2), size 2,764/2,764 exact.  `.text` 76,629 -> 76,622; `.ARM.extab` 623.
 * `Level::createShip` (w13792, wave 191b): move the hull-exit `setBV(volumes)` after `field_0x40 = 1` (and after the geometry/LOD setup).  Raw **1,190 -> 1,184** (-6), aligned **366 -> 370** (+4), size 2,764/2,764 exact.  `.text` 76,635 -> 76,629; `.ARM.extab` 623.
