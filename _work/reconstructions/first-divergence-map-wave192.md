@@ -123,3 +123,25 @@ case 16, 0, 1, 2, 3, 4, 7, 11, 15, 19, 5, 6, 9, 12, 13, 14, 17, 18, 8/10(shared)
 
 So the fix is to reorder the `switch` arms in `Status::missionCompleted` to that order
 (the bodies move, the table entries follow). Do not relabel cases -- reorder the arms.
+
+## Correction: inline literal-pool words
+
+The naive scan decodes inline literal-pool words as instructions. Filtering out
+`<UNDEFINED>` and impossible shifts (`lsrs/lsls/asrs ..., #32`) changes one row:
+
+- `Gun::calcCharacterCollision` first divergence is **+0xe8** (insn 115), not +0xde
+  (the `+0xde` word is a pool entry).
+
+The other rows are unaffected (their first differing word is real code), e.g.
+`createShip` +0x106 is `lsls r0,r5,#4` vs `ldmia r5,{r3,r5}` and `ModStation` +0x184 is
+`str r6,[r0,r1]` vs `ldmia r5!,{r1,r2,r6}`.
+
+## SpaceLounge::drawLounge (+0x188) — stack slot
+
+```
+ORIG  170ec1  str r2, [sp, #576]   ; 0x240
+OURS  170ec1  str r2, [sp, #704]   ; 0x2c0
+```
+
+The surrounding instructions match; only the spill slot differs (0x240 vs 0x2c0), i.e. a
+local's stack-home assignment, not a source-order issue.
