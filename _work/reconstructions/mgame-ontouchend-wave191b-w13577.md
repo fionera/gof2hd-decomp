@@ -17,12 +17,13 @@ HP; SH; AR; GA; switch=0; init=0; depart(getStation(120)); module(5); active=0
 ```
 
 The base body was `module(5); HP; SH; AR; GA; switch=0; depart; init=0; active=0`.
-A random permutation search over the nine independent statements found a
-size-exact body that lowers the raw same-address diff by 2 bytes:
+A random permutation search over the nine independent statements, followed by
+an all-pairs single-statement-move sweep, found a size-exact body that lowers
+the raw same-address diff by 4 bytes:
 
 ```cpp
-Globals::status->field_60 = this->player->player->getArmorHP();
 Globals::appManager->SetCurrentApplicationModule(5);
+Globals::status->field_60 = this->player->player->getArmorHP();
 Globals::status->field_68 = this->player->player->getGammaHP();
 Level::initStreamOutPosition = 0;
 Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
@@ -37,7 +38,7 @@ Behaviour-preserving: pure getters, distinct `Status` fields, independent stores
 | metric | base | after |
 |---|---:|---:|
 | size | 8,080 | 8,080 (size-exact) |
-| raw same-address diff | 2,882 | **2,880** (-2) |
+| raw same-address diff | 2,882 | **2,878** (-4) |
 | aligned (instruction) diff | 1,561 | 1,661 (+100) |
 | `.rel.plt` diff | 0 | 0 (byte-identical) |
 

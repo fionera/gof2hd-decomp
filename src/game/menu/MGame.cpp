@@ -1640,8 +1640,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
-                            Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::appManager->SetCurrentApplicationModule(5);
+                            Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
