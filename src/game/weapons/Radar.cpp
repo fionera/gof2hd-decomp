@@ -634,15 +634,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    this->field_0x14 = this->field_0x18;
                     if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
+                    this->field_0x14 = this->field_0x18;
                     if (this->field_0x1a8) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if ((this->planetLockTimer < 1) || (missionBlocksPlanets != 0)) {
+                if ((missionBlocksPlanets != 0) || (this->planetLockTimer < 1)) {
                     goto enemies;
                 }
                 Sprite *blip;
@@ -750,11 +750,12 @@ enemies:
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
+                            AbyssEngine::PaintCanvas *empCanvas = Globals::Canvas;
                             float emp = ((float) enemy->player->getEmpDamageRate() / 100.0f) * (float) this->field_0x1c8;
-                            Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
+                            this->barWidth = (int) emp;
+                            empCanvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,
                                                           this->screenY + this->halfScreenWidth + 9);
-                            this->barWidth = (int) emp;
                         }
                         if (enemy == locked) {
                             unsigned int lockImage;
