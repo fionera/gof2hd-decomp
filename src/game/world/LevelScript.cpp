@@ -4635,9 +4635,9 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 4) {
                     float step = (float) delta * 0.25f;
+                    (*enemies)[0]->geometry->moveForward(step);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    (*enemies)[0]->geometry->moveForward(step);
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = player->GetDirVector();
                     m_tempVec = m_tempVec + m_dirVec * (step * 0.008f);
