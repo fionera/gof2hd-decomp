@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,083** | 19,164 | 57,232 |
+| `LevelScript::process` | **53,083** | 19,162 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
-| `Level::createMission` | **3,375** | 463 | 17,172 |
-| `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
+| `Level::createMission` | **3,373** | 463 | 17,172 |
+| `MGame::OnTouchEnd` | **3,548** | 697 | 8,080 |
 | `HangarWindow::render` | **1,456** | 386 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
@@ -30,11 +30,15 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,001**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,882**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13826, wave 191b, second pass): tail station-list compare re-reads `Globals::status->field_90` instead of the cached `stationList`.  Raw 53,083 unchanged, aligned **19,164 -> 19,162** (-2), size 57,232/57,232 exact.  `.text` 75,882 unchanged; `.ARM.extab` 552.
+* `LevelScript::process` (w13838, wave 192): state-12 expect polarity + state-0 dispatch-tail expect.  Raw **53,083 -> 53,206** (+123), aligned **19,162 -> 19,148** (-14), `.ARM.extab` 552 -> 551, but `.text` 75,882 -> 76,005 (+123); reverted to a note (net byte regression).
+* `Level::createMission` (w13837, wave 191b): `alienGuns` table select via `(i >> 31)`.  Raw **3,375 -> 3,373** (-2), aligned 463 unchanged, size 17,172/17,172 exact.  `.text` 76,001 -> 75,999; `.ARM.extab` 552.
+* `MGame::OnTouchEnd` (w13843, wave 191b): cinematic skip-switch case 0 first.  Raw **3,665 -> 3,548** (-117), `.text` 75,999 -> 75,882 (-117), size 8,080/8,080 exact; aligned **545 -> 697** (+152) is the cost of the case reorder.
 * `LevelScript::process` (w13828, wave 191b, second pass): mission-158 state-5 store order (`field_0x128` before `field_0x38`).  Raw **53,088 -> 53,083** (-5), aligned 19,164 unchanged, size 57,232/57,232 exact.  `.text` 76,006 -> 76,001; `.ARM.extab` 552.
 * `LevelScript::process` (w13838, wave 192): case-157 states 7/8/9 statement reorders.  Raw **53,053 -> 53,077** (+24), aligned **19,355 -> 19,228** (-127), size 57,232/57,232 exact.  `.text` 75,987 -> 76,011; `.ARM.extab` 552.
 * `LevelScript::process` (w13826, wave 191b): case-157 state-0/1 order.  Raw **53,077 -> 53,086** (+9), aligned **19,228 -> 19,198** (-30), size 57,232/57,232 exact.  `.text` 76,011 -> 76,020; `.ARM.extab` 552.
