@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.93,
+  "avg_match": 99.94,
   "byte_exact": 4508,
   "linked_exact": 4508,
   "fuzzy_perfect": 4508,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 68.8,
+   "pct": 69.9,
    "byte": false,
    "linked": false,
    "osize": 9908,

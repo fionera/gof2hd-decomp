@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,589** | 20,577 | 57,232 |
-| `Radar::draw` | **6,511** | 1,622 | 9,908 |
+| `Radar::draw` | **6,858** | 1,459 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,624** | 858 | 17,172 |
 | `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,637**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,984**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13751 + w13744 pass 3, wave 191b): station/planet
+  lock-blip frame math reassociated to divide-then-multiply, `setFrame`
+  through the cached `blip` pointer, plus four branch-hint drops
+  (freighter status, planet-dock, enemy-lock timer, `dockNavPtr !=
+  current`).  Raw **6,511 -> 6,858** (+347), aligned **1,622 -> 1,459**
+  (-163), size 9,908/9,908 exact.  `.text` 74,637 -> 74,984.
+* `Layout` C1/C2 (w13686 pass 2, wave 191b): swap the independent
+  `field_0x1ec` / `field_0x94` store order.  Raw 5,265 (tie), aligned
+  2,442 (tie on the current base), size 7,072/7,072 exact; store image
+  identical for all 32 flag combos.
 * `Level::createShip` (w13741, wave 191b): race-0 hull `ArraySetLength`
   before the three `BoundingAAB` allocations, faithful `min(getLevel(),20)`
   emp clamp (`40 + e + e*4`), `setBV` before the ship-group/geometry tail,

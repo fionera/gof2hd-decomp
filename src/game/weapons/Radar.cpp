@@ -508,15 +508,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     Sprite *blip = this->blipSprite;
                     int frame;
                     if (this->field_0x28 != 0 && this->field_0x28 != this->lockedStation) {
-                        frame = (int) ((float) this->stationLockTimer * (float) (blip->getRawFrameCount() - 1) /
-                                       (float) this->field_0x1b8);
+                        int frames = blip->getRawFrameCount() - 1;
+                        frame = (int) ((float) this->stationLockTimer / (float) this->field_0x1b8 * (float) frames);
                     } else {
                         frame = blip->getRawFrameCount() - 1;
                     }
-                    this->blipSprite->setFrame(frame);
+                    blip->setFrame(frame);
                     this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                           (int) PlayerEgo::crosshairPos.y);
-                    blip->draw(1.0f, 1.0f);
+                    this->blipSprite->draw(1.0f, 1.0f);
                 }
                 landmarkHit = true;
             } else {
@@ -578,8 +578,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     marked = true;
                 } else if (Globals::status->getCurrentCampaignMission() == 125 &&
                     Globals::status->isFreighterMissionStation(stations->data()[i]) &&
-                    __builtin_expect((((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() // lint: arm_builtin
-                                        & (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0), 0)) {
+                    ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() // lint: arm_builtin
+                      & (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i]))) == 0)) {
                     Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
                                                  this->screenY - 10);
                     marked = true;
@@ -649,10 +649,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int frame;
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
                     blip = this->blipSprite;
-                    frame = (int) ((float) this->planetLockTimer * (float) (blip->getRawFrameCount() - 1) /
-                                   (float) this->field_0x1b8);
+                    int frames = blip->getRawFrameCount() - 1;
+                    frame = (int) ((float) this->planetLockTimer / (float) this->field_0x1b8 * (float) frames);
                 } else {
-                    if (__builtin_expect((__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)), 0)) { // lint: arm_builtin anchor: Radar::draw
+                    if (__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
                     blip = this->blipSprite;
@@ -913,10 +913,10 @@ enemies:
                     }
                     this->enemyLockTimer = 0;
                 }
-                if (__builtin_expect(this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) && // lint: arm_builtin anchor: Radar::draw
-                    this->dockNavPtr != nullptr, 1)) {
+                if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) && // lint: arm_builtin anchor: Radar::draw
+                    this->dockNavPtr != nullptr) {
                     KIPlayer *current = (navWreck || this->dockNavPtr->field_0x24) ? this->field_0x1c : this->lockedEnemy;
-                    if (__builtin_expect(this->dockNavPtr != current, 1)) { // lint: arm_builtin anchor: Radar::draw
+                    if (this->dockNavPtr != current) { // lint: arm_builtin anchor: Radar::draw
                         Sprite *blip = this->blipSprite;
                         float frames = (float) (blip->getRawFrameCount() - 1);
                         int elapsedInt = this->enemyLockTimer;
@@ -933,7 +933,7 @@ enemies:
                             totalInt = this->field_0x1b8;
                         }
                         float total = (float) totalInt;
-                        this->blipSprite->setFrame((int) (elapsed / total * frames));
+                        blip->setFrame((int) (elapsed / total * frames));
                         this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                               (int) PlayerEgo::crosshairPos.y);
                         this->blipSprite->draw(1.0f, 1.0f);
