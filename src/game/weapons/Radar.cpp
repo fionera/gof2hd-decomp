@@ -434,7 +434,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && i != 3 && notTurretMode && notOtherLock) {
+                if (!landmarkHit && notTurretMode) {
+                    if (i != 3 && notOtherLock) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -446,6 +447,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         }
                         this->field_0x28 = this->landmarks->data()[i];
                         landmarkHit = true;
+                    }
                     }
                 }
                 this->egoPos = player->getPosition();
