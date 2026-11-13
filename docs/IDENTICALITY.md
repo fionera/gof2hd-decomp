@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **53,127** | 20,084 | 57,232 |
 | `Radar::draw` | **7,113** | 1,366 | 9,908 |
 | `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
-| `Level::createMission` | **2,660** | 584 | 17,172 |
+| `Level::createMission` | **3,389** | 531 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,013** | 479 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,045**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,774**, `.ARM.extab` **590**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13761, wave 191b): stationPirates `createStaticObject`/`pirateBase` order, case-2 `asteroidPos` hoist with interleaved `coords[0]`/`coords[2]`, and the case-4 tail `Globals` local dropped.  Raw **2,660 -> 3,389** (+729), aligned **584 -> 531** (-53), size 17,172/17,172 exact.  `.text` 75,045 -> 75,774; `.ARM.extab` 562 -> 590.
 * `LevelScript::process` (w13783, wave 191b): Chain-A intro computes `-2*delta` in integer before the float conversion, matching the original `sub.w` + `vcvt.f32.s32` at 0x138eaa.  Raw **53,130 -> 53,127** (-3), aligned **20,091 -> 20,084** (-7), size 57,232/57,232 exact.  `.text` 75,048 -> 75,045; `.ARM.extab` 562.
 * `LevelScript::process` (w13769, wave 191b): mission-0x4e state 1/10/12 statement order, mission-154 state-2 body/tail order, and the duplicate `field_68` gamma-HP store removed.  Raw **52,886 -> 53,130** (+244), aligned **20,148 -> 20,091** (-57), size 57,232/57,232 exact.  `.text` 74,804 -> 75,048; `.ARM.extab` 562.
 * `Radar::draw` (w13758 passes 10-11, wave 191b): planet-lock store after the lock-confirmed sound plus the `planetLockTimer`/`missionBlocksPlanets` condition order, and the EMP block uses an `empCanvas` local with `barWidth` stored before `DrawRegion2D`.  Raw **6,960 -> 7,113** (+153), aligned **1,397 -> 1,366** (-31), size 9,908/9,908 exact.  `.text` 74,651 -> 74,804; `.ARM.extab` 562.
