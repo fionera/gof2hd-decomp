@@ -1589,8 +1589,8 @@ bool LevelScript::process(int delta) {
                     m_pLevel->field_8c->enableSystemRender(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, true);
                     Globals::sound->play(15, nullptr, nullptr, 0.0f);
                 } else if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
-                    Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = player->getPosition();
+                    Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(15, &pos, &zero, false);
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
