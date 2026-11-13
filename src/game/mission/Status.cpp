@@ -1468,7 +1468,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     if (Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
                         return m;
                     }
-                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
+                    // Codegen device: hasEquipment() returns bool, so `< 0` is
+                    // always false.  The dead comparison makes clang emit the
+                    // original's unconditional branch to the shared
+                    // `if (hasEquipment()) return m` test block instead of a
+                    // local `cmp; b`, which is how the original reaches the
+                    // same test from case 10.
+                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1) < 0) {
                         return m;
                     }
                 }
