@@ -949,12 +949,12 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
+        m_pLevel->lodManager->forceUpdate(delta, true);
         player->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
-        (*enemies)[0]->setToSleep();
         Vector enemyPos = (*enemies)[0]->getPosition();
-        m_pLevel->lodManager->forceUpdate(delta, true);
+        (*enemies)[0]->setToSleep();
         float enemyZ = enemyPos.z;
         float depth = enemyZ / -5000.0f;
         if (!(depth < 1.0f)) {
@@ -3185,17 +3185,17 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA >= 7001) {
                             cam->setFixed(false);
                             cam->setTarget(player->geometry);
-                            cam->setPosition(player->getPosition() - 2400.0f * player->GetDirVector());
-                            m_bCinematicBreak = 0;
+                            cam->setLookAtCam(false);
+                            cam->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                             m_pHud->visible = 1;
-                            player->setComputerControlled(false);
+                            m_pRadar->enabled = 1;
                             resetCamera(lvl);
                             lvl->lodManager->forceUpdate(delta, false);
-                            m_pRadar->enabled = 1;
-                            (*enemies)[3]->setVisible(false);
+                            player->setComputerControlled(false);
+                            m_bCinematicBreak = 0;
                             player->player->setVulnerable(true);
                             (*enemies)[3]->setActive(false);
-                            cam->setLookAtCam(false);
+                            (*enemies)[3]->setVisible(false);
                             m_nState++;
                         }
                     }
@@ -3316,28 +3316,28 @@ bool LevelScript::process(int delta) {
             case 102: {
                 // The Valkyrie escort battle: the alien fleet arrives, a wing of fighters engages.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
-                    resetCamera(m_pLevel);
                     player->setTurretMode(false);
-                    player->hideShipForFirstPersonCameraView(false);
-                    player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
+                    resetCamera(m_pLevel);
                     if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
-                    player->setVisible(false);
                     player->setFreeze(true);
+                    player->setVisible(false);
+                    player->player->setVulnerable(false);
+                    m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
-                    m_bCinematicBreak = 1;
-                    player->player->setVulnerable(false);
                     m_pCamera->setLookAtCam(true);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
-                    Globals::sound->play(2240, nullptr, nullptr, 0.0f);
                     Globals::sound->stop(Globals::sound->currentMusicEvent);
+                    Globals::sound->play(2240, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     m_nState++;
                 } else if (m_nState == 1) {
@@ -3465,8 +3465,8 @@ bool LevelScript::process(int delta) {
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = leaderShip->getDirection();
                     m_tempVec += m_dirVec * (step * 2.04f);
-                    m_tempVec += m_dirVec * (step * 0.04f);
                     m_dirVec = leaderShip->getRightVector();
+                    m_tempVec += m_dirVec * (step * 0.04f);
                     m_dirVec = leaderShip->getUpVector();
                     m_tempVec += m_dirVec * (drift * 0.004f);
                     wcamera->setFixed(true);
@@ -3782,9 +3782,10 @@ bool LevelScript::process(int delta) {
                         for (int i = 2; i < 5; ++i) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                         }
+                        player->setFreeze(false);
                         player->setVisible(true);
                         m_pCamera->setFixed(false);
-                        player->setFreeze(false);
+                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setLookAtCam(false);
                         Vector playerPos = player->getPosition();
                         Vector playerDir = player->GetDirVector();
@@ -3792,10 +3793,10 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
-                        m_nState = m_nState + 1; // 7 -> 8
-                        m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0; // clear cinematicBreak_ (byte @0x11 = 0)
+                        m_nScriptTimerA = 0;
+                        m_nState = m_nState + 1; // 7 -> 8
                     }
                 } else if (m_nState == 8) {
                     m_nScriptTimerA += delta;
@@ -3814,8 +3815,8 @@ bool LevelScript::process(int delta) {
                             if ((*enemies)[i]->isDead()) {
                                 (*enemies)[i]->revive(); // KIPlayer vtable+0x18
                                 int rx = Globals::rnd->nextInt(1000);
-                                int rz = Globals::rnd->nextInt(1000);
                                 int ry = Globals::rnd->nextInt(1000);
+                                int rz = Globals::rnd->nextInt(1000);
                                 (*enemies)[i]->setPosition(
                                         playerPos.x + lightDir.x * 100000.0f + (float) off + (float) rx,
                                         (float) rz,
@@ -3823,7 +3824,7 @@ bool LevelScript::process(int delta) {
                                 AEGeometry *geo = (*enemies)[i]->geometry;
                                 geo->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
                                 Vector right = geo->getRightVector();
-                                geo->translate(-30000.0f * right);
+                                geo->translate(right * -30000.0f);
                             }
                             off += 5000;
                         }
@@ -3844,15 +3845,15 @@ bool LevelScript::process(int delta) {
                         player->killLiberator();
                         player->setRocketControl(nullptr, nullptr);
                     }
-                    m_pCamera->enableFirstPersonCam(false);
-                    player->player->setVulnerable(false);
-                    player->hideShipForFirstPersonCameraView(false);
                     player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->player->setVulnerable(false);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;   // radar+0x48
-                    m_pCamera->setLookAtCam(true);
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pCamera->setLookAtCam(true);
                     player->setComputerControlled(true);
                     m_pCamera->setPosition(player->geometry->getPosition());
                     Vector lightDir = AbyssEngine::AEMath::VectorNormalize(
@@ -4630,14 +4631,14 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.1f, (float) delta * 0.5f);
                     if (m_nScriptTimerA >= 1001) {
-                        m_nState++;
                         player->setSpeed(0.0f);
                         m_pCamera->setTarget(player->geometry);
                         tvA = player->getPosition();
                         tvA += Vector{-350.0f, 400.0f, -1500.0f};
-                        m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_pCamera->setFixed(false);
                         m_pCamera->setPosition(tvA);
+                        m_pCamera->setFixed(false);
+                        m_nState++;
+                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 4) {
@@ -4676,17 +4677,17 @@ bool LevelScript::process(int delta) {
                     }
                     if (__builtin_expect(m_nScriptTimerA >= 1001, 0)) { // lint: arm_builtin
                         TargetFollowCamera *camera = m_pCamera;
+                        player->setSpeed(0.02f);
                         camera->setTarget(player->geometry);
                         tv = player->getPosition();
                         tv += Vector{150.0f, 400.0f, -1500.0f};
+                        camera->setPosition(tv);
+                        camera->setFixed(false);
                         m_nState++;
-                        player->setSpeed(0.02f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
-                        camera->setPosition(tv);
-                        camera->setFixed(false);
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if (__builtin_expect((*enemies)[i]->shipGroup == 9, 1)) { // lint: arm_builtin
                                 (*enemies)[i]->setActive(false);
@@ -4750,30 +4751,30 @@ bool LevelScript::process(int delta) {
                                 (*enemies)[i]->player->setEnemy(__builtin_expect(i % 3 == 0, 1) ? (*enemies)[0]->player : player->player); // lint: arm_builtin
                             }
                         }
-                        (*m_pLevel->getEnemies())[1]->player->setAlwaysFriend(false);
-                        m_pCamera->setFixed(false);
-                        (*m_pLevel->getEnemies())[1]->field_0x74 = 0;
                         (*m_pLevel->getEnemies())[1]->shipGroup = 8;
-                        (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
+                        (*m_pLevel->getEnemies())[1]->field_0x74 = 0;
+                        (*m_pLevel->getEnemies())[1]->player->setAlwaysFriend(false);
                         (*m_pLevel->getEnemies())[1]->player->setAlwaysEnemy(true);
                         (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);
-                        player->setFreeze(false);
+                        (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
+                        m_pCamera->setFixed(false);
                         m_pLevel->getPlayer()->resetGunDelay();
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setFreeze(false);
+                        player->setSpeed(2.0f);
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
-                        resetCamera(m_pLevel);
-                        m_pHud->visible = 1;
-                        m_pLevel->lodManager->forceUpdate(delta, false);
                         player->setPosition(0.0f, 0.0f, 90000.0f);
-                        player->setSpeed(2.0f);
+                        m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        m_pCamera->setLookAtCam(false);
-                        m_nScriptTimerA = 0;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         if (field_0xaa) {
-                        m_pCamera->setTarget(player->geometry);
                             player->setAutoTurret(true);
                         }
-                        m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 10) {

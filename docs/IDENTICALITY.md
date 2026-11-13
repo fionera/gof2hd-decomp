@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,780** | 21,063 | 57,232 |
-| `Radar::draw` | **6,037** | 1,892 | 9,908 |
+| `LevelScript::process` | **51,918** | 20,942 | 57,232 |
+| `Radar::draw` | **6,047** | 1,877 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,300**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,448**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13724 + w13716, wave 191b): case-154 s3/s5/s9,
+  case-105 s7/s9/s10, case-92 s9/10, mission-1 intro, and case-102 s0
+  reconstructed in original Thumb statement order; also fixes the
+  `revive()`/`nextInt` order, right-vector scaling, and two operator
+  spellings.  Raw **51,780 -> 51,918** (+138), aligned **21,063 -> 20,942**
+  (-121), size 57,232/57,232 exact.
+* `Radar::draw` (w13720 + w13727, wave 191b): landmark `int` left edge,
+  gas-spark in-sight geometry, music `play()` constants, and station
+  lock-blip `setFrame`/`setRefPixelPosition`/`draw` order.  Raw
+  **6,037 -> 6,047** (+10), aligned **1,892 -> 1,877** (-15), size
+  9,908/9,908 exact.  The batch moves `.text` 72,300 -> 72,448;
+  `.ARM.extab` stays 564.
 * `LevelScript::process` (w13719, wave 191b): faithful statement order for
   case-24 state 0, case-70 states 0/2, case-92 states 2/3 and case-105 state
   9.  Two real case-92 bugs are fixed: state 2 increments `m_nState` (2 -> 3)

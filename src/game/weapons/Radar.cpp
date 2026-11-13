@@ -436,11 +436,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenY < this->centerY + this->field_0x128) {
                 if (!landmarkHit && i != 3 && notTurretMode && notOtherLock) {
                     int size = this->field_0x124;
-                    float left = PlayerEgo::crosshairPos.x - (float) size;
+                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     bool topOk = top < this->screenY;
-                    if (this->screenY < top + size + size && topOk && (int) left + size + size > this->screenX &&
-                        (int) left < this->screenX) {
+                    if (this->screenY < top + size + size && topOk && left + size + size > this->screenX &&
+                        left < this->screenX) {
                         if (this->field_0x28 != this->landmarks->data()[i]) {
                             this->stationLockTimer = 0;
                         }
@@ -514,9 +514,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         frame = blip->getRawFrameCount() - 1;
                     }
                     this->blipSprite->setFrame(frame);
-                    blip->draw(1.0f, 1.0f);
                     this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                           (int) PlayerEgo::crosshairPos.y);
+                    blip->draw(1.0f, 1.0f);
                 }
                 landmarkHit = true;
             } else {
@@ -1282,11 +1282,11 @@ asteroids_done:
                 } else if (bossSeen) {
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
-                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
+                    Globals::sound->play(140, nullptr, nullptr, 0.0f);
                 }
             } else if (__builtin_expect(this->field_0x1bc < 5, 0)) {  // lint: arm_builtin
                 if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
-                    Globals::sound->play(140, nullptr, nullptr, 0.0f);
+                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (__builtin_expect(bossSeen, 1)) {  // lint: arm_builtin
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
