@@ -1465,7 +1465,7 @@ bool LevelScript::process(int delta) {
             Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
             for (unsigned int i = 0; i < wingmen->count; ++i) {
                 KIPlayer *wingman = (*wingmen)[i];
-                if (__builtin_expect(wingman->isWingMan(), 0)) { // lint: arm_builtin
+                if (wingman->isWingMan()) {
                     ((PlayerFighter *) wingman)->field_0x12d = 1;
                 }
             }
