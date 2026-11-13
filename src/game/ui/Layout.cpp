@@ -96,9 +96,9 @@ Layout::Layout() {
     this->hudInset = Globals::iPadHD ? 7 : (Globals::n9 ? 0 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0xc8 = Globals::iPadHD ? 4 * 1.40625f : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 4));
     this->field_0xbc = Globals::iPadHD ? 11 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8));
-    this->field_0xcc = Globals::iPadHD ? 180 * 1.40625f : (Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180));
-    this->field_0xb0 = Globals::iPadHD ? 3 * 1.40625f : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3));
     this->progressBarYBase = Globals::iPadHD ? 52 : (Globals::n9 ? 55 : (Globals::retinaDisplay ? 74 : 37));
+    this->field_0xb0 = Globals::iPadHD ? 3 * 1.40625f : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3));
+    this->field_0xcc = Globals::iPadHD ? 180 * 1.40625f : (Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180));
     this->oreLabelYOffset = Globals::iPadHD ? 2 * 1.40625f : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 4 : 2));
     this->field_0xc0 = Globals::iPadHD ? 9 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6));
     this->field_0x294_buttonWidth = Globals::iPadHD ? 281 : (Globals::n9 ? 360 : (Globals::retinaDisplay ? 400 : 200));
@@ -295,8 +295,8 @@ Layout::Layout() {
     this->choiceWindowTitleHeight = Globals::iPadHD ? 250 * 1.40625f : (Globals::iPadLarge ? 500 : 250);
     this->field_0x238_blk16.a = Globals::iPadHD ? 50 * 1.40625f : (Globals::n9 ? 90 : (Globals::retinaDisplay ? 100 : 50));
     this->field_0x28c = Globals::n9 ? -19 : 0;
-    this->field_0x286 = Globals::n9 ? 0 : 1;
     this->field_0x284_sliderSlot5Enabled = Globals::n9 ? 0 : 1;
+    this->field_0x286 = Globals::n9 ? 0 : 1;
     this->field_0x2f4 = Globals::iPadHD ? 112 : (Globals::iPadLarge ? 160 : (Globals::iPad ? 80 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30))));
     this->field_0x2f8 = Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : (Globals::iPad ? 200.0f : (Globals::n9 ? 150.0f : (Globals::retinaDisplay ? 200.0f : 100.0f))));
     this->field_0x2fc = Globals::iPadHD ? 50 : (Globals::iPadLarge ? 72 : 36);
