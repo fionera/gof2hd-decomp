@@ -448,8 +448,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         landmarkHit = true;
                     }
                 }
-                this->targetPos = this->landmarks->data()[i]->player->getPosition();
                 this->egoPos = player->getPosition();
+                this->targetPos = this->landmarks->data()[i]->player->getPosition();
                 if (i != 3) {
                     Globals::Canvas->DrawImage2D(this->image_0x88, this->screenX, this->screenY, 17, 68);
                 }
@@ -743,18 +743,18 @@ enemies:
                         Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
                                                      this->screenY + this->halfScreenWidth + 2);
                         float hull = (float) this->field_0x1c8 * ((float) enemy->player->getDamageRate() / 100.0f);
+                        this->barWidth = (int) hull;
                         Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
                                                       this->screenX + 3 - this->halfScreenHeight,
                                                       this->screenY + this->halfScreenWidth + 3);
-                        this->barWidth = (int) hull;
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
                             float emp = (float) this->field_0x1c8 * ((float) enemy->player->getEmpDamageRate() / 100.0f);
-                            this->barWidth = (int) emp;
                             Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,
                                                           this->screenY + this->halfScreenWidth + 9);
+                            this->barWidth = (int) emp;
                         }
                         if (enemy == locked) {
                             unsigned int lockImage;
@@ -994,16 +994,16 @@ enemies:
             if (this->onScreen) {
                 KIPlayer *locked = this->lockedGasCloud;
                 cloud->field_0x76 = 1;
-                cloud->field_0x73 = 0;
                 this->egoPos = player->getPosition();
-                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
-                                             this->screenY, 17, 68);
                 this->targetPos = cloud->player->getPosition();
                 if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
                     this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f ||
                     this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f) {
                     cloud->field_0x73 = 0;
                 }
+                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
+                                             this->screenY, 17, 68);
+                cloud->field_0x73 = 0;
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
                                                          this->cameraX, this->cameraY, camZ);

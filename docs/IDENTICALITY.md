@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,918** | 20,942 | 57,232 |
-| `Radar::draw` | **6,047** | 1,877 | 9,908 |
+| `LevelScript::process` | **51,956** | 20,871 | 57,232 |
+| `Radar::draw` | **6,208** | 1,805 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
@@ -30,11 +30,25 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,448**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,647**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13728, wave 191b): faithful order for mission-0
+  state 6 (timer after camera translate), mission-1 intro (`forceUpdate`
+  first, `getPosition` before `setToSleep`), mission-0 case 12 teardown,
+  mission-0 case 11 (full x/y/z offsets, state/timer last), and case-105
+  state 10 teardown.  Raw **51,918 -> 51,956** (+38), aligned
+  **20,942 -> 20,871** (-71), size 57,232/57,232 exact.  The harvest
+  removed a duplicate `forceUpdate(delta, true)` introduced by the
+  three-way apply.
+* `Radar::draw` (w13730, wave 191b): landmark `egoPos`/`targetPos` order,
+  station lock-blip `setRefPixelPosition` before `draw`, enemy hull
+  `barWidth` store before `DrawRegion2D`, and the gas-cloud on-screen block
+  reordered to the original sequence.  Raw **6,047 -> 6,208** (+161),
+  aligned **1,877 -> 1,805** (-72), size 9,908/9,908 exact.  The batch
+  moves `.text` 72,448 -> 72,647; `.ARM.extab` stays 564.
 * `LevelScript::process` (w13724 + w13716, wave 191b): case-154 s3/s5/s9,
   case-105 s7/s9/s10, case-92 s9/10, mission-1 intro, and case-102 s0
   reconstructed in original Thumb statement order; also fixes the

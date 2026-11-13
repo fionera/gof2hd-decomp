@@ -757,11 +757,11 @@ bool LevelScript::process(int delta) {
             switch (m_nState) {
                 case 6: {
                     // State 6: the station's docking bay opens around the player.
-                    m_nScriptTimerA += delta;
                     Vector pos = player->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
                     m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
+                    m_nScriptTimerA += delta;
                     float rumble = (float) m_nScriptTimerA / 4000.0f;
                     if (!(rumble < 1.0f)) {
                         rumble = 1.0f;
@@ -948,8 +948,8 @@ bool LevelScript::process(int delta) {
         // while radio message #2 plays; on fade-out it switches to the next scene.
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
-        float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
         m_pLevel->lodManager->forceUpdate(delta, true);
+        float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
         player->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
@@ -1203,19 +1203,16 @@ bool LevelScript::process(int delta) {
                 m_pLevel->lodManager->forceUpdate(30, false);
                 m_pCamera->translate((float) -delta * 0.3f, (float) delta * 0.3f, (float) delta * 0.5f); // 0.3 @0x13b93c
                 if (m_nScriptTimerA >= 5001) {
-                    player->setComputerControlled(false);
+                    m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
                     m_pRadar->enabled = 1;
                     m_bCinematicBreak = 0; // field_0x11 = 0 (m_nFlags high byte)
-                    m_pCamera->setTarget(player->geometry);
+                    m_pCamera->setLookAtCam(false);
+                    player->setComputerControlled(false);
                     player->player->setVulnerable(true);
                     player->freeze = 0;
-                    m_pCamera->setLookAtCam(false);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
                     player->setVisible(true);
-                    // Tuned layout (wave 117): the original interleaves this store between the
-                    // return-value load and the branch; clang -Oz schedules it after the return
-                    // and dead-stores it.  See _work/reconstructions/levelscript-process-wave117-w6504.md.
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     return m_bCinematicBreak != 0;
                     m_nState = 13;
                 }
@@ -1234,15 +1231,15 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->translate(Vector{0.0f, 0.0f, -50000.0f}); // -50000 @0x13bdcc
                     (*enemies)[i]->awake();                                  // vtable+0xc
                 }
-                m_nState = 12;
-                m_tempVec.z += -20000.0f; // @0x13bdd8
-                m_tempVec.y += 500.0f;    // @0x13bdd4
-                m_pLevel->lodManager->forceUpdate(30, false);
+                m_pCamera->setTarget((*enemies)[enemies->count - 10]->geometry);
                 m_tempVec = (*enemies)[enemies->count - 10]->geometry->getPosition();
                 m_tempVec.x += 2000.0f;   // @0x13bdd0
-                m_nScriptTimerA = 0;
-                m_pCamera->setTarget((*enemies)[enemies->count - 10]->geometry);
+                m_tempVec.y += 500.0f;    // @0x13bdd4
+                m_tempVec.z += -20000.0f; // @0x13bdd8
                 m_pCamera->setPosition(m_tempVec);
+                m_pLevel->lodManager->forceUpdate(30, false);
+                m_nState = 12;
+                m_nScriptTimerA = 0;
                 break;
             }
             if (m_nState >= 5 && m_nState <= 8) {
@@ -3841,9 +3838,9 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     if (player->isInRocketControl()) {
-                        m_pCamera->setRumblePercentage(0.0f, 0);
-                        player->killLiberator();
                         player->setRocketControl(nullptr, nullptr);
+                        player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                     }
                     player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
