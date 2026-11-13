@@ -194,3 +194,121 @@ check      RATCHET PASS
 The case-102 s3 right-vector fix (move `m_dirVec = getRightVector()` before
 the second add) is a real semantic fix but is raw -1 / aligned +5 on this
 base, so it is left for a raw-weighted pass.
+
+## Pass 3 — case-102 state 0 statement order
+
+Original disassembly `0x13e206..0x13e3c2`. Reordered the case-102 state-0
+setup to the original sequence:
+
+* `player->setTurretMode(false)` before `resetCamera(m_pLevel)`.
+* rocket-control teardown (`setRocketControl`, `killLiberator`,
+  `setRumblePercentage`) immediately after `resetCamera`.
+* free-look / first-person / hide-ship group, then `stopShooting`.
+* `setFreeze`, `setVisible`, `setVulnerable`, `m_bCinematicBreak`, HUD,
+  radar.
+* `setLookAtCam`, `setTarget`, `setPosition`.
+* sound `stop` before `play` (was play-before-stop).
+* `m_nScriptTimerA = 0`, `m_nState++` unchanged.
+
+Measured (exact NDK r18b `-Oz` compile + full gold link + `--strip-all`):
+
+```
+raw        51,800 -> 51,809  (+9)
+aligned    21,061 -> 21,056  (-5)
+size       57,232 / 57,232   (exact)
+.text      diffbytes 72,304 -> 72,313 (+9); size/base unchanged
+.ARM.extab diffbytes 564 (unchanged; size/base exact 156,312 B)
+.ARM.exidx 0, .rodata 0, .data 0 (unchanged)
+.rel.plt   md5 289b2a06… (byte-identical, 29,392 B)
+check      RATCHET PASS
+```
+
+Net from base `ea2ec2eec`: raw 51,655 -> 51,809 (+154), aligned
+21,210 -> 21,056 (-154), size exact.
+
+## Pass 4 — case-94 state 1 tail order + setLookAtCam/setTarget swap
+
+Original disassembly `0x13e0e2..0x13e158` (docked branch) and shared tail
+`0x143cd8..0x143d10`:
+
+* `m_pCamera->setLookAtCam(false)` comes **before** `setTarget(player->geometry)`
+  (ours had `setTarget` first).
+* Shared tail order is `m_pHud->visible = 1`, `m_pRadar->enabled = 1`,
+  `lodManager->forceUpdate`, `m_bCinematicBreak = 0`, `m_nScriptTimerA = 0`,
+  `sound->stop`, `m_nState++`.  Ours had `forceUpdate`/`m_nScriptTimerA`
+  first and `m_pRadar->enabled` last.
+
+Two further semantic differences were measured but not landed (they are
+aligned-neutral or worse and cost raw bytes):
+
+* original calls `lookBehind()` **before** `setRotationAroundTarget(true)`
+  (ours reversed) — aligned +3 when swapped on this base.
+* original calls `setFreeLookMode(true)` only in the docked branch, not the
+  else branch — aligned unchanged, raw +1,235.
+
+Measured (exact NDK r18b `-Oz` compile + full gold link + `--strip-all`):
+
+```
+raw        51,809 -> 51,815  (+6)
+aligned    21,056 -> 21,037  (-19)
+size       57,232 / 57,232   (exact)
+.text      diffbytes 72,313 -> 72,319 (+6); size/base unchanged
+.ARM.extab diffbytes 564 (unchanged; md5 90386614, size/base exact)
+.ARM.exidx 0, .rodata 0, .data 0 (unchanged)
+.rel.plt   md5 289b2a06… (byte-identical, 29,392 B)
+check      RATCHET PASS
+```
+
+Net from base `ea2ec2eec`: raw 51,655 -> 51,815 (+160), aligned
+21,210 -> 21,037 (-173), size exact.
+
+## Pass 5 — case-16 state 1 HUD/radar store order
+
+Original `0x13c3c2..0x13c3ce` stores `m_pHud->visible = 1` before
+`m_pRadar->enabled = 1` (hud at `0x13c3c8`, radar at `0x13c3ce`).  Ours had
+the two stores reversed.  Swapping them makes clang emit the original
+hud-then-radar order (verified in the disassembly at `0x13c182`/`0x13c18a`).
+
+Measured (exact NDK r18b `-Oz` compile + full gold link + `--strip-all`):
+
+```
+raw        51,815 -> 51,817  (+2)
+aligned    21,037 -> 21,032  (-5)
+size       57,232 / 57,232   (exact)
+.text      diffbytes 72,319 -> 72,321 (+2); size/base unchanged
+.ARM.extab diffbytes 564 (unchanged; md5 90386614, size/base exact)
+.ARM.exidx 0, .rodata 0, .data 0 (unchanged)
+.rel.plt   md5 289b2a06… (byte-identical, 29,392 B)
+check      RATCHET PASS
+```
+
+### Pass-5 exploration (measured, not landed)
+
+On top of pass 4 (`be316232a`, raw 51,815 / aligned 21,037):
+
+| candidate | raw | aligned | size | note |
+|---|---:|---:|---:|---|
+| case-16 s1 hud/radar swap (landed) | 51,817 | 21,032 | 57,232 | |
+| case-16 s1 full faithful order | 54,014 | 21,023 | 57,240 | +8 B, needs compensation |
+| case-16 s1 full, nState before cinematic | 54,019 | 21,022 | 57,240 | +8 B |
+| case-41 s4 hud/radar/cinematic reorder | 51,816 | 21,037 | 57,232 | aligned neutral |
+| case-41 s0 faithful teardown reorder | — | — | 57,232 | aligned +19 on pass-3 base |
+| case-154 s0 faithful reorder | 51,862 | 21,046 | 57,232 | call-seq LCS 22->31, aligned +9 |
+| case-154 s0 A/B/C/D/E sub-variants | — | 21,037-21,038 | 57,232 | aligned neutral |
+| case-92 s7 faithful (timerB dropped) | 51,847 | 21,052 | 57,232 | worse |
+| case-92 s8 faithful (timerB/vec dropped) | 51,844 | 21,055 | 57,224 | not exact |
+| case-154 s6 | 51,816 | 21,058 | 57,232 | worse |
+| case-102 s3 right-vector fix | 51,808 | 21,061 | 57,232 | worse |
+| case-102 s3 setLookAtCam-before-setPosition | 51,807 | 21,056 | 57,232 | worse |
+| case-102 s3 both | 51,806 | 21,061 | 57,232 | worse |
+
+The case-154 s0 reorder is semantically faithful — its call sequence is a
+100% (31/31) match with the original block `0x13a76e..0x13a920`, versus 22/31
+for the current order — but the global difflib `aligned` metric moves +9
+because the alignment of the surrounding 600-instruction cluster shifts.
+It is left for a pass that can pair it with a compensating aligned win.
+
+The case-16 s1 full faithful order (setLookAtCam first, hud/radar before
+resetCamera, cinematicBreak after forceUpdate) is aligned-positive (-14) but
+grows the function by 8 B; it needs an 8 B compensation elsewhere before it
+can land.

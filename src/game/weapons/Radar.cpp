@@ -605,8 +605,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         if (this->field_0x18 != this->planetTargets->data()[i]) {
                             this->planetLockTimer = 0;
                         }
-                        this->field_0x18 = this->planetTargets->data()[i];
                         this->planetDockIndex = i;
+                        this->field_0x18 = this->planetTargets->data()[i];
                         planetHit = true;
                     }
                     if (stationId != currentStation) {
@@ -897,7 +897,7 @@ enemies:
                                 this->egoPos.z - this->targetPos.z < -24000.0f ||
                                 this->egoPos.z - this->targetPos.z > 24000.0f) {
                                 Array<int> *cargo = this->lockedEnemy->cargo;
-                                if (cargo == nullptr) {
+                                if (__builtin_expect(cargo == nullptr, 0)) {  // lint: arm_builtin
                                     hud->hudEvent(22, this->level->getPlayer(), 0);
                                 } else {
                                     for (uint32_t c = 0; c < cargo->size(); c += 2) {
@@ -950,8 +950,8 @@ enemies:
         }
     }
 
-    otherLock = this->lockedStation != nullptr || (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
-                this->field_0x1c != nullptr || this->field_0x14 != 0;
+    otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
+                this->lockedStation != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
         const auto camZ = this->cameraZ;
@@ -1161,7 +1161,7 @@ asteroids:
                     }
                     canvas->DrawImage2D(image, x, y, 17, 68);
                 }
-                if (this->field_0x1c == nullptr && wreck && this->tractorMode2) {
+                if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
                     this->field_0x1c = asteroid;
                     this->dockNavPtr = asteroid;
                     asteroidHit = true;
@@ -1185,7 +1185,7 @@ asteroids:
             }
             if (best > -1) {
                 if (this->field_0x10 != this->asteroids->data()[best]) {
-                    this->asteroidLockTimer += mode;
+                    this->asteroidLockTimer = 0;
                 }
                 this->field_0x10 = static_cast<PlayerAsteroid *>(this->asteroids->data()[best]);
                 asteroidHit = true;
@@ -1213,6 +1213,7 @@ asteroids:
                 } else {
                     this->lockedAsteroid = nullptr;
                     auto hasScanner = this->hasScanner19;
+                    this->asteroidLockTimer += mode;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
                         if (!candidateWreck) {
                             if (!hasScanner) {
@@ -1270,11 +1271,12 @@ asteroids_done:
     if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 ||
-            __builtin_expect((current != 151 && alwaysEnemySeen), 0) ||  // lint: arm_builtin
-            ((1 << (current - 136)) & 0xe071) == 0) {
+            ((1 << (current - 136)) & 0xe071) == 0 ||
+            __builtin_expect((current != 151 && alwaysEnemySeen), 0)) {  // lint: arm_builtin
             Globals::sound->stop(current);
-            if (Globals::status->getStation()->isAttackedByAliens() ||
-                Globals::status->getCurrentCampaignMission() == 16 || Globals::status->inAlienOrbit()) {
+            if (Globals::status->inAlienOrbit() ||
+                Globals::status->getStation()->isAttackedByAliens() ||
+                Globals::status->getCurrentCampaignMission() == 16) {
                 Globals::sound->play(136, nullptr, nullptr, 0.0f);
             } else if (__builtin_expect(this->field_0x1bc < 3, 0)) {  // lint: arm_builtin
                 if (alwaysEnemySeen) {

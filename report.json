@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 39.3,
+   "pct": 39.6,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 66.5,
+   "pct": 66.9,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -57,7 +57,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 83.7,
+   "pct": 83.9,
    "byte": false,
    "linked": false,
    "osize": 8080,

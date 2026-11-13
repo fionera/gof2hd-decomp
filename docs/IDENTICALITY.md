@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,956** | 20,871 | 57,232 |
-| `Radar::draw` | **6,208** | 1,805 | 9,908 |
+| `LevelScript::process` | **52,008** | 20,733 | 57,232 |
+| `Radar::draw` | **6,434** | 1,742 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **3,658** | 568 | 8,080 |
+| `MGame::OnTouchEnd` | **3,659** | 560 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
@@ -30,11 +30,27 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,675**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,954**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13731 + w13724, wave 191b): mission-0 state 0/1/2,
+  mission-89 intro and case-1, mission-106 state 2, case-154 s0/s1, case-94 s1
+  tail, and case-16 s1 hud/radar store order.  Raw **51,956 -> 52,008** (+52),
+  aligned **20,871 -> 20,733** (-138), size 57,232/57,232 exact.
+* `Radar::draw` (w13732, wave 191b): asteroid lock timer/store order, planet
+  lock index/store order, music `play()` branch order, `otherLock` predicate
+  order, and the asteroid tractor/lock-timer blocks.  Raw **6,208 -> 6,434**
+  (+226), aligned **1,805 -> 1,742** (-63), size 9,908/9,908 exact.
+* `MGame::OnTouchEnd` (w13735, wave 191b): won/`switch_to_target` store order,
+  campaign-110 `initStreamOutPosition`/`switch_to_target` order, and the
+  `_bc8` pause-close `hudMenuOpen`/`_bc8` order.  Raw **3,658 -> 3,659**
+  (+1), aligned **568 -> 560** (-8), size 8,080/8,080 exact.
+  The batch moves `.text` 72,675 -> 72,954; `.ARM.extab` stays 564.
+* `Level::createMission` (w13734, wave 191b): note-only semantic-divergence
+  sweep; `stationPirates`, raid `inPirateLootOrbit`, and case-4 tail orders
+  are measured, but all faithful shapes cost raw bytes.
 * `MGame::OnTouchEnd` (w13718 + w13729, wave 191b): campaign 15/22
   chain swap, `finishMission` setMission/setRoute order, campaign-100/155
   bodies, escort block, pause-menu close, cinematic case 1/0, `_bc8`

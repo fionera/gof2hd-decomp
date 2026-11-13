@@ -1563,8 +1563,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
                             Globals::status->setFreelanceMission(Mission::empty);
                         } else {
-                            this->active = 0;
                             Globals::switch_to_target_setting = 2;
+                            this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(1);
                             return;
                         }
@@ -1656,8 +1656,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
-                            Globals::switch_to_target_setting = 0;
                             Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
                             Globals::appManager->SetCurrentApplicationModule(5);
                             Globals::enterSpaceLounge = 1;
@@ -1987,8 +1987,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                 }
             } else if (this->_bc8) {
-                this->hudMenuOpen = 0;
                 this->_bc8 = 0;
+                this->hudMenuOpen = 0;
                 this->pauseOpen = 0;
                 resumeSounds();
                 this->hud->closeHudMenu();
