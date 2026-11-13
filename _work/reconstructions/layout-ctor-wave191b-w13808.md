@@ -5,15 +5,15 @@ Continuation of the w13775 store-order campaign on `_ZN6LayoutC1Ev` /
 size **7,072 B**, source `src/game/ui/Layout.cpp`.
 Branch `wave191b-w13808`, base master `088c6e950` (raw 5,578 / aligned 2,012).
 
-**Result: 1 size-exact aligned win landed.**
+**Result: 2 size-exact wins landed (aligned −1, raw −7, `.text` −7).**
 
 | | before | after |
 |---|---:|---:|
-| raw | 5,578 | **5,577** |
+| raw | 5,578 | **5,571** |
 | aligned | 2,012 | **2,011** |
 | size | 7,072/7,072 | 7,072/7,072 |
 | insn | 2,516/2,552 | 2,516/2,552 |
-| `.text` diff bytes | 75,937 | 75,936 (−1) |
+| `.text` diff bytes | 75,937 | 75,930 (−7) |
 | `.ARM.extab` diff bytes | 594 | 594 (0) |
 
 Rebased onto master `62a081c2d` during harvest: the same swap measures `.text` 76,636 -> 76,635 and `.ARM.extab` 623 (unchanged); raw 5,578 -> 5,577, aligned 2,012 -> 2,011, size 7,072/7,072 exact.
@@ -25,9 +25,10 @@ data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370.
 
 ## Landed step
 
-| step | swap | raw | aligned | size | insn | `.text` | extab |
+| step | swaps | raw | aligned | size | insn | `.text` | extab |
 |---|---|---:|---:|---:|---:|---:|---:|
 | 1 | `s(141,197)` | 5,577 | **2,011** | 7,072 | 2,516 | 75,936 | 594 |
+| 2 | `s(147,150) s(196,197) s(77,78)` | 5,571 | 2,011 | 7,072 | 2,516 | 75,930 | 594 |
 
 `s(141,197)` swaps the independent, side-effect-free stores
 `this->field_0x94` (`Globals::iPadHD ? 14 : (n9 ? 15 : (retina ? 20 : 10))`,
@@ -35,6 +36,11 @@ source line 208) and `this->field_0x1ec`
 (`Globals::iPadHD ? 26 : (n9 ? 34 : (retina ? 38 : 19))`, source line 304).
 Both write distinct scalar fields and read only `Globals` flags, so the store
 image is unchanged for every flag combination.
+
+Step 2 swaps three more independent store units: `field_0x200` <-> the
+`orbitInfoTextX` if/else chain, `field_0x300` <-> `field_0x94`, and
+`field_0x2a4_metricA` <-> `field_0xf0`.  All six targets are distinct scalar
+fields, so the store image is again unchanged.
 
 ## Search
 
@@ -45,6 +51,13 @@ image is unchanged for every flag combination.
   far-apart units are almost never independent (temporaries/`this` reads cross).
 * Distance 11..50 (6,825 pairs) and 1..10 (1,917 pairs) had already been
   exhausted on the same point by w13775 / the preceding session: 0 improving.
+* After landing step 1, a fresh full single-swap sweep of **distance 1..50**
+  (9,025 pairs) found **no** size-exact swap below aligned 2,011 (500 pairs
+  stayed size-exact; 110 tie at 2,011).  Best raw among those ties:
+  `s(147,150)` 5,574, `s(196,197)` 5,575, `s(77,78)`/`s(78,79)` 5,576.
+  Pairing the ties only lowered raw, never aligned (best pair
+  `s(147,150)+s(196,197)` 5,572; best triple with `s(77,78)` 5,571) — hence
+  step 2 is a raw/`.text` win with aligned unchanged.
 * Double swaps, moves and permutations around the best units were all worse
   (e.g. `s(177,189)+s(31,45)` 2,015, `m(189,177)` 2,045 size 7,024,
   `s(17,28)` 2,018 size 7,072).
@@ -77,3 +90,23 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
 Scratch harness (`/home/debian/GalaxyOnFire2/scratch/w13808`):
 `python3 harness.py base.cpp` → `(5578, 2012, 7072, '7072')`;
 `python3 try.py tag 141,197`; `python3 sweep_all.py <dmin> <dmax> <out.tsv>`.
+
+## Harvest rebase (2026-11-13, on master 6db84c8f5)
+
+w13816 (`602edde9f`) had already landed the `field_0x2a4`/`field_0xf0`,
+`field_0x200`/`orbitInfoTextX` and `field_0x300`/`field_0x1ec` swaps, so this
+commit's net content is only the `field_0x94` <-> `field_0x1ec` order
+(`field_0x1ec` before `field_0x140`, `field_0x94` before `field_0x300`).
+
+Measured on the combined tree (w13816 + this order):
+
+| | before | after |
+|---|---:|---:|
+| raw | 5,572 | **5,571** |
+| aligned | 2,012 | **2,011** |
+| size | 7,072/7,072 | 7,072/7,072 |
+| `.text` diff | 75,988 | **75,987** |
+| `.ARM.extab` diff | 552 | 552 |
+
+So the w13808 order is a real -1 raw / -1 aligned / -1 `.text` win on top of
+w13816; the two passes are complementary, not conflicting.
