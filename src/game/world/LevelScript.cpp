@@ -611,8 +611,7 @@ bool LevelScript::process(int delta) {
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
     PlayerEgo *player = m_pLevel->getPlayer();
     Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
-    Status *status = Globals::status;
-    if (status->getCurrentCampaignMission() == 0) {
+    if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
         // message #2 plays, wobbles them with the UI pulse, then hands off to later substates.
@@ -941,7 +940,7 @@ bool LevelScript::process(int delta) {
                 }
             }
         }
-    } else if (status->getCurrentCampaignMission() == 1) {
+    } else if (Globals::status->getCurrentCampaignMission() == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
         // while radio message #2 plays; on fade-out it switches to the next scene.
 
@@ -2338,21 +2337,20 @@ bool LevelScript::process(int delta) {
                     m_nState = 2;
                 } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
-                        m_pCamera->setLookAtCam(false);
-                        m_nState = 7;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_pRadar->enabled = 1;
                         player->player->setVulnerable(true);
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        (*enemies)[10]->setActive(false);
-                        m_pCamera->setTarget(player->geometry);
                         (*enemies)[10]->setPosition(500000.0f, 500000.0f, 500000.0f);
-                        m_bCinematicBreak = 0;
+                        (*enemies)[10]->setActive(false);
                         (*enemies)[10]->setVisible(false);
                         m_nState = 3;
+                        m_bCinematicBreak = 0;
                     }
                 } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
                     player->player->setVulnerable(true);

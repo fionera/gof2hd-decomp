@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,787** | 20,579 | 57,232 |
+| `LevelScript::process` | **53,096** | 20,552 | 57,232 |
 | `Radar::draw` | **6,962** | 1,401 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
-| `Level::createMission` | **2,576** | 702 | 17,172 |
+| `Level::createMission` | **2,582** | 680 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,358**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,673**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13748 + w13746, wave 191b): case-67 state 2
+  faithful order and the cached `Status*` local dropped (reload
+  `Globals::status` at the two sites).  Raw **52,787 -> 53,096** (+309),
+  aligned **20,579 -> 20,552** (-27), size 57,232/57,232 exact.
+* `Level::createMission` (w13761, wave 191b): case-4 tail HOCN load
+  order and `stationPirates` escort x-before-y.  Raw **2,576 -> 2,582**
+  (+6), aligned **702 -> 680** (-22), size 17,172/17,172 exact.  This
+  batch moves `.text` 74,358 -> 74,673; `.ARM.extab` stays 561.
 * `Level::createMission` (w13698, wave 191b): alienGuns loop reordered
   create-store-last (`cargo`, `setMaxHitpoints`, turret table,
   `setScaling`, `setRotation`, `shipGroup`, `setPosition`, then the

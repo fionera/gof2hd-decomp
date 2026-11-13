@@ -2050,8 +2050,8 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+            float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             float oz = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
             Vector pos = {pirateBase.x + ox, pirateBase.y + oy, pirateBase.z + oz};
             (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
@@ -2125,10 +2125,10 @@ case4Else:
     }
 case4Tail:
     {
-    float opt44 = *(float *) &Globals::options[44];
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
-    this->enemies = new Array<KIPlayer *>();
+    float opt44 = *(float *) &Globals::options[44];
     int hunterCount = (int) (hunters + (opt44 - 0.5f) * hunters);
+    this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
     Globals *globals = Globals::globals;
     Array<KIPlayer *> *enemies = this->enemies;
