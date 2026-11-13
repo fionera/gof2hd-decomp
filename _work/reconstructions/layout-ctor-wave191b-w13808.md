@@ -58,6 +58,9 @@ fields, so the store image is again unchanged.
   Pairing the ties only lowered raw, never aligned (best pair
   `s(147,150)+s(196,197)` 5,572; best triple with `s(77,78)` 5,571) — hence
   step 2 is a raw/`.text` win with aligned unchanged.
+* After landing step 2, a fresh single-swap sweep of **distance 1..20**
+  (3,910 pairs) again finds **no** size-exact swap below aligned 2,011; 381
+  pairs stay size-exact and the best merely tie the current raw 5,571.
 * Double swaps, moves and permutations around the best units were all worse
   (e.g. `s(177,189)+s(31,45)` 2,015, `m(189,177)` 2,045 size 7,024,
   `s(17,28)` 2,018 size 7,072).
