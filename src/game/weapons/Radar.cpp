@@ -646,20 +646,19 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 if (missionBlocksPlanets + (this->planetLockTimer < 1)) {
                     goto enemies;
                 }
-                Sprite *blip;
-                int frame;
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin
-                    blip = this->blipSprite;
+                    Sprite *blip = this->blipSprite;
                     int frames = blip->getRawFrameCount() - 1;
-                    frame = (int) ((float) this->planetLockTimer / (float) this->field_0x1b8 * (float) frames);
+                    int frame = (int) ((float) this->planetLockTimer / (float) this->field_0x1b8 * (float) frames);
+                    blip->setFrame(frame);
                 } else {
                     if (__builtin_expect(this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin anchor: Radar::draw
                         goto enemies;
                     }
-                    blip = this->blipSprite;
-                    frame = blip->getRawFrameCount() - 1;
+                    Sprite *blip = this->blipSprite;
+                    int frame = blip->getRawFrameCount() - 1;
+                    blip->setFrame(frame);
                 }
-                blip->setFrame(frame);
                 this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                       (int) PlayerEgo::crosshairPos.y);
                 this->blipSprite->draw(1.0f, 1.0f);
