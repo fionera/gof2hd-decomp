@@ -1060,9 +1060,9 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
-                int rh = Globals::layout->field_0x2c_rowHeight;
                 int width = button->getWidth();
                 int height = button->getHeight();
+                int rh = Globals::layout->field_0x2c_rowHeight;
                 PaintCanvas *canvas = Globals::Canvas;
                 canvas->SetColor(0xffffffffu);
                 int textX = width + baseX + rh;
