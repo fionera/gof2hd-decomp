@@ -87,3 +87,39 @@ Deleting the definition and the `Status.cpp` extern declaration leaves
 and keeps every other section header unchanged.  The TU itself stays in
 `tools/source_order.txt` (it is a witnessed original TU) and now compiles
 to an empty object.  Raw 71 unchanged, size 1,432/1,432, insn 527/527.
+
+## 6. Additional negative sweeps (same wave, after pass 2)
+
+Re-measured on the pass-2 base (raw 71, size 1,432, `.rodata` exact).
+No candidate below is a size-exact raw win, so nothing was landed.
+
+**TBH (24 B).** Reordering the source case blocks to the original body
+order (`167/174,150..155,158,162,166,170,184,189,156,157,160,163,164,
+165,168,169,171,172`) keeps the TBH identity and raw 71 -> 110: clang's
+`buildJumpTable` sorts successors by value, so MBP ignores source order.
+Relabelling the bodies to the original type labels (the inverse of the
+old rank map) moves the bodies to new addresses and is much worse.  The
+original's table is a value->address permutation; our value-order layout
+can only match it if the case *values* are permuted (the rank table), so
+the 24 B is irreducible for a direct `switch (m->getType())`.
+
+**Case-158 body (46 B).** The original is the no-locals shape
+`isInList(getProductionGoodIndex(), getProductionGoodAmount(),
+ship->getCargo())` + a re-query `Globals::status->ship->hasEquipment(
+getProductionGoodIndex(), 1)`, with `index` in r9, `amount` in r5,
+`cargo` in r2 and `this` in r6.  The no-locals shape does reproduce the
+r9/r5/r2 isInList prefix, but it is +4 B (1,436) because the hasEquipment
+tail emits `cmp r0,#0; b.n <shared>` instead of the original's single
+`b.n ac458`, and the re-query costs 4 B.  A 216-variant sweep over
+declaration order x cargo source (ship/Globals/hoisted) x hasEquipment
+source x positive/negative x index/re-query found no size-exact variant
+below raw 71.  `Ship *s = ship;` locals can force r9/r5 but shrink the
+function to 1,420/1,428.  `__builtin_expect` on the isInList/hasEquipment
+conditions, `||`/`&&`/else-if/bool reshapes, `volatile`, `unsigned`, and
+guard reshapes (reversed `==`, nested, `expect(atStation)`) all stay at
+1,436 or worse; `expect(atStation,1)` is raw-neutral at 71.
+
+**Remaining 71 B** is therefore: 24 B TBH permutation, 46 B case-158
+register/order juggling, 1 B literal-pool PC offset.  All three are
+coupled to the value-order body layout that a direct `getType()` switch
+forces.
