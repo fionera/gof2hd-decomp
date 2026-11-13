@@ -15,12 +15,12 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,083** | 19,162 | 57,232 |
+| `LevelScript::process` | **53,041** | 19,158 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,373** | 463 | 17,172 |
 | `MGame::OnTouchEnd` | **3,548** | 697 | 8,080 |
-| `HangarWindow::render` | **1,452** | 379 | 9,700 |
+| `HangarWindow::render` | **1,411** | 462 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,878**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,795**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b): prologue declaration order.  Raw **53,083 -> 53,064** (-19), aligned **19,162 -> 19,159** (-3), size 57,232/57,232 exact.  `.text` 75,878 -> 75,859; `.ARM.extab` 552.
+* `LevelScript::process` (w13828, wave 191b, third pass): wingman loop drops the `__builtin_expect`.  Raw **53,064 -> 53,041** (-23), aligned **19,159 -> 19,158** (-1), size 57,232/57,232 exact.  `.text` 75,859 -> 75,836; `.ARM.extab` 552 -> 544 (LSDA scope shrink).
+* `HangarWindow::render` (w13845, wave 191b, second pass): free-credits volatile canvas pointer.  Raw **1,452 -> 1,411** (-41), aligned **379 -> 462** (+83), size 9,700/9,700 exact.  `.text` 75,878 -> 75,837; `.ARM.extab` 552.
+* `LevelScript::process` (w13838, wave 192, state_a): mission-94 tail + radio-15 reorders, drop stale `lockedEnemy`.  Raw 53,041 -> 54,045, aligned 19,158 -> 19,126, but size **57,216/57,232**; reverted to a note.
+* `Level::createMission` (w13817, wave 191b, pass 2): raid guns after stream-out if / drop case-4 alias.  Raw 3,373 -> 4,797, aligned 463 -> 462, size **17,168/17,172**; reverted to a note.
 * `HangarWindow::render` (w13845, wave 191b): free-credits row-height local declared last.  Raw **1,456 -> 1,452** (-4), aligned **386 -> 379** (-7), size 9,700/9,700 exact.  `.text` 75,882 -> 75,878; `.ARM.extab` 552.
 * `LevelScript::process` (w13839, wave 191b): state-16 block order + `initStreamOutPosition = 0`.  Raw **53,083 -> 53,427** (+344), aligned **19,162 -> 19,160** (-2), `.text` 75,882 -> 76,222 (+340); reverted to a note (bad byte trade).
 * `LevelScript::process` (w13826, wave 191b, second pass): tail station-list compare re-reads `Globals::status->field_90` instead of the cached `stationList`.  Raw 53,083 unchanged, aligned **19,164 -> 19,162** (-2), size 57,232/57,232 exact.  `.text` 75,882 unchanged; `.ARM.extab` 552.
