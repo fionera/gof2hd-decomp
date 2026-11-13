@@ -213,3 +213,28 @@ aligned **506** (-13), size 17,172/17,172 exact, insn 6202/6197.
 Remaining delta in this block: the original interleaves load/convert/store
 (`vldr s2; vcvt; vstr` then y load+convert, z convert, z store, y store);
 ours emits three converts then three stores (x, z, y order).
+
+## Landed: raid `setPosition` after `spawnPosition.z`; pirateFortress loop-sum order
+
+Two small order fixes in the raid / pirateFortress region:
+
+* Raid `inPirateLootOrbit` branch: the original stores the jittered
+  `spawnPosition` into the enemy only *after* the `spawnPosition.z += ...`
+  update (`b...` `vstr s..,[sl,#404]` then the `setPosition` call).  Moving
+  `(*this->enemies)[i]->setPosition(this->spawnPosition);` below the `z`
+  update reproduces it.
+* `pirateFortress` turret loop start condition: reorder the sum to
+  `this->friendCount + this->field_164 + this->field_168` (was
+  `field_168 + field_164 + friendCount`), matching the original's load
+  order.
+
+Measured on the post-extraAliens HEAD (raw 2,900 / aligned 506):
+
+| state | raw | aligned | size | insn | `.text` | `.ARM.extab` |
+|---|---:|---:|---:|---|---:|---:|
+| committed `8cec642ad` | 2,900 | 506 | 17,172 | 6202/6197 | 75,150 | 587 |
+| + `zpos` only | 2,901 | 476 | 17,172 | 6202/6197 | 75,151 | 587 |
+| **+ `zpos` + `pf` (landed)** | **2,902** | **475** | **17,172** | **6202/6197** | **75,152** | **587** |
+
+`raw` rises by 2 while `aligned` falls by 31; `.ARM.extab` unchanged.
+`check` RATCHET PASS (byte_exact 4508 unchanged).

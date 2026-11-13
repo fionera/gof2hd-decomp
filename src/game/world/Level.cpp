@@ -1981,7 +1981,7 @@ void Level::createMission() {
         Vector v = {0.0f, 0.0f, 0.0f};
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         const float *t = kBaseTurrets[0];
-        for (int i = this->field_168 + this->field_164 + this->friendCount;
+        for (int i = this->friendCount + this->field_164 + this->field_168;
              i < this->friendCount + this->field_164 + this->field_168 + fortressGuns; i++) {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
             KIPlayer *gun = (*this->enemies)[i];
@@ -2019,8 +2019,8 @@ void Level::createMission() {
                 this->spawnPosition = this->player->getPosition();
                 this->spawnPosition.x += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
                 this->spawnPosition.y += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
-                (*this->enemies)[i]->setPosition(this->spawnPosition);
                 this->spawnPosition.z += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
+                (*this->enemies)[i]->setPosition(this->spawnPosition);
             }
         }
     }
