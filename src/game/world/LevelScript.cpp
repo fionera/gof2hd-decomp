@@ -5004,50 +5004,50 @@ bool LevelScript::process(int delta) {
                         m_tempVec = AbyssEngine::AEMath::VectorNormalize(
                                 (*enemies)[stationIndex]->getPosition() + Vector{0.0f, 0.0f, 40000.0f}
                                 - fighter->getPosition());
+                        fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         ((PlayerFighter *) fighter)->setAIDisabled(true);
                         fighter->setVisible(true);
                         fighter->setActive(true);
                         player->setComputerControlled(true);
                         player->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
-                        fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
+                        player->setSpeed(4.0f);
                         player->setFreeze(false);
                         player->setPosition(*m_pCamera->getPosition() + Vector{5000.0f, 300.0f, -14000.0f});
-                        player->setSpeed(4.0f);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nScriptTimerA = 0;
                         m_pCamera->setTarget(station->rootGeometry);
+                        m_nScriptTimerA = 0;
                         m_nState = 8;
                     }
                 } else if (m_nState == 8) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = (*enemies)[stationIndex]->getPosition();
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
-                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) delta * -10.0f);
+                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (delta * -10));
                     KIPlayer *fighter = (*enemies)[fighterIndex];
                     fighter->geometry->moveForward((float) (4 * delta));
                     fighter->player->shoot(0, (long long) delta, false);
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
-                        fighter->setActive(false);
-                        player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pCamera->setPosition(m_tempVec + Vector{35000.0f, 0.0f, 70000.0f});
-                        fighter->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                        fighter->setVisible(false);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        fighter->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        fighter->setVisible(false);
+                        fighter->setActive(false);
+                        player->setSpeed(10.0f);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        player->setSpeed(10.0f);
                         m_nState++;
                     }
                 } else if (m_nState == 9) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = (*enemies)[stationIndex]->getPosition();
-                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) delta * -10.0f);
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
+                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (delta * -10));
                     KIPlayer *fighter = (*enemies)[fighterIndex];
-                    fighter->player->shoot(0, (long long) delta, false);
                     fighter->geometry->moveForward((float) (2 * delta));
+                    fighter->player->shoot(0, (long long) delta, false);
                     m_nScriptTimerA += delta;
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
