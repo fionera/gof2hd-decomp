@@ -1610,9 +1610,9 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     m_bCinematicBreak = 1;
                     m_pCamera->setLookAtCam(true);
-                    player->setComputerControlled(true);
                     m_pHud->visible = 0;
                     m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
+                    player->setComputerControlled(true);
                     m_pCamera->setTarget(player->geometry);
                     m_pCamera->setPosition(player->getPosition());
                     for (unsigned int i = 0; i < enemies->count; i++) {
@@ -3047,8 +3047,8 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 4) {
                     TargetFollowCamera *wcamera = m_pCamera;
                     AEGeometry *leader = (*enemies)[0]->geometry;
-                    wcamera->setFixed(true);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    wcamera->setFixed(true);
                     wcamera->setTarget(leader);
                     m_nScriptTimerA += delta;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
@@ -3646,10 +3646,10 @@ bool LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // 3 -> 4
                     }
                 } else if (m_nState == 4) {
-                    AEGeometry *pgeom3630 = player->geometry;
+                    AEGeometry *g = player->geometry;
                     m_nScriptTimerA += delta;
-                    Vector drift = (pgeom3630->getDirection() * 6.08f
-                                    + pgeom3630->getRightVector() * 0.2f) * 0.4f * (float) delta;
+                    Vector drift = (g->getDirection() * 6.08f
+                                    + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.1f, drift.y * 0.1f, drift.z * 0.1f);
                     for (int i = 0; i < 2; ++i) {
                         ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
@@ -5076,9 +5076,9 @@ bool LevelScript::process(int delta) {
                             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry2->transform))
                                     ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
                             m_nFlashCountdown = 0;
+                            m_pGeometry2->setVisible(true);
                             m_pGeometry2->setPosition(
                                     ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
-                            m_pGeometry2->setVisible(true);
                             m_pGeometry2->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         }
                     }

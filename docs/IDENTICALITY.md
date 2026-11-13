@@ -4,7 +4,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-12 (wave 191)
+## Update 2026-11-13 (wave 191b)
 
 **Current authoritative state.** `check` is green: byte_exact **4508/4524**,
 linked_exact **4508/4524**, size-exact **4524/4524**, data_exact **843/843**,
@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,625** | 21,486 | 57,232 |
+| `LevelScript::process` | **51,622** | 21,451 | 57,232 |
 | `Radar::draw` | **6,014** | 1,947 | 9,908 |
-| `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
+| `Layout` C1/C2 | **5,244** | 2,536 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,354**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,351**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13701 + w13635, wave 191b): case-105 state-4
+  geometry reload plus the case-14 teardown, case-92 state-4 timer and
+  case-157 state-2 visibility/store reorders.  Net raw **51,625 -> 51,622**
+  (-3), aligned **21,486 -> 21,451** (-35), size 57,232/57,232 exact.
+  The w13701-only intermediate was 51,608/21,561; the w13635 reorders trade
+  +14 raw for -110 aligned.  `.text` 71,354 -> 71,351 (-3).
+* `Layout` C1/C2 (w13686, wave 191b): swap the independent
+  `progressBarYBase` and `marqueeWidth` stores to the original order.
+  Raw **5,244** (tie), aligned **2,575 -> 2,536** (-39), size
+  7,072/7,072 exact.
+* Notes only (no code change): `Hud::draw` (w13695), `ModStation` ctor
+  (w13693), and `Gun::calcCharacterCollision` (w13700) residual analyses.
 * `LevelScript::process` (w13697, wave 191b): case-70 state-1 conclude
   block reconstructed from 0x13c05a..0x13c16c.  The old source stored
   `setPosition(camPos)` right after the x offset, so the y, z and
