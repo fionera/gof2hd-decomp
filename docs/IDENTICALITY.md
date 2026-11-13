@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,084** | 19,087 | 57,232 |
+| `LevelScript::process` | **53,095** | 19,045 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,690**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,701**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b, fifth pass): case-42 wormhole state-6 teardown order.  Raw **53,084 -> 53,095** (+11), aligned **19,087 -> 19,045** (-42), size 57,232/57,232 exact.  `.text` 76,690 -> 76,701; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, fourth pass): case-40 state-0 escort setup order.  Raw **53,054 -> 53,084** (+30), aligned **19,153 -> 19,087** (-66), size 57,232/57,232 exact.  `.text` 76,660 -> 76,690; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, third pass): mission-94 state-1 teardown order.  Raw **53,044 -> 53,054** (+10), aligned **19,155 -> 19,153** (-2), size 57,232/57,232 exact.  `.text` 75,762 -> 75,772; `.ARM.extab` 544.
 * `LevelScript::process` (w13839, wave 191b, second pass): case-125 state-2 `stopShooting` before `m_bCinematicBreak`.  Raw **53,041 -> 53,044** (+3), aligned **19,158 -> 19,155** (-3), size 57,232/57,232 exact.  `.text` 75,770 -> 75,773; `.ARM.extab` 544.
