@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,655** | 21,210 | 57,232 |
-| `Radar::draw` | **6,021** | 1,917 | 9,908 |
+| `Radar::draw` | **6,037** | 1,892 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
@@ -30,11 +30,15 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,159**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,175**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13717, wave 191b): gas-spark in-sight X-first geometry
+  (`int top`, `screenX < left + size*2`, `screenY < top + size*2`).  Raw
+  **6,021 -> 6,037** (+16), aligned **1,917 -> 1,892** (-25), size
+  9,908/9,908 exact.  `.text` 72,159 -> 72,175.
 * `MGame::OnUpdate` (w13713, wave 191b): hoist `Level *level = this->level;`
   above `rnd->nextInt(2)` and drop the volatile status-pointer anchor; the
   hoisted level load pins the `@Globals::status` GOT base in r9.  Raw

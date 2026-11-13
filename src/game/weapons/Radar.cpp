@@ -965,9 +965,9 @@ enemies:
                     if (this->onScreen) {
                         int size = this->turretScopeHalfWidth;
                         int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
-                        float top = PlayerEgo::crosshairPos.y - (float) size;
-                        inSight = this->screenX > left && left > this->screenX - size * 2 && this->screenY > (int) top &&
-                                  (int) top > this->screenY - size * 2;
+                        int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                        inSight = this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                                  this->screenY < top + size * 2;
                     }
                     if (inSight) {
                         float distance = AbyssEngine::AEMath::VectorLength(
