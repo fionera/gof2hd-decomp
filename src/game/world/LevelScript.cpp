@@ -1426,7 +1426,7 @@ bool LevelScript::process(int delta) {
                || Globals::status->getCurrentCampaignMission() == 161) {
         // Chain A: short station-departure intro shared by several missions (0x138ea4).
         m_nScriptTimerA += delta;
-        m_pCamera->translate((float) delta, 0.0f, (float) -delta * 2.0f);
+        m_pCamera->translate((float) delta, 0.0f, (float) (-2 * delta));
         if (m_nState == 0) {
             if (m_nScriptTimerA >= 2000) {
                 m_nState = 1;
