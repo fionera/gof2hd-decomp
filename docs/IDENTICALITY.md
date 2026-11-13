@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,997** | 19,531 | 57,232 |
 | `Radar::draw` | **6,925** | 1,303 | 9,908 |
-| `Layout` C1/C2 | **5,578** | 2,012 | 7,072 |
+| `Layout` C1/C2 | **5,577** | 2,011 | 7,072 |
 | `Level::createMission` | **3,495** | 472 | 17,172 |
 | `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
 | `HangarWindow::render` | **2,021** | 306 | 9,700 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,636**, `.ARM.extab` **623**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,635**, `.ARM.extab` **623**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13808, wave 191b): independent-store swap `s(141,197)` (`field_0x94` <-> `field_0x1ec`).  Raw **5,578 -> 5,577** (-1), aligned **2,012 -> 2,011** (-1), size 7,072/7,072 exact.  `.text` 76,636 -> 76,635; `.ARM.extab` 623.
 * `HangarWindow::render` (w13823, wave 191b): free-credits `textY`/`textYv` arm swap in the `i == 0` / else branches.  Raw **2,053 -> 2,021** (-32), aligned **306** unchanged, size 9,700/9,700 exact; instruction count 3,734/3,734.  `.text` 76,668 -> 76,636; `.ARM.extab` content 625 -> 623 (size 156,312 exact).
 * `Radar::draw` (w13815, wave 191b): `missionBlocksPlanets` is an `int` (0/1) and the planet-lock guard is the additive disjunction `missionBlocksPlanets + (planetLockTimer < 1)`.  Raw **6,995 -> 6,925** (-70), aligned **1,303** unchanged, size 9,908/9,908 exact.  `.text` 76,738 -> 76,668; `.ARM.extab` 625.
 * `LevelScript::process` (w13790, wave 191b, prologue): hoisted the prologue accessors through a `Level *level = m_pLevel` local.  Raw **53,005 -> 52,997** (-8), aligned **19,538 -> 19,531** (-7), size 57,232/57,232 exact.  `.text` 76,746 -> 76,738; `.ARM.extab` 625.
