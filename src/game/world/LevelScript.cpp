@@ -5232,8 +5232,9 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(step * 4.8f * approach, 0.0f, (float) -delta * 0.7f * approach);
                     AEGeometry *marker = m_pGeometry4;
                     Vector target{9000.0f, 0.0f, -13000.0f};
-                    marker->setDirection(AbyssEngine::AEMath::VectorNormalize(target - marker->getPosition()),
-                                         Vector{0.0f, 1.0f, 0.0f});
+                    Vector pos = marker->getPosition();
+                    Vector up{0.0f, 1.0f, 0.0f};
+                    marker->setDirection(AbyssEngine::AEMath::VectorNormalize(target - pos), up);
                     if (m_nScriptTimerA <= 29999) {
                         m_pGeometry4->moveForward(step * 2.5f);
                     }

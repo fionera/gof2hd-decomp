@@ -15,12 +15,12 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,614** | 21,594 | 57,232 |
+| `LevelScript::process` | **51,611** | 21,601 | 57,232 |
 | `Radar::draw` | **6,014** | 1,947 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
-| `HangarWindow::render` | **1,038** | 620 | 9,700 |
+| `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
@@ -30,11 +30,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,340**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,339**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13688, wave 191b): case-158 state-1 marker
+  direction names the `getPosition()` result and the up vector as locals
+  instead of inlining both into `setDirection(VectorNormalize(target - pos),
+  up)`.  Raw **51,614 -> 51,611** (-3), aligned 21,594 -> 21,601 (+7), size
+  57,232/57,232 exact.  (The w13677 case-154 compensation was not landed: it
+  reverts the w13668 `+=` -> `=` raw win.)
+* `HangarWindow::render` (w13682, wave 191b): the upgrade-button body passes
+  the literal `true` to `buttons[2]->setVisible`, matching the original's
+  `movs r1,#1` at 0x149bd6; the enclosing guard proves `upgradeMode` is true.
+  Raw **1,038 -> 1,040** (+2), aligned **620 -> 516** (-104), size
+  9,700/9,700 exact.
 * `LevelScript::process` (w13687, wave 191b): case-105 state-6 teardown and
   camera block reconstructed from Thumb.  The old code called
   `setPosition(m_tempVec)` *before* the final `+= up * 400.0f`, so the camera

@@ -835,7 +835,7 @@ void HangarWindow::render() {
                                 if (__builtin_expect(upgTab == 1 && this->upgradeMode, 1)) { // lint: arm_builtin
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
-                                    (*this->buttons)[2]->setVisible(this->upgradeMode);
+                                    (*this->buttons)[2]->setVisible(true);
                                     (*this->buttons)[10]->setVisible(true);
                                     (*this->buttons)[10]->draw();
                                 }
