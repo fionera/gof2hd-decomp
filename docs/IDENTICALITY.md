@@ -28,13 +28,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `Hud::draw` | **19** | 6 | 9,332 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
-| `MGame::OnUpdate` | **10** | 112 | 11,440 |
+| `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,199**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,197**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnUpdate` (w13623, wave 191b): the m122 codegen anchor now stores
+  `Globals::status` to a volatile local and reads it back as the
+  `getCurrentCampaignMission` receiver.  The read-back is a 2-byte
+  `ldr r0,[sp,#120]`, exactly compensating the 2-byte volatile store, so the
+  m23 64-bit compare keeps its status load in r2 and the constant in r4.
+  Raw **10 -> 8** (-2), aligned 112 -> 108, size 11,440/11,440 exact.
+  `.text` 71,199 -> 71,197 (-2); `.ARM.extab` 577, `.ARM.exidx` 0,
+  `.rodata` 0.
 * `Layout` C1/C2 (w13607, wave 191b): move the deferred `field_0x2c8`
   store between the `t_field_0x2c8` declaration and `field_0x2d0`, and move
   `field_0x2cc` after `field_0x2d0`.  Raw 5,232 -> 5,235 (+3), aligned
