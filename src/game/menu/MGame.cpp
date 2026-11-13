@@ -2814,16 +2814,12 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
-                    // Codegen anchor: the dead volatile store keeps the status pointer
-                    // live across nextInt (pinning the GOT base of @Globals::status in
-                    // r9); the volatile read-back is the ccm receiver, so the m23
-                    // 64-bit compare keeps its status load in r2 and the constant in r4.
-                    Status *st = Globals::status;
+                    // Codegen anchor: hoisting the level load above nextInt keeps it
+                    // live across the call, which pins the GOT base of @Globals::status
+                    // in r9 for the whole branch (the original's allocation).
                     int radioIndex = Globals::rnd->nextInt(2);
-                    Status *volatile dummy = st;
-                    Status *st2 = dummy;
-                    int radioBase = st2->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     Level *level = this->level;
+                    int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     level->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&

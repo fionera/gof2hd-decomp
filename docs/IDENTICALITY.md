@@ -28,13 +28,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `Hud::draw` | **19** | 6 | 9,332 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
-| `MGame::OnUpdate` | **8** | 108 | 11,440 |
+| `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,151**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,159**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnUpdate` (w13713, wave 191b): hoist `Level *level = this->level;`
+  above `rnd->nextInt(2)` and drop the volatile status-pointer anchor; the
+  hoisted level load pins the `@Globals::status` GOT base in r9.  Raw
+  **8 -> 16** (+8), aligned **108 -> 6** (-102), size 11,440/11,440 exact.
+  `.text` 72,151 -> 72,159.
 * `MGame::OnTouchEnd` (w13532, wave 191b): campaign-100 body getter order
   (`64,5c,60,68`, then `switch`, `departStation`, `initStreamOutPosition`).
   Raw **3,650 -> 3,648** (-2), aligned **694 -> 665** (-29), size
