@@ -1999,7 +1999,7 @@ void Level::createMission() {
     }
     if (raid) {
         AERandom *volatile &rnd = Globals::rnd;
-        Globals *volatile &globals = Globals::globals;
+        Globals *globals = Globals::globals;
         int raidType = globals->getRandomEnemyFighter(raidRace);
         bool hard = Globals::status->hardCoreMode();
         int guns = alienGuns + fortressGuns;
