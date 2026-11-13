@@ -4540,9 +4540,9 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition(m_tempVec);
                     m_pRadar->enabled = 0;
                     m_tempVec = (*m_pLevel->getEnemies())[2]->geometry->getPosition();
+                    ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
                     m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
                     m_bCinematicBreak = 1;
-                    ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
                     (*enemies)[1]->field_0x70 = 1;
                     for (unsigned int i = 0; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroup == 9) {
