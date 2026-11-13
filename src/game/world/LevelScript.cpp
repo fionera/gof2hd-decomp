@@ -707,6 +707,26 @@ bool LevelScript::process(int delta) {
                 m_nState = 5;
             }
             // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
+        } else if (m_nState == 3) {
+            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
+            // message #8 finishes hand control back to the player and reframe onto the player ship.
+            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
+            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
+                m_nState = 4;
+                player->setComputerControlled(false);
+                player->player->field_5e = 0;
+                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
+                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                m_pCamera->setLookAtCam(false);
+                m_pCamera->setTarget(player->geometry);
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
+                m_nScriptTimerA = 0; // duplicate store keeps the block's original 8-byte width
+            }
+            // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
             // ship has slowed to cruise speed.
@@ -733,26 +753,6 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
                 m_nState = 6;
             }
-        } else if (m_nState == 3) {
-            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
-            // message #8 finishes hand control back to the player and reframe onto the player ship.
-            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
-            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
-            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
-                player->player->field_5e = 0;
-                m_pLevel->getPlayer()->setCollide(true);
-                player->setComputerControlled(false);
-                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_nState = 4;
-                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                m_pCamera->setTarget(player->geometry);
-                m_pCamera->setLookAtCam(false);
-                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
-                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-            }
-            // falls through to the shared active tail (0x137f7c)
         } else {
             switch (m_nState) {
                 case 6: {

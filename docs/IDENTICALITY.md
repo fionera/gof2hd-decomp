@@ -15,13 +15,13 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,136** | 20,653 | 57,232 |
+| `LevelScript::process` | **53,589** | 20,577 | 57,232 |
 | `Radar::draw` | **6,511** | 1,622 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,624** | 858 | 17,172 |
 | `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
-| `Level::createShip` | **1,165** | 385 | 2,764 |
+| `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **73,159**, `.ARM.extab` **563**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,637**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createShip` (w13741, wave 191b): race-0 hull `ArraySetLength`
+  before the three `BoundingAAB` allocations, faithful `min(getLevel(),20)`
+  emp clamp (`40 + e + e*4`), `setBV` before the ship-group/geometry tail,
+  and `EmpGuard` around `getShipGroup` instead of `setShipGroup`.  Raw
+  **1,165 -> 1,190** (+25), aligned **385 -> 366** (-19), size
+  2,764/2,764 exact.
+* `LevelScript::process` (w13746, wave 191b): mission-0 state-3 hand-back
+  block restored to the original 0x138a10 store/call order, and state 3
+  moved before state 5 to match the original `cmp 4 / cmp 3 / cmp 5`
+  dispatch.  Raw **52,136 -> 53,589** (+1,453), aligned **20,653 ->
+  20,577** (-76), size 57,232/57,232 exact.
+  The batch moves `.text` 73,159 -> 74,637 and `.ARM.extab` 563 -> 564.
 * `Level::createMission` (w13705, wave 191b): reload the gun after the
   `createStaticObject` store.  Raw **2,626 -> 2,624** (-2), aligned
   **864 -> 858** (-6), size 17,172/17,172 exact.

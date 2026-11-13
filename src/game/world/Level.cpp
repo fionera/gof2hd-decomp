@@ -5226,8 +5226,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = (Globals::status->getLevel() <= 20 ? Globals::status->getLevel() * 5 : 100);
-    empPoints += 40;
+    int e = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
+    int empPoints = 40 + e + e * 4;
     int empTime;
     if (shipClass == 1) {
         hitpoints *= type == 14 ? 25 : 5;
@@ -5254,11 +5254,12 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (shipClass == 0) {
         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        AEGeometry *grp = Globals::globals->getShipGroup(type, race, group);
+        AEGeometry *grp;
         {
             EmpGuard guard;
-            fighter->setShipGroup(grp, type, hostile);
+            grp = Globals::globals->getShipGroup(type, race, group);
         }
+        fighter->setShipGroup(grp, type, hostile);
         if (__builtin_expect(missionPtr != 23, 1) && missionPtr != 1) { // lint: arm_builtin
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
@@ -5296,11 +5297,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     (*volumes)[10] = new BoundingAAB(fx, y, z, 0.0f, -15852.0f, -2610.0f, 15860.0f, 2510.0f, 10910.0f);
                     fixed->setWreckedMeshId(0x4780);
                 } else {
-                    BoundingVolume *b0 = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
-                    (*volumes)[0] = b0;
-                    BoundingVolume *b1 = new BoundingAAB(fx, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
                     ArraySetLength(3, *volumes);
-                    (*volumes)[1] = b1;
+                    (*volumes)[0] = new BoundingAAB(fx, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
+                    (*volumes)[1] = new BoundingAAB(fx, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
                     (*volumes)[2] = new BoundingAAB(fx, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
                     fixed->setWreckedMeshId(0x477e);
                 }
@@ -5330,11 +5329,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 fixed->setWreckedMeshId(0x477f);
                 break;
         }
+        fixed->setBV(volumes);
         fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
         AEGeometry *g = fixed->geometry;
         lodManager->addObject(g);
         fixed->field_0x40 = 1;
-        fixed->setBV(volumes);
         ship = fixed;
     }
     ship->setLevel(this);
