@@ -17,10 +17,10 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,192** | 18,907 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
-| `Layout` C1/C2 | **5,570** | 2,011 | 7,072 |
+| `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
-| `HangarWindow::render` | **1,393** | 407 | 9,700 |
+| `HangarWindow::render` | **1,395** | 396 | 9,700 |
 * `Layout` C1/C2 (w13836, wave 191b, second pass): three independent-store moves (`field_0x114_strip5c`, `field_0x200`, `field_0x1f0`).  Raw **5,570 -> 5,585** (+15), aligned **2,011 -> 2,005** (-6), size 7,072/7,072 exact.  `.text` 76,785 -> 76,800; `.ARM.extab` 594.
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **45** | 28 | 1,432 |
@@ -31,11 +31,13 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,845**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,876**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13870, wave 192): buy-list `description` declared before `price` (reverts the w13852 order).  Raw **1,393 -> 1,395** (+2), aligned **407 -> 396** (-11), size 9,700/9,700 exact.  `.text` 76,874 -> 76,876; `.ARM.extab` 597.
+* `Layout` C1/C2 (w13869, wave 192): drop the duplicated `field_0x184` store (the original writes it once in body C).  Raw **5,585 -> 5,614** (+29), aligned **2,005 -> 1,993** (-12), size 7,072/7,072 exact.  `.text` 76,845 -> 76,874; `.ARM.extab` 597.
 * `SpaceLounge::drawLounge` (w13861, wave 192): reuse the `pad` local in the `DrawRectangle` right-edge argument instead of reloading `Globals::layout->field_0x94`.  Raw **138 -> 175** (+37), aligned **87 -> 41** (-46), size 1,948/1,948 exact.  `.text` 76,808 -> 76,845; `.ARM.extab` 594 -> 597.
 * `LevelScript::process` (w13866, wave 192, second pass): case-92 state-1 teardown order (enemy `field_0x128` before `field_0x38`/`awake`, `m_bCinematicBreak` before `m_pHud->visible`, `m_nScriptTimerA`/`m_nState++` after the docking-target stores) and mission-1 intro `setTarget`/`play`/`getPosition` order.  Raw **53,192 -> 53,202** (+10), aligned **18,887 -> 18,752** (-135), size 57,232/57,232 exact.  `.text` 76,798 -> 76,808; `.ARM.extab` 594.
 * `Level::createShip` (w13855, wave 192): invert the level clamp to `getLevel() > 20 ? 20 : getLevel()`.  Raw **1,183 -> 1,190** (+7), aligned **368 -> 366** (-2), size 2,764/2,764 exact.  `.text` 76,791 -> 76,798; `.ARM.extab` 594.
