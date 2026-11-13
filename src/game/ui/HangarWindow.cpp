@@ -926,7 +926,7 @@ void HangarWindow::render() {
                 String price("");
                 String description("");
                 (*this->buttons)[12 + count]->setVisible(true);
-                switch ((signed char) count) {
+                switch ((unsigned char) count) {
                     case 0:
                         description = String(Globals::cItemListDescription_00);
                         price = String(Globals::cItemListPrice_00);
@@ -1006,7 +1006,6 @@ void HangarWindow::render() {
 
         if (!Globals::options[75] || !Globals::options[74] || !Globals::options[73] || !Globals::options[77] ||
             !Globals::options[76] || data->freeCreditsOffer) {
-            int rh = Globals::layout->field_0x2c_rowHeight;
             int top = Globals::layout->field_0x20_top;
             int gsy = this->gridSpacingY;
             int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2;
@@ -1017,7 +1016,7 @@ void HangarWindow::render() {
                 (*this->buttons)[17]->setPosition(x, y, 68);
                 (*this->buttons)[17]->replaceTextKeepSize(*Globals::gameText->getText(118));
                 (*this->buttons)[17]->draw();
-                Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - rh, 17, 68);
+                Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - Globals::layout->field_0x2c_rowHeight, 17, 68);
                 Globals::Canvas->DrawImage2D(
                     this->scrollHintImageB,
                     (int) ((float) (Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2) +
@@ -1061,8 +1060,8 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
-                int width = button->getWidth();
                 int rh = Globals::layout->field_0x2c_rowHeight;
+                int width = button->getWidth();
                 int height = button->getHeight();
                 PaintCanvas *canvas = Globals::Canvas;
                 canvas->SetColor(0xffffffffu);

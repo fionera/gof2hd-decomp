@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,578** | 2,012 | 7,072 |
 | `Level::createMission` | **3,495** | 472 | 17,172 |
 | `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
-| `HangarWindow::render` | **1,224** | 433 | 9,700 |
+| `HangarWindow::render` | **2,050** | 317 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,918**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,744**, `.ARM.extab` **625**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13799, wave 191b, fourth pass): `buttons[17]` row-height inline, free-credits `rh`-first, and unsigned-char switch.  Raw **1,224 -> 2,050** (+826), aligned **433 -> 317** (-116), size 9,700/9,700 exact; instruction count now 3,734/3,734.  `.text` 75,918 -> 76,744; `.ARM.extab` content 594 -> 625 (size 156,312 exact).
 * `LevelScript::process` (w13814, wave 191b, case-158): lazy up-vector construction and shared-tail route order.  Raw **53,007 -> 53,006** (-1), aligned **19,686 -> 19,676** (-10), size 57,232/57,232 exact.  `.text` 75,919 -> 75,918; `.ARM.extab` 594.
 * `LevelScript::process` (w13790, wave 191b, case-16 state-0): reordered the wormhole-tutorial body to the original statement order and dropped the `Level *self` alias, reading `m_pLevel` directly.  Raw **53,007 -> 53,007** (0), aligned **19,694 -> 19,686** (-8), size 57,232/57,232 exact.  `.text` 75,919 unchanged; `.ARM.extab` 594.
 * `LevelScript::process` (w13810, wave 191b, case-144): state-0 `addFireStreaks` before `setScaling`, state-1 escort body rewritten to the original statement order (`resetCamera`/free-look/first-person/hide-ship/stop-shooting/vulnerable/visible/freeze, then hud/radar stores and `setLookAtCam`), and `setPosition` after both `m_tempVec` accumulations.  Raw **52,993 -> 53,007** (+14), aligned **19,776 -> 19,694** (-82), size 57,232/57,232 exact.  `.text` 75,904 -> 75,918; `.ARM.extab` 594.
