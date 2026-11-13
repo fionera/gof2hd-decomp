@@ -634,7 +634,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         hud->hudEvent(21, this->level->getPlayer(), 0);
                         goto enemies;
                     }
-                    if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
+                    if (!this->lockConfirmed) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
                     this->field_0x14 = this->field_0x18;
@@ -1281,7 +1281,7 @@ asteroids_done:
                     Globals::sound->play(140, nullptr, nullptr, 0.0f);
                 }
             } else if (this->field_0x1bc < 5) {
-                if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
+                if (alwaysEnemySeen) {
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (__builtin_expect(bossSeen, 1)) {  // lint: arm_builtin
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
