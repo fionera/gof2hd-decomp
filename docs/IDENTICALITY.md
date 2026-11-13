@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,956** | 20,871 | 57,232 |
 | `Radar::draw` | **6,208** | 1,805 | 9,908 |
-| `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
+| `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,647**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,646**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13679, wave 191b): three store-order swaps in the
+  `field_0x1dc`/`0x1d4`/`0x1c0`/`0x2c0` block and the `orbitInfo*` block.
+  On current master this is raw **5,266 -> 5,265** (-1), aligned 2,442
+  (tie), size 7,072/7,072 exact; `.text` 72,647 -> 72,646.  The worker's
+  old-base aligned win did not transfer.
 * `LevelScript::process` (w13728, wave 191b): faithful order for mission-0
   state 6 (timer after camera translate), mission-1 intro (`forceUpdate`
   first, `getPosition` before `setToSleep`), mission-0 case 12 teardown,
