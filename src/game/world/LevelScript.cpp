@@ -1872,9 +1872,9 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pCamera->setPosition(player->geometry->getPosition());
                     Vector *frame = &m_tempVec; // LevelScript tempVec @0x28
-                    Vector tmp{0.0f, 0.0f, 0.0f};
                     *frame = player->geometry->getDirection();
                     *frame *= 25000.0f;
+                    Vector tmp{0.0f, 0.0f, 0.0f};
                     tmp = player->geometry->getRightVector();
                     tmp *= 1000.0f;
                     *frame += tmp;

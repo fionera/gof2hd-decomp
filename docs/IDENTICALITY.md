@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,102** | 19,937 | 57,232 |
+| `LevelScript::process` | **53,100** | 19,937 | 57,232 |
 | `Radar::draw` | **7,089** | 1,339 | 9,908 |
 | `Layout` C1/C2 | **5,541** | 2,033 | 7,072 |
 | `Level::createMission` | **2,902** | 475 | 17,172 |
@@ -30,7 +30,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,285**, `.ARM.extab` **587**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,283**, `.ARM.extab` **587**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -38,6 +38,7 @@ Landed changes:
 * `LevelScript::process` (w13769, wave 191b, continued): mission-0x4e state-1/10/12 statement order, mission-154 state-2 body/tail order, mission-157 save-block and `initStreamOut`/switch-target store order, case-94 state-2 `pl` operand order, case-21 enemy loop reading `m_pLevel` directly, and case-125 state-0 route/timer order.  Raw **53,127 -> 53,131** (+4), aligned **20,084 -> 20,074** (-10), size 57,232/57,232 exact.  `.text` 75,308 -> 75,312; `.ARM.extab` 587.
 * `LevelScript::process` (w13771, wave 191b): case-16 s1 `forceUpdate` before the cinematic break, case-157 s2 `>=16001` station-position order, and mission-26/5 order plus the case-102 s2 do-while.  Raw **53,131 -> 53,102** (-29), aligned **20,074 -> 19,937** (-137), size 57,232/57,232 exact.  `.text` 75,312 -> 75,283; `.ARM.extab` 587.
 * `Level::createMission` (w13773, wave 191b, continued): raid `setPosition` after the z jitter and the pirateFortress loop-sum order.  Raw **2,900 -> 2,902** (+2), aligned **506 -> 475** (-31), size 17,172/17,172 exact.  `.text` 75,283 -> 75,285; `.ARM.extab` 587.
+* `LevelScript::process` (w13790, wave 191b): case-29 up-vector accumulation order and frame-temp lifetime reuse.  Raw **53,102 -> 53,100** (-2), aligned **19,937** unchanged, size 57,232/57,232 exact.  `.text` 75,285 -> 75,283; `.ARM.extab` 587.
 * `Level::createMission` (w13773, wave 191b): pirateFortress gun reload after store, case-2 route coords brace init with goods after Route, stationPirates createStaticObject-before-pirateBase, stationPirates escort Vector pos inline initializer, case-4 hunter loop drops the globals local, and extraAliens reads spawnPosition directly.  Raw **3,389 -> 2,900** (-489), aligned **531 -> 506** (-25), size 17,172/17,172 exact.  `.text` 75,798 -> 75,309; `.ARM.extab` 590 -> 587.
 * `Layout` C1/C2 (w13775, wave 191b, second harvest): two more independent store swaps.  Raw **5,542 -> 5,541** (-1), aligned **2,049 -> 2,033** (-16), size 7,072/7,072 exact.  `.text` 75,309 -> 75,308; `.ARM.extab` 587.
 * `Layout` C1/C2 (w13775, wave 191b): store swap `s(188,196)` plus three more independent store swaps.  Raw **5,494 -> 5,542** (+48), aligned **2,095 -> 2,049** (-46), size 7,072/7,072 exact.  `.text` 75,750 -> 75,798; `.ARM.extab` 590.
