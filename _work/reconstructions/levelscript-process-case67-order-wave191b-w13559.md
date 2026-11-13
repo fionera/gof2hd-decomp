@@ -61,3 +61,39 @@ data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370).
 
 Scratch harness (`parser.py`, `sweep.py`, `measure.py`, `clusters.py`) lives
 in `/home/debian/GalaxyOnFire2/scratch/w13559/`.
+
+## Second landing: case-102 hide-ship hoist
+
+The distance-3 transposition sweep (646 candidates) found one size-exact,
+`.rel.plt`-identical raw win: in the case-102 Valkyrie-arrival block, move
+`player->hideShipForFirstPersonCameraView(false);` before the free-look /
+first-person-camera stores and the rocket-control `if`:
+
+```cpp
+                     resetCamera(m_pLevel);
+                     player->setTurretMode(false);
++                    player->hideShipForFirstPersonCameraView(false);
++                    player->setFreeLookMode(false);
++                    m_pCamera->enableFirstPersonCam(false);
+                     if (player->isInRocketControl()) {
+                         player->setRocketControl(nullptr, nullptr);
+                         player->killLiberator();
+                         m_pCamera->setRumblePercentage(0.0f, 0);
+                     }
+-                    player->setFreeLookMode(false);
+-                    m_pCamera->enableFirstPersonCam(false);
+-                    player->hideShipForFirstPersonCameraView(false);
+                     player->stopShooting(0);
+```
+
+The hide-ship flag is independent of the free-look / first-person flags and
+of the rocket-control branch (which only touches rocket control, liberator
+kill and camera rumble).  Semantics preserving.
+
+```
+raw        51,539 -> 51,538  (-1)
+size       57,232 / 57,232   (exact)
+.text      71,239 -> 71,238  (-1)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+RATCHET    PASS
+```

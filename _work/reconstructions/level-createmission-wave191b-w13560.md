@@ -12,6 +12,7 @@ Continues `level-createmission-wave191-w13537.md` (alien-gun tail) and
                                      size            raw    aligned  insn
 base 2baef717d                       17172/17172     2628    844     6206/6197
 landed (pass 1)                      17172/17172     2627    844     6206/6197
+landed (pass 2)                      17172/17172     2626    845     6206/6197
 ```
 
 ## 1. Result — landed
@@ -19,10 +20,10 @@ landed (pass 1)                      17172/17172     2627    844     6206/6197
 | metric | before | after |
 |---|---:|---:|
 | size | 17,172 | 17,172 (exact) |
-| raw | 2,628 | **2,627** (-1) |
-| aligned | 844 | 844 |
+| raw | 2,628 | **2,626** (-2) |
+| aligned | 844 | 845 |
 | insn | 6206/6197 | 6206/6197 |
-| `.text` diff | 71,240 | **71,239** (-1) |
+| `.text` diff | 71,240 | **71,238** (-2) |
 | `.ARM.extab` diff | 576 | 576 |
 | `.rodata` diff | 485 | 485 |
 | `.rel.plt` diff | 0 | 0 (byte-identical) |
@@ -49,6 +50,24 @@ the `0x3800` region drops from 223 to 222 differing bytes.  `const volatile`
 `AERandom *rnd = Globals::rnd;` is **fatal** (raw 4204, size 17,152) and
 `volatile AERandom *rnd` (pointer-to-volatile, not volatile pointer) does
 not compile against the existing `Globals::rnd` type.
+
+## 2b. Pass 2: volatile reference to `Globals::globals` (raw 2,627 -> 2,626)
+
+```cpp
+if (raid) {
+    AERandom *volatile &rnd = Globals::rnd;
+    Globals *volatile &globals = Globals::globals;
+    int raidType = globals->getRandomEnemyFighter(raidRace);
+```
+
+The volatile read of `Globals::globals` for the `raidType` call drops the
+`0x3700` region from 125 to 124 differing bytes (raw -1, `.text` -1).
+`Globals::status` through the same volatile-reference spelling is neutral on
+top of this.  Scoping the `globals` reference at function scope (covering the
+raid block *and* the pirates/station-pirates loops) is worse: raw 2,627 /
+aligned 845.  The `rnd` reference is redundant once `globals` is present
+(`globals`-only also measures 2,626), but it is kept because it is already
+committed and does not interact.
 
 ## 3. The `[sp,#100]` slot is `&Globals::rnd`, not `Globals::rnd`
 
@@ -105,7 +124,7 @@ python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN5Level13crea
 (ulimit -v 12000000; cmake --build cmake-build-match --target check -j2)
 ```
 
-Expected: `raw=2627 aligned=844 size=17172/17172`, `.text` diff 71,239,
+Expected: `raw=2626 aligned=845 size=17172/17172`, `.text` diff 71,238,
 `.ARM.extab` diff 576, `.rel.plt` diff 0, `RATCHET PASS`.
 
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13560/`

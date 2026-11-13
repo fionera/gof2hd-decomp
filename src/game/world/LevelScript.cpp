@@ -3312,14 +3312,14 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     resetCamera(m_pLevel);
                     player->setTurretMode(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
                     if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
-                    player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
-                    player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     player->setVisible(false);
                     player->setFreeze(true);

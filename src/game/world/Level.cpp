@@ -1998,7 +1998,8 @@ void Level::createMission() {
     }
     if (raid) {
         AERandom *volatile &rnd = Globals::rnd;
-        int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
+        Globals *volatile &globals = Globals::globals;
+        int raidType = globals->getRandomEnemyFighter(raidRace);
         bool hard = Globals::status->hardCoreMode();
         int guns = alienGuns + fortressGuns;
         if (raidRace == 8 && Level::initStreamOutPosition &&
