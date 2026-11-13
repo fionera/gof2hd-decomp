@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,589** | 20,577 | 57,232 |
+| `LevelScript::process` | **52,672** | 20,656 | 57,232 |
 | `Radar::draw` | **6,858** | 1,459 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,624** | 858 | 17,172 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,984**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,067**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13746, wave 191b): mission-0 state-4 teardown
+  restored to the original 0x138d3a-0x138df6 instruction order (drop the
+  cached `Level*` local and the `Vector` temp), mission-89 case-3 else
+  order (`startFade` -> `setVisible` -> hitpoint loop -> timer ->
+  `state=4`, matching 0x13c496), and revert of the state-3-before-state-5
+  block move.  The block move had silently rotated five `.rel.plt` slots
+  (md5 `a8d49cee` -> `289b2a06`); `.rel.plt` is now **byte-identical to
+  the original** again.  Raw **53,589 -> 52,672** (-917), aligned
+  **20,577 -> 20,656** (+79), size 57,232/57,232 exact.  `.text`
+  74,984 -> 74,067, `.ARM.extab` 564 -> 561.
 * `Radar::draw` (w13751 + w13744 pass 3, wave 191b): station/planet
   lock-blip frame math reassociated to divide-then-multiply, `setFrame`
   through the cached `blip` pointer, plus four branch-hint drops
