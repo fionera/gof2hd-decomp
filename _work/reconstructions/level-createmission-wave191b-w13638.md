@@ -144,6 +144,88 @@ size (17,148 / 17,164), so it is not landable.
 | `KIPlayer *ship = createShip(...); enemies[i]=ship; ship->...` | 10,722 | 944 | **17,164** |
 | `PlayerFighter *ship = (PlayerFighter*)createShip(...)` | 10,722 | 944 | **17,164** |
 
+
+## 3f. Follow-up sweep (same wave): alienGuns/pirateFortress source order
+
+The binary's `alienGuns` loop interleaves the two rotations with the
+`setRotation` call, and puts `cargo = nullptr` *after* `setScaling`:
+
+```text
+0xb32f6  blx MatrixRotateVector     (t[3..5])
+0xb3300  blx Vector::operator=      (v = result)
+0xb3308  blx setRotation(v)
+0xb3320  blx MatrixRotateVector     (t[0..2])
+0xb3328  blx Vector::operator=      (v = result)
+...      setPosition, setScaling
+0xb3372  str r0,[r6,#80]            (cargo = nullptr)
+0xb337e  str r0,[r6,#40]            (shipGroup)
+```
+
+The checked-in source instead has both rotations before `setRotation`, so the
+first rotation is dead and `setRotation` receives the *second* vector — a
+semantic divergence from the binary, not just a scheduling one.  Likewise
+`pirateFortress` has `cargo = nullptr` before `shipGroup` in the binary but
+after it in the source.
+
+Reordering to the binary's order was measured; it fixes the call order but
+re-allocates the tail:
+
+| variant | raw | aligned | size | insn |
+|---|---:|---:|---:|---:|
+| base | **2,626** | **845** | 17,172 | 6206/6197 |
+| alienGuns order fixed | 2,642 | 1,022 | 17,172 | 6206/6197 |
+| alienGuns order + `gun` after store | 2,643 | 1,018 | 17,172 | 6206/6197 |
+| alienGuns order + both `gun`-after + pirateFortress order | 2,655 | 1,018 | 17,172 | 6206/6197 |
+| alienGuns `cargo` moved only (rotations unchanged) | 2,632 | 844 | 17,172 | 6206/6197 |
+
+## 3g. `KIPlayer *gun` must be assigned *after* `createStaticObject`
+
+The binary reloads the array element after the store in both turret loops
+(`str r0,[r1,fp,lsl#2]` then `ldr r0,[r4,#248] ... ldr r6,[r0,fp,lsl#2]`), i.e.
+the source reads `(*this->enemies)[i]` after the assignment.  The checked-in
+source reads it before the store, so `gun` is the *replaced* object.  Moving
+the declaration after the store reproduces the binary's shape exactly in the
+loop body but does not move the gate:
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| base | **2,626** | **845** | 17,172 |
+| alienGuns `gun` after store | 2,627 | **841** | 17,172 |
+| pirateFortress `gun` after store | 2,632 | 842 | 17,172 |
+| both | 2,633 | **838** | 17,172 |
+| both + GCSR loot order | 2,638 | **834** | 17,172 |
+
+## 3h. The `(i < 0) + (i < 0)` crutch is exactly the `ldrd`/`strd` width
+
+Dropping the crutch for the plain `bigAlienWave ? ... : ...` select gives
+**17,168** (confirms w13578 §3): the crutch's four extra instructions are
+exactly the 4 B that the `ldrd`/`strd` pairing saves.  A named `Vector` local
+plus the plain select gives the first **exact instruction count**
+(`6197/6197`) but 17,152 B — the shape is right and only the 16-vs-32-bit
+encodings differ:
+
+| variant | raw | aligned | size | insn |
+|---|---:|---:|---:|---:|
+| plain select | 4,380 | 883 | 17,168 | 6203/6197 |
+| plain + alienGuns order | 4,374 | 878 | 17,168 | 6203/6197 |
+| plain + alienGuns order + `gun`-after | 4,425 | 1,010 | 17,160 | 6203/6197 |
+| plain + `Vector` locals | 4,439 | **813** | 17,152 | **6197/6197** |
+
+## 3i. Other size-breaking shapes (this pass)
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| case-2 loot without the `enemies` local alias (CSGR) | 9,973 | 869 | 17,180 |
+| case-2 loot without the local alias (GCSR) | 9,967 | 865 | 17,180 |
+| raid `int guns` moved after the inner `if` | 4,184 | 849 | 17,164 |
+| raid `int guns` hoisted before `if (raid)` | 3,560 | 916 | 17,168 |
+| `-mllvm -enable-earlycse-memssa=true` (per-TU flag toggle) | 2,626 | 845 | 17,172 |
+
+The case-2 `enemies` alias is load-bearing: removing it re-schedules the
+whole `0x1980..0x322e` region (66 -> 5,921 differing bytes), so the binary
+cannot simply be using `this->enemies` there even though the loot block
+reloads it twice.
+
 ## 4. Why every front-end/offset shape re-allocates
 
 The `enemyRace` value is a plain SSA vreg at ISel (`%398:gpr`, DBG_VALUE
