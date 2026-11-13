@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,535** | 21,707 | 57,232 |
-| `Radar::draw` | **6,013** | 1,955 | 9,908 |
+| `Radar::draw` | **6,014** | 1,947 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,270**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,271**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13678, wave 191b): move `enemy->field_0x76 = 1;` before
+  `this->egoPos = player->getPosition();` in the enemy on-screen blip block,
+  matching the original's `strb.w` at 0x12ee00 before the getPosition call at
+  0x12ee0a.  Raw **6,013 -> 6,014** (+1), aligned **1,955 -> 1,947** (-8),
+  size 9,908/9,908 exact.
 * `LevelScript::process` (w13668, wave 191b): spell the first case-154
   state-4 camera-vector add as `m_tempVec = m_tempVec + m_dirVec * (step *
   0.008f)` instead of `+=`.  Raw **51,524 -> 51,510** (-14), aligned

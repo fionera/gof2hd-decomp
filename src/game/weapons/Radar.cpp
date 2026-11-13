@@ -708,8 +708,8 @@ enemies:
                 }
             }
             if (this->onScreen) {
-                this->egoPos = player->getPosition();
                 enemy->field_0x76 = 1;
+                this->egoPos = player->getPosition();
                 this->targetPos = enemy->player->getPosition();
                 if (!(this->egoPos.x - this->targetPos.x < -24000.0f) && !(this->egoPos.x - this->targetPos.x > 24000.0f) &&
                     !(this->egoPos.y - this->targetPos.y < -24000.0f) && !(this->egoPos.y - this->targetPos.y > 24000.0f) &&
