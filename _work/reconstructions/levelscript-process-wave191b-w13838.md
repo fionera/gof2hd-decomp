@@ -223,10 +223,62 @@ aligned than it saves (best exact combo without E5: aligned 19106).
 `0x13dbd8` (354) — mission-94 `state==2`/`state==3`; `0x141028` (324) —
 mission-106.  These are clang block ordering of the switch cases.
 
-## Harvest measurement (2026-11-13, on master a2b788a4a)
+## Third landed candidate (mission-94 docked branch + radio-14 placement)
 
-On the current tree the state_a reorders (mission-94 tail + radio-15, drop the
-stale `m_pRadar->lockedEnemy = nullptr`) measure raw **53,041 -> 54,045**
-(+1,004), aligned **19,158 -> 19,126** (-32), but size **57,216/57,232** — the
-dropped store costs 16 bytes, so the change is size-fatal as-is.  Kept as a
-note; re-land after re-adding a size-neutral store.
+On top of `81db9e2e4` (raw 54,382 / aligned 19,106), two faithful
+statement-placement fixes in the mission-94 case and the shared dispatch tail.
+
+### The edits
+
+1. **mission-94 state-1 docked branch** (`0x13e130..0x13e158`): the original
+   order is `lookBehind(); setRotationAroundTarget(true);
+   setFreeLookMode(true); if (field_0xab) setTurretMode(true);` — i.e.
+   `setFreeLookMode(true)` is called unconditionally in the docked path, not
+   only in the `!docked` else branch.  Source now matches: `lookBehind()` moved
+   before `setRotationAroundTarget`, `setFreeLookMode(true)` added to the docked
+   branch and removed from the else branch.
+2. **shared dispatch tail, radio 14** (`0x144f80..0x144fd2`): the original has
+   `createRadioMessage(14, race)` inside the state-0 **success** block (after the
+   `setAlwaysEnemy` loop, before `m_nState = 1`); the fail branch has only radio
+   15.  Source had radio 14 at the end of the fail branch.  Moved it into the
+   success block before `m_nState = 1`.
+
+### Result
+
+```
+                         before (81db9e2e4)   after
+fn_diff raw              54382                53990     (-392)
+fn_diff aligned          19106                19096     (-10)
+size (orig/ours)         57232/57232          57232/57232
+.text diffbytes          77437                77045     (-392)
+.ARM.extab diffbytes     594                  594       (0)
+.ARM.exidx diffbytes     0                    0
+.rodata diffbytes        0                    0
+.rel.plt                 byte-identical       byte-identical
+byte_exact               4508                 4508
+linked_exact             4508                 4508
+size-exact               4524/4524            4524/4524
+data_exact               843/843              843/843
+imports                  207                  207
+lint                     CLEAN                CLEAN
+drift                    0                    0
+RATCHET                  PASS                 PASS
+```
+
+### Measured variants (all size-exact unless noted)
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| edit 1 alone (docked free-look order) | 54004 | 19104 | 57232 |
+| edit 1 + edit 2 (landed) | 53990 | 19096 | 57232 |
+| mission-94 state-3 `KIPlayer *ship` cache reorder | 54093 | 19104 | 57232 |
+| mission-94 state-0 `field_0xab`/`setTurretMode`/`resetCamera` reorder | 54009 | 19111 | 57232 |
+
+Both landed edits are pure statement moves; no anchor, no `volatile`, no call
+added/removed, no padding.
+
+## Harvest measurement (2026-11-13, on master 8ad8d261b)
+
+The mission-94 docked free-look order + radio-14 placement candidate measures
+raw **53,041 -> 54,229** (+1,188), aligned **19,158 -> 19,154** (-4), but size
+**57,236/57,232** — size-fatal.  Kept as a note.
