@@ -5349,7 +5349,7 @@ bool LevelScript::process(int delta) {
                 }
                 Array<int> *stationList = Globals::status->field_90;
                 for (unsigned int i = 0; i < Globals::status->field_90->count; ++i) {
-                    if ((*stationList)[i] == Globals::status->getStation()->getIndex()) {
+                    if ((*Globals::status->field_90)[i] == Globals::status->getStation()->getIndex()) {
                         (*stationList)[i] = -1;
                     }
                 }
