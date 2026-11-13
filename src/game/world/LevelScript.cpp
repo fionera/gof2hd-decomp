@@ -4491,18 +4491,18 @@ bool LevelScript::process(int delta) {
                         }
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
-                        m_pHud->visible = 1;
                         player->setFreeze(false);
-                        m_pCamera->setTarget(player->geometry);
-                        m_bCinematicBreak = 0;
+                        player->setVisible(true);
+                        m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pRadar->dockNavPtr = nullptr;
-                        player->setVisible(true);
+                        m_bCinematicBreak = 0;
                         m_nState++;
                     }
                     break;

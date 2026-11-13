@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,179** | 18,912 | 57,232 |
+| `LevelScript::process` | **53,192** | 18,907 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,570** | 2,011 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,772**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,785**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b, thirteenth pass): case-5 teardown order.  Raw **53,179 -> 53,192** (+13), aligned **18,912 -> 18,907** (-5), size 57,232/57,232 exact.  `.text` 76,772 -> 76,785; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, twelfth pass): case-64 state-0 cutscene setup order.  Raw **53,150 -> 53,179** (+29), aligned **18,972 -> 18,912** (-60), size 57,232/57,232 exact.  `.text` 76,743 -> 76,772; `.ARM.extab` 594.
 * `Status::missionCompleted` (w13830, wave 191b, third pass): null guard on the case-158 cargo array before `Item::isInList`.  Raw **72 -> 60** (-12), aligned **36 -> 41** (+5), size 1,432/1,432 exact.  `.text` 76,755 -> 76,743; `.ARM.extab` 594.
 * `LevelScript::process` (w13828, wave 191b): mission-50/51 wormhole gate order (`messages->count >= 3` before `messages[2]->isOver()`).  Raw **53,149 -> 53,150** (+1), aligned **18,975 -> 18,972** (-3), size 57,232/57,232 exact.  `.text` 76,754 -> 76,755; `.ARM.extab` 594.
