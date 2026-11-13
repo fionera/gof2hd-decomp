@@ -2420,22 +2420,22 @@ bool LevelScript::process(int delta) {
                 // camera behind enemies[0] along its own facing. FP immediates from the .rodata
                 // pool: @0x139b40 = 10000.0f (dir scale), @0x139b44/48/4c = {600, 300, 1000}.
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
-                    resetCamera(m_pLevel);
-                    m_pHud->visible = 0;
-                    player->setFreeLookMode(false);
-                    player->stopShooting(0);
-                    m_pRadar->enabled = 0;
-                    player->hideShipForFirstPersonCameraView(false);
-                    m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    player->setComputerControlled(true);
                     player->setTurretMode(false);
-                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
-                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 10000.0f;
-                    m_pCamera->enableFirstPersonCam(false);
                     camPos.x += 600.0f;
                     camPos.y += 300.0f;
                     camPos.z += 1000.0f;
@@ -2487,7 +2487,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 3000.0f;
@@ -2495,6 +2494,7 @@ bool LevelScript::process(int delta) {
                     camPos.y += -300.0f;
                     camPos.z += -1000.0f;
                     m_pCamera->setPosition(camPos);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
                     break; // -> post-switch tail (0x139abe b.w 0x144e36)
@@ -3476,9 +3476,9 @@ bool LevelScript::process(int delta) {
                         wcamera->setLookAtCam(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        m_bCinematicBreak = 0;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         m_nState++;
                         m_nScriptTimerA = 0;
                     }
