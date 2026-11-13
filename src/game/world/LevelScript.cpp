@@ -2489,11 +2489,11 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    hud->visible = 0;
+                    radar->enabled = 0;
                     m_pCamera->setActive(true);
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
-                    radar->enabled = 0;
+                    hud->visible = 0;
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();

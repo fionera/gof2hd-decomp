@@ -933,9 +933,9 @@ enemies:
                             totalInt = this->field_0x1b8;
                         }
                         float total = (float) totalInt;
+                        this->blipSprite->setFrame((int) (elapsed / total * frames));
                         this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                               (int) PlayerEgo::crosshairPos.y);
-                        this->blipSprite->setFrame((int) (elapsed / total * frames));
                         this->blipSprite->draw(1.0f, 1.0f);
                     }
                 }

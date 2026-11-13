@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,622** | 21,451 | 57,232 |
-| `Radar::draw` | **6,014** | 1,947 | 9,908 |
-| `Layout` C1/C2 | **5,244** | 2,536 | 7,072 |
+| `LevelScript::process` | **51,621** | 21,451 | 57,232 |
+| `Radar::draw` | **6,018** | 1,927 | 9,908 |
+| `Layout` C1/C2 | **5,265** | 2,453 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
@@ -30,11 +30,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,351**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,375**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13646, wave 191b): case-70 state-0 teardown
+  order (`radar->enabled` before `setActive`, `hud->visible` after
+  `setLookAtCam`).  Raw **51,622 -> 51,621** (-1), aligned 21,451 (tie),
+  size 57,232/57,232 exact.
+* `Layout` C1/C2 (w13690, wave 191b): hoist `orbitInfoSystemY` and swap the
+  `field_0x208`/`orbitInfoSecurityY` and `field_0x1d0`/`field_0x1c0` stores.
+  Raw **5,244 -> 5,265** (+21), aligned **2,536 -> 2,453** (-83), size
+  7,072/7,072 exact.
+* `Radar::draw` (w13699, wave 191b): move `setFrame(...)` before
+  `setRefPixelPosition(...)` in the enemy lock-blip block.  Raw **6,014 ->
+  6,018** (+4), aligned **1,947 -> 1,927** (-20), size 9,908/9,908 exact.
 * `LevelScript::process` (w13701 + w13635, wave 191b): case-105 state-4
   geometry reload plus the case-14 teardown, case-92 state-4 timer and
   case-157 state-2 visibility/store reorders.  Net raw **51,625 -> 51,622**
