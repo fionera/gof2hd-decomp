@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,013** | 1,961 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
-| `MGame::OnTouchEnd` | **2,878** | 1,582 | 8,080 |
+| `MGame::OnTouchEnd` | **2,878** | 1,572 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -35,6 +35,10 @@ Current section deltas: `.text` **71,210**, `.ARM.extab` **577**, `.ARM.exidx` *
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13626, wave 191b): arm-134 independent getter
+  stores reordered `sw,64,5c,60,68` -> `sw,5c,60,64,68` (pure field reads,
+  semantically neutral).  Raw **2,878** (tie), aligned **1,582 -> 1,572**
+  (-10), size 8,080/8,080 exact.  `.text` 71,210 unchanged.
 * `Layout` C1/C2 (w13637, wave 191b): three independent-field store-order
   swaps in the ctor body (`field_0x3c` after `field_0x2c_rowHeight`,
   `field_0x50`<->`field_0x74`, `field_0x248`<->`field_0x278`).  All are
