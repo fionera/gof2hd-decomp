@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,997** | 19,531 | 57,232 |
-| `Radar::draw` | **6,995** | 1,303 | 9,908 |
+| `Radar::draw` | **6,925** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,578** | 2,012 | 7,072 |
 | `Level::createMission` | **3,495** | 472 | 17,172 |
 | `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,738**, `.ARM.extab` **625**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,668**, `.ARM.extab` **625**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13815, wave 191b): `missionBlocksPlanets` is an `int` (0/1) and the planet-lock guard is the additive disjunction `missionBlocksPlanets + (planetLockTimer < 1)`.  Raw **6,995 -> 6,925** (-70), aligned **1,303** unchanged, size 9,908/9,908 exact.  `.text` 76,738 -> 76,668; `.ARM.extab` 625.
 * `LevelScript::process` (w13790, wave 191b, prologue): hoisted the prologue accessors through a `Level *level = m_pLevel` local.  Raw **53,005 -> 52,997** (-8), aligned **19,538 -> 19,531** (-7), size 57,232/57,232 exact.  `.text` 76,746 -> 76,738; `.ARM.extab` 625.
 * `HangarWindow::render` (w13799, wave 191b, fifth pass): buy-list `String` declaration order `description` before `price`.  Raw **2,050 -> 2,053** (+3), aligned **317 -> 306** (-11), size 9,700/9,700 exact; instruction count 3,734/3,734.  `.text` 76,743 -> 76,746; `.ARM.extab` 625.
 * `LevelScript::process` (w13812, wave 191b): mission-106 teardown/tail and escort-route statement order.  Raw **53,006 -> 53,005** (-1), aligned **19,676 -> 19,538** (-138), size 57,232/57,232 exact.  `.text` 76,744 -> 76,743; `.ARM.extab` 625.
