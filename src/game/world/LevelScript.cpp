@@ -3722,10 +3722,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setLookAtCam(true);
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
-                        player->stopShooting(0);
                         m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
-                        m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
+                        player->stopShooting(0);
+                        m_pHud->visible = 0;
                         AEGeometry *ref2 = (*enemies)[2]->geometry;
                         m_pCamera->setTarget(ref2);
                         m_tempVec = ref2->getPosition();
@@ -3858,8 +3858,8 @@ bool LevelScript::process(int delta) {
                     *camPos *= 8000.0f;                                        // @0x142e1c
                     Vector offset = {0.0f, 0.0f, 0.0f};
                     offset = player->geometry->getRightVector();
-                    *camPos += offset;
                     offset *= 1000.0f;                                         // @0x142e20
+                    *camPos += offset;
                     offset = player->geometry->getUpVector();
                     offset *= 1000.0f;
                     *camPos += offset;

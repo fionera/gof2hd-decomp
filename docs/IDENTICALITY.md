@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,621** | 21,451 | 57,232 |
+| `LevelScript::process` | **51,619** | 21,451 | 57,232 |
 | `Radar::draw` | **6,018** | 1,927 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **72,116**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,114**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13696, wave 191b): case-105 state-6 store order
+  (`m_bCinematicBreak`, `m_pRadar->enabled`, `player->stopShooting(0)`,
+  `m_pHud->visible`) and the state-10 right-vector scale (`offset *=
+  1000.0f` before `*camPos += offset`).  Raw **51,621 -> 51,619** (-2),
+  aligned 21,451 (tie), size 57,232/57,232 exact.  `.text` 72,116 -> 72,114.
 * `MGame::OnTouchEnd` (w13692, wave 191b): restore the original campaign
   else-if chain order (15,22,43,42,95,65,81,74,96,100,110,120,126,127,134,
   144,155,161,162) and the independent-store bodies (arm-81, arm-110,
