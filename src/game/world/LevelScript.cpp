@@ -1399,12 +1399,10 @@ bool LevelScript::process(int delta) {
             }
         }
         if (m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
-            Player *pp = player->player;
-            Status *st = Globals::status;
-            st->field_64 = pp->getHitpoints();
-            Globals::status->field_5c = pp->getShieldHP();
-            Globals::status->field_60 = pp->getArmorHP();
-            Globals::status->field_68 = pp->getGammaHP();
+            Globals::status->field_64 = player->player->getHitpoints();
+            Globals::status->field_5c = player->player->getShieldHP();
+            Globals::status->field_60 = player->player->getArmorHP();
+            Globals::status->field_68 = player->player->getGammaHP();
             Globals::status->nextCampaignMission(true);
             Globals::status->nextCampaignMission(true);
             Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
