@@ -4378,8 +4378,8 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->player->setEnemy((*enemies)[14]->player);
                     }
                     m_pExplosion = new Explosion(0);
-                    m_pExplosion->setScaling(12.0f);
                     m_pExplosion->addFireStreaks();
+                    m_pExplosion->setScaling(12.0f);
                     m_nState = 1;
                     // fallthrough
                 }
@@ -4390,27 +4390,27 @@ bool LevelScript::process(int delta) {
                     }
                     player->setTurretMode(false);
                     if (player->isInRocketControl()) {
-                        m_pCamera->setRumblePercentage(0.0f, 0);
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                     }
+                    resetCamera(self);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    player->player->setVulnerable(false);
                     player->setVisible(false);
                     player->setFreeze(true);
                     m_bCinematicBreak = 1;
-                    player->hideShipForFirstPersonCameraView(false);
-                    player->stopShooting(0);
-                    player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
-                    resetCamera(self);
-                    player->player->setVulnerable(false);
-                    m_pCamera->setLookAtCam(true);
-                    m_pRadar->enabled = 0;
                     m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    m_pCamera->setLookAtCam(true);
                     m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
                     m_tempVec = (*enemies)[0]->geometry->getPosition();
-                    m_pCamera->setPosition(m_tempVec);
                     m_tempVec += (*enemies)[0]->geometry->getDirection() * 18000.0f;
                     m_tempVec += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
+                    m_pCamera->setPosition(m_tempVec);
                     (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->setActive(true);
                     m_nScriptTimerA = 0;
