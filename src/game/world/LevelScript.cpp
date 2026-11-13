@@ -774,9 +774,9 @@ bool LevelScript::process(int delta) {
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                         Globals::sound->play(160, nullptr, nullptr, 0.0f);
+                        m_nScriptTimerA = 0;
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                        m_nScriptTimerA = 0;
                     }
                     break;
                 }
