@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,540** | 22,826 | 57,232 |
+| `LevelScript::process` | **51,538** | 22,818 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,10 +31,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,239**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,237**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `LevelScript::process` (w13561, wave 191b): two tail d1 swaps:
+  case-92 `setLookAtCam(false)` before `setTarget(player->geometry)`, and
+  case-157 `m_nFlashCountdown = 300` before `m_pExplosion = new Explosion(0)`.
+  Raw **51,540 -> 51,538** (-2), aligned 22,826 -> 22,818, size
+  57,232/57,232 exact.  `.text` 71,239 -> 71,237 (-2), `.ARM.extab`
+  content 576 -> 577 (+1, size/base unchanged), `.rodata` 485 unchanged.
+  `.rel.plt` byte-identical.
+* `Generator::createMission` (w13549, wave 191b): note-only residual
+  analysis; raw 3 unchanged.  The 3 bytes are the `0x9735a` branch layout
+  and the `0x9770e`/`0x97718` `sp+32` vs `sp+44` spill-slot pair.
 
 * `Layout` C1/C2 (w13546, wave 191b): swap the `headerTitleY` /
   `field_0x10_rightMargin` store order.  Raw **5,233 -> 5,232** (-1, both

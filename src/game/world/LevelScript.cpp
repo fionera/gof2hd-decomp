@@ -3083,8 +3083,8 @@ bool LevelScript::process(int delta) {
                             (*enemies)[i]->field_0x38 = 4;
                             ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                         }
-                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
                         bool docked = player->isDockedToDockingPoint();
                         if (docked) {
                             m_pCamera->setRotationAroundTarget(true);
@@ -5062,8 +5062,8 @@ bool LevelScript::process(int delta) {
                                                                      - fighter->getPosition());
                     fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                     if (((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr) {
-                        m_pExplosion = new Explosion(0);
                         m_nFlashCountdown = 300;
+                        m_pExplosion = new Explosion(0);
                         m_nScriptTimerA = 0;
                         m_pExplosion->setScaling(5.0f);
                         m_pExplosion->addFireStreaks();
