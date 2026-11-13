@@ -121,3 +121,108 @@ Rejected in the same sweep (raw-lowering but semantically wrong):
 `889-891 right` (`setPosition` before the `+=` offset), `1728-1730 right`
 (`setPosition(camPos)` before the offset), `2411-2413 right` (swaps the
 `nextInt(10000)` draws for `dy`/`dz`).
+
+## Third pass (w13570): exhaustive first-half reorder search on the post-landing base
+
+Base after the two landings above: raw **51,529**, size 57,232, `.text` 71,225,
+`.rel.plt` `289b2a06…`.  All measurements below are exact NDK r18b `-Oz`
+compile + full gold link, and every listed candidate is size-exact and
+`.rel.plt`-identical unless stated.
+
+### Sweeps (no new landing)
+
+| sweep | range | candidates | result |
+|---|---|---:|---|
+| d1 transpositions | 605-2600 | ~800 | only `L890<->L891` = 51,528 (rejected, below) |
+| d2 transpositions | 605-2600 | 551 | **none** |
+| d3 transpositions | 605-2600 | 441 | **none** |
+| d1 transpositions | 1990-2230 | 117 | **none** |
+| d2 rotations | 605-2600 | 1102 | three cells (all rejected, below) |
+| d2 rotations | 1990-2230 | 184 | **none** |
+| d2 rotations | 1252-1345 | ~80 | **none** |
+| `__builtin_expect` hint flips | all 67 sites | 67 | none below 51,529 (3 neutral) |
+
+The three raw-lowering distance-2 rotations are all **semantically wrong**,
+confirmed against the original's disassembly:
+
+- `L889..L891 right` → 51,528: `m_pCamera->setPosition(m_tempVec)` before the
+  `m_tempVec += {-2000,-2000,-5000}`.  Original 0x13d428 `VectorpL`, then
+  0x13d434 `setPosition`.
+- `L1728..L1730 right` → 51,527: `setPosition(camPos)` before
+  `camPos += {-9000,-4000,-30000}`.  Original 0x13f13c `VectorpL`, then
+  0x13f144 `setPosition`.
+- `L2411..L2413 right` → 51,528: swaps the `nextInt(10000)` draws for `dy`
+  and `dz`.  Original 0x13dc3a draws `dy`, 0x13dc44 draws `dz`.
+
+### Statement-order differences that do NOT help on this base
+
+The original's disassembly call order differs from our source in several
+first-half blocks, but rewriting to the original order measures *worse* —
+the current source is a strong local optimum (global register allocation
+interacts with the remaining block-placement deltas):
+
+1. **Mission-1 intro** (lines 951-960).  Original order (0x137d82):
+   `forceUpdate`, `rotate`, `getPosition`, `setToSleep`, `moveForward`.
+   Ours: `rotate`, `setToSleep`, `getPosition`, `forceUpdate`.
+   - move `forceUpdate` before `float angle` → 51,532
+   - move `forceUpdate` between `angle` and `rotate` → 51,532
+   - swap `setToSleep`/`getPosition` → 51,530
+   - both together → 51,532/51,533
+2. **Mission-89 intro** (lines 1254-1257).  Original order (0x138580):
+   `forceUpdate`, `setTarget`, `m_bCinematicBreak=1`, `if (state<=2){…}`,
+   `moveForward`.  Ours: `setTarget`, `forceUpdate`, `m_bCinematicBreak=1`,
+   `moveForward`, `if{…}`.
+   - swap `setTarget`/`forceUpdate` → 51,531
+   - move `moveForward` after the `if` → 51,533
+   - both → 51,535
+3. **Case-41 state-0 teardown** (lines 2003-2016).  Original order
+   (0x13e400..0x13e464): `setTurretMode`, `resetCamera`, `setFreeLookMode`,
+   `enableFirstPersonCam`, `hideShipForFirstPersonCameraView`,
+   `stopShooting`, `freeze=1`, `m_pHud->visible=0`, `m_pRadar->enabled=0`,
+   `m_bCinematicBreak=1`, `setLookAtCam`, `setComputerControlled`,
+   `setVulnerable`.  Our source order is quite different.
+   - full permutation to the original order → 51,558 (+29)
+   - move `setLookAtCam` next to `setComputerControlled` → 51,545
+   - move `setTurretMode` to the front → 51,539
+   - move `stopShooting` before `freeze` → 51,544
+   - move `setVulnerable` to the end → 51,545
+4. **Declaration order** (lines 611-614): all 24 permutations of
+   `messages/player/enemies/status` measured.  Only the current order is
+   51,529 / 57,232; every permutation that hoists `status` gives size
+   57,312 (+80) and `.rel.plt` `57e13240…`; the other size-exact
+   permutations are 51,533-51,569.
+
+### Structural finding: the pre-switch mission specials are a separate `if`
+
+At 0x137f82 the `if (m_bStartSequence != 0)` false branch is
+`beq.w 0x13812a`, and the true branch (wingman loop ending 0x138128) falls
+through to 0x13812a — so the mission-5/26/50/51 chain is a **separate `if`**,
+not an `else if` of `m_bStartSequence`.  Our source (line 1520) has
+`else if`, i.e. the specials only run when `m_bStartSequence == 0`
+(semantically narrower than the original).
+
+Changing line 1520 `else if` → `if` measures **size 57,356 (+124)**,
+raw 55,584, `.rel.plt` `82fff838…`: the larger live range spills `status`
+out of its callee-saved register in the prologue.  The mission-5 body does
+move to ~0x13812a (matching the original), but the global regalloc loss
+dominates.  Not landable without a compensating −124 B reshape elsewhere;
+recorded for a future pass.
+
+### Prologue register assignment (root cause of the large raw delta)
+
+The original's prologue puts `this` in `sl` and `Globals::status` in `fp`;
+ours puts `this` in `fp` and `status` in `sl` (0x137d26 vs 0x137d2a).  The
+rest of the first ~0x40 bytes is otherwise identical.  This single greedy
+allocator choice is the dominant contributor to the 51,529-byte raw diff;
+none of the source reshapes tried here flipped it.
+
+### Neutral IR reshapes (51,529, no change)
+
+These compile to byte-identical code and are therefore safe but useless on
+their own; recorded in case a future base makes them composable:
+
+- mission-1: inline `enemyZ` (`float depth = enemyPos.z / -5000.0f;`).
+- mission-1: rewrite the clamp as `depth = depth < 1.0f ? depth : 1.0f;`.
+- case-41 revive loop: `for (int i = 1; i != 4; i++)` vs `i < 4`.
+- case-41: `((float) delta * 0.2f) * depth` for `(float) delta * (0.2f * depth)`
+  (the original computes `delta*0.2` then `*depth`, but this measures +3).
