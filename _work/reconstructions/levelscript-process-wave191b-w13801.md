@@ -74,3 +74,55 @@ lint CLEAN).
   base-register allocation only.
 - Case 102 s2 escort (line ~3612) d/r declaration swap: raw 53,037 -> 53,040
   (+3), aligned 19,875 -> 19,877 (+2).  Not a win.
+
+## Landed (2): case-92 state-4 tail test — plain `if`, not `__builtin_expect`
+
+`src/game/world/LevelScript.cpp` line ~3064 (case 92, `m_nState == 4` branch):
+
+```cpp
+// before
+if (__builtin_expect(m_nScriptTimerA > 2000, 1)) { // lint: arm_builtin
+    m_nState++;
+    m_nScriptTimerA = 0;
+}
+// after
+if (m_nScriptTimerA > 2000) {
+    m_nState++;
+    m_nScriptTimerA = 0;
+}
+```
+
+The original `0x140104` emits a real branch (`bge.w 144e36`, i.e. skip the body
+when `2000 - timerA >= 0`) followed by the straight-line body and a second
+`b.w 144e36`.  Our `__builtin_expect(..., 1)` made clang if-convert the body to
+`itttt lt` / `itt lt` predicated stores.  Dropping the hint restores the
+branchy layout; our body `0x13fa96..0x13faa8` is now instruction-for-instruction
+identical to the original `0x140104..0x140116` (only the `strd` base register
+and the shared-return branch target differ).
+
+| metric | before | after |
+|---|---:|---:|
+| raw | 53,030 | **53,024** (-6) |
+| aligned | 19,820 | **19,816** (-4) |
+| size | 57,232 | 57,232 (exact) |
+| `.text` diffbytes | 75,204 | **75,198** (-6) |
+| `.ARM.extab` | 587 | 587 |
+| `.rel.plt` md5 | 289b2a06 | 289b2a06 |
+
+`check` = RATCHET PASS (byte_exact 4508, linked 4508, size 4524/4524, data
+843/843, imports 207, lint CLEAN).
+
+## Rejected experiments (this session, all reverted)
+
+- **case-142 state-1 gas-cloud loop**: dropping the `Level *lvl4280 = m_pLevel;`
+  local so the member is re-read each iteration makes the loop body
+  instruction-identical to the original `0x13fac0..0x13fae8`, but the function
+  grows to **57,240 (+8)** (raw 55,246 / aligned 20,380).  The original spills
+  `this` into *two* stack slots (`sp+80` for the loop-condition re-read,
+  `sp+88` for the `m_nState = 2` store) and the loop is rotated so the preheader
+  jumps into the condition half; clang cannot be coaxed into that layout from
+  source without the size regression.
+- **case-144 state-2** `messages[3]->isOver()`: our body is instruction-identical
+  to the original `0x13d6c0..0x13d6da`; the residual is only the `fp` vs
+  `sp+72` base-register choice and the shared `m_nState = 3` block target
+  (`0x1438d6` vs `0x13f29e`).  Block layout, not statement order.

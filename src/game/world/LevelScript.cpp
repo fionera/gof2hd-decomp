@@ -3061,7 +3061,7 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
                     }
                     wcamera->setLocal(local);
-                    if (__builtin_expect(m_nScriptTimerA > 2000, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerA > 2000) {
                         m_nState++;
                         m_nScriptTimerA = 0;
                     }
