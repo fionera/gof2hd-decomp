@@ -825,9 +825,9 @@ bool LevelScript::process(int delta) {
                 case 9: {
                     player->setPosition(0.0f, 0.0f, 0.0f);
                     // State 9: jump to the intro planet.
-                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
                     player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_pLevel->getStarSystem()->switchPlanetForIntro();
+                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
                     m_pLevel->switchSkyboxForIntro();
                     m_pLevel->particleRenderBoolPtr->reset();
                     m_pLevel->particleEmitBoolPtr->reset();
@@ -2005,9 +2005,9 @@ bool LevelScript::process(int delta) {
                     player->freeze = 1;
                     camera41->setLookAtCam(true);
                     resetCamera(m_pLevel);
-                    player->setTurretMode(false);
                     m_pRadar->enabled = 0;
                     player->player->setVulnerable(false);
+                    player->setTurretMode(false);
                     player->setFreeLookMode(false);
                     player->hideShipForFirstPersonCameraView(false);
                     m_pHud->visible = 0;

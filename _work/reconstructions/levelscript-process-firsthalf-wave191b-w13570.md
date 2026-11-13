@@ -88,3 +88,36 @@ size       57,232 / 57,232   (exact)
 check      RATCHET PASS (byte_exact 4507/4524, linked 4507, size 4524/4524,
            data 843/843, imports 207, lint CLEAN, drift 0, parity 5370/5370)
 ```
+
+## Second landing: distance-2 cyclic rotations
+
+Fresh distance-2 cyclic-rotation sweep on the post-first-landing body (raw
+51,531).  Two semantics-preserving cells compose:
+
+1. mission-0 state-9 intro planet (~828-830, left rotation):
+   `player->rotate(0.7853982f, 0.7853982f, 0.7853982f);` moves after
+   `m_pLevel->getStarSystem()->switchPlanetForIntro();` (before
+   `switchSkyboxForIntro`).  The planet/skybox switches touch the star-system
+   planet texture and skybox mesh; the player transform is independent.
+2. case-41 teardown (~2008-2010, left rotation):
+   `player->setTurretMode(false);` moves after the independent
+   `m_pRadar->enabled = 0;` and `player->player->setVulnerable(false);`
+   stores.  It still precedes `player->stopShooting(0);` (which early-returns
+   when the turret is active).
+
+Measured together on the real build:
+
+```
+raw        51,531 -> 51,529  (-2)
+size       57,232 / 57,232   (exact)
+.text      71,227 -> 71,225  (-2)
+.ARM.extab 577 (unchanged; size/base exact)
+.ARM.exidx 0, .rodata 485, .data 0 (unchanged)
+.rel.plt   md5 289b2a069f8504d1e8a3919e43915e04 (byte-identical)
+check      RATCHET PASS
+```
+
+Rejected in the same sweep (raw-lowering but semantically wrong):
+`889-891 right` (`setPosition` before the `+=` offset), `1728-1730 right`
+(`setPosition(camPos)` before the offset), `2411-2413 right` (swaps the
+`nextInt(10000)` draws for `dy`/`dz`).

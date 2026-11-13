@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,529** | 22,811 | 57,232 |
+| `LevelScript::process` | **51,527** | 22,811 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
@@ -31,11 +31,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,223**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,221**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13570, wave 191b, pass 2): first-half d2
+  rotations: case-9 `player->rotate(...)` after `switchPlanetForIntro()`;
+  case-41 `setTurretMode(false)` after `setVulnerable(false)`.  Raw
+  **51,529 -> 51,527** (-2), aligned 22,811, size 57,232/57,232 exact.
+  `.text` 71,223 -> 71,221 (-2); `.ARM.extab` 577 unchanged,
+  `.rel.plt` byte-identical.
 * `LevelScript::process` (w13570, wave 191b): five first-half transpositions:
   case-81 state-3 `enableFillScreen(true)` after `departStation`; case-41
   `m_pHud->visible`/`m_pRadar->enabled` swap and `stopShooting(0)` after
