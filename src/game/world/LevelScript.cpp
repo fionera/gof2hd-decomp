@@ -744,8 +744,8 @@ bool LevelScript::process(int delta) {
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
-                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
                 m_bStartSequence = 0;               // strb 0 -> this+0x20
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
                 m_nScriptTimerA = 0; // duplicate store keeps the block's original 8-byte width
             }
             // falls through to the shared active tail (0x137f7c)
@@ -2193,20 +2193,19 @@ bool LevelScript::process(int delta) {
                     } else {
                         m_nScriptTimerA += delta;
                         if (!Globals::layout->isFading() || m_nScriptTimerA >= 10001) {
-                            Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                             Player *pp = player->player;
-
                             Globals::status->field_64 = pp->getHitpoints();
                             Globals::status->field_5c = pp->getShieldHP();
-                            Globals::status->field_68 = pp->getGammaHP();
                             Globals::status->field_60 = pp->getArmorHP();
-                            Level::programmedStation = nullptr;
+                            Globals::status->field_68 = pp->getGammaHP();
+                            Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
                             Globals::status->departStation(Globals::status->getStation());
                             Level::initStreamOutPosition = 1;
                             Level::comingFromAlienWorld = 1;
                             Globals::switch_to_target_setting = 1;
+                            Level::programmedStation = nullptr;
                             Globals::appManager->SetCurrentApplicationModule(2);
                             field_0x12 = 0x101;
                             return m_bCinematicBreak != 0;
