@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,123** | 19,002 | 57,232 |
+| `LevelScript::process` | **53,149** | 18,975 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,570** | 2,011 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,728**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,754**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b, eleventh pass): case-102 state-2 tail teardown order.  Raw **53,123 -> 53,149** (+26), aligned **19,002 -> 18,975** (-27), size 57,232/57,232 exact.  `.text` 76,728 -> 76,754; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, tenth pass): case-29 state-1 freighter teardown order.  Raw **53,108 -> 53,123** (+15), aligned **19,021 -> 19,002** (-19), size 57,232/57,232 exact.  `.text` 76,713 -> 76,728; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, ninth pass): case-41 tug `setMoving` before `setTarget`.  Raw **53,107 -> 53,108** (+1), aligned **19,030 -> 19,021** (-9), size 57,232/57,232 exact.  `.text` 76,712 -> 76,713; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, eighth pass): case-41 state-2 `updateReferenceMatrix` before `getEnemies`.  Raw **53,104 -> 53,107** (+3), aligned **19,040 -> 19,030** (-10), size 57,232/57,232 exact.  `.text` 76,709 -> 76,712; `.ARM.extab` 594.

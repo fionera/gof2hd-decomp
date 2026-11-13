@@ -3400,26 +3400,26 @@ bool LevelScript::process(int delta) {
                                 enemy->player->setEnemies(targets);
                             }
                         }
-                        resetCamera(m_pLevel);
-                        player->hideShipForFirstPersonCameraView(false);
                         player->setTurretMode(false);
-                        m_pRadar->enabled = 0;
+                        player->setFreeze(true);
+                        player->setVisible(false);
+                        resetCamera(m_pLevel);
                         if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
                             player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
-                            player->setRocketControl(nullptr, nullptr);
                         }
-                        player->setFreeze(true);
                         player->setFreeLookMode(false);
-                        player->setVisible(false);
+                        m_pCamera->setLookAtCam(true);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        m_pRadar->enabled = 0;
                         player->stopShooting(0);
                         m_pHud->visible = 0;
                         AEGeometry *leaderShip = (*enemies)[leader]->geometry;
                         m_nScriptTimerA = 0;
-                        m_pCamera->setLookAtCam(true);
-                        m_pCamera->enableFirstPersonCam(false);
-                        m_tempVec = leaderShip->getPosition();
                         m_pCamera->setTarget(leaderShip);
+                        m_tempVec = leaderShip->getPosition();
                         m_dirVec = leaderShip->getDirection();
                         m_tempVec += m_dirVec * 4500.0f;
                         m_dirVec = leaderShip->getRightVector();
