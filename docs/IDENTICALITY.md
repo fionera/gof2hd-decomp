@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,117** | 20,246 | 57,232 |
+| `LevelScript::process` | **53,115** | 20,244 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
 | `Level::createMission` | **2,627** | 605 | 17,172 |
@@ -30,11 +30,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,737**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,735**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13746, wave 191b): mission-0 state 1 drops
+  the cached `TargetFollowCamera*` local and reloads `m_pCamera` for
+  `setTarget`/`setPosition`, matching 0x138448..0x138474.  Raw
+  **53,117 -> 53,115** (-2), aligned **20,246 -> 20,244** (-2), size
+  57,232/57,232 exact.  Rejected w13769's case-21 direct-`m_pLevel`
+  loop (-8 size) and w13761's stationPirates/alias/Globals changes
+  (-4 size) on this base.  `.text` 74,737 -> 74,735; `.ARM.extab` 561.
 * `LevelScript::process` (w13748 + w13762, wave 191b): case-154 state 2
   faithful camera-matrix order and case-94 state 0 teardown order
   (`setFreeLookMode`, `enableFirstPersonCam`,

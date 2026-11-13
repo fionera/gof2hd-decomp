@@ -646,13 +646,12 @@ bool LevelScript::process(int delta) {
                 (*enemies)[i]->geometry->translate(0.0f, wobble, 0.0f);
             }
             if (m_nState == 1) {
-                TargetFollowCamera *wcamera = m_pCamera;
                 // 0x138440: once message #6 finishes, lock the camera onto ship 0 and reframe.
                 RadioMessage *msg6 = (RadioMessage *) ((*messages)[6]);
                 if (msg6->isOver()) {
                     m_nState = 2;
-                    wcamera->setTarget((*enemies)[0]->geometry);
-                    wcamera->setPosition(-5000.0f, 300.0f, -5000.0f); // 0x13855c/560
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pCamera->setPosition(-5000.0f, 300.0f, -5000.0f); // 0x13855c/560
                 }
             }
             if (m_nState == 2) {
