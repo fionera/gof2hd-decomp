@@ -926,7 +926,7 @@ void HangarWindow::render() {
                 String description("");
                 String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
-                switch ((unsigned char) count) {
+                switch ((short) count) {
                     case 0:
                         description = String(Globals::cItemListDescription_00);
                         price = String(Globals::cItemListPrice_00);
