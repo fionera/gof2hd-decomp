@@ -1997,11 +1997,12 @@ void Level::createMission() {
         }
     }
     if (raid) {
+        AERandom *volatile &rnd = Globals::rnd;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
         bool hard = Globals::status->hardCoreMode();
         int guns = alienGuns + fortressGuns;
         if (raidRace == 8 && Level::initStreamOutPosition &&
-            Globals::rnd->nextInt(100) < (hard ? 40 : 20) + Globals::status->getLevel()) {
+            rnd->nextInt(100) < (hard ? 40 : 20) + Globals::status->getLevel()) {
             this->spawnPosition = this->player->getPosition() / 3.0f;
             this->field_180->setNewCoords(this->spawnPosition);
         }
@@ -2014,10 +2015,10 @@ void Level::createMission() {
                 Player *p = (*this->enemies)[i]->player;
                 p->setHitpoints(p->getMaxHitpoints() * 2);
                 this->spawnPosition = this->player->getPosition();
-                this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
-                this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
+                this->spawnPosition.x += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
+                this->spawnPosition.y += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
                 (*this->enemies)[i]->setPosition(this->spawnPosition);
-                this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
+                this->spawnPosition.z += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
             }
         }
     }
