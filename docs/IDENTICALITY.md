@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
-| `MGame::OnTouchEnd` | **2,882** | 1,561 | 8,080 |
+| `MGame::OnTouchEnd` | **2,880** | 1,661 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **74** | 38 | 1,432 |
@@ -31,11 +31,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,221**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,219**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13577, wave 191b): case-100 campaign-100 tail
+  order: armor HP, `SetCurrentApplicationModule(5)`, gamma HP,
+  `initStreamOutPosition`, `departStation(120)`, then hitpoints/shield.
+  Raw **2,882 -> 2,880** (-2), aligned 1,561 -> 1,661, size
+  8,080/8,080 exact.  `.text` 71,221 -> 71,219 (-2); `.ARM.extab` 577
+  unchanged, `.rel.plt` byte-identical.
 * `LevelScript::process` (w13570, wave 191b, pass 2): first-half d2
   rotations: case-9 `player->rotate(...)` after `switchPlanetForIntro()`;
   case-41 `setTurretMode(false)` after `setVulnerable(false)`.  Raw
