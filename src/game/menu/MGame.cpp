@@ -1838,11 +1838,6 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         // "Skip" pressed in the pause menu.
                         this->menuWindow->cinematicSteerActive = 0;
                         switch (Globals::status->getCurrentCampaignMission()) {
-                            case 154:
-                            case 157:
-                            case 158:
-                                this->levelScript->skipCutscene();
-                                break;
                             case 0:
                                 Globals::status->nextCampaignMission(true);
                                 Globals::status->setKills(3);
@@ -1855,6 +1850,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                 Globals::switch_to_target_setting = 0;
                                 this->active = 0;
                                 Globals::appManager->SetCurrentApplicationModule(5);
+                                break;
+                            case 154:
+                            case 157:
+                            case 158:
+                                this->levelScript->skipCutscene();
                                 break;
                             default:
                                 break;
