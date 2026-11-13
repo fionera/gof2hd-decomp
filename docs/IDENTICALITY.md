@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,540** | 22,826 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
-| `Layout` C1/C2 | **5,233** | 2,712 | 7,072 |
+| `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
 | `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
@@ -31,10 +31,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,240**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,239**, `.ARM.extab` **576**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `Layout` C1/C2 (w13546, wave 191b): swap the `headerTitleY` /
+  `field_0x10_rightMargin` store order.  Raw **5,233 -> 5,232** (-1, both
+  C1/C2), aligned 2,712 -> 2,711, insn 2,517 unchanged, size
+  7,072/7,072 exact.  `.text` -1, `.rel.plt` byte-identical.
+* `MGame::OnUpdate` (w13555, wave 191b): note-only negative sweep of the
+  last 10 raw bytes; the w189 anchor shape remains the minimum at
+  raw 10 / aligned 112 / 11,440 B.  The residual is the `%1053`
+  `Globals::status` GOT-base live range in r9 vs r5.
+* `SpaceLounge::drawLounge` (w13554, wave 191b): note-only ~120-cell
+  source-shape sweep; the residual is one greedy-RA colouring (`pad` in
+  `sl` vs `r9`) and the committed spelling remains optimal at raw 138.
 
 * `LevelScript::process` (w13516, wave 191b): multi-line d6 shift-4,
   intro switch group: `player->rotate` + `geometry->setDirection` move

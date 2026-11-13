@@ -139,3 +139,25 @@ gains a `str.w r1,[r0,#388]`.  Net −1 raw / −2 insns.
 * after:  raw 5,233 / aligned 2,712 / insn 2,517 / size 7,072:7,072
 * `.text` delta 71,259 → 71,251; `.ARM.extab` 576 (unchanged);
   `.rel.plt` byte-identical; `check` RATCHET PASS.
+
+## Win 3 — swap `headerTitleY` / `field_0x10_rightMargin`
+
+A ±2-window move sweep over all 207 statement units found exactly one family of
+size-exact raw wins: swapping `headerTitleY` (0x14) and
+`field_0x10_rightMargin` (0x10) so the 0x10 store precedes 0x14, matching the
+original default-path store order (`... c 10 14 ...`).
+
+* before: raw 5,233 / aligned 2,712 / insn 2,517
+* after:  raw 5,232 / aligned 2,711 / insn 2,517 / size 7,072:7,072
+* `.text` delta 71,251 → 71,250; `.ARM.extab` 576 (unchanged);
+  `.rel.plt` byte-identical; `check` RATCHET PASS.
+
+Negative results from this sweep (824 move variants, all size-exact only if
+noted): moving `field_0x74` before `field_0x78` 5,764/6,976 (fatal), moving
+`field_0x78` after `field_0x74` 5,701/7,072, `field_0x2d4` block after
+`field_0x2d8` 5,239/7,072, 2d4-then-2d8 5,391/7,072, `rewardBoxY2` before
+`helpWindowX` 6,034/7,084, `field_0x94` after `field_0x304` 5,298/7,092.
+Re-stating `field_0x4` after the opening block is 5,995/6,944; a second
+`footerTextInset` re-state is 5,653/7,072; a third `field_0x184` copy is
+5,937/7,032. Duplicating every statement *before* itself, at i+2, or as an
+adjacent pair produced no win.
