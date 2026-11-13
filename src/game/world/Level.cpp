@@ -2128,8 +2128,10 @@ case4Tail:
     int hunterCount = (int) (hunters + (opt44 - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    Array<KIPlayer *> *enemies = this->enemies;
-    for (unsigned i = 0; i < enemies->size(); i++) {
+    if (hunterCount <= 0) {
+        hunterCount = 1;
+    }
+    for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
                 this->playerRoute->getWaypoint(((AERandom *) Globals::globals)->nextInt(this->playerRoute->length())), true, false);
