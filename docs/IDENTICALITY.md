@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
-| `HangarWindow::render` | **1,393** | 461 | 9,700 |
+| `HangarWindow::render` | **1,393** | 407 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **72** | 36 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -35,6 +35,7 @@ Current section deltas: `.text` **76,701**, `.ARM.extab` **594**, `.ARM.exidx` *
 
 Landed changes:
 
+* `HangarWindow::render` (w13852, wave 191b, fifth pass): inline `buttons[17]` top/gsy locals and declare the buy-list `price` before `description`.  Raw 1,393 unchanged, aligned **461 -> 407** (-54), size 9,700/9,700 exact.  `.text` 76,701 unchanged; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, fifth pass): case-42 wormhole state-6 teardown order.  Raw **53,084 -> 53,095** (+11), aligned **19,087 -> 19,045** (-42), size 57,232/57,232 exact.  `.text` 76,690 -> 76,701; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, fourth pass): case-40 state-0 escort setup order.  Raw **53,054 -> 53,084** (+30), aligned **19,153 -> 19,087** (-66), size 57,232/57,232 exact.  `.text` 76,660 -> 76,690; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, third pass): mission-94 state-1 teardown order.  Raw **53,044 -> 53,054** (+10), aligned **19,155 -> 19,153** (-2), size 57,232/57,232 exact.  `.text` 75,762 -> 75,772; `.ARM.extab` 544.

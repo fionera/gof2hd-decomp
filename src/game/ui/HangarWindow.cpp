@@ -923,8 +923,8 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; __builtin_expect(count <= 4, 1); count++) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint, plain form 9700 -> 9696
-                String description("");
                 String price("");
+                String description("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch ((short) count) {
                     case 0:
@@ -1006,11 +1006,9 @@ void HangarWindow::render() {
 
         if (!Globals::options[75] || !Globals::options[74] || !Globals::options[73] || !Globals::options[77] ||
             !Globals::options[76] || data->freeCreditsOffer) {
-            int top = Globals::layout->field_0x20_top;
-            int gsy = this->gridSpacingY;
             int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2;
-            int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * top) -
-                          (float) gsy * 0.5f + (float) ((gsy + this->gridButtonHeight) * 1));
+            int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
+                          (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * 1));
             (*this->buttons)[17]->setVisible(true);
             if (this->listModeFlag) {
                 (*this->buttons)[17]->setPosition(x, y, 68);
