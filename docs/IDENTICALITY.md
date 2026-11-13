@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,942** | 1,430 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
-| `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
+| `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
@@ -30,11 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,184**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,206**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13745, wave 191b): cinematic case-0 moved into
+  the switch default behind an explicit `getCurrentCampaignMission()==0`
+  test (clang now emits the original `cmp #1` / `cmp #0` order), and the
+  won-block instant-action temporary dropped.  Raw **3,661 -> 3,683**
+  (+22), aligned **546 -> 544** (-2), size 8,080/8,080 exact.  `.text`
+  74,184 -> 74,206; `.ARM.extab` 561.
 * `Gun::calcCharacterCollision` (w13766 pass 1, wave 191b): faithful
   C-D-E scatter tail -- `expect(magnitude > distance, 0)` with the
   subtraction and damage/EMP calls inside the guarded body.  Raw

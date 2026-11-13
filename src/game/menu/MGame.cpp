@@ -1556,17 +1556,16 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     if (won) {
                         bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
                         Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                        bool instantAction = mission->isInstantActionMission();
                         if (mission->isCampaignMission()) {
                             Globals::status->nextCampaignMission(true);
-                        } else if (!instantAction) {
-                            Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
-                            Globals::status->setFreelanceMission(Mission::empty);
-                        } else {
+                        } else if (mission->isInstantActionMission()) {
                             Globals::switch_to_target_setting = 2;
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(1);
                             return;
+                        } else {
+                            Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                            Globals::status->setFreelanceMission(Mission::empty);
                         }
                         Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                         this->levelScript->m_nTimeLimit = 0;
@@ -1849,15 +1848,15 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                 this->active = 0;
                                 Globals::appManager->SetCurrentApplicationModule(5);
                                 break;
-                            case 0:
-                                Globals::status->nextCampaignMission(true);
-                                Globals::status->setKills(3);
-                                Globals::switch_to_target_setting = 1;
-                                this->active = 0;
-                                Globals::appManager->SetCurrentApplicationModule(2);
-                                Level::initStreamOutPosition = 0;
-                                break;
                             default:
+                                if (Globals::status->getCurrentCampaignMission() == 0) {
+                                    Globals::status->nextCampaignMission(true);
+                                    Globals::status->setKills(3);
+                                    Globals::switch_to_target_setting = 1;
+                                    this->active = 0;
+                                    Globals::appManager->SetCurrentApplicationModule(2);
+                                    Level::initStreamOutPosition = 0;
+                                }
                                 break;
                         }
                     }
