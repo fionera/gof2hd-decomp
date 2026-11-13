@@ -1014,9 +1014,9 @@ void HangarWindow::render() {
                           (float) gsy * 0.5f + (float) ((gsy + this->gridButtonHeight) * 1));
             (*this->buttons)[17]->setVisible(true);
             if (this->listModeFlag) {
-                (*this->buttons)[17]->draw();
                 (*this->buttons)[17]->setPosition(x, y, 68);
                 (*this->buttons)[17]->replaceTextKeepSize(*Globals::gameText->getText(118));
+                (*this->buttons)[17]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - rh, 17, 68);
                 Globals::Canvas->DrawImage2D(
                     this->scrollHintImageB,
