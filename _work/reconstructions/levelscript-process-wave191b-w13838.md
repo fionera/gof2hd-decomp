@@ -130,11 +130,103 @@ data:   exact 843 of 843 exported objects
 sodiff: extra-beyond-allow 0  missing 0  allowed 0  imports: 207
 ```
 
-## Harvest measurement (2026-11-13, on master 1b46e619d)
+## Second landed candidate (state_a + faithful expected-true hints)
 
-On the current tree the state-12 expect polarity + state-0 dispatch-tail expect
-change measures raw **53,083 -> 53,206** (+123), aligned **19,162 -> 19,148**
-(-14), `.text` **75,882 -> 76,005** (+123), `.ARM.extab` **552 -> 551** (-1).
-The aligned/extab gain is real but the +123 `.text` is a net byte regression, so
-the code change was reverted and kept as this note; re-land it if a later shape
-removes the branch-offset growth.
+After the first commit (`7208e08f3`, raw 53,200 / aligned 19,214 / extab 594),
+a second pass reconstructed the full `state_a` combination (`E1+E2+E3+E4`,
+i.e. mission-94 tail reorder + state-12 radio-15 reorder + drop the spurious
+state-12 `lockedEnemy` store) and then restored the **expected-true** polarity of
+three state-12 branches whose source hints were wrong or missing.
+
+### Original branch polarity (verified from disassembly)
+
+| branch | original | layout |
+|---|---|---|
+| `m_nScriptTimerA < 3000` | `0x1457d6..0x1457f6` `blt 1458b0` skips body when `>=3000` | body fall-through = expected true |
+| `else if (m_nScriptTimerA < 7000)` | `0x1458b0..0x1458b8` `blt 14594e` skips body when `>=7000` | body fall-through = expected true |
+| `if (m_nScriptTimerA < 6000)` | `0x14591a..0x145928` `blt 145952` skips body when `>=6000` | body fall-through = expected true |
+| `if (m_nScriptTimerA >= 5700 && -delta < 5700)` | `0x145a54..0x145a6e` two `blt 145abc` skips | body fall-through = expected true |
+| `if (m_nScriptTimerA >= 6500)` | `0x145b42..0x145b4c` `blt.w 144e36` skips body when `<6500` | body fall-through = expected true |
+
+The source had `__builtin_expect(..., 0)` on the `<7000` and `<6000` branches
+(wrong polarity) and no hint on `>=6500`.
+
+### Landed edit set (on top of `7208e08f3`)
+
+1. mission-94 tail reorder to the original `0x13f880..0x13f8fe` order
+   (`resetGunDelay; setLookAtCam; setTarget; setComputerControlled;
+   setVulnerable; setFreeze; setVisible; hud.visible; radar.enabled;
+   resetCamera; forceUpdate; lockedEnemy; dockNavPtr; m_bCinematicBreak;
+   m_nState++`).  This fuses the `lockedEnemy`/`dockNavPtr` stores into the
+   original's `strd r4,r4,[r0,#4]` at `0x13f8f2` (4th `strd` site).
+2. state-12 radio-15 block reorder to `0x145a70..0x145ab4`:
+   `setVisible(false); setVisible(false); startFade; play`.
+3. remove the state-12 `m_pRadar->lockedEnemy = nullptr;` after
+   `m_nScriptTimerA = 0` (no counterpart at `0x145444..0x14545e`).
+4. `<7000` and `<6000`: drop the wrong-polarity `expect(...,0)` -> plain `if`.
+5. `>=6500`: add `__builtin_expect(..., 1)` (expected-true fall-through).
+
+### Result
+
+```
+                         before (7208e08f3)   after
+fn_diff raw              53200                54382     (+1182)
+fn_diff aligned          19214                19106     (-108)
+size (orig/ours)         57232/57232          57232/57232
+.text diffbytes          76255                77437     (+1182)
+.ARM.extab diffbytes     594                  594       (0)
+.rel.plt                 byte-identical       byte-identical
+RATCHET                  PASS                 PASS
+```
+
+The `.text`/`raw` rise is the expected same-offset byte shift from the new
+block layout; the aligned (branch-target-normalised) metric is the progress
+indicator and drops by 108 instructions.
+
+### Measured variants around the candidate (all size-exact unless noted)
+
+Base = `state_a` on `7208e08f3` (raw 55167 / aligned 19187 / size 57228, -4).
+`c1` = `<3000`, `c2` = `<7000`, `c4` = `<6000`, `c7` = `>=5700`,
+`c10` = `>=6500`; `e0/e1` = `expect 0/1`, `p` = plain.
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| all plain (`c1p+c2p+c4p+c7p+c10p`) | 53931 | **19095** | 57236 (+4) |
+| **landed: `c2p+c4p+c10e1`** | **54382** | **19106** | **57232 ✓** |
+| `c1p+c2p+c4p+c10e1` | 54382 | 19106 | 57232 ✓ |
+| `c2p+c4p+c7p+c10e1` | 54383 | 19107 | 57232 ✓ |
+| `allplain + c9e0` (planet-scaling) | 53921 | 19154 | 57232 ✓ |
+| `allplain + c11e0` | 53936 | 19181 | 57232 ✓ |
+| `allplain + c9e1` | 53896 | 19174 | 57232 ✓ |
+| `c2e1` alone | 53918 | 19103 | 57244 (+12) |
+| `c2e1+c4p+c10e1` | 54382 | 19106 | 57232 ✓ |
+| `c2e1+E5` | 53932 | 19094 | 57216 (-16) |
+| `allplain+E5` | 53962 | 19086 | 57208 (-24) |
+| `c1e1+E5` | 53931 | 19146 | 57228 (-4) |
+
+`c1` plain is codegen-neutral here (`c1p` == `c1e1` in the landed set).  The
+all-plain set is the most faithful source but is +4 B; no faithful -4 B knob was
+found.
+
+### Spurious radio-14 (E5) — confirmed, not landed
+
+The original fail branch `0x144f20..0x144f52` has a single
+`createRadioMessage(15, race)` at `0x144f32`; our source additionally calls
+`createRadioMessage(14, race)` after `m_nState = 2;`.  The extra call is
+**spurious** (behaviour bug) and removing it saves 24-28 B, but every exact-size
+combination found so far that includes E5 needs a +24 B filler that costs more
+aligned than it saves (best exact combo without E5: aligned 19106).
+
+### Big remaining aligned blocks (block layout, not source order)
+
+`0x13e0e6` (orig 614 / ours 1), `0x13e962` (423), `0x13d74a` (413),
+`0x13dbd8` (354) — mission-94 `state==2`/`state==3`; `0x141028` (324) —
+mission-106.  These are clang block ordering of the switch cases.
+
+## Harvest measurement (2026-11-13, on master a2b788a4a)
+
+On the current tree the state_a reorders (mission-94 tail + radio-15, drop the
+stale `m_pRadar->lockedEnemy = nullptr`) measure raw **53,041 -> 54,045**
+(+1,004), aligned **19,158 -> 19,126** (-32), but size **57,216/57,232** — the
+dropped store costs 16 bytes, so the change is size-fatal as-is.  Kept as a
+note; re-land after re-adding a size-neutral store.
