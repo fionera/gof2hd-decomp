@@ -1268,7 +1268,7 @@ asteroids_done:
     if (current == 143) {
         return;
     }
-    if (__builtin_expect(this->field_0x1bc >= 1, 1)) {  // lint: arm_builtin
+    if (this->field_0x1bc >= 1) {
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 ||
             ((1 << (current - 136)) & 0xe071) == 0 ||
@@ -1278,7 +1278,7 @@ asteroids_done:
                 Globals::status->getStation()->isAttackedByAliens() ||
                 Globals::status->getCurrentCampaignMission() == 16) {
                 Globals::sound->play(136, nullptr, nullptr, 0.0f);
-            } else if (__builtin_expect(this->field_0x1bc < 3, 0)) {  // lint: arm_builtin
+            } else if (this->field_0x1bc < 3) {
                 if (alwaysEnemySeen) {
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
@@ -1286,7 +1286,7 @@ asteroids_done:
                 } else {
                     Globals::sound->play(140, nullptr, nullptr, 0.0f);
                 }
-            } else if (__builtin_expect(this->field_0x1bc < 5, 0)) {  // lint: arm_builtin
+            } else if (this->field_0x1bc < 5) {
                 if (__builtin_expect(alwaysEnemySeen, 1)) {  // lint: arm_builtin
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (__builtin_expect(bossSeen, 1)) {  // lint: arm_builtin

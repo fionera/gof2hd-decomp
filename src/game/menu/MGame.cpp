@@ -1571,11 +1571,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                         this->levelScript->m_nTimeLimit = 0;
 
-                        if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
-                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
+                        if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(98));
                             delete reader;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
                             FileRead *reader = new FileRead();
                             Globals::status->setStation(reader->loadStation(10));

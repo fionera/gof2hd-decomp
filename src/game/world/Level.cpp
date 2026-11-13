@@ -1962,10 +1962,10 @@ void Level::createMission() {
         Vector base = (*this->enemies)[this->friendCount + this->field_164]->getPosition();
         for (int i = this->friendCount + this->field_164 + this->field_168;
              i < this->friendCount + alienGuns + this->field_164 + this->field_168; i++, k++) {
-            KIPlayer *gun = (*this->enemies)[i];
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
-            const float (*t)[6] = (bigAlienWave + (i < 0) + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
+            KIPlayer *gun = (*this->enemies)[i];
             gun->cargo = nullptr;
+            const float (*t)[6] = (bigAlienWave - (i < 0) * 4) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});

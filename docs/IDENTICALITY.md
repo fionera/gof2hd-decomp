@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,070** | 20,693 | 57,232 |
-| `Radar::draw` | **6,436** | 1,718 | 9,908 |
+| `LevelScript::process` | **52,136** | 20,653 | 57,232 |
+| `Radar::draw` | **6,511** | 1,622 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
-| `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **3,659** | 558 | 8,080 |
+| `Level::createMission` | **2,624** | 858 | 17,172 |
+| `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
@@ -30,11 +30,27 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **73,018**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **73,159**, `.ARM.extab` **563**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13705, wave 191b): reload the gun after the
+  `createStaticObject` store.  Raw **2,626 -> 2,624** (-2), aligned
+  **864 -> 858** (-6), size 17,172/17,172 exact.
+* `LevelScript::process` (w13746 + w13748, wave 191b): mission-89 state 1
+  re-fetches `enemies`, and case-67 state 1 is restored to the original
+  store/call order.  Raw **52,070 -> 52,136** (+66), aligned
+  **20,693 -> 20,653** (-40), size 57,232/57,232 exact.  Rejected
+  w13746's mission-106 state-4 teardown (`3d508fa27`): raw +1,704 for
+  aligned +3, dropped.
+* `Radar::draw` (w13744 pass 2, wave 191b): music-tail `__builtin_expect`
+  removal.  Raw **6,436 -> 6,511** (+75), aligned **1,718 -> 1,622**
+  (-96), size 9,908/9,908 exact.
+* `MGame::OnTouchEnd` (w13745, wave 191b): campaign-15 branch before
+  campaign-22.  Raw **3,659 -> 3,661** (+2), aligned **558 -> 546** (-12),
+  size 8,080/8,080 exact.
+  The batch moves `.text` 73,018 -> 73,159 and `.ARM.extab` 564 -> 563.
 * `LevelScript::process` (w13746, wave 191b): mission-1 intro reads
   `enemyPos.z` before `setToSleep` and evaluates `delta*0.2f*depth`
   left-to-right; mission-89 `moveForward` moved after the approach block.

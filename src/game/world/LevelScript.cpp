@@ -1271,7 +1271,7 @@ bool LevelScript::process(int delta) {
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                    m_pGeometry6->setDirection(-(*enemies)[0]->geometry->getDirection(),
+                    m_pGeometry6->setDirection(-(*m_pLevel->getEnemies())[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
                     m_pGeometry6->setPosition((*m_pLevel->getEnemies())[0]->geometry->getPosition());
                     return 1;
@@ -2321,22 +2321,22 @@ bool LevelScript::process(int delta) {
                 } else if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nState == 1) {
                     (*enemies)[10]->setSpeed(3.0f);
                     ((PlayerFighter *) (*enemies)[10])->setExhaustVisible(true);
-                    player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
-                    m_pCamera->setActive(true);
-                    m_pCamera->setLookAtCam(true);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
+                    m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
-                    m_pHud->visible = 0;
-                    player->hideShipForFirstPersonCameraView(false);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
                     m_pCamera->setTarget((*enemies)[10]->geometry);
                     m_pCamera->setPosition((*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 1000.0f});
-                    m_bCinematicBreak = 1;
-                    player->freeze = 1;
                     player->player->setVulnerable(false);
+                    player->freeze = 1;
                     m_nState = 2;
                 } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
