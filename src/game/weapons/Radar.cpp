@@ -993,8 +993,8 @@ enemies:
             }
             if (this->onScreen) {
                 KIPlayer *locked = this->lockedGasCloud;
-                cloud->field_0x73 = 0;
                 cloud->field_0x76 = 1;
+                cloud->field_0x73 = 0;
                 this->egoPos = player->getPosition();
                 Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
                                              this->screenY, 17, 68);

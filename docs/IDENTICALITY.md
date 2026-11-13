@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,507** | 22,183 | 57,232 |
-| `Radar::draw` | **6,013** | 1,961 | 9,908 |
+| `LevelScript::process` | **51,524** | 21,918 | 57,232 |
+| `Radar::draw` | **6,013** | 1,958 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
 | `MGame::OnTouchEnd` | **2,878** | 1,572 | 8,080 |
@@ -30,11 +30,27 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,210**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,227**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13657, wave 191b): case-154 state-4 camera-matrix
+  block reconstructed from the Thumb disassembly at 0x14313e..0x14329a.  The
+  source had the right-vector assignment immediately overwritten by
+  `GetUpVector`, so the -0.05 term was missing and the +0.005 term used the
+  wrong vector; `MatrixGetPosition` also ran after `GetDirVector` and
+  `setFixed` before the matrix-position load.  Restore the original order and
+  both vector terms.  Raw **51,507 -> 51,524** (+17), aligned **22,183 ->
+  21,921** (-262), size 57,232/57,232 exact.
+* `LevelScript::process` (w13645, wave 191b): case-158 state-1/2 order
+  (`setTarget` before `rotate`, `resetCamera` before `setTarget`) and case-70
+  `dir * 3000.0f` instead of `3000.0f * dir`.  Raw tie, aligned -3; combined
+  with w13657 the aligned is **21,918**.
+* `Radar::draw` (w13660, wave 191b): swap the gas-cloud blip stores to
+  `field_0x76` before `field_0x73`, matching the original's
+  0x12f61a/0x12f6ca order.  Raw **6,013** (tie), aligned **1,961 -> 1,958**
+  (-3), size 9,908/9,908 exact.
 * `MGame::OnTouchEnd` (w13626, wave 191b): arm-134 independent getter
   stores reordered `sw,64,5c,60,68` -> `sw,5c,60,64,68` (pure field reads,
   semantically neutral).  Raw **2,878** (tie), aligned **1,582 -> 1,572**

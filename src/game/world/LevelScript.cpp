@@ -2500,7 +2500,7 @@ bool LevelScript::process(int delta) {
                     camPos.y += -300.0f;
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos.z += -1000.0f;
-                    camPos += 3000.0f * dir;
+                    camPos += dir * 3000.0f;
                     player->setFreeLookMode(false);
                     m_pCamera->setPosition(camPos);
                     player->freeze = 1; // PlayerEgo+0x24
@@ -4640,15 +4640,15 @@ bool LevelScript::process(int delta) {
                     float step = (float) delta * 0.25f;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    m_dirVec = player->GetDirVector();
                     (*enemies)[0]->geometry->moveForward(step);
-                    m_pCamera->setFixed(true);
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    m_dirVec = player->GetDirVector();
                     m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
-                    m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
+                    m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.005f);
+                    m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
@@ -5246,8 +5246,8 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
-                    player->geometry->rotate(step / 2000.0f, step / 2000.0f, step / 2000.0f);
                     m_pCamera->setTarget((*enemies)[0]->geometry);
+                    player->geometry->rotate(step / 2000.0f, step / 2000.0f, step / 2000.0f);
                     if (m_nScriptTimerA >= 20000) {
                         ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
                         if (m_nScriptTimerA >= 34000) {
@@ -5268,14 +5268,14 @@ bool LevelScript::process(int delta) {
                         m_pLevel->getPlayer()->resetGunDelay();
                         field_0x24 = 0;
                         m_pCamera->setLookAtCam(false);
-                        m_pCamera->setTarget(player->geometry);
+                        resetCamera(m_pLevel);
                         player->setComputerControlled(false);
                         player->setFreeze(false);
                         player->setVisible(true);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
-                        resetCamera(m_pLevel);
+                        m_pCamera->setTarget(player->geometry);
                         player->player->setVulnerable(true);
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
