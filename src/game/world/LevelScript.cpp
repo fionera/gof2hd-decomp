@@ -3200,8 +3200,8 @@ bool LevelScript::process(int delta) {
                     case 0:
                         if (Globals::status->field_178 > 6 || m_nScriptTime >= 60001) {
                             for (int i = 0; i != 2; i++) {
-                                (*enemies)[i]->awake();
                                 (*enemies)[i]->setPosition((float) (50000 + 3000 * i), 1000.0f, 140000.0f);
+                                (*enemies)[i]->awake();
                                 (*enemies)[i]->setVisible(true);
                                 (*enemies)[i]->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
@@ -3210,9 +3210,9 @@ bool LevelScript::process(int delta) {
                             field_0xab = player->isInTurretMode();
                             player->setTurretMode(false);
                             if (player->isInRocketControl()) {
-                                m_pCamera->setRumblePercentage(0.0f, 0);
-                                player->killLiberator();
                                 player->setRocketControl(nullptr, nullptr);
+                                player->killLiberator();
+                                m_pCamera->setRumblePercentage(0.0f, 0);
                             }
                             player->setFreeLookMode(false);
                             m_pCamera->enableFirstPersonCam(false);

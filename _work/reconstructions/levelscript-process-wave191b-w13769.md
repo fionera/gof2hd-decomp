@@ -60,3 +60,28 @@ statement (including the inline `m_tempVec.x/.y/.z +=` adds at
 * s6/s8 `(float) delta * 0.3f + (float) m_nScriptTimerA`: the original
   computes the float delta term first, then `__aeabi_l2f`, then `vadd.f32`;
   the source order already matches.
+
+## Landed: mission-0x4e state-0 body order (case 94, state 0)
+
+Verified directly against the Thumb (`0x13ad3c..0x13adf6`):
+
+1. enemy loop: `setPosition(...)` (`0x13ad3c`) **before** `awake()`
+   (`0x13ad4a`); then `setVisible`, `setDirection`, `setAIDisabled`.
+2. rocket-control block: `setRocketControl(nullptr,nullptr)` (`0x13adc6`),
+   `killLiberator()` (`0x13adcc`), `setRumblePercentage(0.0f,0)`
+   (`0x13add6`).
+3. teardown: `setFreeLookMode(false)`, `enableFirstPersonCam(false)`,
+   `hideShipForFirstPersonCameraView(false)`, `stopShooting(0)`,
+   `m_bCinematicBreak = 1`, `m_pHud->visible = 0`, `m_pRadar->enabled = 0`,
+   `setLookAtCam(true)` (`0x13adbe..0x13adf6`).
+
+| metric | before | after |
+|---|---:|---:|
+| raw | 53,056 | **53,057** (+1) |
+| aligned | 20,292 | **20,271** (-21) |
+| size | 57,232 | 57,232 (exact) |
+| `.text` | 74,627 | 74,628 (+1) |
+| `.ARM.extab` | 561 | 561 |
+
+A real aligned win; the single raw byte is a downstream shift, not a
+structural change.  `.rel.plt` byte-identical, gate green.
