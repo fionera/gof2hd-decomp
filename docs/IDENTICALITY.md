@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,516** | 22,815 | 57,232 |
+| `LevelScript::process` | **51,513** | 22,816 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,700 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,199**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,196**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13599, wave 191b): case-102 awake hoist:
+  `enemy->awake()` before the direction/AI/target lines, `setEnemies(nullptr)`
+  after.  Raw **51,516 -> 51,513** (-3), aligned 22,815 -> 22,816, size
+  57,232/57,232 exact.  `.text` 71,199 -> 71,196 (-3); `.ARM.extab` 577,
+  `.ARM.exidx` 0, `.rodata` 0.
 * `LevelScript::process` (w13570, wave 191b, pass 4): move
   `m_nScriptTimerA = 0;` before the second `SetAnimationState(1)` in
   mission-0 state 6.  Raw **51,519 -> 51,516** (-3), aligned 22,815, size
