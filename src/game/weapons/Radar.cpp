@@ -541,11 +541,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->planetTargets->data()[i]);
-            int stationId = stations->data()[i];
-            int currentStation = Globals::status->getStation()->getIndex();
             if (!this->onScreen) {
                 continue;
             }
+            int stationId = stations->data()[i];
+            int currentStation = Globals::status->getStation()->getIndex();
             int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
             int textOffset = 10;
             if (stationId != currentStation && (int) i == warpGate) {
@@ -690,9 +690,9 @@ enemies:
                 }
                 continue;
             }
+            this->update(enemy);
             bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
-            this->update(enemy);
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
             }

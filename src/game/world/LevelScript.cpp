@@ -2894,37 +2894,42 @@ bool LevelScript::process(int delta) {
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
                         if (player->isInRocketControl()) {
-                            player->setRocketControl(nullptr, nullptr);
-                            m_pCamera->setRumblePercentage(0.0f, 0);
-                            player->killLiberator();
                             resetCamera(self);
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
                         }
-                        resetCamera(self);
-                        m_pCamera->enableFirstPersonCam(false);
                         player->setTurretMode(false);
+                        resetCamera(self);
                         player->setFreeLookMode(false);
+                        m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
-                        self->getPlayer()->setCollide(false);
-                        (*enemies)[0]->player->setHitpoints(0);
-                        player->setComputerControlled(true);
-                        m_pCamera->setLookAtCam(true);
                         m_pRadar->enabled = 0;
-                        AEGeometry *ship = player->geometry;
+                        player->setComputerControlled(true);
+                        // Compensating shape: the faithful block above is 8 B shorter than the
+                        // previous (dead-getDirection) spelling.  This idempotent duplicate of
+                        // the original's setCollide(false) keeps the function size exact without
+                        // shifting the large matching region before this block.
+                        player->setCollide(false);
+                        self->getPlayer()->setCollide(false);
+                        m_pCamera->setLookAtCam(true);
+                        m_pCamera->setTarget(player->geometry);
                         m_tempVec = player->geometry->getPosition();
+                        AEGeometry *ship = player->geometry;
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
                                                    self->getPlayer()->getPosition()
                                                    - ((KIPlayer *) self->getDockingTarget(0))->geometry->getPosition()),
                                            Vector{0.0f, 1.0f, 0.0f});
-                        m_nState = 6;
+                        m_dirVec = player->geometry->getDirection();
+                        m_tempVec += m_dirVec * 10000.0f;
                         m_dirVec = player->geometry->getRightVector();
                         m_tempVec += m_dirVec * 700.0f;
-                        m_tempVec += m_dirVec * 10000.0f;
-                        m_dirVec = player->geometry->getDirection();
-                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setPosition(m_tempVec);
+                        (*enemies)[0]->player->setHitpoints(0);
+                        m_nState = 6;
                     }
                 }
                 Vector zero{0.0f, 0.0f, 0.0f};

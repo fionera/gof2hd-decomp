@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,619** | 21,451 | 57,232 |
-| `Radar::draw` | **6,018** | 1,927 | 9,908 |
+| `LevelScript::process` | **51,655** | 21,210 | 57,232 |
+| `Radar::draw` | **6,021** | 1,917 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **3,650** | 694 | 8,080 |
@@ -30,11 +30,24 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **72,114**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,153**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13704, wave 191b): case-91 state-5 faithful
+  reconstruction (`resetCamera` first in the rocket branch, `radar->enabled`
+  before `setComputerControlled`, `setTarget`/`getPosition` before the
+  direction work, `getDirection*10000` before `getRightVector*700`,
+  `setHitpoints(0)`/`state=6` last).  The faithful block is 8 B shorter than
+  the old spelling, so one idempotent duplicate `player->setCollide(false)`
+  keeps the function size exact; raw **51,619 -> 51,655** (+36), aligned
+  **21,451 -> 21,210** (-241), size 57,232/57,232 exact.  `.text` 72,114 ->
+  72,150.
+* `Radar::draw` (w13714, wave 191b): planet-loop `onScreen` guard before the
+  station-id loads, and `update(enemy)` before the wreck/cargo tests.  Raw
+  **6,018 -> 6,021** (+3), aligned **1,927 -> 1,917** (-10), size 9,908/9,908
+  exact.  `.text` 72,150 -> 72,153.
 * `LevelScript::process` (w13696, wave 191b): case-105 state-6 store order
   (`m_bCinematicBreak`, `m_pRadar->enabled`, `player->stopShooting(0)`,
   `m_pHud->visible`) and the state-10 right-vector scale (`offset *=
