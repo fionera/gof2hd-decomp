@@ -2959,12 +2959,12 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) (*enemies)[i])->field_0x128 = 0;
                             (*enemies)[i]->setVisible(true);
                         }
-                        resetCamera(m_pLevel);
-                        player->setTurretMode(false);
                         field_0xab = player->isInTurretMode();
-                        player->killLiberator();
+                        player->setTurretMode(false);
+                        resetCamera(m_pLevel);
                         if (player->isInRocketControl()) {
                             player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
                         }
                         player->setFreeLookMode(false);
@@ -2972,10 +2972,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
+                        m_pRadar->enabled = 0;
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
-                        m_pRadar->enabled = 0;
                         m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
                         m_dirVec = leader->getDirection();

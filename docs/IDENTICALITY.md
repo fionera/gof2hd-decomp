@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,044** | 19,155 | 57,232 |
+| `LevelScript::process` | **53,054** | 19,153 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,373** | 463 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,762**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,772**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b, third pass): mission-94 state-1 teardown order.  Raw **53,044 -> 53,054** (+10), aligned **19,155 -> 19,153** (-2), size 57,232/57,232 exact.  `.text` 75,762 -> 75,772; `.ARM.extab` 544.
 * `LevelScript::process` (w13839, wave 191b, second pass): case-125 state-2 `stopShooting` before `m_bCinematicBreak`.  Raw **53,041 -> 53,044** (+3), aligned **19,158 -> 19,155** (-3), size 57,232/57,232 exact.  `.text` 75,770 -> 75,773; `.ARM.extab` 544.
 * `Level::createMission` (w13837, wave 191b, pass 28): drop the raid `Globals` local.  Raw 3,373 and aligned 463 unchanged, size 17,172/17,172 exact (the local was already non-volatile on this tree).
 * `HangarWindow::render` (w13845, wave 191b, fourth pass): buy-list `price` before `description`.  Raw 1,393 -> 1,391, aligned 461 -> 472; reverted to a note (2-byte `.text` gain for 11 aligned slots).
