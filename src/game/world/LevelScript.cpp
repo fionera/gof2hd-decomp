@@ -5231,8 +5231,7 @@ bool LevelScript::process(int delta) {
                     AEGeometry *marker = m_pGeometry4;
                     Vector target{9000.0f, 0.0f, -13000.0f};
                     Vector pos = marker->getPosition();
-                    Vector up{0.0f, 1.0f, 0.0f};
-                    marker->setDirection(AbyssEngine::AEMath::VectorNormalize(target - pos), up);
+                    marker->setDirection(AbyssEngine::AEMath::VectorNormalize(target - pos), Vector{0.0f, 1.0f, 0.0f});
                     if (m_nScriptTimerA <= 29999) {
                         m_pGeometry4->moveForward(step * 2.5f);
                     }
@@ -5357,8 +5356,8 @@ bool LevelScript::process(int delta) {
                 }
                 m_pLevel->createRadioMessage(15, ((SolarSystem *) Globals::status->getSystem())->getRace());
                 player->setAutoPilot(nullptr);
-                m_pLevel->setPlayerRoute(nullptr);
                 player->setRoute(nullptr);
+                m_pLevel->setPlayerRoute(nullptr);
                 m_nState = 2;
                 m_pLevel->createRadioMessage(14, ((SolarSystem *) Globals::status->getSystem())->getRace());
             }
