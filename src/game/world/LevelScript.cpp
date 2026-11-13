@@ -1675,8 +1675,8 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
-                    Vector camPos = (*self->getEnemies())[0]->getPosition();
                     m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
+                    Vector camPos = (*self->getEnemies())[0]->getPosition();
                     camPos += Vector{6000.0f, 4000.0f, 47500.0f};
                     m_pCamera->setPosition(camPos);
                     self->lodManager->forceUpdate(delta, false);
