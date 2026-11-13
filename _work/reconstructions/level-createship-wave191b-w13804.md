@@ -118,3 +118,7 @@ first, `mp` local), whereas the original spills at `0xc0332` after
 * `src/game/world/Level.cpp` — the `e` clamp polarity.
 * `docs/IDENTICALITY.md`, `docs/VALIDATION.md` — residual table / `.text` delta.
 * this note.
+
+## Harvest rebase (master da998189d)
+
+Rebased onto master `da998189d` (which already carries w13792's hull-exit `setBV` move): the combined createShip residual measures raw **1,184 -> 1,177** (-7), aligned **370 -> 372** (+2), size 2,764/2,764 exact; `.text` 76,629 -> 76,622, `.ARM.extab` 623 (unchanged).
