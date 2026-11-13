@@ -1001,7 +1001,6 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 1: {
-                AEGeometry *g5A = m_pGeometry5;
                 // Fade the arrival rumble out, keep the station model facing the camera.
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 4000.0f;
@@ -1010,10 +1009,10 @@ bool LevelScript::process(int delta) {
                 }
                 m_pCamera->setRumblePercentage(1.0f - rumble, 100);
                 AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                g5A->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                         Vector{0.0f, 1.0f, 0.0f});
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(g5A->transform))
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                         ->Update((long long) delta, false);
                 if (m_nScriptTime >= 14001) {
                     m_nState = 2;
