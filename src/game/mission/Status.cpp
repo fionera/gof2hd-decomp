@@ -1476,13 +1476,11 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     if (Item::isInList(index, amount, cargo)) {
                         return m;
                     }
-                    (void) m->getStatusValue();
-                    // Codegen device: hasEquipment() returns bool, so `< 0` is
-                    // always false.  The dead comparison makes clang emit the
-                    // original's unconditional tail here instead of a local
-                    // `cmp; b`, which in turn keeps the case-7 tail merge and
-                    // the shared test block in their original places.
-                    if (Globals::status->ship->hasEquipment(index, 1) < 0) {
+                    // Codegen device: the original's tail is an unconditional
+                    // branch to the shared `if (hasEquipment()) return m` test
+                    // block.  Testing the negated result here reproduces that
+                    // shared test/branch layout at the same 1432-byte size.
+                    if (!Globals::status->ship->hasEquipment(index, 1)) {
                         return m;
                     }
                 }

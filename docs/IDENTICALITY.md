@@ -15,26 +15,42 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,538** | 22,818 | 57,232 |
+| `LevelScript::process` | **51,537** | 22,818 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
-| `MGame::OnTouchEnd` | **2,882** | 1,570 | 8,080 |
+| `MGame::OnTouchEnd` | **2,882** | 1,561 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
-| `Status::missionCompleted` | **75** | 48 | 1,432 |
+| `Status::missionCompleted` | **74** | 38 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
-| `Generator::createMission` | **3** | 3 | 1,996 |
+| `Generator::createMission` | **1** | 1 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,237**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,233**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `Generator::createMission` (w13557, wave 191b): mark the `type == 12`
+  station override `__builtin_expect(..., 1)` and restore the bonus block
+  to the plain-int `rem` shape.  RAGreedy now spills `rem` and
+  StackSlotColoring colours it onto the status/mission slot at `sp+32`,
+  matching the original.  Raw **3 -> 1** (-2), aligned 3 -> 1, size
+  1,996/1,996 exact.  Only the `0x9735a` `bhi` target byte remains.
+* `LevelScript::process` (w13559, wave 191b): case-67 escort wake order:
+  `setFreeLookMode(false)` before `setVulnerable(false)`.  Raw
+  **51,538 -> 51,537** (-1), size exact.
+* `Status::missionCompleted` (w13556, wave 191b): negated `hasEquipment`
+  tail in case 158 (drop the dead `getStatusValue()` call).  Raw
+  **75 -> 74** (-1), aligned 48 -> 38, size 1,432/1,432 exact.
+* `MGame::OnTouchEnd` (w13539, wave 191b): back-to-station tail stores
+  Armor before Gamma.  Raw 2,882 unchanged, aligned 1,570 -> 1,561
+  (structural, size exact).
 
 * `LevelScript::process` (w13561, wave 191b): two tail d1 swaps:
   case-92 `setLookAtCam(false)` before `setTarget(player->geometry)`, and

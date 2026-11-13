@@ -1745,8 +1745,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->active = 0;
                         Globals::status->field_5c = this->player->player->getShieldHP();
                         Globals::switch_to_target_setting = 0;
-                        Globals::status->field_68 = this->player->player->getGammaHP();
                         Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
                         this->applicationManager->SetCurrentApplicationModule(5);
                         return;
 

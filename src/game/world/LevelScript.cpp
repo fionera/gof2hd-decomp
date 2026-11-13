@@ -1938,8 +1938,8 @@ bool LevelScript::process(int delta) {
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z);
                     (*enemies)[0]->shipGroup = 1;
-                    player->player->setVulnerable(false);
                     player->setFreeLookMode(false);
+                    player->player->setVulnerable(false);
                     m_pHud->visible = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     m_pCamera->enableFirstPersonCam(false);

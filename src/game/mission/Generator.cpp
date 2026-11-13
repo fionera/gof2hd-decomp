@@ -825,7 +825,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 break;
         }
     }
-    if (type == 12) {
+    if (__builtin_expect(type == 12, 1)) {  // lint: arm_builtin
         targetStation = agent->getStation();
     }
 
@@ -950,12 +950,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     } else {
         int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
                                                ->getMissionBonus(agent->getRace()));
-        int remVal = rawBonus % 50;
-        int b = rawBonus + remVal;
-        volatile int rem = remVal;
-        int remCopy = rem;
+        int rem = rawBonus % 50;
+        int b = rawBonus + rem;
         if (b % 50 != 0) {
-            b = rawBonus - remCopy;
+            b = rawBonus - rem;
         }
         bonus = b;
     }
