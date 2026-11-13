@@ -2179,12 +2179,12 @@ bool LevelScript::process(int delta) {
                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
                         m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        m_pParticleGeom1->setPosition(dir * 10000.0f);
                         m_nScriptTimerA += delta;
                         if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                     ->currentTime >= 4001) {
                             ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                         }
-                        m_pParticleGeom1->setPosition(dir * 10000.0f);
                         if (m_nScriptTimerA >= 15001) {
                             m_bRenderParticles = 0;
                             Globals::layout->startFade(true, 255, 4000);
