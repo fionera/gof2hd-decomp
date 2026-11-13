@@ -1843,20 +1843,20 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             case 158:
                                 this->levelScript->skipCutscene();
                                 break;
+                            case 0:
+                                Globals::status->nextCampaignMission(true);
+                                Globals::status->setKills(3);
+                                Globals::switch_to_target_setting = 1;
+                                this->active = 0;
+                                Globals::appManager->SetCurrentApplicationModule(2);
+                                Level::initStreamOutPosition = 0;
+                                break;
                             case 1:
                                 Globals::switch_to_target_setting = 0;
                                 this->active = 0;
                                 Globals::appManager->SetCurrentApplicationModule(5);
                                 break;
                             default:
-                                if (Globals::status->getCurrentCampaignMission() == 0) {
-                                    Globals::status->nextCampaignMission(true);
-                                    Globals::status->setKills(3);
-                                    Globals::switch_to_target_setting = 1;
-                                    this->active = 0;
-                                    Globals::appManager->SetCurrentApplicationModule(2);
-                                    Level::initStreamOutPosition = 0;
-                                }
                                 break;
                         }
                     }
