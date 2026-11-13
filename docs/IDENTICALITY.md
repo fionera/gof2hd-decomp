@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,669** | 20,646 | 57,232 |
-| `Radar::draw` | **6,858** | 1,452 | 9,908 |
+| `LevelScript::process` | **52,668** | 20,646 | 57,232 |
+| `Radar::draw` | **6,943** | 1,434 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
 | `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
@@ -30,11 +30,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,033**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,117**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13758 pass 4, wave 191b): inline `hasScanner19` at the
+  asteroid lock threshold.  Raw **6,858 -> 6,943** (+85), aligned
+  **1,452 -> 1,434** (-18), size 9,908/9,908 exact.
+* `LevelScript::process` (w13746, wave 191b): mission-0 state-5
+  `sound->stop(player->field_0x1c)` moved after `update(158)` and before
+  `play(161)`, matching 0x139064.  Raw **52,669 -> 52,668** (-1), aligned
+  20,646 (tie), size 57,232/57,232 exact.  This batch moves `.text`
+  74,033 -> 74,117; `.ARM.extab` stays 561.
 * `Radar::draw` (w13756, wave 191b): gas-cloud axis order (ego-target
   x, y, z).  Raw 6,858 (tie), aligned **1,459 -> 1,452** (-7), size
   9,908/9,908 exact.  `.text` stays 74,033, `.ARM.extab` 561.

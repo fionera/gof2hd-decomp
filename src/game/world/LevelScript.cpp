@@ -713,11 +713,11 @@ bool LevelScript::process(int delta) {
             if (reinterpret_cast<float &>(speedBits) == 2.0f) {
                 Vector zero157{0.0f, 0.0f, 0.0f};
                 Globals::sound->play(157, nullptr, nullptr, 0.0f);
-                Globals::sound->stop(player->field_0x1c);
                 Globals::sound->updateEvent3DAttributes(157, &pos, &zero157, false);
                 Vector zero158{0.0f, 0.0f, 0.0f};
                 Globals::sound->play(158, nullptr, nullptr, 0.0f);
                 Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
+                Globals::sound->stop(player->field_0x1c);
                 Globals::sound->play(161, nullptr, nullptr, 0.0f);
             }
             Vector zero161{0.0f, 0.0f, 0.0f};
