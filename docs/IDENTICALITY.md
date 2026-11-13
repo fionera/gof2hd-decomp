@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,672** | 20,656 | 57,232 |
+| `LevelScript::process` | **52,669** | 20,646 | 57,232 |
 | `Radar::draw` | **6,858** | 1,459 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
-| `Level::createMission` | **2,624** | 858 | 17,172 |
+| `Level::createMission` | **2,593** | 702 | 17,172 |
 | `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,067**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,033**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13755, wave 191b): case-2 crate/cargo store
+  order plus a shared `enemies->data_` load (`ships`/`ship` locals).
+  Raw **2,624 -> 2,593** (-31), aligned **858 -> 702** (-156), size
+  17,172/17,172 exact.
+* `LevelScript::process` (w13746, wave 191b): mission-89 case-3 else
+  timer hoist ahead of the hitpoint loop.  Raw **52,672 -> 52,669**
+  (-3), aligned **20,656 -> 20,646** (-10), size 57,232/57,232 exact.
+  Rejected w13746's mission-106 state-2 store drop (`0f48236b6`): it
+  shrinks the function to 57,228 (size-exact is gate-fatal).
+  This batch moves `.text` 74,067 -> 74,033; `.ARM.extab` stays 561.
 * `LevelScript::process` (w13746, wave 191b): mission-0 state-4 teardown
   restored to the original 0x138d3a-0x138df6 instruction order (drop the
   cached `Level*` local and the `Vector` temp), mission-89 case-3 else

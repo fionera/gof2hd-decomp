@@ -18,6 +18,12 @@ rejected as raw +1,704 / aligned +3).  Result on that base: raw
 57,232 exact, `.text` 74,984 -> 74,067, `.ARM.extab` 564 -> 561,
 `.rel.plt` restored to the original md5 `289b2a06`.
 
+**Coordinator merge note 2 (2026-11-13):** also landed the mission-89
+case-3 else timer hoist (`e1082ade2`): raw 52,672 -> 52,669, aligned
+20,656 -> 20,646 on `4facb0b48`.  Rejected `0f48236b6` (mission-106
+state-2 store drop): on this base it shrinks the function to 57,228,
+breaking size-exact.
+
 ## Landed commits (each `check` = RATCHET PASS)
 
 | commit | change | raw | aligned | .text | .extab |

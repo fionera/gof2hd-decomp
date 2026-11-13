@@ -1316,10 +1316,10 @@ bool LevelScript::process(int delta) {
                 } else {
                     Globals::layout->startFade(false, -1, 10000);
                     (*enemies)[2]->setVisible(true);
+                    m_nScriptTimerA = 0;
                     for (unsigned int i = 3; enemies->count > i; i++) {
                         (*enemies)[i]->player->setHitpoints(0);
                     }
-                    m_nScriptTimerA = 0;
                     m_nState = 4;
                 }
                 break;
