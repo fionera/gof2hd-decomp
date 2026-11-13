@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,021** | 1,917 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **3,650** | 694 | 8,080 |
+| `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -30,11 +30,15 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **72,153**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,151**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13532, wave 191b): campaign-100 body getter order
+  (`64,5c,60,68`, then `switch`, `departStation`, `initStreamOutPosition`).
+  Raw **3,650 -> 3,648** (-2), aligned **694 -> 665** (-29), size
+  8,080/8,080 exact.
 * `LevelScript::process` (w13704, wave 191b): case-91 state-5 faithful
   reconstruction (`resetCamera` first in the rocket branch, `radar->enabled`
   before `setComputerControlled`, `setTarget`/`getPosition` before the
