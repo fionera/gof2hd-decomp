@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,524** | 21,918 | 57,232 |
-| `Radar::draw` | **6,013** | 1,958 | 9,908 |
+| `LevelScript::process` | **51,534** | 21,862 | 57,232 |
+| `Radar::draw` | **6,013** | 1,955 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
-| `MGame::OnTouchEnd` | **2,878** | 1,572 | 8,080 |
+| `MGame::OnTouchEnd` | **2,888** | 1,522 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -30,11 +30,30 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,227**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,247**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13662, wave 191b): fix the mining-report zero-line
+  bug — the binary tests `count != 0` (`cmp r9,#0; beq`), the source had
+  `count >= 0`; `count > 0` is the size-exact equivalent (the literal `!= 0`
+  flips the loop-counter sign and costs +8 B).  Also move
+  `switch_to_target_setting = 1;` before the getter stores and
+  `setCinematicMode(true)` before `hudTouchFlags = 0`.
+  Raw **2,878 -> 2,884** (+6), aligned **1,572 -> 1,545** (-27).
+* `MGame::OnTouchEnd` (w13672, wave 191b): arm-81 tests
+  `mission->isCampaignMission()` before `getCurrentCampaignMission() == 81`
+  (0x17b4a4), and arm-126 puts `switch_to_target_setting = 1` first
+  (0x17bbc2).  Combined with w13662: raw **2,888** (+10), aligned
+  **1,572 -> 1,522** (-50), size 8,080/8,080 exact.
+* `Radar::draw` (w13669, wave 191b): swap `notOtherLock = !otherLock;`
+  before `notTurretMode = !turretMode;`.  Raw **6,013** (tie), aligned
+  **1,958 -> 1,955** (-3), size 9,908/9,908 exact.
+* `LevelScript::process` (w13667, wave 191b): case-158 state-1 approach term
+  from the post-increment timer and the state-2 teardown reordered to the
+  original 0x140414..0x1404a2 statement order.  Raw **51,524 -> 51,534**
+  (+10), aligned **21,918 -> 21,862** (-56), size 57,232/57,232 exact.
 * `LevelScript::process` (w13657, wave 191b): case-154 state-4 camera-matrix
   block reconstructed from the Thumb disassembly at 0x14313e..0x14329a.  The
   source had the right-vector assignment immediately overwritten by

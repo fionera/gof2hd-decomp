@@ -417,8 +417,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
     int otherLock = otherLockFlag;
     bool landmarkHit = false;
-    int notTurretMode = !turretMode;
     int notOtherLock = !otherLock;
+    int notTurretMode = !turretMode;
     if (__builtin_expect((this->landmarks != nullptr && // lint: arm_builtin
         !(Globals::status->getStation()->getIndex() == 109 ||
           Globals::status->getStation()->getIndex() == 110 ||

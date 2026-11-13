@@ -1391,7 +1391,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             refinedAny = true;
                         }
                         int count = -amount;
-                        if (count >= 0) {
+                        if (count > 0) {
                             report += String("\n") + String(count) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
@@ -1673,7 +1673,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::appManager->SetCurrentApplicationModule(5);
                             this->active = 0;
                             return;
-                        } else if (Globals::status->getCurrentCampaignMission() == 81 && mission->isCampaignMission()) {
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
@@ -1708,12 +1708,12 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
+                            Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
-                            Globals::switch_to_target_setting = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
@@ -1864,8 +1864,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->freeCamMode = 0;
                 }
                 if (!this->freeCamMode && this->menuWindow->inCinematicMode()) {
-                    this->hudTouchFlags = 0;
                     setCinematicMode(true);
+                    this->hudTouchFlags = 0;
                     this->level->getStarSystem()->initLight();
                     return;
                 }

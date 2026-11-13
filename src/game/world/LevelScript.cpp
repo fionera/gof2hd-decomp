@@ -5227,8 +5227,8 @@ bool LevelScript::process(int delta) {
             case 158: {
                 if (m_nState == 1) {
                     // Fly the marker ship in towards the station.
-                    float approach = (float) m_nScriptTimerA / -34000.0f + 1.0f;
                     m_nScriptTimerA += delta;
+                    float approach = (float) m_nScriptTimerA / -34000.0f + 1.0f;
                     float step = (float) delta;
                     m_pCamera->translate(step * 4.8f * approach, 0.0f, (float) -delta * 0.7f * approach);
                     AEGeometry *marker = m_pGeometry4;
@@ -5265,22 +5265,22 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB += delta;
                     (*enemies)[0]->geometry->moveForward((float) m_nScriptTimerA * 0.1f);
                     if (m_nScriptTimerB >= 12001 && ((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        m_pLevel->getPlayer()->resetGunDelay();
                         field_0x24 = 0;
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
-                        resetCamera(m_pLevel);
+                        m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->setFreeze(false);
                         player->setVisible(true);
+                        player->setSpeed(2.0f);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        m_bCinematicBreak = 0;
-                        m_pCamera->setTarget(player->geometry);
                         player->player->setVulnerable(true);
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        m_pLevel->lodManager->forceUpdate(delta, false);
-                        player->setSpeed(2.0f);
                         ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);
                         (*enemies)[0]->player->setAlwaysEnemy(true);
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
