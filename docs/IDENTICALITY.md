@@ -18,8 +18,8 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **53,054** | 19,153 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
-| `Level::createMission` | **3,373** | 463 | 17,172 |
-| `MGame::OnTouchEnd` | **3,548** | 697 | 8,080 |
+| `Level::createMission` | **4,265** | 386 | 17,172 |
+| `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
 | `HangarWindow::render` | **1,393** | 461 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **72** | 36 | 1,432 |
@@ -30,7 +30,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,772**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,660**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -39,6 +39,8 @@ Landed changes:
 * `LevelScript::process` (w13839, wave 191b, second pass): case-125 state-2 `stopShooting` before `m_bCinematicBreak`.  Raw **53,041 -> 53,044** (+3), aligned **19,158 -> 19,155** (-3), size 57,232/57,232 exact.  `.text` 75,770 -> 75,773; `.ARM.extab` 544.
 * `Level::createMission` (w13837, wave 191b, pass 28): drop the raid `Globals` local.  Raw 3,373 and aligned 463 unchanged, size 17,172/17,172 exact (the local was already non-volatile on this tree).
 * `HangarWindow::render` (w13845, wave 191b, fourth pass): buy-list `price` before `description`.  Raw 1,393 -> 1,391, aligned 461 -> 472; reverted to a note (2-byte `.text` gain for 11 aligned slots).
+* `MGame::OnTouchEnd` (w13848, wave 191b): campaign `== 95` clause writes `Globals::switch_to_target_setting = 1` before the four `getHitpoints/getShieldHP/getArmorHP/getGammaHP` stores.  Raw **3,548 -> 3,544** (-4), aligned 697 unchanged, size 8,080/8,080 exact.  `.text` 75,772 -> 75,768.
+* `Level::createMission` (w13849, wave 191b): `alienGuns` table select via `(bigAlienWave | (i < 0))` plus the w13841 W hunks (named pirateFortress rotate temp, raid `guns` after the stream-out `if`, no case-4 `hunterCount == 0` guard).  Raw **3,373 -> 4,265**, aligned **463 -> 386** (-77), size 17,172/17,172 exact.  `.text` 75,770 -> 76,662; `.ARM.extab` 544 -> 594.  The raw rise is branch-offset shift; the aligned drop is the structural progress.
 * `HangarWindow::render` (w13845, wave 191b, third pass): free-credits canvas/row-height declaration order.  Raw **1,411 -> 1,393** (-18), aligned **462 -> 461** (-1), size 9,700/9,700 exact.  `.text` 75,788 -> 75,770; `.ARM.extab` 544.
 * `MGame::OnTouchEnd` (w13833, wave 191b): 95-clause switch store after `field_68`.  Raw 3,548 -> 3,731, aligned 697 -> 680, but size **8,084/8,080**; reverted to a note.
 * `LevelScript::process` (w13838, wave 192, mission-94): docked free-look order + radio-14 placement.  Raw 53,041 -> 54,229, aligned 19,158 -> 19,154, but size **57,236/57,232**; reverted to a note.

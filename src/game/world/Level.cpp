@@ -1965,7 +1965,7 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
-            const float (*t)[6] = (bigAlienWave - (i >> 31) * 4) ? kAlienStationTurrets : kAlienOutpostTurrets;
+            const float (*t)[6] = (bigAlienWave | (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
             v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
@@ -1989,7 +1989,8 @@ void Level::createMission() {
             Vector p = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             v = p;
             gun->geometry->setRotation(v);
-            v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
+            Vector q = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
+            v = q;
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = 1;
@@ -2001,12 +2002,12 @@ void Level::createMission() {
         AERandom *volatile &rnd = Globals::rnd;
         int raidType = Globals::globals->getRandomEnemyFighter(raidRace);
         bool hard = Globals::status->hardCoreMode();
-        int guns = alienGuns + fortressGuns;
         if (raidRace == 8 && Level::initStreamOutPosition &&
             rnd->nextInt(100) < (hard ? 40 : 20) + Globals::status->getLevel()) {
             this->spawnPosition = this->player->getPosition() / 3.0f;
             this->field_180->setNewCoords(this->spawnPosition);
         }
+        int guns = alienGuns + fortressGuns;
         for (int i = guns + this->friendCount + this->field_164 + this->field_168;
              i < guns + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(raidRace, 0, raidType, this->field_180->getWaypoint(), true, false);
@@ -2127,9 +2128,6 @@ case4Tail:
     int hunterCount = (int) (hunters + (opt44 - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    if (hunterCount == 0) {
-        hunterCount = 1;
-    }
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
