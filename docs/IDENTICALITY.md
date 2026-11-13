@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,527** | 22,811 | 57,232 |
+| `LevelScript::process` | **51,525** | 22,801 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,216**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,214**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13561, wave 191b): two `__builtin_expect` hints:
+  case-92 `m_nScriptTimerA > 2000` and case-157 explosion-window timer
+  predicate.  Raw **51,527 -> 51,525** (-2), aligned 22,811 -> 22,801,
+  size 57,232/57,232 exact.  `.text` 71,216 -> 71,214 (-2);
+  `.ARM.extab` 577 unchanged, `.rel.plt` byte-identical.
 * `Generator::createMission` (w13568, wave 191b): split the race/type test
   into `if (__builtin_expect(race < 4, 1)) { __builtin_assume(type !=
   0xffffffffU); if (type == 13) ... }`.  The free `llvm.assume` keeps the

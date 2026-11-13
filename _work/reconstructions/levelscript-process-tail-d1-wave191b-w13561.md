@@ -103,3 +103,74 @@ size       57,232 / 57,232   (exact)
 .rel.plt   md5 289b2a06… (byte-identical)
 check      RATCHET PASS
 ```
+
+## Cross-control-boundary and independent-window rotation sweeps
+
+* Cross-control-boundary moves (simple statement ↔ adjacent `if`/`for` block,
+  both directions, 217 candidates on the 51,537 body): no size-exact win.
+  (A parser bug that inserted the statement *inside* the block produced six
+  spurious -1/-2 cells; each makes the statement conditional, so all were
+  rejected.)
+* Independent-window rotations (window size 3-6 inside a straight-line run,
+  only windows whose statements have pairwise disjoint identifier sets — 823
+  candidates): one win, landed below.
+
+### 4. case-154 camera/flag group (source ~4543)
+
+```cpp
+                     m_tempVec = (*m_pLevel->getEnemies())[2]->geometry->getPosition();
++                    ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+                     m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
+                     m_bCinematicBreak = 1;
+-                    ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+```
+
+The three statements touch disjoint state (`m_tempVec`, `m_bCinematicBreak`,
+enemy[0] AI flag); the `m_tempVec` producer (line above) stays before the add.
+
+```
+raw        51,537 -> 51,536  (-1)
+size       57,232 / 57,232   (exact)
+.text      71,237 -> 71,236  (-1)
+.rel.plt   md5 289b2a06… (byte-identical)
+check      RATCHET PASS
+```
+
+## Whole-condition `__builtin_expect` sweep (tail lines 2600-5200)
+
+Re-ran the w11901 whole-condition expect sweep on the 51,536 body (726 cells,
+both hint values).  Two size-exact / `.rel.plt`-identical -1 cells.
+
+### 5. case-92 state-4 timer guard (source ~3068)
+
+```cpp
+-                    if (m_nScriptTimerA > 2000) {
++                    if (__builtin_expect(m_nScriptTimerA > 2000, 1)) { // lint: arm_builtin
+```
+
+Branch-hint only; semantics unchanged.
+
+```
+raw        51,536 -> 51,535  (-1)
+size       57,232 / 57,232   (exact)
+.text      71,236 -> 71,235  (-1)
+.rel.plt   md5 289b2a06… (byte-identical)
+check      RATCHET PASS
+```
+
+### 6. case-157 state-10 explosion window guard (source ~5118)
+
+```cpp
+-                    if (m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
++                    if (__builtin_expect(m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000, 1)) { // lint: arm_builtin
+```
+
+Branch-hint only; semantics unchanged.
+
+```
+raw        51,535 -> 51,534  (-1)
+size       57,232 / 57,232   (exact)
+.text      71,235 -> 71,234  (-1)
+.rel.plt   md5 289b2a06… (byte-identical)
+check      RATCHET PASS
+```

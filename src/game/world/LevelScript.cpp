@@ -3065,7 +3065,7 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
                     }
                     wcamera->setLocal(local);
-                    if (m_nScriptTimerA > 2000) {
+                    if (__builtin_expect(m_nScriptTimerA > 2000, 1)) { // lint: arm_builtin
                         m_nState++;
                         m_nScriptTimerA = 0;
                     }
@@ -5115,7 +5115,7 @@ bool LevelScript::process(int delta) {
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
                     m_nScriptTimerB += delta;
                     m_pCamera->setRumblePercentage(0.0f, 0);
-                    if (m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
+                    if (__builtin_expect(m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000, 1)) { // lint: arm_builtin
                         m_pExplosion->setScaling(10.0f);
                         Globals::sound->play(2243, nullptr, nullptr, 0.0f);
                         m_pCamera->setRumblePercentage(100.0f, 30);
