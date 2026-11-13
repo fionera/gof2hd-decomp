@@ -44,3 +44,10 @@ their residual is `.text` only.
    element", not "EmpGuard-free code + a +4 B patch elsewhere".
 3. `LevelScript::process` owns the largest extab residual (186 B / 348 B record), so its
    LSDA will only converge together with its `.text` (many try/catch scopes).
+
+## Companion check: `.text` is fully attributed too
+
+The 14 residual table rows sum to exactly the `.text` differing-byte count:
+53,208 + 6,909 + 5,614 + 4,265 + 3,544 + 1,395 + 1,190 + 45 + 463 + 175 + 19
++ 11 + 28 + 16 = **76,882**, which is the current `.text` contentdiff. So there is no
+hidden `.text` delta outside the table either (no padding/alignment residue).
