@@ -758,10 +758,10 @@ enemies:
                         }
                         if (enemy == locked) {
                             unsigned int lockImage;
-                            if (enemy->player->carriesFriendCargoFlag) {
-                                lockImage = this->image_0x64;
-                            } else if (enemy->player->enemyFlagsLo) {
+                            if (enemy->player->enemyFlagsLo) {
                                 lockImage = this->image_0x5c;
+                            } else if (enemy->player->carriesFriendCargoFlag) {
+                                lockImage = this->image_0x64;
                             } else {
                                 lockImage = this->image_0x74;
                             }

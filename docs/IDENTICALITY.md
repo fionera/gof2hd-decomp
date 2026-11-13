@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,513** | 22,816 | 57,232 |
-| `Radar::draw` | **6,013** | 1,965 | 9,908 |
+| `LevelScript::process` | **51,513** | 22,174 | 57,232 |
+| `Radar::draw` | **6,013** | 1,961 | 9,908 |
 | `Layout` C1/C2 | **5,235** | 2,668 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
 | `MGame::OnTouchEnd` | **2,878** | 1,582 | 8,080 |
@@ -35,6 +35,20 @@ Current section deltas: `.text` **71,197**, `.ARM.extab` **577**, `.ARM.exidx` *
 
 Landed changes:
 
+* `LevelScript::process` (w13634, wave 191b): case-70 state-0 teardown,
+  move `m_pLevel->lodManager->forceUpdate(delta, false);` after
+  `m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);`.  The LOD
+  update and the camera-target store are independent.  Raw **51,513 ->
+  51,515** (+2), aligned **22,816 -> 22,173** (-643), size 57,232/57,232
+  exact.  Combined with the w13599 case-105 timer hoist (-2 raw) the net raw
+  is **51,513** and aligned **22,174**; `.text` stays 71,197.
+* `LevelScript::process` (w13599 pass 2, wave 191b): case-105 timer hoist,
+  move `m_nScriptTimerA = 0;` before `setDirection`/`delete m_pGeometry6`.
+  Raw **51,515 -> 51,513** (-2), size 57,232/57,232 exact.
+* `Radar::draw` (w13636, wave 191b): the enemy lock-image selector tests
+  `enemyFlagsLo` (Player+0x5c) before `carriesFriendCargoFlag` (Player+0x5d),
+  matching the binary's 0x12f354/0x12f386 order.  Raw **6,013** (tie),
+  aligned **1,965 -> 1,961** (-4), size 9,908/9,908 exact.
 * `MGame::OnTouchEnd` (w13622, wave 191b): swap the campaign-134
   `field_5c`/`field_64` store order.  Raw **2,878** (tie), aligned
   **1,661 -> 1,582** (-79), size 8,080/8,080 exact.  `.text` 71,197 unchanged,

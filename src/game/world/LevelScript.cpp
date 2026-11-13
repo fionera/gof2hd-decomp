@@ -2493,8 +2493,8 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     radar->enabled = 0;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     camPos.x += -600.0f;
                     camPos.y += -300.0f;
@@ -3916,11 +3916,11 @@ bool LevelScript::process(int delta) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
                         m_pCamera->setTarget(player->geometry);
                         Vector dir = player->geometry->getDirection();
+                        m_nScriptTimerA = 0;
                         player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
                         if (m_pGeometry6 != nullptr) {
                             delete m_pGeometry6; // 0x144df6
                         }
-                        m_nScriptTimerA = 0;
                         m_pGeometry6 = nullptr;
                         m_pLevel->getStarSystem()->switchSunForSupernovaExpansion(); // 0x144e0e
                         m_nState = m_nState + 1; // 12 -> 13
