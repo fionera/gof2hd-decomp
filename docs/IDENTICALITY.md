@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,115** | 20,244 | 57,232 |
+| `LevelScript::process` | **52,842** | 20,218 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,497** | 2,103 | 7,072 |
 | `Level::createMission` | **2,635** | 595 | 17,172 |
@@ -30,11 +30,20 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,885**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,612**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13748 + w13771, wave 191b): case-16 state 1
+  `cinematicBreak` after `forceUpdate`, and case-80 state 0 faithful
+  order (`setTurretMode` -> `resetCamera` -> `setFreeLookMode` ->
+  `enableFirstPersonCam` -> `hideShipForFirstPersonCameraView` ->
+  `stopShooting`, cinematic/hud/radar before `setComputerControlled`,
+  direct `m_pGeometry1`, `setPosition`/timer/state before
+  `sound->play(1121)`).  Raw **53,115 -> 52,842** (-273), aligned
+  **20,244 -> 20,218** (-26), size 57,232/57,232 exact.  `.text`
+  74,885 -> 74,612; `.ARM.extab` 561.
 * `Layout` C1/C2 (w13763, wave 191b): 21 further independent-field
   store-order swaps in the constructor.  The file remains a pure
   reordering of the same statements (sorted line sets identical), so the

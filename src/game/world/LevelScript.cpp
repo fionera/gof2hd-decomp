@@ -1691,8 +1691,8 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(self);
-                        m_bCinematicBreak = 0;
                         self->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
@@ -2615,26 +2615,25 @@ bool LevelScript::process(int delta) {
             case 80: {
                 // The capital ship destroys the pirate base, then the player is towed into the dock.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
-                    AEGeometry *wgeometry1 = m_pGeometry1;
-                    m_pCamera->enableFirstPersonCam(false);
-                    resetCamera(m_pLevel);
                     player->setTurretMode(false);
+                    resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
-                    player->setComputerControlled(true);
                     m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
+                    player->setComputerControlled(true);
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(wgeometry1);
-                    m_tempVec = wgeometry1->getPosition();
+                    m_pCamera->setTarget(m_pGeometry1);
+                    m_tempVec = m_pGeometry1->getPosition();
                     m_tempVec += Vector{-20000.0f, 5000.0f, -35000.0f};
-                    Globals::sound->play(1121, nullptr, nullptr, 0.0f);
+                    m_pCamera->setPosition(m_tempVec);
                     m_nScriptTimerA = 0;
                     m_nState = 1;
-                    m_pCamera->setPosition(m_tempVec);
+                    Globals::sound->play(1121, nullptr, nullptr, 0.0f);
                 } else if (m_nState == 1) {
                     AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
                     m_nScriptTimerA += delta;
