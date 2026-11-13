@@ -34,6 +34,11 @@ Residual table (raw / aligned / size; all size-exact):
 Current section deltas: `.text` **76,877**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
+Whole-file diff: **77,494 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
+exactly three sections -- `.text` 76,877, `.ARM.extab` 597, `.note.gnu.build-id` 20. All other
+24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
+exact.
+
 Landed changes:
 
 * `LevelScript::process` (w13905, wave 192, fourth pass): case-94 state-2 scatter loop written as `for (int i = 2; i != 4; i++)` instead of a `do { ... i++; } while (i != 4)`.  Raw **53,208 -> 53,203** (-5), aligned **18,243 -> 18,234** (-9), size 57,232/57,232 exact.  `.text` 76,882 -> 76,877; `.ARM.extab` 597 unchanged.
