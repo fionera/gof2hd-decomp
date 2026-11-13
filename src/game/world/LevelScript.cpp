@@ -1639,8 +1639,8 @@ bool LevelScript::process(int delta) {
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x134, false);
                         m_pLevel->field_80->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, false);
                         KIPlayer *tug = (*m_pLevel->getEnemies())[m_pLevel->getEnemies()->count - 1];
-                        wcamera->setTarget(tug->geometry);
                         ((PlayerFixedObject *) tug)->setMoving(true);
+                        wcamera->setTarget(tug->geometry);
                         wcamera->setPosition(tug->getPosition());
                         wcamera->translate(-10000.0f, -200.0f, 5000.0f);
                         m_nState = 3;
