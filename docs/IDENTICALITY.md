@@ -31,11 +31,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,878**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,884**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13886, wave 192, second pass): case-16 state-1 `player->freeze = 0`, and case-114 state-13 supernova teardown order (`setStation`/`departStation`/`initStreamOutPosition` after `nextCampaignMission`, `lookBehind` before `setRotationAroundTarget`, `setFreeLookMode` only in the docked arm).  Raw **53,204 -> 53,210** (+6), aligned **18,300 -> 18,243** (-57), size 57,232/57,232 exact.  `.text` 76,878 -> 76,884; `.ARM.extab` 597.
 * `LevelScript::process` (w13888, wave 192): case-144 `setDockingType(0)` before the `setName`/`field_0x74`/`deleteHackingGame`/`m_nState++` tail, and `initStreamOutPosition = 1` before `initStreamOutPositionAfterCutscene = 0`.  Raw **53,202 -> 53,204** (+2), aligned **18,752 -> 18,300** (-452), size 57,232/57,232 exact.  `.text` 76,876 -> 76,878; `.ARM.extab` 597.
 * `HangarWindow::render` (w13870, wave 192): buy-list `description` declared before `price` (reverts the w13852 order).  Raw **1,393 -> 1,395** (+2), aligned **407 -> 396** (-11), size 9,700/9,700 exact.  `.text` 76,874 -> 76,876; `.ARM.extab` 597.
 * `Layout` C1/C2 (w13869, wave 192): drop the duplicated `field_0x184` store (the original writes it once in body C).  Raw **5,585 -> 5,614** (+29), aligned **2,005 -> 1,993** (-12), size 7,072/7,072 exact.  `.text` 76,845 -> 76,874; `.ARM.extab` 597.

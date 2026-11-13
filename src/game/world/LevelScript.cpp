@@ -1695,6 +1695,7 @@ bool LevelScript::process(int delta) {
                         resetCamera(self);
                         self->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
+                        player->freeze = 0;
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
@@ -3929,14 +3930,14 @@ bool LevelScript::process(int delta) {
                     player->geometry->moveForward((float) (delta * 12)); // 0x144c6a
                     m_pCamera->setRumblePercentage(50.0f, 10); // 50.0 @0x145018
                     if (m_nScriptTimerA >= 6001) {
-                        Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
                         Globals::status->field_64 = player->player->getHitpoints(); // hullHp @0x64
                         Globals::status->field_5c = player->player->getShieldHP(); // @0x5c
                         Globals::status->field_60 = player->player->getArmorHP();  // @0x60
                         Globals::status->field_68 = player->player->getGammaHP();  // @0x68
-                        Level::initStreamOutPosition = 1;
                         Globals::status->nextCampaignMission(true);
+                        Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
+                        Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2); // 0x144d1e
                     }
