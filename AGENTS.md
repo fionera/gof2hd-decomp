@@ -88,9 +88,9 @@ Known gate limitations (do not lean on them):
 
 ## Current state (2026-11-13, wave 191b)
 
-`check` is green: byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact
+`check` is green: byte_exact **4508/4524**, linked_exact **4508/4524**, size-exact
 **4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
-**CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 17 functions are not
+**CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 16 functions are not
 byte-exact. All **27 original ELF section headers are byte-identical** (no extra section);
 `.text`, `.rodata`, `.data`,
 `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and

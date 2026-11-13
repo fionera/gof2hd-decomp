@@ -6,10 +6,10 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-11-12 (wave 191)
 
-**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
-linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+**Current authoritative state.** `check` is green: byte_exact **4508/4524**,
+linked_exact **4508/4524**, size-exact **4524/4524**, data_exact **843/843**,
 imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
-17 functions remain non-byte-exact (15 table rows; C1/C2 pairs count twice), all size-exact.
+16 functions remain non-byte-exact (14 table rows; C1/C2 pairs count twice), all size-exact.
 
 Residual table (raw / aligned / size; all size-exact):
 
@@ -26,16 +26,26 @@ Residual table (raw / aligned / size; all size-exact):
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
-| `Generator::createMission` | **1** | 1 | 1,996 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,217**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,216**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Generator::createMission` (w13568, wave 191b): split the race/type test
+  into `if (__builtin_expect(race < 4, 1)) { __builtin_assume(type !=
+  0xffffffffU); if (type == 13) ... }`.  The free `llvm.assume` keeps the
+  two tests in separate basic blocks, so `SimplifyCFG` no longer merges
+  them into one `and i1`; `JumpThreading` therefore cannot fold the
+  `type >= 15` edge past the redundant `type == 13` test, and the
+  `0x9735a` `bhi` targets the race-check block exactly as in the original.
+  Raw **1 -> 0**, aligned 1 -> 0, size 1,996/1,996 exact, insn 744/744.
+  `.text` 71,217 -> 71,216 (-1), `.ARM.extab` 577 unchanged,
+  `.ARM.exidx` 0, `.rodata` 485 unchanged.  `.rel.plt` byte-identical.
+  **byte_exact 4507 -> 4508, linked_exact 4507 -> 4508.**
 * `MGame::OnTouchEnd` (w13577, wave 191b, pass 2): case-100 tail order,
   `SetCurrentApplicationModule(5)` before the armor-HP store.  Raw
   **2,880 -> 2,878** (-2), aligned 1,661, size 8,080/8,080 exact.

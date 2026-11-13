@@ -838,26 +838,33 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 targetStation = generateStationIndex(systems, agent->getStation());
             }
         }
-        if (__builtin_expect(race < 4 && type == 13, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint
-            int agentSystem = agent->getSystem();
-            if (systems->data()[agentSystem]->getRoutes() == nullptr) {
-                type = 4;
-                if (Globals::rnd->nextInt(2) == 0) {
-                    type = 1;
-                }
-            } else {
-                bool found = false;
-                while (!found) {
-                    targetStation = generateStationIndex(systems, agent->getStation());
-                    for (uint32_t i = 0; i < systems->size(); ++i) {
-                        if (systems->data()[i]->stationIsInSystem(targetStation) &&
-                            (uint32_t) systems->data()[i]->getRace() == race) {
-                            found = true;
-                            break;
+        if (__builtin_expect(race < 4, 1)) {  // lint: arm_builtin
+            // `type` is a mission-type code, never the all-ones sentinel.  The
+            // assume is free at run time but keeps the two tests in separate
+            // basic blocks, as in the original (JumpThreading would otherwise
+            // fold the type>=15 edge past the `type == 13` test).
+            __builtin_assume(type != 0xffffffffU);  // lint: arm_builtin
+            if (type == 13) {
+                int agentSystem = agent->getSystem();
+                if (systems->data()[agentSystem]->getRoutes() == nullptr) {
+                    type = 4;
+                    if (Globals::rnd->nextInt(2) == 0) {
+                        type = 1;
+                    }
+                } else {
+                    bool found = false;
+                    while (!found) {
+                        targetStation = generateStationIndex(systems, agent->getStation());
+                        for (uint32_t i = 0; i < systems->size(); ++i) {
+                            if (systems->data()[i]->stationIsInSystem(targetStation) &&
+                                (uint32_t) systems->data()[i]->getRace() == race) {
+                                found = true;
+                                break;
+                            }
                         }
                     }
+                    type = 13;
                 }
-                type = 13;
             }
         }
     }
