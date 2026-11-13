@@ -1645,8 +1645,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
-                            Globals::switch_to_target_setting = 0;
                             Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
                             Globals::appManager->SetCurrentApplicationModule(5);
                             this->active = 0;

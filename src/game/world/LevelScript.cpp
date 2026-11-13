@@ -1362,13 +1362,13 @@ bool LevelScript::process(int delta) {
         if (m_nState == 1) {
             m_pCamera->translate((float) -delta * 0.3f, (float) -delta * 0.05f, (float) delta * 0.1f);
             if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                m_nScriptTimerA = 0;
                 m_nState = 2;
                 PlayerFighter *fighter = (PlayerFighter *) (*enemies)[0];
-                fighter->setCloakingPossible(false);
-                (*enemies)[0]->setVisible(true);
                 (*enemies)[0]->awake();
+                (*enemies)[0]->setVisible(true);
+                fighter->setCloakingPossible(false);
                 fighter->setAIDisabled(true);
-                m_nScriptTimerA = 0;
             }
         } else if (__builtin_expect(m_nState == 2, 0)) { // lint: arm_builtin
             m_nScriptTimerA += delta;
@@ -1405,17 +1405,17 @@ bool LevelScript::process(int delta) {
         if (m_nState == 6 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
             Player *pp = player->player;
             Status *st = Globals::status;
-            st->field_68 = pp->getGammaHP();
+            st->field_64 = pp->getHitpoints();
             Globals::status->field_5c = pp->getShieldHP();
-            Globals::status->field_64 = pp->getHitpoints();
             Globals::status->field_60 = pp->getArmorHP();
+            Globals::status->field_68 = pp->getGammaHP();
             Globals::status->nextCampaignMission(true);
             Globals::status->nextCampaignMission(true);
             Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-            Globals::appManager->SetCurrentApplicationModule(2);
             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
             Globals::switch_to_target_setting = 1;
             Level::initStreamOutPosition = 1;
+            Globals::appManager->SetCurrentApplicationModule(2);
         }
         if (m_nState >= 2 && m_nState <= 4) {
             (*enemies)[0]->geometry->moveForward((float) delta);

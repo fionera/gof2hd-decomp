@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 66.9,
+   "pct": 67.1,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -57,7 +57,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 83.9,
+   "pct": 84.0,
    "byte": false,
    "linked": false,
    "osize": 8080,

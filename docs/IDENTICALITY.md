@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,008** | 20,733 | 57,232 |
-| `Radar::draw` | **6,434** | 1,742 | 9,908 |
+| `LevelScript::process` | **52,063** | 20,722 | 57,232 |
+| `Radar::draw` | **6,436** | 1,718 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **3,659** | 560 | 8,080 |
+| `MGame::OnTouchEnd` | **3,659** | 558 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,954**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **73,011**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13745, wave 191b): campaign-100
+  `initStreamOutPosition` before `switch_to_target_setting`.  Raw 3,659
+  (tie), aligned **560 -> 558**, size 8,080/8,080 exact.
+* `LevelScript::process` (w13746, wave 191b): mission-106 state 1
+  timer/state/awake/visible/cloak order and state 6 status-field/module
+  order.  Raw **52,008 -> 52,063** (+55), aligned **20,733 -> 20,722**
+  (-11), size 57,232/57,232 exact.
+* `Radar::draw` (w13744, wave 191b): enemy in-sight five-clause predicate
+  order (`isAutoPilot`, `isDockedToDockingPoint`, `countsAsEnemyExcludeFlag`,
+  `enemyHit`/`field_0x24`, `wreck`/`isDead`).  Raw **6,434 -> 6,436** (+2),
+  aligned **1,742 -> 1,718** (-24), size 9,908/9,908 exact.
+  The batch moves `.text` 72,954 -> 73,011; `.ARM.extab` stays 564.
 * `LevelScript::process` (w13731 + w13724, wave 191b): mission-0 state 0/1/2,
   mission-89 intro and case-1, mission-106 state 2, case-154 s0/s1, case-94 s1
   tail, and case-16 s1 hud/radar store order.  Raw **51,956 -> 52,008** (+52),
