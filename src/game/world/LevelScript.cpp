@@ -1651,8 +1651,8 @@ bool LevelScript::process(int delta) {
                     Level::initStreamOutPosition = 0;
                     m_nState = 5;
                 } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3) {
-                    m_nScriptTimerA = m_nScriptTime;
                     m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nScriptTimerA = m_nScriptTime;
                     m_nState = 4;
                 }
                 break;
