@@ -4845,9 +4845,9 @@ bool LevelScript::process(int delta) {
                                 ship->setActive(true);
                             }
                         }
+                        m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
                         m_tempVec = (*enemies)[fighterIndex]->getPosition();
                         m_tempVec += Vector{-1500.0f, -5000.0f, 2500.0f};
-                        m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
                         m_pCamera->setPosition(m_tempVec);
                         m_nState = 3;
                     }
