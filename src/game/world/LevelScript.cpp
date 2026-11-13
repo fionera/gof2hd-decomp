@@ -3217,14 +3217,14 @@ bool LevelScript::process(int delta) {
                                 player->killLiberator();
                                 player->setRocketControl(nullptr, nullptr);
                             }
-                            m_pCamera->enableFirstPersonCam(false);
                             player->setFreeLookMode(false);
-                            m_bCinematicBreak = 1;
-                            m_pCamera->setLookAtCam(true);
-                            m_pRadar->enabled = 0;
+                            m_pCamera->enableFirstPersonCam(false);
                             player->hideShipForFirstPersonCameraView(false);
-                            m_pHud->visible = 0;
                             player->stopShooting(0);
+                            m_bCinematicBreak = 1;
+                            m_pHud->visible = 0;
+                            m_pRadar->enabled = 0;
+                            m_pCamera->setLookAtCam(true);
                             AEGeometry *leader = (*enemies)[0]->geometry;
                             m_pCamera->setTarget(leader);
                             m_tempVec = leader->getPosition();
@@ -4586,8 +4586,6 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 2) {
                     player->setSpeed(0.0f);
-                    m_pCamera->setFixed(true);
-                    Array<KIPlayer *> *enemies4568 = m_pLevel->getEnemies();
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.25f;
                     (*enemies)[0]->geometry->moveForward(step);
@@ -4600,6 +4598,7 @@ bool LevelScript::process(int delta) {
                     m_tempVec += m_dirVec * (step * -0.05f);
                     m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.0051f);
+                    m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
                     m_pCamera->setLocal(local);
                     if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 0)) { // lint: arm_builtin
@@ -4607,9 +4606,9 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
-                        m_pCamera->setTarget((*enemies4568)[1]->geometry);
                         m_pCamera->setFixed(false);
-                        m_tempVec = (*enemies4568)[1]->geometry->getPosition();
+                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
+                        m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 26000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;

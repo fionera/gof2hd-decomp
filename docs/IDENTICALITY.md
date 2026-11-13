@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,097** | 20,484 | 57,232 |
+| `LevelScript::process` | **53,117** | 20,246 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
 | `Level::createMission` | **2,627** | 605 | 17,172 |
@@ -30,11 +30,20 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,717**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,737**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13748 + w13762, wave 191b): case-154 state 2
+  faithful camera-matrix order and case-94 state 0 teardown order
+  (`setFreeLookMode`, `enableFirstPersonCam`,
+  `hideShipForFirstPersonCameraView`, `stopShooting`, cinematic break,
+  hud/radar, `setLookAtCam`).  Raw **53,097 -> 53,117** (+20), aligned
+  **20,484 -> 20,246** (-238), size 57,232/57,232 exact.  `.text`
+  74,717 -> 74,737; `.ARM.extab` 561.  Rejected w13764's remaining
+  `field_0x198` move: 7,052 B on this base (the other three reorders were
+  already landed by w13733).
 * `Level::createMission` (w13768, wave 191b): pirates `spawnPosition`
   assigned before the `setPosition` `nextInt` arguments, and the alienGuns
   loop restored to the original create-first order (`createStaticObject`
