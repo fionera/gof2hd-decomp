@@ -87,3 +87,39 @@ The store sequence confirms it is structural, not allocation:
 So the `Layout` constructor needs its scalar field writes **re-derived from the binary**
 (the values and some store positions are wrong), before any register-allocation work.
 The vector stores (`vld1.64`/`vst1.32` from the byte-identical `.rodata`) already match.
+
+## Radar::draw (+0x2c) — one callee-saved register
+
+First 0x2c bytes are identical. The first difference is a single word:
+
+```
+ORIG  12e07a  mov.w fp, #0
+OURS  12e07a  mov.w sl, #0
+```
+
+Both `fp` and `sl` are saved in the prologue; this is a pure allocator choice for a
+zero-initialised local, and everything downstream inherits the shift. Same class of
+problem as LevelScript's sl/fp swap.
+
+## Status::missionCompleted (+0xb8) — switch jump-table body order
+
+The divergence is inside the compiler-emitted switch jump table (halfword branch
+offsets), not in straight-line code:
+
+```
+ORIG (from 0xabfe8): 0098 009b 00b5 00b8 00c4 01a2 01b7 00cd 023a 01d1 023a 00fb
+                     01e8 01f6 01f8 012e 0028 01fc 020b 0160
+OURS (from 0xabfe8): 0098 009b 00b5 00b8 00c4 00cd 00fb 012e 023a 0160 023a 0167
+                     0184 01a2 01b7 01d1 0028 01e8 01f6 01f8
+```
+
+Ours is essentially ascending (case bodies laid out in case-value order); the original's
+is not. Decoding the original's entry -> body mapping and sorting by body offset gives
+the original's **source order of the case bodies**:
+
+```
+case 16, 0, 1, 2, 3, 4, 7, 11, 15, 19, 5, 6, 9, 12, 13, 14, 17, 18, 8/10(shared)
+```
+
+So the fix is to reorder the `switch` arms in `Status::missionCompleted` to that order
+(the bodies move, the table entries follow). Do not relabel cases -- reorder the arms.
