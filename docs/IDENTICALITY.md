@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,095** | 20,487 | 57,232 |
+| `LevelScript::process` | **53,094** | 20,487 | 57,232 |
 | `Radar::draw` | **6,959** | 1,401 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
 | `Level::createMission` | **2,582** | 680 | 17,172 |
@@ -30,11 +30,18 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,669**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,668**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13769, wave 191b): case-94 state-2
+  `setPosition(player->getPosition() + Vector{...})` operand order,
+  matching the original `AEMath::pl(playerPos, literalVec)` at 0x13e058.
+  Raw **53,095 -> 53,094** (-1), aligned 20,487 (tie), size
+  57,232/57,232 exact.  Rejected the same commit's `forceUpdate`/timer
+  swap: +17 aligned on this base.  `.text` 74,669 -> 74,668;
+  `.ARM.extab` 561.
 * `LevelScript::process` (w13748, wave 191b): case-69 state 1 faithful
   order.  Raw **53,091 -> 53,095** (+4), aligned **20,503 -> 20,487**
   (-16), size 57,232/57,232 exact.  Rejected case-70 s0
