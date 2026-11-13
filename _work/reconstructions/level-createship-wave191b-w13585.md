@@ -164,3 +164,68 @@ Scratch: `measure.sh`, `secdiff.py`, `adiff.py`, `lsda.py`, `vtry.py`,
 ## 8. Files changed
 
 * this note only; `src/game/world/Level.cpp` is unchanged from `HEAD`.
+
+## 9. Checkpoint 5: root cause of the hull rotation (still no win)
+
+The 869 B hull residual is a **3-cycle of callee-saved registers driven by
+`this`**.  Ours keeps `this` live in `sl` across the `shipClass` branch:
+
+```
+ours  c0400: ldr.w sl, [sp, #56]   ; this -> sl (hoisted before the beq)
+ours  c048a: vmov  r6, s20         ; x -> r6
+ours  c0498: vmov  r3, s16         ; z -> r3
+ours  c04a0: mov   sl, r3          ; z -> sl  (extra 2 B)
+ours  c0452: cmp   r4, #3          ; race -> r4
+ours  c044a: mov   r9, r0          ; volumes -> r9
+ours  c0450: mov   fp, r6          ; fixed -> fp
+```
+
+The original rematerialises the spilled `this` **per branch**, so it never
+occupies `sl`:
+
+```
+orig  c03fe: ldr   r6, [sp, #56]   ; this -> r6 (fixed-branch copy)
+orig  c071e: ldr   r6, [sp, #56]   ; this -> r6 (fighter-branch copy)
+orig  c048c: vmov  sl, s20         ; x -> sl
+orig  c0498: vmov  r4, s16         ; z -> r4
+orig  c0452: cmp   r6, #3          ; race -> r6
+orig  c0410: mov   r9, r0          ; fixed -> r9
+orig  c044c: mov   fp, r0          ; volumes -> fp
+```
+
+Every per-AAB difference (`mov r3,r4` vs `mov r3,sl`, `mov r1,sl` vs
+`mov r1,r6`, `ldr [fp,#4]` vs `ldr [r9,#4]`) is this permutation.  Fixing
+`this` would fix ~800 B of raw diff at once; every source lever tried to
+move the reload (`Level *self = this`, `this->lodManager`, per-branch
+`LODManager *lm`, `lm` hoisted before the branch, `g` hoisted, `addObject`
+reordered, `ship` declaration moved, `bool`/`int` copies of `shipClass`)
+is neutral or worse.  `lm` hoisted before the branch is 2,502; `g` early is
+2,090; `addObject` after the ctor is 1,923.
+
+### New measurements (all size-exact unless noted)
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| baseline | **1,164** | 400 | 2,764 |
+| 81-way jitter-reuse sweep (`x=wpz+j_a`, `y=j_b+j_c+j_d`, a..d∈{1,2,3}) | **1,164** min | 400 | 2,764 |
+| `x_before_hackz` (int x before guard, hack z) | 1,165 | 400 | 2,764 |
+| `(getLevel()>20?100:getLevel()*5)` (gives original `ble` polarity) | 1,174 | 399 | 2,764 |
+| `x` int before guard, `z` float before (faithful grouping) | 1,474 | 436 | 2,764 |
+| `int y` after guard (cast at ctor) | 2,396 | 473 | **2,768** |
+| `notop` + faithful `x=wpx+j3,y=wpy+j1,z=wpz+j2` + `setLevel` guard | 2,295 | 489 | **2,752** |
+| `notop` + faithful float-z hack + `setLevel` guard | 1,173 | 410 | 2,764 |
+| `int lv = getLevel()` (single call) | 2,486 | 544 | **2,748** |
+| `empPoints` before `hitpoints` | 1,561 | 543 | 2,764 |
+| `float fx` conversion moved after `new` (`(float)x` in ctor) | 1,169 | 401 | 2,764 |
+| `LODManager *lm = lodManager` before branch | 2,502 | 1,102 | **2,760** |
+| `setLevel` moved into each branch | 2,464 | 1,312 | **2,748** |
+
+The `notop` + `setLevel` guard measured tlen **321** (record 344) with the
+`guard { ship->setLevel(this); }` form, not the 315 tie recorded in the
+w13542 note, so that route is closed with this guard spelling.
+
+Baseline re-verified at checkpoint 5: raw **1,164**, aligned **400**,
+size **2,764/2,764**, insns 1,117/1,117, `.text` contentdiff **71,219**,
+`.ARM.extab` **156,312** (contentdiff **577**), `.ARM.exidx` contentdiff
+**0**, `.rel.plt` contentdiff **0**, `check` **RATCHET PASS**
+(byte 4507, linked 4507, data 843/843, imports 207, lint CLEAN).

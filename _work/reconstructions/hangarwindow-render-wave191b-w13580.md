@@ -119,3 +119,90 @@ still a loss.
 decompile of `0x1590d8`), `render_greedy_new.mir` (fresh greedy dump),
 `allpass_new.txt` (255 MB, delete when done), `m1.json`…`m12.json`,
 `pairs.json`, `pool.json`, `hoist.py`.
+
+## Checkpoint 2 (w13580 continuation): fresh-angle sweeps, still no win
+
+Baseline re-confirmed after every experiment: raw **1,038**, aligned
+620, size **9,700/9,700**, insn 3,726/3,734, `.text` **71,228**,
+`.ARM.extab` **577**, `.rodata` 485, `.rel.plt` identical, flip
+`0x1496da = dde9219a` (ours `ldrd r9,sl` vs orig `ldrd sl,r9`).
+
+### Body-order × `upgTab`-declaration-position matrix
+
+The `upgTab` snapshot is declared either *before* the guard or *after*
+one of the four body statements; the body statements were permuted.
+Only `VDP`+decl-after-`setVisible` (the committed base) is 1,038/577.
+Best raw wins are all extab-fatal:
+
+| body / decl | raw | size | extab |
+|---|---:|---|---:|
+| VDP / after setVisible (base) | 1,038 | 9,700 | 577 |
+| DVP / after draw | 1,039 | 9,700 | 578 |
+| DPV / after draw | **1,028** | 9,700 | 1,210 |
+| VPD / after setVisible | 1,036 | 9,700 | 1,210 |
+| PVD / before setPosition (w13527) | 1,193 | 9,700 | 586 |
+| VDP / before setVisible | 1,186 | 9,700 | 587 |
+
+`DPV/after-draw` is the best raw of the whole wave but its LSDA row 40
+is `(2710, 126, 9550)`; `126 < 128` shrinks the row-length ULEB and
+shifts the whole table (671 differing record bytes).  The last call in
+row 40 is `TouchButton::draw` at `+0xb10`; extending the scope by two
+bytes would need a size-neutral call move, which every attempt broke.
+
+### `__builtin_expect` reshapes on the upgrade check
+
+`expect(tab==1)&&upgradeMode` 1,078/580; `tab==1&&expect(upgradeMode)`
+1,103/581; `expect(upgradeMode)&&tab==1` 1,057/581;
+`expect(...,0)` 1,121/602; no-expect 1,076/583; `expect(upgTab==1,0)`
+1,262/595; `expect(upgTab!=1||!upgradeMode,0)` 6,628/9,696/801.
+Base `expect(upgTab==1 && upgradeMode,1)` = 1,038/577.
+
+### Buy-list String temporaries
+
+All 24 upgrade-op permutations on the base body: only `P2VD` (base) is
+1,038; next `PV2D` 1,050, `P2DV`/`PVD2` 1,054, `PD2V`/`PDV2` 1,062;
+anything with `buttons[2]->setVisible` first is 1,144–1,189 / extab 581.
+Case-assignment order (`price=…` before `description=…`) 1,053/577;
+with `description` declared first 1,051/577.  `String description =
+String("")` (vs `("")`) 1,040/577.  `unsigned int count` 1,038/577.
+`switch (count)` (plain int, reproduces orig `bic.w r0,r9,#0x80000000`)
+3,442/9,704/1,425.  Loop `count < 5` 8,721/9,736; `expect(count<5,1)`
+1,038/577.  Moving `setVisible` after the switch 3,303/9,708/1,639.
+`draw`/`setPosition` reorders 8,772–8,784 / 9,756.
+
+### Free-credits String temporaries
+
+`String("(+") + (formatCredits + String(")"))` 3,402/9,676/766;
+`(String("(+") + formatCredits) + String(")")` 1,038/577 (neutral);
+`String(")") + formatCredits + String("(+")` 1,042/577.
+`int &textYv` / `int textYv` (non-volatile) 8,771/9,744/1,699;
+`const volatile int &` 1,038/577 (neutral).  `String("")` →
+`getText(0)` in the `i==0` DrawString 3,463/9,700.
+
+### `String name` lifetime
+
+`String name("")` / `= String("")` 8,185/9,708/1,525;
+`String name` before `SetColor` 7,686/9,684; before the
+`isSelectable` block 9,121/9,680; `int buttonOffset = 0` and
+`name`/`buttonOffset` swap both 1,038/577 (neutral).
+
+### Hoist row-39 extension, re-confirmed
+
+`int upgTab = tab;` above the guard + PVD body = 928/71,118/1,216.
+No-expect variant 922/71,112/1,215.  Adding a call before the
+`if (item == selectedItem)` guard changes the allocation and size:
+`getShip()` 8,336/9,668/1,543; `SetColor` 8,674/9,688/871;
+`getText(0)` 8,665/9,692/877.  Moving an existing `SetColor` from
+before `String name` to after the `DrawString` 9,130/9,680/909.
+The `w13527` body-scope `upgTab` restores row 39 = `(2508,150,9664)`
+(extab 586) but costs 155 raw / 153 `.text` in the ship body.
+
+### Conclusion
+
+The base remains the best net shape.  The residual is the single
+`this`↔`&Globals::layout` register tie-break at `0x1496da`; every
+size-neutral source edit tried (declaration order, lifetime, body
+order, `__builtin_expect`, expression association) leaves the
+allocator's choice unchanged (`dde9219a`), and every shape that moves
+it (hoist, w13527) either grows `.ARM.extab` past its raw saving or
+costs raw in the ship body.
