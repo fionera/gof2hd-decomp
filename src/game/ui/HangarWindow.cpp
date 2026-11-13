@@ -1072,12 +1072,12 @@ void HangarWindow::render() {
                                             textYv, false);
                 canvas->SetColor(0x777777ffu);
                 if (i == 0) {
-                    canvas->DrawString(hangarFont(), String(""), textX, textYv + Globals::layout->field_0x4, false);
+                    canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4, false);
                 } else {
                     canvas->DrawString(
                         hangarFont(),
                         String("(+") + Globals::layout->formatCredits(FREE_CREDIT_AMOUNTS[i]) + String(")"), textX,
-                        textY + Globals::layout->field_0x4, false);
+                        textYv + Globals::layout->field_0x4, false);
                 }
                 row++;
             }
