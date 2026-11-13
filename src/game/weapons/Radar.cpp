@@ -996,9 +996,9 @@ enemies:
                 cloud->field_0x76 = 1;
                 this->egoPos = player->getPosition();
                 this->targetPos = cloud->player->getPosition();
-                if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
-                    this->targetPos.y - this->egoPos.y > 24000.0f || this->targetPos.y - this->egoPos.y < -24000.0f ||
-                    this->targetPos.z - this->egoPos.z > 24000.0f || this->targetPos.z - this->egoPos.z < -24000.0f) {
+                if (this->egoPos.x - this->targetPos.x > 24000.0f || this->egoPos.x - this->targetPos.x < -24000.0f ||
+                    this->egoPos.y - this->targetPos.y > 24000.0f || this->egoPos.y - this->targetPos.y < -24000.0f ||
+                    this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
                     cloud->field_0x73 = 0;
                 }
                 Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
