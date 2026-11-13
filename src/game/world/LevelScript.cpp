@@ -1828,18 +1828,19 @@ bool LevelScript::process(int delta) {
                     m_bCinematicBreak = 1; // field_0x11 (cinematic break) = 1
                     break;
                 }
+                // PLT-order anchor: the first reference to the auto-turret pair must precede
+                // PlayerWormHole::open (the original's first reference is in the case-154
+                // state-0 block, which MachineBlockPlacement emits before this arm).  The
+                // call is a no-op (it stores the current value back).
+                player->setAutoTurret(player->autoTurretIsEnabled());
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1) {
                     // Radio message #4: spin up the exit wormhole (landmarks[3]).
-                    Globals::sound->play(34, nullptr, nullptr, 0.0f);
-                    // PLT-order anchor: first reference to the auto-turret pair must precede
-                    // PlayerWormHole::open.  Verified by removal: .rel.plt then differs from the
-                    // original by 18 bytes.
-                    player->setAutoTurret(player->autoTurretIsEnabled());
-                    m_nScriptTimerA = 0;
+                    (*m_pLevel->getLandmarks())[3]->setVisible(true);
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(false);
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
+                    Globals::sound->play(34, nullptr, nullptr, 0.0f);
+                    m_nScriptTimerA = 0;
                     m_nState = 2;
-                    (*m_pLevel->getLandmarks())[3]->setVisible(true);
                 } else if (m_nState == 2) {
                     // state-2 (0x13c690): while the wormhole spins up, keep its 3D sound event anchored
                     // to the camera, rumble the view and slowly roll the player ship. FP pool:
@@ -4643,7 +4644,7 @@ bool LevelScript::process(int delta) {
                     (*enemies)[0]->geometry->moveForward(step);
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = player->GetDirVector();
-                    m_tempVec += m_dirVec * (step * 0.008f);
+                    m_tempVec = m_tempVec + m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
                     m_dirVec = player->GetUpVector();

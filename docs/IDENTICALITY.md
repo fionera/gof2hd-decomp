@@ -15,11 +15,11 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,534** | 21,862 | 57,232 |
+| `LevelScript::process` | **51,535** | 21,707 | 57,232 |
 | `Radar::draw` | **6,013** | 1,955 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
-| `MGame::OnTouchEnd` | **2,888** | 1,522 | 8,080 |
+| `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -30,11 +30,31 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,247**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,270**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13668, wave 191b): spell the first case-154
+  state-4 camera-vector add as `m_tempVec = m_tempVec + m_dirVec * (step *
+  0.008f)` instead of `+=`.  Raw **51,524 -> 51,510** (-14), aligned
+  21,918 -> 21,951 (+33), size 57,232/57,232 exact.
+* `LevelScript::process` (w13676, wave 191b): case-24 state-1 wormhole
+  spin-up reconstructed from Thumb (`setVisible -> reset -> open -> play(34)
+  -> timer=0 -> state=2`) and the auto-turret PLT anchor moved before the
+  state-1 if.  Raw **51,510 -> 51,549** (+15... combined with w13668 the
+  final is **51,535**), aligned **21,862 -> 21,674** (-188), size
+  57,232/57,232 exact.
+* `MGame::OnTouchEnd` (w13681, wave 191b): campaign-65 body
+  (`switch_to_target_setting=1` first, then the field_64/5c/60/68 getters,
+  then `initStreamOutPosition=1`, then the FileRead/loadStation(100) pair)
+  and the back-to-station common tail (`switch_to_target_setting=0`, then
+  the getters, then `active=0`).  Raw **2,888 -> 2,910** (+22), aligned
+  **1,522 -> 1,479** (-43), size 8,080/8,080 exact.
+* `Level::createMission` (w13655/w13671, wave 191b): moving
+  `gun->cargo = nullptr` between `setRotation` and the second
+  `MatrixRotateVector` gives raw **2,636 -> 2,635** (-1) but aligned
+  **841 -> 1,022** (+181); measured but not landed (raw+aligned is worse).
 * `MGame::OnTouchEnd` (w13662, wave 191b): fix the mining-report zero-line
   bug — the binary tests `count != 0` (`cmp r9,#0; beq`), the source had
   `count >= 0`; `count > 0` is the size-exact equivalent (the literal `!= 0`

@@ -1603,15 +1603,15 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             goto finishMission;
                         } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
                         } else if (Globals::status->getCurrentCampaignMission() == 65 && mission->isCampaignMission()) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
                             Globals::status->field_68 = this->player->player->getGammaHP();
-                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Level::initStreamOutPosition = 1;
                             FileRead *reader = new FileRead();
-                            Globals::switch_to_target_setting = 1;
                             Globals::status->departStation(reader->loadStation(100));
                             delete reader;
-                            Level::initStreamOutPosition = 1;
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
@@ -1741,12 +1741,12 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             goto finishMission;
                         }
                         // Back to the station.
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        this->active = 0;
-                        Globals::status->field_5c = this->player->player->getShieldHP();
                         Globals::switch_to_target_setting = 0;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
                         Globals::status->field_60 = this->player->player->getArmorHP();
                         Globals::status->field_68 = this->player->player->getGammaHP();
+                        this->active = 0;
                         this->applicationManager->SetCurrentApplicationModule(5);
                         return;
 
