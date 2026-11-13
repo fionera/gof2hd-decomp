@@ -174,3 +174,40 @@ size       57,232 / 57,232   (exact)
 .rel.plt   md5 289b2a06… (byte-identical)
 check      RATCHET PASS
 ```
+
+## Final state
+
+```
+                         base (4a865a92e)   this pass
+process raw diffbytes    51,540             51,534     (-6)
+orig / ours size         57232 / 57232      57232 / 57232  (exact)
+.text diffbytes          71,240             71,234     (-6)
+.ARM.extab               unchanged (size/base exact)
+.ARM.exidx               byte-identical
+.rodata                  485               485
+.rel.plt                 md5 289b2a06…      md5 289b2a06…  (byte-identical)
+byte_exact               4507               4507
+linked_exact             4507               4507
+size-exact               4524/4524          4524/4524
+data_exact               843/843            843/843
+imports                  207                207
+lint                     CLEAN ✓            CLEAN ✓
+drift                    0                  0
+symbol parity            5370/5370          5370/5370
+RATCHET                  PASS               PASS
+```
+
+### Sweeps that produced no size-exact win on this base
+
+* d2/d3/d4 transpositions (re-run after the expect landings): only the
+  producer/consumer cells listed above.
+* d5/d6 transpositions: none.
+* multi-line statement rotations (statement parser, windows 3-6, strict
+  disjoint-identifier filter, 856 cells): none.
+* multi-line adjacent swaps (strict disjoint filter, 480 cells): none.
+* multi-line rotations with type-name-insensitive keys (1492 cells): none.
+* correct cross-control-boundary moves (217 cells): none.
+
+Scratch harness (`fast.py`, `sweep.py`, `ctrlsweep.py`, `rotsweep*.py`,
+`stmts.py`, `linemap.py`, `patience.py`) lives in
+`/home/debian/GalaxyOnFire2/scratch/w13561/`.
