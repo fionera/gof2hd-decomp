@@ -1,0 +1,6886 @@
+[
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.45124101638794
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.83672785758972
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.08546805381775
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.028882026672363
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.898866176605225
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.896360635757446
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.838598012924194
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.891719818115234
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.906318187713623
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.80355477333069
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.857300758361816
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.844544410705566
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.913955688476562
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.78290605545044
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.676361560821533
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.718445301055908
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.811881065368652
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.80742073059082
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.845967531204224
+ },
+ {
+  "tu": "src/game/gui/Radar.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+    "raw": 6909,
+    "aligned": 1303,
+    "osize": 9908,
+    "usize": 9908,
+    "oinsn": 3532,
+    "uinsn": 3539,
+    "cats": {
+     "operand:b.n": 53,
+     "operand:ldr": 51,
+     "extra-orig:ldr": 50,
+     "extra-ours:ldr": 47,
+     "operand:cbz": 36,
+     "operand:beq.w": 31,
+     "extra-ours:mov": 30,
+     "extra-ours:str": 28
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.788679599761963
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.516109228134155
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.965161085128784
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.114157915115356
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.962525606155396
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.91690230369568
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.920970916748047
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.855283975601196
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.983328819274902
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.886173248291016
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.86070728302002
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.83913278579712
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.88709330558777
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.80430316925049
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.74267315864563
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.807095766067505
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.839158535003662
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.87032151222229
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.812228679656982
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.739310026168823
+ },
+ {
+  "tu": "src/game/mission/LevelScript.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN11LevelScript7processEi",
+    "raw": 53208,
+    "aligned": 18243,
+    "osize": 57232,
+    "usize": 57232,
+    "oinsn": 20830,
+    "uinsn": 20725,
+    "cats": {
+     "extra-orig:ldr": 1518,
+     "extra-ours:ldr": 1318,
+     "extra-ours:mov": 902,
+     "extra-orig:blx": 875,
+     "extra-orig:mov": 856,
+     "extra-ours:blx": 854,
+     "extra-ours:movs": 716,
+     "extra-orig:movs": 684
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.544952154159546
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.59893441200256
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.569874048233032
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.75400972366333
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.560185432434082
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.436835050582886
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.35491633415222
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "missing": true
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "missing": true
+   }
+  ],
+  "gate": {
+   "byte_exact": 1506,
+   "linked_exact": 4318,
+   "size_exact": 4471,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4471
+  },
+  "text": 427392,
+  "extab": 1715320,
+  "secs": 22.534291744232178
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5899,
+    "aligned": 2291,
+    "osize": 7072,
+    "usize": 6900,
+    "oinsn": 2552,
+    "uinsn": 2501,
+    "cats": {
+     "extra-orig:movs": 168,
+     "extra-ours:movs": 113,
+     "extra-ours:str.w": 106,
+     "extra-orig:mov.w": 50,
+     "extra-orig:str.w": 50,
+     "extra-orig:add.w": 47,
+     "extra-orig:vst1.32": 42,
+     "extra-ours:it": 42
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5899,
+    "aligned": 2291,
+    "osize": 7072,
+    "usize": 6900,
+    "oinsn": 2552,
+    "uinsn": 2501,
+    "cats": {
+     "extra-orig:movs": 168,
+     "extra-ours:movs": 113,
+     "extra-ours:str.w": 106,
+     "extra-orig:mov.w": 50,
+     "extra-orig:str.w": 50,
+     "extra-orig:add.w": 47,
+     "extra-orig:vst1.32": 42,
+     "extra-ours:it": 42
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2447,
+   "linked_exact": 4469,
+   "size_exact": 4486,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1718408,
+  "secs": 22.505384922027588
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.363157749176025
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2458,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 22.718642711639404
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.468878746032715
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1369,
+   "linked_exact": 4493,
+   "size_exact": 4509,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431200,
+  "extab": 1718776,
+  "secs": 31.260847091674805
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.65302801132202
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1369,
+   "linked_exact": 4503,
+   "size_exact": 4519,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431328,
+  "extab": 1719400,
+  "secs": 22.656452655792236
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.731298446655273
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 6885,
+    "aligned": 4122,
+    "osize": 7072,
+    "usize": 5868,
+    "oinsn": 2552,
+    "uinsn": 2004,
+    "cats": {
+     "extra-orig:movs": 731,
+     "extra-ours:movs": 265,
+     "extra-ours:str.w": 238,
+     "extra-ours:it": 166,
+     "extra-ours:mov.w": 157,
+     "extra-orig:it": 130,
+     "extra-ours:moveq": 113,
+     "extra-orig:lsls": 110
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 6885,
+    "aligned": 4122,
+    "osize": 7072,
+    "usize": 5868,
+    "oinsn": 2552,
+    "uinsn": 2004,
+    "cats": {
+     "extra-orig:movs": 731,
+     "extra-ours:movs": 265,
+     "extra-ours:str.w": 238,
+     "extra-ours:it": 166,
+     "extra-ours:mov.w": 157,
+     "extra-orig:it": 130,
+     "extra-ours:moveq": 113,
+     "extra-orig:lsls": 110
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2447,
+   "linked_exact": 4506,
+   "size_exact": 4522,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1717988,
+  "secs": 22.783668279647827
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2471,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 22.462655782699585
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5614,
+    "aligned": 1993,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.644386768341064
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1378,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431104,
+  "extab": 1719160,
+  "secs": 31.510566473007202
+ },
+ {
+  "tu": "src/game/ui/Layout.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6LayoutC1Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   },
+   {
+    "name": "_ZN6LayoutC2Ev",
+    "raw": 5615,
+    "aligned": 1997,
+    "osize": 7072,
+    "usize": 7072,
+    "oinsn": 2552,
+    "uinsn": 2518,
+    "cats": {
+     "extra-orig:movs": 159,
+     "extra-ours:movs": 99,
+     "extra-ours:str.w": 84,
+     "extra-orig:str.w": 42,
+     "extra-ours:cmp.w": 42,
+     "extra-orig:mov.w": 40,
+     "extra-ours:mov.w": 33,
+     "operand:moveq": 31
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1378,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431104,
+  "extab": 1719160,
+  "secs": 31.306923866271973
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.955416202545166
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1251,
+    "aligned": 370,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 16682,
+    "aligned": 3372,
+    "osize": 17172,
+    "usize": 17292,
+    "oinsn": 6197,
+    "uinsn": 6282,
+    "cats": {
+     "operand:ldr": 235,
+     "extra-ours:ldr": 188,
+     "regalloc:ldr.w": 160,
+     "extra-orig:ldr": 143,
+     "regalloc:mov": 116,
+     "operand:b.n": 113,
+     "operand:str": 100,
+     "width:ldr.w/ldr": 95
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2352,
+   "linked_exact": 4502,
+   "size_exact": 4518,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719448,
+  "secs": 32.911155223846436
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1229,
+    "aligned": 413,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1118,
+    "cats": {
+     "operand:ldr": 116,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "operand:b.n": 14,
+     "extra-ours:str": 11,
+     "extra-orig:ldr": 9
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4884,
+    "aligned": 448,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 42,
+     "regalloc:mov": 35,
+     "operand:b.n": 29,
+     "regalloc:ldr.w": 24,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "operand:;": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2359,
+   "linked_exact": 4504,
+   "size_exact": 4522,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 23.89140033721924
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.66436004638672
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.75754737854004
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.843101263046265
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "missing": true
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "missing": true
+   }
+  ],
+  "gate": {
+   "byte_exact": 1320,
+   "linked_exact": 4160,
+   "size_exact": 4393,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4393
+  },
+  "text": 421376,
+  "extab": 1709016,
+  "secs": 32.06166887283325
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 2497,
+    "aligned": 604,
+    "osize": 2764,
+    "usize": 2756,
+    "oinsn": 1117,
+    "uinsn": 1106,
+    "cats": {
+     "operand:ldr": 118,
+     "regalloc:mov": 79,
+     "operand:b.n": 36,
+     "regalloc:ldr.w": 26,
+     "extra-ours:mov": 23,
+     "extra-orig:mov": 23,
+     "regalloc:vmov": 16,
+     "extra-orig:ldr": 13
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 16343,
+    "aligned": 3512,
+    "osize": 17172,
+    "usize": 17148,
+    "oinsn": 6197,
+    "uinsn": 6185,
+    "cats": {
+     "regalloc:ldr.w": 326,
+     "regalloc:mov": 255,
+     "operand:ldr": 200,
+     "extra-ours:ldr": 126,
+     "extra-orig:ldr": 122,
+     "operand:b.n": 117,
+     "regalloc:ldr": 115,
+     "extra-ours:mov": 90
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2458,
+   "linked_exact": 4444,
+   "size_exact": 4462,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1716976,
+  "secs": 24.876513719558716
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.475430727005005
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1232,
+    "aligned": 370,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 13803,
+    "aligned": 778,
+    "osize": 17172,
+    "usize": 17180,
+    "oinsn": 6197,
+    "uinsn": 6201,
+    "cats": {
+     "operand:ldr": 151,
+     "operand:b.n": 134,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:cbz": 19,
+     "operand:bne.n": 19,
+     "regalloc:add.w": 18,
+     "operand:vldr": 13
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2347,
+   "linked_exact": 4504,
+   "size_exact": 4519,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 24.225966215133667
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.97688889503479
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 2491,
+    "aligned": 1433,
+    "osize": 2764,
+    "usize": 2628,
+    "oinsn": 1117,
+    "uinsn": 1116,
+    "cats": {
+     "extra-ours:str": 156,
+     "extra-orig:mov": 149,
+     "extra-ours:ldr": 141,
+     "extra-orig:ldr": 135,
+     "extra-orig:str": 97,
+     "extra-ours:mov": 93,
+     "extra-ours:movs": 64,
+     "extra-orig:blx": 54
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 16634,
+    "aligned": 4380,
+    "osize": 17172,
+    "usize": 16868,
+    "oinsn": 6197,
+    "uinsn": 6052,
+    "cats": {
+     "extra-orig:ldr": 261,
+     "extra-ours:ldr": 234,
+     "extra-orig:mov": 206,
+     "extra-ours:mov": 162,
+     "regalloc:ldr.w": 157,
+     "extra-ours:movs": 154,
+     "operand:ldr": 151,
+     "extra-orig:movs": 150
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1369,
+   "linked_exact": 4486,
+   "size_exact": 4500,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431232,
+  "extab": 1714616,
+  "secs": 33.4142587184906
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 24.20333743095398
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 2263,
+    "aligned": 621,
+    "osize": 2764,
+    "usize": 2868,
+    "oinsn": 1117,
+    "uinsn": 1179,
+    "cats": {
+     "operand:ldr": 92,
+     "extra-orig:mov": 38,
+     "operand:b.n": 37,
+     "extra-ours:str": 37,
+     "extra-ours:mov": 36,
+     "extra-ours:blx": 29,
+     "opcode:ldr.w/mov": 23,
+     "extra-ours:movs": 22
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 17833,
+    "aligned": 5847,
+    "osize": 17172,
+    "usize": 18480,
+    "oinsn": 6197,
+    "uinsn": 6861,
+    "cats": {
+     "extra-ours:ldr": 436,
+     "extra-orig:ldr": 314,
+     "extra-ours:blx": 306,
+     "extra-ours:mov": 281,
+     "operand:ldr": 206,
+     "extra-ours:movs": 203,
+     "extra-ours:ldr.w": 188,
+     "extra-orig:mov": 167
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1486,
+   "linked_exact": 4464,
+   "size_exact": 4478,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 433728,
+  "extab": 1728272,
+  "secs": 34.09054899215698
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.714335441589355
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1240,
+    "aligned": 439,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1119,
+    "cats": {
+     "operand:ldr": 116,
+     "operand:b.n": 39,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "extra-orig:ldr": 9
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 13424,
+    "aligned": 956,
+    "osize": 17172,
+    "usize": 17132,
+    "oinsn": 6197,
+    "uinsn": 6179,
+    "cats": {
+     "operand:ldr": 148,
+     "operand:b.n": 130,
+     "regalloc:ldr.w": 25,
+     "extra-orig:ldr": 24,
+     "extra-orig:mov": 21,
+     "regalloc:mov": 20,
+     "extra-ours:mov": 19,
+     "extra-ours:ldr": 17
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2359,
+   "linked_exact": 4503,
+   "size_exact": 4518,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719096,
+  "secs": 24.113131999969482
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 2187,
+    "aligned": 1090,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1101,
+    "cats": {
+     "extra-orig:mov": 101,
+     "extra-ours:mov": 96,
+     "extra-orig:ldr": 92,
+     "extra-ours:ldr": 83,
+     "extra-orig:str": 61,
+     "extra-ours:str": 55,
+     "operand:ldr": 53,
+     "extra-ours:blx": 39
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 16715,
+    "aligned": 3371,
+    "osize": 17172,
+    "usize": 17312,
+    "oinsn": 6197,
+    "uinsn": 6235,
+    "cats": {
+     "operand:ldr": 229,
+     "extra-ours:ldr": 215,
+     "extra-orig:ldr": 180,
+     "regalloc:ldr.w": 115,
+     "extra-ours:movs": 114,
+     "extra-orig:mov": 112,
+     "extra-orig:movs": 110,
+     "extra-ours:mov": 107
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1369,
+   "linked_exact": 4501,
+   "size_exact": 4516,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431104,
+  "extab": 1719544,
+  "secs": 33.5551598072052
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1190,
+    "aligned": 366,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 4265,
+    "aligned": 386,
+    "osize": 17172,
+    "usize": 17172,
+    "oinsn": 6197,
+    "uinsn": 6198,
+    "cats": {
+     "operand:ldr": 40,
+     "regalloc:mov": 35,
+     "regalloc:ldr.w": 24,
+     "operand:b.n": 22,
+     "regalloc:add.w": 18,
+     "regalloc:ldr": 12,
+     "extra-orig:ldr": 10,
+     "regalloc:cmp": 7
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 24.016319513320923
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1264,
+    "aligned": 370,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 13725,
+    "aligned": 1044,
+    "osize": 17172,
+    "usize": 17284,
+    "oinsn": 6197,
+    "uinsn": 6207,
+    "cats": {
+     "operand:b.n": 133,
+     "operand:ldr": 107,
+     "extra-orig:ldr": 33,
+     "operand:cbz": 32,
+     "regalloc:ldr.w": 28,
+     "extra-ours:ldr": 21,
+     "regalloc:mov": 20,
+     "extra-ours:mov": 20
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2347,
+   "linked_exact": 4486,
+   "size_exact": 4504,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719672,
+  "secs": 24.513264894485474
+ },
+ {
+  "tu": "src/game/world/Level.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+    "raw": 1264,
+    "aligned": 370,
+    "osize": 2764,
+    "usize": 2764,
+    "oinsn": 1117,
+    "uinsn": 1117,
+    "cats": {
+     "operand:ldr": 51,
+     "operand:b.n": 33,
+     "regalloc:mov": 30,
+     "regalloc:ldr.w": 30,
+     "extra-orig:mov": 17,
+     "extra-ours:mov": 15,
+     "extra-ours:str": 11,
+     "imm:ldr": 10
+    }
+   },
+   {
+    "name": "_ZN5Level13createMissionEv",
+    "raw": 13725,
+    "aligned": 1044,
+    "osize": 17172,
+    "usize": 17284,
+    "oinsn": 6197,
+    "uinsn": 6207,
+    "cats": {
+     "operand:b.n": 133,
+     "operand:ldr": 107,
+     "extra-orig:ldr": 33,
+     "operand:cbz": 32,
+     "regalloc:ldr.w": 28,
+     "extra-ours:ldr": 21,
+     "regalloc:mov": 20,
+     "extra-ours:mov": 20
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2347,
+   "linked_exact": 4486,
+   "size_exact": 4504,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719672,
+  "secs": 24.342390060424805
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.719053745269775
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 7012,
+    "aligned": 995,
+    "osize": 8080,
+    "usize": 8104,
+    "oinsn": 2865,
+    "uinsn": 2881,
+    "cats": {
+     "operand:ldr": 84,
+     "operand:b.n": 77,
+     "extra-ours:ldr": 57,
+     "extra-orig:ldr": 56,
+     "extra-ours:movs": 52,
+     "extra-orig:movs": 50,
+     "operand:beq.w": 44,
+     "operand:cbz": 35
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 9525,
+    "aligned": 688,
+    "osize": 11440,
+    "usize": 11448,
+    "oinsn": 4002,
+    "uinsn": 4004,
+    "cats": {
+     "operand:ldr": 119,
+     "operand:b.n": 102,
+     "operand:cbnz": 62,
+     "operand:cbz": 53,
+     "operand:bne.n": 45,
+     "operand:bne.w": 33,
+     "operand:beq.w": 30,
+     "operand:beq.n": 21
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3104,
+   "linked_exact": 4505,
+   "size_exact": 4520,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 23.242510318756104
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 6644,
+    "aligned": 1326,
+    "osize": 8080,
+    "usize": 8084,
+    "oinsn": 2865,
+    "uinsn": 2861,
+    "cats": {
+     "extra-ours:ldr": 85,
+     "extra-orig:movs": 84,
+     "extra-ours:movs": 84,
+     "extra-orig:ldr": 78,
+     "operand:ldr": 62,
+     "extra-orig:blx": 60,
+     "extra-ours:blx": 58,
+     "operand:b.n": 56
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 702,
+    "aligned": 127,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 15,
+     "regalloc:asrs": 15,
+     "operand:cmp": 11,
+     "operand:adds": 10,
+     "regalloc:adds": 10,
+     "extra-orig:movs": 8,
+     "extra-ours:movs": 8,
+     "regalloc:subs": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3107,
+   "linked_exact": 4507,
+   "size_exact": 4522,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 23.024221658706665
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.88018822669983
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.438390731811523
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.04676389694214
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "missing": true
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "missing": true
+   }
+  ],
+  "gate": {
+   "byte_exact": 1670,
+   "linked_exact": 4378,
+   "size_exact": 4476,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4476
+  },
+  "text": 427776,
+  "extab": 1715720,
+  "secs": 31.44775080680847
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 7709,
+    "aligned": 2695,
+    "osize": 8080,
+    "usize": 7724,
+    "oinsn": 2865,
+    "uinsn": 2850,
+    "cats": {
+     "extra-ours:ldr": 169,
+     "regalloc:ldr.w": 141,
+     "extra-orig:ldr": 127,
+     "width:ldr.w/ldr": 126,
+     "extra-ours:blx": 122,
+     "extra-orig:blx": 119,
+     "extra-ours:movs": 90,
+     "extra-orig:ldr.w": 90
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 10632,
+    "aligned": 2158,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 3976,
+    "cats": {
+     "regalloc:ldr.w": 244,
+     "operand:ldr": 129,
+     "operand:b.n": 97,
+     "regalloc:mov": 93,
+     "regalloc:strb.w": 81,
+     "regalloc:ldrb.w": 68,
+     "extra-orig:ldr": 65,
+     "operand:r0,": 55
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3112,
+   "linked_exact": 4476,
+   "size_exact": 4493,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1718224,
+  "secs": 23.093594789505005
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.03373408317566
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3826,
+    "aligned": 717,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:ldr": 52,
+     "extra-ours:movs": 49,
+     "extra-orig:movs": 48,
+     "extra-orig:ldr": 42,
+     "operand:beq.w": 21,
+     "operand:bne.w": 20
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 762,
+    "aligned": 116,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 20,
+     "operand:adds": 18,
+     "operand:cmp": 14,
+     "regalloc:asrs": 9,
+     "regalloc:subs": 7,
+     "operand:asrs": 6,
+     "regalloc:adds": 5,
+     "operand:str": 4
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3094,
+   "linked_exact": 4502,
+   "size_exact": 4518,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 22.887592792510986
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.859703540802002
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 7589,
+    "aligned": 2261,
+    "osize": 8080,
+    "usize": 7952,
+    "oinsn": 2865,
+    "uinsn": 2805,
+    "cats": {
+     "regalloc:ldr.w": 143,
+     "extra-orig:blx": 117,
+     "extra-orig:movs": 117,
+     "extra-ours:movs": 116,
+     "extra-ours:ldr": 110,
+     "extra-orig:ldr": 106,
+     "extra-ours:blx": 104,
+     "extra-orig:mov": 83
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 9234,
+    "aligned": 1876,
+    "osize": 11440,
+    "usize": 10992,
+    "oinsn": 4002,
+    "uinsn": 3836,
+    "cats": {
+     "operand:ldr": 141,
+     "extra-ours:movs": 84,
+     "extra-orig:movs": 84,
+     "extra-orig:b.n": 68,
+     "extra-orig:mov": 66,
+     "extra-orig:ldr": 56,
+     "operand:cbnz": 48,
+     "extra-orig:blx": 46
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1369,
+   "linked_exact": 4493,
+   "size_exact": 4507,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431200,
+  "extab": 1718008,
+  "secs": 31.87008571624756
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3586,
+    "aligned": 714,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:ldr": 53,
+     "extra-ours:movs": 49,
+     "extra-orig:movs": 48,
+     "extra-orig:ldr": 42,
+     "operand:beq.w": 21,
+     "operand:bne.w": 20
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 152,
+    "aligned": 106,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:adds": 21,
+     "operand:movs": 21,
+     "operand:cmp": 14,
+     "operand:asrs": 14,
+     "operand:subs": 7,
+     "operand:lsrs": 4,
+     "opcode:adds/subs": 3,
+     "regalloc:subs": 3
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2929,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431072,
+  "extab": 1719064,
+  "secs": 22.67450523376465
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 7849,
+    "aligned": 2208,
+    "osize": 8080,
+    "usize": 8376,
+    "oinsn": 2865,
+    "uinsn": 2992,
+    "cats": {
+     "regalloc:ldr.w": 139,
+     "extra-ours:ldr": 139,
+     "extra-orig:ldr": 118,
+     "extra-ours:ldr.w": 97,
+     "extra-ours:blx": 96,
+     "extra-ours:movs": 84,
+     "extra-orig:ldr.w": 84,
+     "extra-orig:movs": 79
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 10399,
+    "aligned": 1097,
+    "osize": 11440,
+    "usize": 11524,
+    "oinsn": 4002,
+    "uinsn": 4037,
+    "cats": {
+     "operand:ldr": 176,
+     "operand:b.n": 119,
+     "operand:r0,": 68,
+     "operand:cbnz": 62,
+     "operand:cbz": 55,
+     "operand:bne.n": 47,
+     "imm:ldr": 43,
+     "operand:bne.w": 33
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1359,
+   "linked_exact": 4491,
+   "size_exact": 4506,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 432384,
+  "extab": 1721344,
+  "secs": 31.241658926010132
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.022990226745605
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3844,
+    "aligned": 716,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:ldr": 52,
+     "extra-ours:movs": 49,
+     "extra-orig:movs": 48,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 10504,
+    "aligned": 145,
+    "osize": 11440,
+    "usize": 11436,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 19,
+     "operand:adds": 17,
+     "operand:cmp": 9,
+     "regalloc:adds": 8,
+     "operand:asrs": 8,
+     "extra-ours:movs": 6,
+     "extra-orig:movs": 6,
+     "regalloc:asrs": 6
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4277,
+   "linked_exact": 4506,
+   "size_exact": 4521,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.035219192504883
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3551,
+    "aligned": 700,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 702,
+    "aligned": 127,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 15,
+     "regalloc:asrs": 15,
+     "operand:cmp": 11,
+     "operand:adds": 10,
+     "regalloc:adds": 10,
+     "extra-orig:movs": 8,
+     "extra-ours:movs": 8,
+     "regalloc:subs": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3108,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 22.810719966888428
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 3544,
+    "aligned": 697,
+    "osize": 8080,
+    "usize": 8080,
+    "oinsn": 2865,
+    "uinsn": 2864,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 58,
+     "extra-ours:movs": 52,
+     "extra-ours:ldr": 52,
+     "extra-orig:movs": 51,
+     "extra-orig:ldr": 42,
+     "extra-ours:blx": 22,
+     "operand:beq.w": 21
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 16,
+    "aligned": 6,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "extra-ours:ldr.w": 1,
+     "regalloc:movw": 1,
+     "extra-orig:ldr.w": 1,
+     "regalloc:movweq": 1,
+     "opcode:r2,/mov": 1,
+     "opcode:mov/adds": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.04297637939453
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 4233,
+    "aligned": 727,
+    "osize": 8080,
+    "usize": 8088,
+    "oinsn": 2865,
+    "uinsn": 2867,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 56,
+     "extra-ours:ldr": 52,
+     "extra-ours:movs": 49,
+     "extra-orig:movs": 48,
+     "extra-orig:ldr": 42,
+     "operand:beq.w": 22,
+     "extra-ours:blx": 22
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 742,
+    "aligned": 116,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 20,
+     "operand:adds": 18,
+     "operand:cmp": 13,
+     "regalloc:asrs": 11,
+     "regalloc:subs": 8,
+     "regalloc:adds": 5,
+     "operand:str": 4,
+     "operand:asrs": 4
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3125,
+   "linked_exact": 4503,
+   "size_exact": 4519,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 23.006819009780884
+ },
+ {
+  "tu": "src/game/menu/MGame.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN5MGame10OnTouchEndEiiPv",
+    "raw": 4233,
+    "aligned": 727,
+    "osize": 8080,
+    "usize": 8088,
+    "oinsn": 2865,
+    "uinsn": 2867,
+    "cats": {
+     "operand:ldr": 58,
+     "operand:b.n": 56,
+     "extra-ours:ldr": 52,
+     "extra-ours:movs": 49,
+     "extra-orig:movs": 48,
+     "extra-orig:ldr": 42,
+     "operand:beq.w": 22,
+     "extra-ours:blx": 22
+    }
+   },
+   {
+    "name": "_ZN5MGame8OnUpdateEv",
+    "raw": 742,
+    "aligned": 116,
+    "osize": 11440,
+    "usize": 11440,
+    "oinsn": 4002,
+    "uinsn": 4002,
+    "cats": {
+     "operand:movs": 20,
+     "operand:adds": 18,
+     "operand:cmp": 13,
+     "regalloc:asrs": 11,
+     "regalloc:subs": 8,
+     "regalloc:adds": 5,
+     "operand:str": 4,
+     "operand:asrs": 4
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3125,
+   "linked_exact": 4503,
+   "size_exact": 4519,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 23.029968738555908
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.60602951049805
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1866,
+    "aligned": 328,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3734,
+    "cats": {
+     "regalloc:ldr": 23,
+     "extra-ours:ldr": 22,
+     "regalloc:str": 21,
+     "extra-orig:ldr": 20,
+     "operand:ldr": 18,
+     "regalloc:mov": 14,
+     "regalloc:ldr.w": 12,
+     "imm:ldr": 11
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2772,
+   "linked_exact": 4506,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 31.083489179611206
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1867,
+    "aligned": 482,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 52,
+     "regalloc:ldr": 23,
+     "extra-ours:ldr": 21,
+     "regalloc:str": 19,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1387,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719128,
+  "secs": 22.734768867492676
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.920093536376953
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.00307822227478
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.917120218276978
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "missing": true
+   }
+  ],
+  "gate": {
+   "byte_exact": 1575,
+   "linked_exact": 4378,
+   "size_exact": 4484,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4484
+  },
+  "text": 428160,
+  "extab": 1716104,
+  "secs": 22.828506231307983
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 9320,
+    "aligned": 2192,
+    "osize": 9700,
+    "usize": 9540,
+    "oinsn": 3734,
+    "uinsn": 3702,
+    "cats": {
+     "regalloc:mov": 166,
+     "operand:ldr": 161,
+     "regalloc:ldr.w": 102,
+     "extra-orig:ldr": 90,
+     "extra-ours:ldr": 85,
+     "extra-ours:b.n": 85,
+     "extra-orig:b.n": 78,
+     "regalloc:ldr": 77
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2759,
+   "linked_exact": 4486,
+   "size_exact": 4503,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1718584,
+  "secs": 22.711652994155884
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.86522936820984
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1869,
+    "aligned": 484,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 54,
+     "extra-ours:ldr": 21,
+     "regalloc:str": 21,
+     "regalloc:ldr": 20,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2768,
+   "linked_exact": 4505,
+   "size_exact": 4521,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 30.930235385894775
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.965797901153564
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 9271,
+    "aligned": 4797,
+    "osize": 9700,
+    "usize": 9524,
+    "oinsn": 3734,
+    "uinsn": 3683,
+    "cats": {
+     "extra-ours:ldr": 539,
+     "extra-orig:ldr": 518,
+     "extra-ours:mov": 286,
+     "extra-orig:mov": 254,
+     "extra-orig:blx": 243,
+     "extra-ours:blx": 209,
+     "extra-ours:ldr.w": 185,
+     "extra-orig:movs": 160
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2058,
+   "linked_exact": 4497,
+   "size_exact": 4512,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431264,
+  "extab": 1718264,
+  "secs": 22.92075490951538
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.902715921401978
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 9430,
+    "aligned": 2292,
+    "osize": 9700,
+    "usize": 9924,
+    "oinsn": 3734,
+    "uinsn": 3786,
+    "cats": {
+     "extra-orig:ldr": 166,
+     "operand:ldr": 164,
+     "extra-ours:ldr": 146,
+     "regalloc:mov": 139,
+     "operand:b.n": 130,
+     "extra-ours:movs": 71,
+     "extra-ours:blx": 65,
+     "regalloc:ldr.w": 58
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1443,
+   "linked_exact": 4494,
+   "size_exact": 4509,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 432256,
+  "extab": 1721392,
+  "secs": 32.16920208930969
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.938274145126343
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.924208641052246
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 3741,
+    "aligned": 540,
+    "osize": 9700,
+    "usize": 9736,
+    "oinsn": 3734,
+    "uinsn": 3746,
+    "cats": {
+     "operand:b.n": 116,
+     "operand:ldr": 58,
+     "extra-ours:ldr": 32,
+     "extra-orig:ldr": 23,
+     "regalloc:ldr.w": 12,
+     "extra-orig:movs": 12,
+     "regalloc:str": 11,
+     "extra-ours:movs": 11
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2774,
+   "linked_exact": 4507,
+   "size_exact": 4522,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 23.00662922859192
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1395,
+    "aligned": 396,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 51,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12,
+     "extra-orig:b.n": 8,
+     "extra-ours:b.n": 8
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.882030725479126
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1868,
+    "aligned": 484,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 52,
+     "regalloc:ldr": 23,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:str": 18,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3733,
+   "linked_exact": 4505,
+   "size_exact": 4521,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.92950940132141
+ },
+ {
+  "tu": "src/game/ui/HangarWindow.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN12HangarWindow6renderEv",
+    "raw": 1868,
+    "aligned": 484,
+    "osize": 9700,
+    "usize": 9700,
+    "oinsn": 3734,
+    "uinsn": 3733,
+    "cats": {
+     "operand:b.n": 112,
+     "operand:ldr": 52,
+     "regalloc:ldr": 23,
+     "extra-ours:ldr": 21,
+     "extra-orig:ldr": 19,
+     "regalloc:str": 18,
+     "regalloc:ldr.w": 12,
+     "regalloc:mov": 12
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 3733,
+   "linked_exact": 4505,
+   "size_exact": 4521,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.943846464157104
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.56643772125244
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 119,
+    "aligned": 32,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:subs": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2315,
+   "linked_exact": 4505,
+   "size_exact": 4522,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719224,
+  "secs": 22.88339924812317
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4480,
+   "linked_exact": 4507,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.86022710800171
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.73650360107422
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 23.43129301071167
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.79799509048462
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "missing": true
+   }
+  ],
+  "gate": {
+   "byte_exact": 1385,
+   "linked_exact": 4032,
+   "size_exact": 4377,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4377
+  },
+  "text": 420544,
+  "extab": 1708424,
+  "secs": 32.137306928634644
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 1377,
+    "aligned": 479,
+    "osize": 1432,
+    "usize": 1348,
+    "oinsn": 527,
+    "uinsn": 492,
+    "cats": {
+     "regalloc:mov": 29,
+     "extra-orig:mov": 23,
+     "extra-ours:lsls": 23,
+     "extra-orig:lsls": 22,
+     "operand:b.n": 20,
+     "extra-orig:ldr.w": 20,
+     "extra-orig:blx": 14,
+     "extra-ours:mov": 14
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2415,
+   "linked_exact": 4447,
+   "size_exact": 4464,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1718328,
+  "secs": 23.026214122772217
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.79891800880432
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2339,
+   "linked_exact": 4506,
+   "size_exact": 4523,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719192,
+  "secs": 31.072553396224976
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.75635266304016
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 217,
+    "aligned": 32,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "opcode:subs/adds": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1498,
+   "linked_exact": 4492,
+   "size_exact": 4508,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431200,
+  "extab": 1716600,
+  "secs": 31.98310947418213
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.85263466835022
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 1442,
+    "aligned": 532,
+    "osize": 1432,
+    "usize": 1592,
+    "oinsn": 527,
+    "uinsn": 583,
+    "cats": {
+     "extra-ours:mov": 58,
+     "operand:lsls": 35,
+     "extra-ours:blx": 32,
+     "regalloc:mov": 29,
+     "extra-orig:mov": 21,
+     "operand:b.n": 19,
+     "extra-orig:ldr.w": 17,
+     "extra-ours:ldr.w": 15
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1375,
+   "linked_exact": 4474,
+   "size_exact": 4490,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 432800,
+  "extab": 1722560,
+  "secs": 22.994393587112427
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.724618911743164
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.667940378189087
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 1312,
+    "aligned": 370,
+    "osize": 1432,
+    "usize": 1412,
+    "oinsn": 527,
+    "uinsn": 505,
+    "cats": {
+     "regalloc:mov": 31,
+     "operand:b.n": 28,
+     "extra-orig:mov": 20,
+     "opcode:lsls/cmp": 19,
+     "regalloc:ldr.w": 17,
+     "opcode:lsls/beq.w": 15,
+     "extra-orig:blx": 12,
+     "operand:bne.w": 10
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 1840,
+   "linked_exact": 4506,
+   "size_exact": 4521,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719832,
+  "secs": 22.950139045715332
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 45,
+    "aligned": 28,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1,
+     "extra-ours:blx": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 22.922953605651855
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 126,
+    "aligned": 32,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:subs": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2296,
+   "linked_exact": 4489,
+   "size_exact": 4507,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719288,
+  "secs": 22.875247955322266
+ },
+ {
+  "tu": "src/game/mission/Status.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN6Status16missionCompletedEbbx",
+    "raw": 126,
+    "aligned": 32,
+    "osize": 1432,
+    "usize": 1432,
+    "oinsn": 527,
+    "uinsn": 527,
+    "cats": {
+     "extra-ours:lsls": 8,
+     "extra-orig:lsls": 7,
+     "extra-orig:mov": 3,
+     "operand:subs": 3,
+     "operand:lsls": 2,
+     "opcode:lsls/movs": 1,
+     "extra-orig:movs": 1,
+     "extra-ours:ldr.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 2296,
+   "linked_exact": 4489,
+   "size_exact": 4507,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719288,
+  "secs": 22.89279842376709
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 39.691097021102905
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-strict-aliasing",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.75773859024048
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fwrapv",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.66105031967163
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-delete-null-pointer-checks",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.879432678222656
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-sized-deallocation",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.833062887191772
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-threadsafe-statics",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.567707061767578
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fvisibility=hidden",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.748621940612793
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fomit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.730558156967163
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-omit-frame-pointer",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.64496421813965
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-mno-unaligned-access",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.870633840560913
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-math-errno",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.928829669952393
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-exceptions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.747506856918335
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-rtti",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.755810022354126
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-inline-functions",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.721112966537476
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.809190273284912
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-slp-vectorize",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.90091037750244
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-jump-tables",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.860407829284668
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-common",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.79553985595703
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-fno-builtin",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.486990928649902
+ },
+ {
+  "tu": "src/game/gui/Hud.cpp",
+  "flags": "-ffreestanding",
+  "tag": "",
+  "scores": [
+   {
+    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+    "raw": 19,
+    "aligned": 6,
+    "osize": 9332,
+    "usize": 9332,
+    "oinsn": 3226,
+    "uinsn": 3226,
+    "cats": {
+     "opcode:itt/mov.w": 1,
+     "opcode:movne.w/it": 1,
+     "operand:strne.w": 1,
+     "extra-ours:str.w": 1,
+     "opcode:itt/it": 1,
+     "extra-orig:movne.w": 1
+    }
+   }
+  ],
+  "gate": {
+   "byte_exact": 4508,
+   "linked_exact": 4508,
+   "size_exact": 4524,
+   "missing": 0,
+   "extra": 0,
+   "rows": 4524
+  },
+  "text": 431168,
+  "extab": 1719160,
+  "secs": 21.52111053466797
+ }
+]

@@ -1,0 +1,176 @@
+====================================================================================================
+src/game/gui/Hud.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-strict-aliasing             byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fwrapv                          byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fvisibility=hidden              byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fomit-frame-pointer             byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -mno-unaligned-access            byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-exceptions                  byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-inline-functions            byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-slp-vectorize               byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-jump-tables                 byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-common                      byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -fno-builtin                     byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+  -ffreestanding                   byte=4508 miss=0 extra=0 | 3Hud4drawExxP9PlayerEg:19/6/9332=
+====================================================================================================
+src/game/gui/Radar.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-strict-aliasing             byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fwrapv                          byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fvisibility=hidden              byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fomit-frame-pointer             byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -mno-unaligned-access            byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-exceptions                  byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-inline-functions            byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-slp-vectorize               byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-jump-tables                 byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-common                      byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -fno-builtin                     byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+  -ffreestanding                   byte=4508 miss=0 extra=0 | 5Radar4drawEP6PlayerP3:6909/1303/9908=
+====================================================================================================
+src/game/menu/MGame.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-strict-aliasing             byte=3104 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:7012/995/8104  raw+3468 al+298 sz8104/8080 ; 5MGame8OnUpdateEv:9525/688/11448  raw+9509 al+682 sz11448/11440
+  -fwrapv                          byte=3107 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:6644/1326/8084  raw+3100 al+629 sz8084/8080 ; 5MGame8OnUpdateEv:702/127/11440  raw+686 al+121 sz11440/11440
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fvisibility=hidden              byte=1670 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:MISSING ; 5MGame8OnUpdateEv:MISSING
+  -fomit-frame-pointer             byte=3112 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:7709/2695/7724  raw+4165 al+1998 sz7724/8080 ; 5MGame8OnUpdateEv:10632/2158/11440  raw+10616 al+2152 sz11440/11440
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -mno-unaligned-access            byte=3094 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3826/717/8080  raw+282 al+20 sz8080/8080 ; 5MGame8OnUpdateEv:762/116/11440  raw+746 al+110 sz11440/11440
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-exceptions                  byte=1369 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:7589/2261/7952  raw+4045 al+1564 sz7952/8080 ; 5MGame8OnUpdateEv:9234/1876/10992  raw+9218 al+1870 sz10992/11440
+  -fno-rtti                        byte=2929 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3586/714/8080  raw+42 al+17 sz8080/8080 ; 5MGame8OnUpdateEv:152/106/11440  raw+136 al+100 sz11440/11440
+  -fno-inline-functions            byte=1359 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:7849/2208/8376  raw+4305 al+1511 sz8376/8080 ; 5MGame8OnUpdateEv:10399/1097/11524  raw+10383 al+1091 sz11524/11440
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-slp-vectorize               byte=4277 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3844/716/8080  raw+300 al+19 sz8080/8080 ; 5MGame8OnUpdateEv:10504/145/11436  raw+10488 al+139 sz11436/11440
+  -fno-jump-tables                 byte=3108 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3551/700/8080  raw+7 al+3 sz8080/8080 ; 5MGame8OnUpdateEv:702/127/11440  raw+686 al+121 sz11440/11440
+  -fno-common                      byte=4508 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:3544/697/8080= ; 5MGame8OnUpdateEv:16/6/11440=
+  -fno-builtin                     byte=3125 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:4233/727/8088  raw+689 al+30 sz8088/8080 ; 5MGame8OnUpdateEv:742/116/11440  raw+726 al+110 sz11440/11440
+  -ffreestanding                   byte=3125 miss=0 extra=0 | 5MGame10OnTouchEndEiiP:4233/727/8088  raw+689 al+30 sz8088/8080 ; 5MGame8OnUpdateEv:742/116/11440  raw+726 al+110 sz11440/11440
+====================================================================================================
+src/game/mission/LevelScript.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-strict-aliasing             byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fwrapv                          byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fvisibility=hidden              byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fomit-frame-pointer             byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -mno-unaligned-access            byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-exceptions                  byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-inline-functions            byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-slp-vectorize               byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-jump-tables                 byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-common                      byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -fno-builtin                     byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+  -ffreestanding                   byte=4508 miss=0 extra=0 | 11LevelScript7processE:53208/18243/57232=
+====================================================================================================
+src/game/mission/Status.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-strict-aliasing             byte=2315 miss=0 extra=0 | 6Status16missionComple:119/32/1432  raw+74 al+4 sz1432/1432
+  -fwrapv                          byte=4480 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fvisibility=hidden              byte=1385 miss=0 extra=0 | 6Status16missionComple:MISSING
+  -fomit-frame-pointer             byte=2415 miss=0 extra=0 | 6Status16missionComple:1377/479/1348  raw+1332 al+451 sz1348/1432
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -mno-unaligned-access            byte=2339 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-exceptions                  byte=1498 miss=0 extra=0 | 6Status16missionComple:217/32/1432  raw+172 al+4 sz1432/1432
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-inline-functions            byte=1375 miss=0 extra=0 | 6Status16missionComple:1442/532/1592  raw+1397 al+504 sz1592/1432
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-slp-vectorize               byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-jump-tables                 byte=1840 miss=0 extra=0 | 6Status16missionComple:1312/370/1412  raw+1267 al+342 sz1412/1432
+  -fno-common                      byte=4508 miss=0 extra=0 | 6Status16missionComple:45/28/1432=
+  -fno-builtin                     byte=2296 miss=0 extra=0 | 6Status16missionComple:126/32/1432  raw+81 al+4 sz1432/1432
+  -ffreestanding                   byte=2296 miss=0 extra=0 | 6Status16missionComple:126/32/1432  raw+81 al+4 sz1432/1432
+====================================================================================================
+src/game/ui/HangarWindow.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-strict-aliasing             byte=2772 miss=0 extra=0 | 12HangarWindow6renderE:1866/328/9700  raw+471 al-68 sz9700/9700
+  -fwrapv                          byte=1387 miss=0 extra=0 | 12HangarWindow6renderE:1867/482/9700  raw+472 al+86 sz9700/9700
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fvisibility=hidden              byte=1575 miss=0 extra=0 | 12HangarWindow6renderE:MISSING
+  -fomit-frame-pointer             byte=2759 miss=0 extra=0 | 12HangarWindow6renderE:9320/2192/9540  raw+7925 al+1796 sz9540/9700
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -mno-unaligned-access            byte=2768 miss=0 extra=0 | 12HangarWindow6renderE:1869/484/9700  raw+474 al+88 sz9700/9700
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-exceptions                  byte=2058 miss=0 extra=0 | 12HangarWindow6renderE:9271/4797/9524  raw+7876 al+4401 sz9524/9700
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-inline-functions            byte=1443 miss=0 extra=0 | 12HangarWindow6renderE:9430/2292/9924  raw+8035 al+1896 sz9924/9700
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-slp-vectorize               byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-jump-tables                 byte=2774 miss=0 extra=0 | 12HangarWindow6renderE:3741/540/9736  raw+2346 al+144 sz9736/9700
+  -fno-common                      byte=4508 miss=0 extra=0 | 12HangarWindow6renderE:1395/396/9700=
+  -fno-builtin                     byte=3733 miss=0 extra=0 | 12HangarWindow6renderE:1868/484/9700  raw+473 al+88 sz9700/9700
+  -ffreestanding                   byte=3733 miss=0 extra=0 | 12HangarWindow6renderE:1868/484/9700  raw+473 al+88 sz9700/9700
+====================================================================================================
+src/game/ui/Layout.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-strict-aliasing             byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fwrapv                          byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fvisibility=hidden              byte=1506 miss=0 extra=0 | 6LayoutC1Ev:MISSING ; 6LayoutC2Ev:MISSING
+  -fomit-frame-pointer             byte=2447 miss=0 extra=0 | 6LayoutC1Ev:5899/2291/6900  raw+285 al+298 sz6900/7072 ; 6LayoutC2Ev:5899/2291/6900  raw+285 al+298 sz6900/7072
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -mno-unaligned-access            byte=2458 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-exceptions                  byte=1369 miss=0 extra=0 | 6LayoutC1Ev:5615/1997/7072  raw+1 al+4 sz7072/7072 ; 6LayoutC2Ev:5615/1997/7072  raw+1 al+4 sz7072/7072
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-inline-functions            byte=1369 miss=0 extra=0 | 6LayoutC1Ev:5614/1997/7072  raw+0 al+4 sz7072/7072 ; 6LayoutC2Ev:5614/1997/7072  raw+0 al+4 sz7072/7072
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-slp-vectorize               byte=2447 miss=0 extra=0 | 6LayoutC1Ev:6885/4122/5868  raw+1271 al+2129 sz5868/7072 ; 6LayoutC2Ev:6885/4122/5868  raw+1271 al+2129 sz5868/7072
+  -fno-jump-tables                 byte=2471 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-common                      byte=4508 miss=0 extra=0 | 6LayoutC1Ev:5614/1993/7072= ; 6LayoutC2Ev:5614/1993/7072=
+  -fno-builtin                     byte=1378 miss=0 extra=0 | 6LayoutC1Ev:5615/1997/7072  raw+1 al+4 sz7072/7072 ; 6LayoutC2Ev:5615/1997/7072  raw+1 al+4 sz7072/7072
+  -ffreestanding                   byte=1378 miss=0 extra=0 | 6LayoutC1Ev:5615/1997/7072  raw+1 al+4 sz7072/7072 ; 6LayoutC2Ev:5615/1997/7072  raw+1 al+4 sz7072/7072
+====================================================================================================
+src/game/world/Level.cpp
+  (base)                           byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-strict-aliasing             byte=2352 miss=0 extra=0 | 5Level10createShipEiii:1251/370/2764  raw+61 al+4 sz2764/2764 ; 5Level13createMissionE:16682/3372/17292  raw+12417 al+2986 sz17292/17172
+  -fwrapv                          byte=2359 miss=0 extra=0 | 5Level10createShipEiii:1229/413/2764  raw+39 al+47 sz2764/2764 ; 5Level13createMissionE:4884/448/17172  raw+619 al+62 sz17172/17172
+  -fno-delete-null-pointer-checks  byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-sized-deallocation          byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-threadsafe-statics          byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fvisibility=hidden              byte=1320 miss=0 extra=0 | 5Level10createShipEiii:MISSING ; 5Level13createMissionE:MISSING
+  -fomit-frame-pointer             byte=2458 miss=0 extra=0 | 5Level10createShipEiii:2497/604/2756  raw+1307 al+238 sz2756/2764 ; 5Level13createMissionE:16343/3512/17148  raw+12078 al+3126 sz17148/17172
+  -fno-omit-frame-pointer          byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -mno-unaligned-access            byte=2347 miss=0 extra=0 | 5Level10createShipEiii:1232/370/2764  raw+42 al+4 sz2764/2764 ; 5Level13createMissionE:13803/778/17180  raw+9538 al+392 sz17180/17172
+  -fno-math-errno                  byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-exceptions                  byte=1369 miss=0 extra=0 | 5Level10createShipEiii:2491/1433/2628  raw+1301 al+1067 sz2628/2764 ; 5Level13createMissionE:16634/4380/16868  raw+12369 al+3994 sz16868/17172
+  -fno-rtti                        byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-inline-functions            byte=1486 miss=0 extra=0 | 5Level10createShipEiii:2263/621/2868  raw+1073 al+255 sz2868/2764 ; 5Level13createMissionE:17833/5847/18480  raw+13568 al+5461 sz18480/17172
+  -fno-vectorize                   byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-slp-vectorize               byte=2359 miss=0 extra=0 | 5Level10createShipEiii:1240/439/2764  raw+50 al+73 sz2764/2764 ; 5Level13createMissionE:13424/956/17132  raw+9159 al+570 sz17132/17172
+  -fno-jump-tables                 byte=1369 miss=0 extra=0 | 5Level10createShipEiii:2187/1090/2764  raw+997 al+724 sz2764/2764 ; 5Level13createMissionE:16715/3371/17312  raw+12450 al+2985 sz17312/17172
+  -fno-common                      byte=4508 miss=0 extra=0 | 5Level10createShipEiii:1190/366/2764= ; 5Level13createMissionE:4265/386/17172=
+  -fno-builtin                     byte=2347 miss=0 extra=0 | 5Level10createShipEiii:1264/370/2764  raw+74 al+4 sz2764/2764 ; 5Level13createMissionE:13725/1044/17284  raw+9460 al+658 sz17284/17172
+  -ffreestanding                   byte=2347 miss=0 extra=0 | 5Level10createShipEiii:1264/370/2764  raw+74 al+4 sz2764/2764 ; 5Level13createMissionE:13725/1044/17284  raw+9460 al+658 sz17284/17172

@@ -34,8 +34,8 @@ tools/verify/verify.py --build-dir <build>/verify --original <orig> --ours <so> 
 per-TU `COMPILE_OPTIONS` in `CMakeLists.txt`, so the cell flag wins. Builds ran in
 `(ulimit -v 12000000; ...)` with `-j2`.
 
-Raw data: `scratch/w13913/sweep_results.json` (160 records, authoritative),
-`scratch/w13913/table.txt` (flat rendering), `scratch/w13913/sweep.py` (driver).
+Raw data: `_work/reconstructions/w13913/sweep_results.json` (160 records, authoritative),
+`_work/reconstructions/w13913/table.txt` (flat rendering), `_work/reconstructions/w13913/sweep.py` (driver).
 
 Note: only gate counts and the residual's `fn_diff` scores were recorded per cell;
 per-cell `.text` / `.ARM.extab` sizes were not, so the section deltas are unchanged
