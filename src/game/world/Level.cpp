@@ -1983,8 +1983,8 @@ void Level::createMission() {
         const float *t = kBaseTurrets[0];
         for (int i = this->field_168 + this->field_164 + this->friendCount;
              i < this->friendCount + this->field_164 + this->field_168 + fortressGuns; i++) {
-            KIPlayer *gun = (*this->enemies)[i];
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
+            KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
             Vector p = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             v = p;
@@ -2285,8 +2285,8 @@ case4Tail:
                     coords[5] = 0;
                     coords[0] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
                     coords[2] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
-                    int goods = mission->getProductionGoodAmount();
                     this->enemyRoute = new Route(coords, 6);
+                    int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
                     int convoyEnd = escorts + 2;
                     this->enemies = new Array<KIPlayer *>();

@@ -18,7 +18,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `LevelScript::process` | **52,842** | 20,218 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
-| `Level::createMission` | **2,635** | 595 | 17,172 |
+| `Level::createMission` | **2,660** | 584 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,013** | 479 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,582**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,607**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13761 + w13773, wave 191b): case-2 goods
+  load after `enemyRoute`, and pirateFortress gun reload after the
+  `createStaticObject` store (matching 0xb340c..0xb3420).  Raw
+  **2,635 -> 2,660** (+25), aligned **595 -> 584** (-11), size
+  17,172/17,172 exact.  `.text` 74,582 -> 74,607; `.ARM.extab`
+  561 -> 562.
 * `HangarWindow::render` (w13767, wave 191b): free-credits block rebuilt
   in the original W R H C X Y statement order (`getWidth`, `rowHeight`,
   `getHeight`, `Globals::Canvas`, `SetColor`, then `textX`/`textY`) with
