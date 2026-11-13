@@ -1509,7 +1509,16 @@ bool LevelScript::process(int delta) {
 
     // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
     // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
-    else if (Globals::status->getCurrentCampaignMission() == 5) {
+    // NB: the mission-26 test precedes mission-5 here; this source order reproduces the
+    // original's emitted block layout (measured raw -31 / aligned -100 on this base).
+    else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
+        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
+        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+            m_nState = 1;
+            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 5) {
         // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
         if (m_nState == 0) {
             Vector *scratch = &m_tempVec; // LevelScript tempVec @0x28
@@ -1518,13 +1527,6 @@ bool LevelScript::process(int delta) {
             (*enemies)[0]->geometry->rotate(0.0f, 3.1415927f, 0.0f); // const @0x13853c = pi
             (*enemies)[0]->awake();
             m_nState = 1;
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
-        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
-        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-            m_nState = 1;
-            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
     } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
@@ -3274,13 +3276,17 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA > 100000) {
                             m_nScriptTimerA = 0;
                             int x = -40000;
-                            for (int i = 2; i != 4; i++) {
+                            // do-while: the original enters the body at 0x13e030 and tests
+                            // `i != 4` at the bottom (0x13e086).
+                            int i = 2;
+                            do {
                                 KIPlayer *ship = (*enemies)[i];
                                 ship->setPosition(player->getPosition() + Vector{(float) x, 3000.0f, 20000.0f});
-                                (*enemies)[i]->setVisible(true);
                                 (*enemies)[i]->awake();
+                                (*enemies)[i]->setVisible(true);
                                 x -= 3000;
-                            }
+                                i++;
+                            } while (i != 4);
                             m_nState++;
                         }
                         break;
