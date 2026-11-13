@@ -137,3 +137,99 @@ cmake --build cmake-build-match --target check -j2      # RATCHET PASS
 Scratch (not committed): `/home/debian/GalaxyOnFire2/scratch/w13592/`
 (`batch2.py`, `gen1.py`, `try2.py`, `bd.py`, `fd.py`, `mirdump.sh`,
 `MGame.cpp.head`, `onupdate_*.mir`, `mir_*.err`).
+
+## 8. Addendum (same worker, second sweep): the natural r9 pin and why it still is not byte-exact
+
+Follow-up sweep after the note above was committed.  `src/` unchanged; target
+still **raw 10 / aligned 112 / 11,440 B**, `check` re-run: **RATCHET PASS**
+(byte 4508, linked 4508, size 4524, data 843/843, imports 207, lint CLEAN).
+
+### 8.1 The plain shape already keeps `&Globals::status` in r9
+
+Disassembly of the *plain* (no anchor) shape shows the address is **not** moved
+to r5 globally: `0x17e090 ldr.w r9,[r0]` still loads `&Globals::status` into
+r9, exactly like the original.  What the plain shape does instead is
+
+```
+17e094: ldr.w r6,[r9]        ; cache the *value* Globals::status in r6
+17e098: mov   r0,r6          ; +2 bytes at the first receiver
+...
+17e256: mov   r5,r9          ; copy the address into r5 for the 122 branch
+17e272: ldr   r0,[r5,#0]     ; 2-byte loads instead of 4-byte ldr.w [r9]
+```
+
+i.e. the 48-byte shrink is a *local* re-materialisation of the address into r5
+for the 122 branch (2-byte `ldr`), not a global allocation change.  So the
+anchor's job is narrower than "pin r9": it has to stop the
+`mov r5,r9` copy at `0x17e256` (and the r6 value cache at `0x17e094`).
+
+### 8.2 A non-anchor shape that does stop the copy: level declared before `radioBase`
+
+```
+int radioIndex = Globals::rnd->nextInt(2);
+Level *level = this->level;
+int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
+level->createRadioMessage(28, radioIndex + radioBase);
+```
+
+This is the only non-anchor family found that keeps `&Globals::status` in r9
+through the 122 branch.  The level load (r5) is live across the `ccm` call and
+occupies r5, so the allocator cannot copy the address there.  Result:
+
+| shape | raw | aligned | insn | size |
+|---|---:|---:|---:|---:|
+| `o_nt_lv_rb` (= `lv_after_nt`, `p1`..`p4`) | **16** | **6** | 4002 | 11,440 |
+| `o_lv_nt_rb` (= `lv_before_nt`) | 33 | 8 | 4002 | 11,440 |
+| HEAD anchor | 10 | 112 | 4003 | 11,440 |
+
+`o_nt_lv_rb` has a **byte-exact cond** (`ldr.w r2,[r9]; ldr r4,[pc];
+ldrd r2,r3,[r2,#256]`) and a byte-exact `mov r4,r0` / `ldr.w r0,[r9]` in the
+body.  Its whole 16-byte residual is one 4-byte shift around the level load:
+
+```
+O 17f19a movw r2,#3166 ; ldr.w r1,[fp,#120] ; cmp ; it eq ; movweq r2,#3164
+  ; add r2,r4 ; mov r0,r1 ; movs r1,#28 ; blx
+U 17f196 ldr.w r5,[fp,#120] ; blx ccm
+  ; movw r1,#3166 ; cmp ; it eq ; movweq r1,#3164 ; mov r0,r5 ; adds r2,r1,r4 ; ...
+```
+
+The level load cannot be sunk past the `getCurrentCampaignMission` call (the
+compiler cannot prove the Status call does not alias `this->level`), so
+declaring it before `radioBase` always moves it 4 bytes earlier.  Declaring it
+after `radioBase` puts it back at `0x17f19e` but lets the allocator emit
+`mov r5,r9` again (plain, 11,392 B).  This is the same trade-off as the anchor
+store position, now on the level load.
+
+### 8.3 Other new shapes measured (all size 11,440 unless noted)
+
+| shape | raw | aligned | note |
+|---|---:|---:|---|
+| `ns_tailrecv` (no volatile store, `st` at receiver + tail receiver) | 37 | 109 | ideal body, tail `mov r0,r5` +2 |
+| `ns_tailtgt` (tail target) | 5,245 | 758 | 11,488 B |
+| `ns_tailboth` | 5,254 | 758 | 11,488 B |
+| `ns_lv` (no store, level before radioBase) | 918 | 114 | 11,436 B |
+| `ns_lv_tail` | 37 | 115 | |
+| `t_recv` (store before ccm + tail receiver) | 322 | 113 | ideal body, duplicated tail |
+| `t_store` / `t_both` (tail target) | 5,305 / 5,249 | 759 / 758 | 11,492 / 11,488 B |
+| `ext_orbit` (`st` at `inAlienOrbit`) | 602 | 365 | stack frame +0x80 |
+| `ext_wing` / `ext_hint` / `ext_hint2` | 4,668 / 5,082 / 5,083 | 756 / 787 / 787 | 11,456 / 11,464 B |
+| `h_lv` (level hoisted before the if-chain) | 4,135 | 302 | |
+| `h_rnd` (`Globals::rnd` hoisted) | 5,045 | 429 | 11,420 B |
+| `h_lv_st` | 4,458 | 321 | |
+| `o_lv_rb_nt` / `o_rb_lv_nt` / `o_rb_nt_lv` | 1,239 / 1,240 / 1,241 | 170 / 170 / 154 | 11,436 B |
+| `v_int` (volatile `int` store) | 10 | 112 | identical to HEAD |
+| `v_void` / `v_char` (volatile `void*`/`char*`) | 918 | 109 | 11,436 B |
+| `v_rmw` (two stores) | 355 | 116 | |
+| `v_ri` (store in `radioIndex` init) | 15 | 112 | |
+| `v_bef` (store before nextInt) | 15 | 112 | |
+| `cond_swap` / `cond_ge` / `cond_swap_ge` | 10 | 112 | operand order irrelevant |
+| `all_st` (outer `st`, all 3 tail stores) | 5,321 | 739 | 11,484 B |
+
+### 8.4 Conclusion of the addendum
+
+`o_nt_lv_rb` (raw 16 / aligned 6) is the closest **instruction-level** match
+found and is a genuine non-anchor r9 pin, but its raw count is worse than
+HEAD's 10 and it does not reach `byte_exact`, so nothing was landed.  The
+ideal flip (anchor in r5, store before `ccm`) is still unreached: every shape
+that gets r5 either moves the store after the `ccm` (`q_lv`/`q10`) or needs a
+post-`ccm` use that duplicates the shared tail (`t_recv`, +2 shift).
