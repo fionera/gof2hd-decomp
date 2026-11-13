@@ -16,16 +16,8 @@
  },
  "rows": [
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 39.1,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
-  },
-  {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 39.2,
+   "pct": 38.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,11 +25,19 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 39.2,
+   "pct": 38.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
    "usize": 7072
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 39.1,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 57232
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
