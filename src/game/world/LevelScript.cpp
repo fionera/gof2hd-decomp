@@ -3076,8 +3076,8 @@ bool LevelScript::process(int delta) {
                         player->setFreeLookMode(true);
                         for (int i = 0; i < 3; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                            (*enemies)[i]->field_0x38 = 4;
                             ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
+                            (*enemies)[i]->field_0x38 = 4;
                         }
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);

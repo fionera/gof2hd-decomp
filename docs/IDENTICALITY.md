@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,088** | 19,164 | 57,232 |
+| `LevelScript::process` | **53,083** | 19,164 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,375** | 463 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,006**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,001**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13828, wave 191b, second pass): mission-158 state-5 store order (`field_0x128` before `field_0x38`).  Raw **53,088 -> 53,083** (-5), aligned 19,164 unchanged, size 57,232/57,232 exact.  `.text` 76,006 -> 76,001; `.ARM.extab` 552.
 * `LevelScript::process` (w13838, wave 192): case-157 states 7/8/9 statement reorders.  Raw **53,053 -> 53,077** (+24), aligned **19,355 -> 19,228** (-127), size 57,232/57,232 exact.  `.text` 75,987 -> 76,011; `.ARM.extab` 552.
 * `LevelScript::process` (w13826, wave 191b): case-157 state-0/1 order.  Raw **53,077 -> 53,086** (+9), aligned **19,228 -> 19,198** (-30), size 57,232/57,232 exact.  `.text` 76,011 -> 76,020; `.ARM.extab` 552.
 * `LevelScript::process` (w13828, wave 191b): case-154 state-4 `moveForward` before the camera-local block.  Raw **53,086 -> 53,088** (+2), aligned **19,198 -> 19,164** (-34), size 57,232/57,232 exact.  `.text` 76,020 -> 76,022; `.ARM.extab` 552.

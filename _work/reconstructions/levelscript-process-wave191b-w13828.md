@@ -65,3 +65,39 @@ landed raw +1 for aligned -4).
 for raw/aligned/size; scratch helpers `dumpdiff.py <minN>` (aligned diff blocks
 with orig/ours disasm + our source line), `deltas.py`, `blocklines.py`,
 `calls2.py`, `secdiff.sh`.
+
+## Second landed pass: mission-158 (case 158) state-5 store order
+
+Inside the `for (int i = 0; i < 3; i++)` loop that re-enables the three enemies
+(src ~L3078), the original emits `str.w sl,[r0,#296]` (`field_0x128 = 50000`)
+**before** `str r5,[r0,#56]` (`field_0x38 = 4`).  Our source had the two stores
+swapped.  Fix:
+
+```c++
+ for (int i = 0; i < 3; i++) {
+     ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
+-    (*enemies)[i]->field_0x38 = 4;
+     ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
++    (*enemies)[i]->field_0x38 = 4;
+ }
+```
+
+Result: raw **52,999 -> 52,994** (-5), aligned **19,497 unchanged**, size
+57,232/57,232, `.text` **76,631 -> 76,626** (-5), `.ARM.extab` 623 unchanged,
+`.rodata`/`.ARM.exidx`/`.rel.plt` diff 0.  Landed (raw win, aligned neutral).
+
+| variant | raw | aligned | .text | .ARM.extab |
+|---|---:|---:|---:|---:|
+| HEAD after case-154 pass | 52,999 | 19,497 | 76,631 | 623 |
+| **mission-158 state-5 store order (landed)** | **52,994** | **19,497** | **76,626** | 623 |
+| prologue: `Level *&level = m_pLevel;` | 53,007 | 19,504 | — | — |
+| mission-1 state-3: drop duplicate `m_nScriptTimerA = 0` | 53,006 | 19,500 | — | — |
+| mission-1 `else { translate }` | 52,999 | 19,497 | — | — |
+| mission-1 `translate` before state-1 if | 53,680 | 19,525 | — | — |
+| mission-94 state-1 freelook move only | 54,056 | 19,497 | — | — |
+| mission-94 lookBehind order swap | 53,001 | 19,497 | — | — |
+| mission-94 2nd-site dock/freelook swap | 53,001 | 19,497 | — | — |
+| case-154 state-0 split nested ifs | 55,210 | 19,956 | — | **size 57,236 fatal** |
+| mission-94 full state-5 reorder | — | — | — | **size 57,236 fatal** |
+| mission-94 dock/freelook reorder alone | — | — | — | **size 57,236 fatal** |
+| mission-158 state-5 `setFixed`/freelook reorder | 52,997 | 19,498 | — | — |
