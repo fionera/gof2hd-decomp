@@ -3273,17 +3273,13 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA > 100000) {
                             m_nScriptTimerA = 0;
                             int x = -40000;
-                            // do-while: the original enters the body at 0x13e030 and tests
-                            // `i != 4` at the bottom (0x13e086).
-                            int i = 2;
-                            do {
+                            for (int i = 2; i != 4; i++) {
                                 KIPlayer *ship = (*enemies)[i];
                                 ship->setPosition(player->getPosition() + Vector{(float) x, 3000.0f, 20000.0f});
                                 (*enemies)[i]->awake();
                                 (*enemies)[i]->setVisible(true);
                                 x -= 3000;
-                                i++;
-                            } while (i != 4);
+                            }
                             m_nState++;
                         }
                         break;

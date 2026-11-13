@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,208** | 18,243 | 57,232 |
+| `LevelScript::process` | **53,203** | 18,234 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -31,11 +31,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,882**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,877**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13905, wave 192, fourth pass): case-94 state-2 scatter loop written as `for (int i = 2; i != 4; i++)` instead of a `do { ... i++; } while (i != 4)`.  Raw **53,208 -> 53,203** (-5), aligned **18,243 -> 18,234** (-9), size 57,232/57,232 exact.  `.text` 76,882 -> 76,877; `.ARM.extab` 597 unchanged.
 * `LevelScript::process` (w13888, wave 192, second pass): mission-6 `initStreamOutPosition = 1` before `switch_to_target_setting = 1` (mission-6 case-6 tail).  Raw **53,208** and aligned **18,243** unchanged, size 57,232/57,232 exact; `.text` 76,882 and `.ARM.extab` 597 unchanged.
 * `Radar::draw` (w13879, wave 192): test the `i == 1` landmark branch before `i == 3` (moves the `__builtin_expect` anchor to the `i == 1` arm).  Raw **6,909** and aligned **1,303** unchanged, size 9,908/9,908 exact; disdiff hunks **530 -> 528**.  `.text` 76,882 and `.ARM.extab` 597 unchanged.
 * `LevelScript::process` (w13886, wave 192, third pass): mission-6 HP stores reload `player->player` for each of `field_64/5c/60/68` instead of hoisting `pp`/`st`.  Raw **53,210 -> 53,208** (-2), aligned 18,243 unchanged, size 57,232/57,232 exact.  `.text` 76,884 -> 76,882; `.ARM.extab` 597.
