@@ -1685,14 +1685,14 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 1) {
                     TargetFollowCamera *cam1688 = m_pCamera;
                     Level *self = m_pLevel;
-                    self->lodManager->forceUpdate(delta, false);
                     cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
+                    self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         cam1688->setTarget(player->geometry);
-                        resetCamera(self);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
+                        resetCamera(self);
                         m_bCinematicBreak = 0;
                         cam1688->setLookAtCam(false);
                         self->lodManager->forceUpdate(delta, false);

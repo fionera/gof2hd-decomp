@@ -1212,7 +1212,13 @@ asteroids:
                     this->lockedAsteroid = nullptr;
                     this->asteroidLockTimer += mode;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
-                        if (!candidateWreck) {
+                        if (candidateWreck) {
+                            if (this->hasTractor13) {
+                                this->field_0x1c = this->field_0x10;
+                            } else {
+                                hud->hudEvent(9, this->level->getPlayer(), 0);
+                            }
+                        } else {
                             if (!this->hasScanner19) {
                                 hud->hudEvent(20, this->level->getPlayer(), 0);
                             } else {
@@ -1220,12 +1226,6 @@ asteroids:
                                     Globals::sound->play(26, nullptr, nullptr, 0.0f);
                                 }
                                 this->lockedAsteroid = this->field_0x10;
-                            }
-                        } else {
-                            if (this->hasTractor13) {
-                                this->field_0x1c = this->field_0x10;
-                            } else {
-                                hud->hudEvent(9, this->level->getPlayer(), 0);
                             }
                         }
                     }

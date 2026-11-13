@@ -15,9 +15,9 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,774** | 20,612 | 57,232 |
-| `Radar::draw` | **6,960** | 1,404 | 9,908 |
-| `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
+| `LevelScript::process` | **52,776** | 20,587 | 57,232 |
+| `Radar::draw` | **6,962** | 1,401 | 9,908 |
+| `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
@@ -30,11 +30,29 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,270**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,364**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13733, wave 191b): ten independent-store moves/swaps
+  in the constructor (0x1ac/0x18c, 0x188/0x194, 0x198/0x1a0, 0x198/0x18c,
+  0x2d0/0x2cc, 0x16c/0x17c, 0x108/0x130-block, 0x128/0x114, quickMenuIconGap
+  after orbitInfoSystemY, field_0x1ec after orbitInfoTextX).  The file is
+  a pure reordering of the same statements (sorted line sets identical),
+  so the store image is unchanged for all 32 flag combos.  Raw
+  **5,265 -> 5,355** (+90), aligned **2,442 -> 2,307** (-135), size
+  7,072/7,072 exact.
+* `LevelScript::process` (w13748, wave 191b): case-16 state 1
+  `resetCamera(self)` after the HUD/radar stores and `translate` before
+  `forceUpdate`, matching 0x13c3a6..0x13c3e8.  Raw **52,774 -> 52,776**
+  (+2), aligned **20,612 -> 20,587** (-25), size 57,232/57,232 exact.
+* `Radar::draw` (w13756, wave 191b): asteroid-lock else branch flipped
+  (`candidateWreck` first); the `lockedAsteroid = nullptr` store is kept
+  because dropping it shrinks the function to 9,904 on this base.  Raw
+  **6,960 -> 6,962** (+2), aligned **1,404 -> 1,401** (-3), size
+  9,908/9,908 exact.  This batch moves `.text` 74,270 -> 74,364;
+  `.ARM.extab` stays 561.
 * `Radar::draw` (w13751 pass 3 + w13756, wave 191b): gas-cloud range-test
   axis order (x target-ego, y/z ego-target, matching the per-axis `vsub`
   direction), gas loop reads `this->cameraZ` directly, and the enemy lock
