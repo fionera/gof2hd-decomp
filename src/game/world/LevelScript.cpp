@@ -864,13 +864,13 @@ bool LevelScript::process(int delta) {
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                             ->Update((long long) delta, false);
                     if (m_nScriptTimerA >= 2501) {
+                        m_nState = 12;
                         player->StopEngineSound();
                         player->field_0x1c = 156;
-                        m_nState = 12;
                         player->PlayEngineSound();
                         player->startSmokeEmission();
-                        player->setExhaustVisible(false);
                         player->setVisible(true);
+                        player->setExhaustVisible(false);
                         player->setSpeed(2.0f);
                     }
                     break;
@@ -1112,7 +1112,7 @@ bool LevelScript::process(int delta) {
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
                 (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (__builtin_expect((m_nScriptTimerA >= 1100 - delta), 0)) { // lint: arm_builtin
+                if (m_nScriptTimerA >= 1100 - delta) {
                     m_nState = 7;
                     m_nScriptTimerA = 0;
                 }
@@ -2510,7 +2510,7 @@ bool LevelScript::process(int delta) {
                     // the player. FP immediates from the .rodata pool: @0x13c194 = 2000.0f (dir scale),
                     // @0x13c198/9c/a0 = {-600, 800, -1000} (camera offset); field seed @0x13c190 = 100000.
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)) { // lint: arm_builtin
+                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         (*m_pLevel->getEnemies())[0]->player->setAlwaysFriend(false);
                         (*m_pLevel->getEnemies())[0]->player->setAlwaysEnemy(true);
                         ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x128 = 100000;
@@ -2841,7 +2841,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
-                    if (__builtin_expect(player->isDockedToDockingPoint(), 1)) { // lint: arm_builtin
+                    if (player->isDockedToDockingPoint()) {
                         player->setDockingState(2);
                     }
                     m_nState = 3;

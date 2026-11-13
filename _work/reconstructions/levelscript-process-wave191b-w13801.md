@@ -126,3 +126,62 @@ and the shared-return branch target differ).
   to the original `0x13d6c0..0x13d6da`; the residual is only the `fp` vs
   `sp+72` base-register choice and the shared `m_nState = 3` block target
   (`0x1438d6` vs `0x13f29e`).  Block layout, not statement order.
+
+## Landed (3): case-11 state-12 order + visibility, case-6 s6 plain if, two expect drops
+
+All four edits are in `src/game/world/LevelScript.cpp`:
+
+1. **case 11 state 12** (line ~864): `m_nState = 12;` moved to the head of the
+   `m_nScriptTimerA >= 2501` body, before `StopEngineSound()`.  Original
+   `0x13d37c`: `m_nState=12` -> `StopEngineSound` -> `field_0x1c=156` ->
+   `PlayEngineSound` -> `startSmokeEmission` -> `setVisible(true)` ->
+   `setExhaustVisible(false)` -> `setSpeed(2.0f)`.  Our body
+   `0x13d3ac..0x13d3e4` is now instruction-identical apart from base registers
+   and the shared-return branch.
+2. **case 11 visibility swap**: `setVisible(true)` before
+   `setExhaustVisible(false)` (same original order as above).
+3. **case 6 s6** (line ~1112): `__builtin_expect((m_nScriptTimerA >= 1100 - delta), 0)`
+   -> plain `if`.  Original `0x13bb7c` emits `ittt ge` predicated stores; the
+   plain form reproduces `bfa2 ittt ge; movge r0,#7; strge.w r0,[fp,#28];
+   strdge r8,r8,[r4]` exactly.
+4. **two `__builtin_expect(...)` drops** found by a 66-site sweep (each site
+   replaced one at a time, size-exact only):
+   - line ~2513, case-100 s2 `((RadioMessage *)((*messages)[1]))->isOver()`:
+     drop `__builtin_expect(..., 0)`.
+   - line ~2844, case-100 s2 `player->isDockedToDockingPoint()`:
+     drop `__builtin_expect(..., 1)` (single-site raw -30, aligned unchanged).
+
+| metric | HEAD | after |
+|---|---:|---:|
+| raw | 53,024 | **52,993** (-31) |
+| aligned | 19,816 | **19,776** (-40) |
+| size | 57,232 | 57,232 (exact) |
+| `.text` diffbytes | 75,198 | **75,167** (-31) |
+| `.ARM.extab` diffbytes | 587 | 587 |
+| `.rel.plt` md5 | 289b2a06 | 289b2a06 |
+
+`check` = RATCHET PASS (byte_exact 4508, linked 4508, size 4524/4524, data
+843/843, imports 207), lint CLEAN, drift 0.
+
+## Rejected experiments (this session, all reverted)
+
+- Sweep of all 66 `__builtin_expect` sites on top of the landed base, then a
+  second sweep of the 30 size-exact variants on top of the landed combo.  No
+  further site improves raw below 52,993 while staying size-exact:
+  - line 4114 `(*enemies)[i]->shipGroup == 8`: raw 53,279 / aligned 19,732
+    (aligned -44, raw +286) -- best aligned but raw-fatal.
+  - line 1467 `wingman->isWingMan()`: 53,062 / 19,764 (+69 / -12).
+  - line 4476 `m_nScriptTimerA > 2000 && < 5000`: 52,995 / 19,766 (+2 / -10).
+  - line 4871 `m_nScriptTimerB <= 6999`: 53,001 / 19,772 (+8 / -4).
+  - line 2233 `isAlwaysFriend()`: 52,995 / 19,773 (+2 / -3).
+  - line 1033 `!Globals::layout->isFading()`: 52,994 / 19,774 (+1 / -2).
+  - line 5126 `messages[15]->isOver()`: 53,020 / 19,763 (+27 / -13).
+  - lines 1150/2288/3826/4739/5176 and others are metric-neutral.
+- HEAD + the two expect drops (without the case-11/case-6 edits) measures
+  52,992 / 19,785: raw -1 but aligned +9 vs the landed combo.  The landed
+  combo is preferred because the case-11/case-6 edits are instruction-verified
+  structural matches (see above), not metric-only trades.
+- case-12 state-1 `m_nScriptTimerA = 0;` moved after
+  `m_pCamera->setPosition(m_tempVec)` (original `0x13d3b8` stores the timer
+  after `setPosition`): on top of the landed combo it measures
+  52,994 / 19,772 (+1 raw / -4 aligned).  Not a raw win; reverted.
