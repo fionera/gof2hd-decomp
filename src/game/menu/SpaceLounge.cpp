@@ -1212,13 +1212,6 @@ void SpaceLounge::drawLounge() {
             width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
         }
         Layout *layout = Globals::layout;
-        // The original right-edge clamp reuses the int `pad * 2` already
-        // materialised in sl for `top` (`addgt.w r1, r6, sl`).  Writing the
-        // padding as `pad + pad` keeps that int value in play instead of the
-        // former `short pad3` sign-extend workaround.  The `+ (-width - pad -
-        // pad)` association also makes the preceding condition sum as
-        // `(pad + x) + width`, matching the original's `add.w r1, r9, r5;
-        // add r1, r6` order (raw 176 -> 175, aligned 42 -> 41).
         int x = centerX;
         if (x - pad < layout->buttonInsetX) {
             x = layout->buttonInsetX + pad;
@@ -1228,7 +1221,7 @@ void SpaceLounge::drawLounge() {
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
         Globals::Canvas->SetColor(0x193043ffu);
-        Globals::Canvas->DrawRectangle(x - Globals::layout->field_0x94, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
+        Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
         Globals::Canvas->SetColor(0xffffffffu);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                     name + (agent->isKnown() ? String("  ") : String("")), x,
