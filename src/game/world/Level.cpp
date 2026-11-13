@@ -2012,10 +2012,10 @@ void Level::createMission() {
              i < guns + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(raidRace, 0, raidType, this->field_180->getWaypoint(), true, false);
             if (Globals::status->inPirateLootOrbit()) {
-                ((PlayerFighter *) (*this->enemies)[i])->setRotate(3);
-                (*this->enemies)[i]->setSpeed(3.5f);
                 Player *p = (*this->enemies)[i]->player;
                 p->setHitpoints(p->getMaxHitpoints() * 2);
+                (*this->enemies)[i]->setSpeed(3.5f);
+                ((PlayerFighter *) (*this->enemies)[i])->setRotate(3);
                 this->spawnPosition = this->player->getPosition();
                 this->spawnPosition.x += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
                 this->spawnPosition.y += (float) (rnd->nextInt(50000) * (rnd->nextInt(2) == 0 ? 1 : -1) + 10000);

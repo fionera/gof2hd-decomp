@@ -17,8 +17,8 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,115** | 20,244 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
-| `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
-| `Level::createMission` | **2,627** | 605 | 17,172 |
+| `Layout` C1/C2 | **5,497** | 2,103 | 7,072 |
+| `Level::createMission` | **2,635** | 595 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,735**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,885**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13763, wave 191b): 21 further independent-field
+  store-order swaps in the constructor.  The file remains a pure
+  reordering of the same statements (sorted line sets identical), so the
+  store image is unchanged for all 32 flag combos.  Raw
+  **5,355 -> 5,497** (+142), aligned **2,307 -> 2,103** (-204), size
+  7,072/7,072 exact.
+* `Level::createMission` (w13770, wave 191b): `inPirateLootOrbit` branch
+  sets doubled hitpoints, then `setSpeed(3.5f)`, then `setRotate(3)`,
+  matching the original b3836 call order.  Raw **2,627 -> 2,635** (+8),
+  aligned **605 -> 595** (-10), size 17,172/17,172 exact.  This batch
+  moves `.text` 74,735 -> 74,885; `.ARM.extab` stays 561.
 * `LevelScript::process` (w13746, wave 191b): mission-0 state 1 drops
   the cached `TargetFollowCamera*` local and reloads `m_pCamera` for
   `setTarget`/`setPosition`, matching 0x138448..0x138474.  Raw
