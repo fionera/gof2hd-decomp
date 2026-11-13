@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,534** | 22,809 | 57,232 |
+| `LevelScript::process` | **51,529** | 22,811 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
@@ -31,11 +31,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,228**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,223**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13570, wave 191b): five first-half transpositions:
+  case-81 state-3 `enableFillScreen(true)` after `departStation`; case-41
+  `m_pHud->visible`/`m_pRadar->enabled` swap and `stopShooting(0)` after
+  `setVulnerable(false)`; case-67 `enableFirstPersonCam(false)` after
+  `resetCamera`; case-64 `enableFirstPersonCam(false)` after `setActive(true)`.
+  Raw **51,534 -> 51,529** (-5), aligned 22,809 -> 22,811, size
+  57,232/57,232 exact.  `.text` 71,228 -> 71,223 (-5); `.ARM.extab` 577
+  unchanged, `.rel.plt` byte-identical.
 * `Level::createMission` (w13560, wave 191b, pass 2): bind
   `Globals *volatile &globals = Globals::globals;` at the raid-block top
   and use it for `getRandomEnemyFighter`.  Raw **2,627 -> 2,626** (-1),

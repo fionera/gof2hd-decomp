@@ -1036,10 +1036,10 @@ bool LevelScript::process(int delta) {
         }
         if (m_nState == 3) {
             if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
-                Globals::layout->enableFillScreen(true);
+                Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
                 Globals::status->nextCampaignMission(true);
                 Globals::switch_to_target_setting = 0;
-                Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
+                Globals::layout->enableFillScreen(true);
                 Globals::status->getStation()->setAttackedFriends(false);
                 Level::comingFromAlienWorld = 0;
                 Globals::appManager->SetCurrentApplicationModule(5);
@@ -2006,13 +2006,13 @@ bool LevelScript::process(int delta) {
                     camera41->setLookAtCam(true);
                     resetCamera(m_pLevel);
                     player->setTurretMode(false);
-                    m_pHud->visible = 0;
-                    player->stopShooting(0);
+                    m_pRadar->enabled = 0;
+                    player->player->setVulnerable(false);
                     player->setFreeLookMode(false);
                     player->hideShipForFirstPersonCameraView(false);
-                    m_pRadar->enabled = 0;
+                    m_pHud->visible = 0;
                     player->setComputerControlled(true);
-                    player->player->setVulnerable(false);
+                    player->stopShooting(0);
                     m_bCinematicBreak = 1;
                     for (int i = 1; i < 4; i++) {
                         (*enemies)[i]->revive();
@@ -2260,12 +2260,12 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     player->setFreeLookMode(false);
                     resetCamera(m_pLevel);
-                    m_pCamera->enableFirstPersonCam(false);
+                    m_pCamera->setActive(true);
                     player->hideShipForFirstPersonCameraView(false);
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     Vector camPos = (*enemies)[0]->getPosition();
-                    m_pCamera->setActive(true);
+                    m_pCamera->enableFirstPersonCam(false);
                     m_bCinematicBreak = 1;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     camPos.z += 3000.0f;
@@ -2386,11 +2386,11 @@ bool LevelScript::process(int delta) {
                     Route *route = new Route(routePoints, 3);
                     player->setFreeLookMode(false);
                     (*enemies)[10]->setRoute(route);
-                    m_pCamera->enableFirstPersonCam(false);
+                    resetCamera(m_pLevel);
                     m_pRadar->enabled = 0;
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
-                    resetCamera(m_pLevel);
+                    m_pCamera->enableFirstPersonCam(false);
                     m_pHud->visible = 0;
                     (*enemies)[10]->setPosition(origin.x, origin.y, origin.z + 12000.0f);
                     m_pCamera->setLookAtCam(true);
