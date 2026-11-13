@@ -343,7 +343,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    int missionBlocksPlanets = false;
+    bool missionBlocksPlanets = false;
     bool alwaysEnemySeen = false;
     bool alwaysEnemy = false;
     if (__builtin_expect((!mission->isEmpty()), 1) && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&  // lint: arm_builtin
@@ -899,7 +899,7 @@ enemies:
                                 this->egoPos.z - this->targetPos.z < -24000.0f ||
                                 this->egoPos.z - this->targetPos.z > 24000.0f) {
                                 Array<int> *cargo = this->lockedEnemy->cargo;
-                                if (__builtin_expect(cargo == nullptr, 0)) {  // lint: arm_builtin
+                                if (cargo == nullptr) {  // lint: arm_builtin
                                     hud->hudEvent(22, this->level->getPlayer(), 0);
                                 } else {
                                     for (uint32_t c = 0; c < cargo->size(); c += 2) {
@@ -1268,7 +1268,7 @@ asteroids_done:
         this->field_0x54 = 1;
         if ((uint32_t) (current - 136) > 15 ||
             ((1 << (current - 136)) & 0xe071) == 0 ||
-            __builtin_expect((current != 151 && alwaysEnemySeen), 0)) {  // lint: arm_builtin
+            (current != 151 && alwaysEnemySeen)) {  // lint: arm_builtin
             Globals::sound->stop(current);
             if (Globals::status->inAlienOrbit() ||
                 Globals::status->getStation()->isAttackedByAliens() ||
