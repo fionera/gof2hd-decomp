@@ -903,6 +903,13 @@ bool LevelScript::process(int delta) {
                     }
                     break;
                 }
+                case 15: {
+                    if (((RadioMessage *) ((*messages)[22]))->isOver()) {
+                        Globals::layout->startFade(true, 255, 5000);
+                        m_nState = 16;
+                    }
+                    break;
+                }
                 case 14: {
                     Vector &tvA = m_tempVec;
                     m_nScriptTimerA += delta;
@@ -918,13 +925,6 @@ bool LevelScript::process(int delta) {
                     }
                     break;
                 }
-                case 15: {
-                    if (((RadioMessage *) ((*messages)[22]))->isOver()) {
-                        Globals::layout->startFade(true, 255, 5000);
-                        m_nState = 16;
-                    }
-                    break;
-                }
             }
             // The tbh covers states 6..15 only; state 16 is the switch's default handler
             // (0x13f902: `cmp r1,#16; bne` to the shared active tail), so it must be tested
@@ -933,7 +933,7 @@ bool LevelScript::process(int delta) {
                 if (!Globals::layout->isFading()) {
                     Globals::appManager->SetCurrentApplicationModule(2);
                     Globals::layout->enableFillScreen(true);
-                    Level::initStreamOutPosition = 1;
+                    Level::initStreamOutPosition = 0;
                     Globals::switch_to_target_setting = 1;
                     Globals::status->nextCampaignMission(true);
                     return 0;
@@ -1590,8 +1590,8 @@ bool LevelScript::process(int delta) {
                     m_pLevel->field_8c->enableSystemRender(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, true);
                     Globals::sound->play(15, nullptr, nullptr, 0.0f);
                 } else if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
-                    Vector pos = player->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = player->getPosition();
                     Globals::sound->updateEvent3DAttributes(15, &pos, &zero, false);
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -2270,9 +2270,9 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_pCamera->translate(0.0f, delta * 0.2, 0.0f);
                     if (((RadioMessage *) ((*messages)[2]))->isTriggered()) {
+                        m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
-                        m_pCamera->setLookAtCam(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
