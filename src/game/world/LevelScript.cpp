@@ -1539,7 +1539,7 @@ bool LevelScript::process(int delta) {
     wormholeExitBody:
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
-        if (((RadioMessage *) ((*messages)[2]))->isOver() && messages->count >= 3 && m_nState == 0) {
+        if (messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
             for (unsigned int i = 0; i < enemies->count; ++i) {
                 if (!(*enemies)[i]->isWingMan()) {
                     (*enemies)[i]->player->setAlwaysEnemy(true);
