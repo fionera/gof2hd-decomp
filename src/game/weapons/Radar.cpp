@@ -1285,7 +1285,7 @@ asteroids_done:
             } else if (this->field_0x1bc < 5) {
                 if (alwaysEnemySeen) {
                     Globals::sound->play(151, nullptr, nullptr, 0.0f);
-                } else if (__builtin_expect(bossSeen, 1)) {  // lint: arm_builtin
+                } else if (bossSeen) {
                     Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
                     Globals::sound->play(141, nullptr, nullptr, 0.0f);
