@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
 | `HangarWindow::render` | **1,393** | 407 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
-| `Status::missionCompleted` | **72** | 36 | 1,432 |
+| `Status::missionCompleted` | **60** | 41 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,755**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,743**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Status::missionCompleted` (w13830, wave 191b, third pass): null guard on the case-158 cargo array before `Item::isInList`.  Raw **72 -> 60** (-12), aligned **36 -> 41** (+5), size 1,432/1,432 exact.  `.text` 76,755 -> 76,743; `.ARM.extab` 594.
 * `LevelScript::process` (w13828, wave 191b): mission-50/51 wormhole gate order (`messages->count >= 3` before `messages[2]->isOver()`).  Raw **53,149 -> 53,150** (+1), aligned **18,975 -> 18,972** (-3), size 57,232/57,232 exact.  `.text` 76,754 -> 76,755; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, eleventh pass): case-102 state-2 tail teardown order.  Raw **53,123 -> 53,149** (+26), aligned **19,002 -> 18,975** (-27), size 57,232/57,232 exact.  `.text` 76,728 -> 76,754; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, tenth pass): case-29 state-1 freighter teardown order.  Raw **53,108 -> 53,123** (+15), aligned **19,021 -> 19,002** (-19), size 57,232/57,232 exact.  `.text` 76,713 -> 76,728; `.ARM.extab` 594.

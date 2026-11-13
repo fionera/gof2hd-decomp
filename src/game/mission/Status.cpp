@@ -1466,7 +1466,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     Status *st = Globals::status;
                     int amount = m->getProductionGoodAmount();
                     Array<Item *> *cargo = ship->getCargo();
-                    if (Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
+                    if (cargo != 0 && Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
                         return m;
                     }
                     // Codegen device: hasEquipment() returns bool, so `< 0` is
