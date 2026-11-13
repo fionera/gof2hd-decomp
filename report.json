@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 39.9,
+   "pct": 40.0,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -73,7 +73,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 93.2,
+   "pct": 93.0,
    "byte": false,
    "linked": false,
    "osize": 17172,

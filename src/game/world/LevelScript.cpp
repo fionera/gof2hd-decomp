@@ -989,14 +989,14 @@ bool LevelScript::process(int delta) {
                 }
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTime >= 10001) {
+                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
                     ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
-                    m_nState = 1;
-                    m_nScriptTimerA = 0;
                     ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
+                    m_nState = 1;
+                    m_nScriptTimerA = 0;
                     return 1;
                 }
                 break;
@@ -1688,13 +1688,13 @@ bool LevelScript::process(int delta) {
                     cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                        cam1688->setLookAtCam(false);
                         cam1688->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(self);
                         m_bCinematicBreak = 0;
-                        cam1688->setLookAtCam(false);
                         self->lodManager->forceUpdate(delta, false);
                         m_nState = 2;
                     }
