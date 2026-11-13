@@ -23,7 +23,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `HangarWindow::render` | **1,393** | 407 | 9,700 |
 * `Layout` C1/C2 (w13836, wave 191b, second pass): three independent-store moves (`field_0x114_strip5c`, `field_0x200`, `field_0x1f0`).  Raw **5,570 -> 5,585** (+15), aligned **2,011 -> 2,005** (-6), size 7,072/7,072 exact.  `.text` 76,785 -> 76,800; `.ARM.extab` 594.
 | `Level::createShip` | **1,177** | 372 | 2,764 |
-| `Status::missionCompleted` | **46** | 29 | 1,432 |
+| `Status::missionCompleted` | **45** | 28 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -31,11 +31,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,786**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,785**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Status::missionCompleted` (w13859, wave 192, fifth pass): case-158 `amount`/`cargo`/`index` declaration order, reuse `index` in `Item::isInList`.  Raw **46 -> 45** (-1), aligned **29 -> 28** (-1), size 1,432/1,432 exact.  `.text` 76,786 -> 76,785; `.ARM.extab` 594.
 * `Status::missionCompleted` (w13859, wave 191b, fourth pass): drop the `Status *st` hoist and the dead `< 0` compare; plain `Globals::status->ship->hasEquipment(...)` tail.  Raw **60 -> 46** (-14), aligned **41 -> 29** (-12), size 1,432/1,432 exact.  `.text` 76,800 -> 76,786; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, thirteenth pass): case-5 teardown order.  Raw **53,179 -> 53,192** (+13), aligned **18,912 -> 18,907** (-5), size 57,232/57,232 exact.  `.text` 76,772 -> 76,785; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, twelfth pass): case-64 state-0 cutscene setup order.  Raw **53,150 -> 53,179** (+29), aligned **18,972 -> 18,912** (-60), size 57,232/57,232 exact.  `.text` 76,743 -> 76,772; `.ARM.extab` 594.

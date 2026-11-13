@@ -1465,7 +1465,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int amount = m->getProductionGoodAmount();
                     Array<Item *> *cargo = ship->getCargo();
-                    if (cargo != 0 && Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
+                    int index = m->getProductionGoodIndex();
+                    if (cargo != 0 && Item::isInList(index, amount, cargo)) {
                         return m;
                     }
                     if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
