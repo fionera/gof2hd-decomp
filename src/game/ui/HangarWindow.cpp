@@ -923,8 +923,8 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; __builtin_expect(count <= 4, 1); count++) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint, plain form 9700 -> 9696
-                String price("");
                 String description("");
+                String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch ((unsigned char) count) {
                     case 0:
