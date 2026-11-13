@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,006** | 19,676 | 57,232 |
+| `LevelScript::process` | **53,005** | 19,538 | 57,232 |
 | `Radar::draw` | **6,995** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,578** | 2,012 | 7,072 |
 | `Level::createMission` | **3,495** | 472 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,744**, `.ARM.extab` **625**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,743**, `.ARM.extab` **625**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13812, wave 191b): mission-106 teardown/tail and escort-route statement order.  Raw **53,006 -> 53,005** (-1), aligned **19,676 -> 19,538** (-138), size 57,232/57,232 exact.  `.text` 76,744 -> 76,743; `.ARM.extab` 625.
 * `HangarWindow::render` (w13799, wave 191b, fourth pass): `buttons[17]` row-height inline, free-credits `rh`-first, and unsigned-char switch.  Raw **1,224 -> 2,050** (+826), aligned **433 -> 317** (-116), size 9,700/9,700 exact; instruction count now 3,734/3,734.  `.text` 75,918 -> 76,744; `.ARM.extab` content 594 -> 625 (size 156,312 exact).
 * `LevelScript::process` (w13814, wave 191b, case-158): lazy up-vector construction and shared-tail route order.  Raw **53,007 -> 53,006** (-1), aligned **19,686 -> 19,676** (-10), size 57,232/57,232 exact.  `.text` 75,919 -> 75,918; `.ARM.extab` 594.
 * `LevelScript::process` (w13790, wave 191b, case-16 state-0): reordered the wormhole-tutorial body to the original statement order and dropped the `Level *self` alias, reading `m_pLevel` directly.  Raw **53,007 -> 53,007** (0), aligned **19,694 -> 19,686** (-8), size 57,232/57,232 exact.  `.text` 75,919 unchanged; `.ARM.extab` 594.
