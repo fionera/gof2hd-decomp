@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,512** | 22,174 | 57,232 |
+| `LevelScript::process` | **51,507** | 22,183 | 57,232 |
 | `Radar::draw` | **6,013** | 1,961 | 9,908 |
 | `Layout` C1/C2 | **5,235** | 2,668 | 7,072 |
-| `Level::createMission` | **2,626** | 845 | 17,172 |
+| `Level::createMission` | **2,636** | 841 | 17,172 |
 | `MGame::OnTouchEnd` | **2,878** | 1,582 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
@@ -30,11 +30,28 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,196**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,201**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13642, wave 191b): case-14 state-1 teardown,
+  move `m_pHud->visible = 0;` ahead of `m_pCamera->translate(...)`, matching
+  the original's `strb` at 0x13aa44 before the translate at 0x13aa9a.  Raw
+  **51,513 -> 51,512** (-1), aligned unchanged.
+* `LevelScript::process` (w13631, wave 191b): case-92 state-4, hoist
+  `wcamera->setFixed(true);` before the `setTarget` and move
+  `m_nScriptTimerA += delta;` after it; drop the late `setFixed(true)`.
+  Raw **51,512 -> 51,507** (-5), aligned 22,174 -> 22,183 (+9 in the fn_diff
+  metric), size 57,232/57,232 exact.
+* `Level::createMission` (w13650, wave 191b): the binary's `alienGuns` loop
+  calls `setRotation` with the `t[k][3..5]` rotation and uses `t[k][0..2]`
+  for `setPosition`; the source had both rotations before `setRotation`, so
+  the first was dead and `setRotation` received the second vector.  Move
+  `setRotation` between the two rotations.  Raw **2,626 -> 2,636** (+10),
+  aligned **845 -> 841** (-4), size 17,172/17,172 exact.  `pirateFortress`
+  needs no change (the checked-in `shipGroup;cargo` text already emits the
+  binary's `cargo;shipGroup` order).
 * `LevelScript::process` (w13599 pass 3, wave 191b): move
   `m_nScriptTimerA = 0;` before `Vector dir = player->geometry->getDirection();`
   in the case-105 block.  Raw **51,513 -> 51,512** (-1), aligned 22,174,
