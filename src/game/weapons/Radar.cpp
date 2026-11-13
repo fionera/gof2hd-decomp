@@ -1212,11 +1212,10 @@ asteroids:
                     }
                 } else {
                     this->lockedAsteroid = nullptr;
-                    auto hasScanner = this->hasScanner19;
                     this->asteroidLockTimer += mode;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
                         if (!candidateWreck) {
-                            if (!hasScanner) {
+                            if (!this->hasScanner19) {
                                 hud->hudEvent(20, this->level->getPlayer(), 0);
                             } else {
                                 if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
