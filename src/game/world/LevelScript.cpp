@@ -2451,17 +2451,17 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        player->setComputerControlled(false);
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
-                        m_nState = 2;
-                        (*m_pLevel->getEnemies())[0]->setToSleep();
                         m_bCinematicBreak = 0; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
-                        (*m_pLevel->getEnemies())[0]->setPosition(0.0f, 0.0f, -5000000.0f); // vtable+0x48
+                        m_nState = 2;
                         (*m_pLevel->getEnemies())[0]->setActive(false);
+                        (*m_pLevel->getEnemies())[0]->setToSleep();
+                        (*m_pLevel->getEnemies())[0]->setPosition(0.0f, 0.0f, -5000000.0f); // vtable+0x48
                         (*m_pLevel->getEnemies())[0]->setVisible(false);
                     }
                 }

@@ -1137,19 +1137,15 @@ asteroids:
                     int y;
                     if (this->field_0x11d && !this->field_0x11f && !this->field_0x120) {
                         x = this->screenX + 11;
-                    } else if (this->field_0x11e && !this->field_0x11f) {
-                        x = this->screenX;
-                        if (!this->field_0x120) {
-                            x -= 11;
-                        }
-                    } else if (this->field_0x11e && this->field_0x11f) {
-                        x = this->screenX;
-                        y = this->screenY + 11;
-                    } else if (this->field_0x11f) {
-                        x = this->screenX;
-                        y = this->screenY + 11;
                     } else {
                         x = this->screenX;
+                        if (this->field_0x11e && !this->field_0x11f) {
+                            if (!this->field_0x120) {
+                                x -= 11;
+                            }
+                        } else if (this->field_0x11f) {
+                            y = this->screenY + 11;
+                        }
                     }
                     if (!this->field_0x11f) {
                         y = this->screenY;
