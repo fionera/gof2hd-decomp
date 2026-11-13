@@ -750,7 +750,7 @@ enemies:
                         if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
                             Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
                                                          this->screenY + this->halfScreenWidth + 8);
-                            float emp = (float) this->field_0x1c8 * ((float) enemy->player->getEmpDamageRate() / 100.0f);
+                            float emp = ((float) enemy->player->getEmpDamageRate() / 100.0f) * (float) this->field_0x1c8;
                             Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
                                                           0, 0, this->screenX + 3 - this->halfScreenHeight,
                                                           this->screenY + this->halfScreenWidth + 9);
