@@ -1309,13 +1309,6 @@ int Status::missionFailed(bool docked, int64_t time) {
     return 0;
 }
 
-// Mission type -> case-rank table (StatusMissionTable.cpp).  It reuses an
-// existing hidden weak crtbegin symbol name so gold's .dynsym name pool order
-// is unchanged; see that file for the placement rationale.
-#pragma GCC visibility push(hidden)
-extern "C" unsigned char __emutls_unregister_key(Mission *m); // lint: extern_c
-#pragma GCC visibility pop
-
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
@@ -1336,16 +1329,16 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             m->getTargetStation() == 0 && m->getTargetStation() == 0) {
             continue;
         }
-        // The original switches directly on the int returned by getType() and
-        // lays the case bodies out in source order. clang 7's
-        // MachineBlockPlacement follows the jump table's value-sorted successor
-        // list, so the cross-TU rank table reorders the case values to match
-        // that layout; the labels are `150 + rank`, so the emitted dispatch is
-        // the original's `sub #150; cmp #39; bhi; tbh`.  The low group keeps
-        // the raw type (0, 8, 11, 13, 14), which reproduces the original's
-        // `sub #8; cmp #6; tbh` + `cmp #0` second level byte-for-byte.
-        // See status-missioncompleted-wave191b-w13523.md.
-        switch (__emutls_unregister_key(m)) {
+        // The original switches directly on the int returned by getType(), so
+        // calling it here (rather than the __emutls_unregister_key helper)
+        // reproduces the original's `blx getType@plt` at 0x09e.  The case
+        // labels are the raw types, so the emitted dispatch is the original's
+        // `sub #150; cmp #39; bhi; tbh`; the low group (0, 8, 11, 13, 14)
+        // reproduces the original's `sub #8; cmp #6; tbh` + `cmp #0` second
+        // level byte-for-byte.  The helper definition is retained in
+        // StatusMissionTable.cpp only to keep the .rodata gap layout.
+        // See status-missioncompleted-wave191b-w13569.md.
+        switch (m->getType()) {
             case 0:
             case 11:
                 if (atStation && station->getIndex() == m->getTargetStation()) {

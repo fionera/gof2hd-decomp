@@ -22,7 +22,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MGame::OnTouchEnd` | **2,878** | 1,661 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
-| `Status::missionCompleted` | **74** | 38 | 1,432 |
+| `Status::missionCompleted` | **71** | 38 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -30,11 +30,28 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,214**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
-`.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
+Current section deltas: `.text` **71,208**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+`.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Status::missionCompleted` (w13569, wave 191b, pass 2): delete the now-dead
+  `__emutls_unregister_key` `.rodata` codegen helper.  It only existed to
+  give the pre-pass `blx` a target; once the caller switched to `getType()`
+  it was dead code that pushed `.rodata` sh_size 485 B past the original.
+  Raw **71** unchanged, aligned 38, size 1,432/1,432 exact, 527/527
+  instructions.  `.rodata` sh_size 269,644 -> 269,159 (+0, content
+  byte-identical); `.text` 71,214 -> 71,208 (-6), `.ARM.extab` 577,
+  `.ARM.exidx` 0, build-id 20 unchanged.  All 27 section headers
+  byte-identical.  Gate: `RATCHET PASS` (byte_exact 4508, linked_exact
+  4508, data 843/843, imports 207, lint CLEAN, parity 5370/5370).
+* `Status::missionCompleted` (w13569, wave 191b): switch directly on
+  `m->getType()` instead of the `__emutls_unregister_key` helper, so the
+  dispatch call is the original's `blx getType@plt` at `0x09e` (the helper
+  was retained in `StatusMissionTable.cpp` only until pass 2 above).
+  Raw **74 -> 71** (-3), aligned 38 unchanged, size 1,432/1,432 exact,
+  527/527 instructions.  `.text` differing bytes 71,214 -> 71,211;
+  `.rodata` +485, `.ARM.extab` 577, `.ARM.exidx` 0, build-id 20 unchanged.
 * `Layout` C1/C2 (w13573, wave 191b): swap the `field_0x1a0` and
   `field_0x198` store order (0x1a0 after 0x198).  Raw 5,232 unchanged,
   aligned 2,711 -> 2,700 (-11), size 7,072/7,072 exact.  `.text` 71,214
