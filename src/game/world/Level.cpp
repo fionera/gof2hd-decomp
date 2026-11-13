@@ -2395,8 +2395,8 @@ case4Tail:
                     }
                     (*this->enemies)[attackerCount]->setPosition(-2500.0f, -300.0f, 27000.0f);
                     (*this->enemies)[attackerCount + 1]->setPosition(6500.0f, 3000.0f, 24000.0f);
-                    (*this->enemies)[attackerCount + 3]->setPosition(9000.0f, -6000.0f, 17000.0f);
                     (*this->enemies)[attackerCount + 2]->setPosition(-4000.0f, -2000.0f, 19000.0f);
+                    (*this->enemies)[attackerCount + 3]->setPosition(9000.0f, -6000.0f, 17000.0f);
                     (*this->enemies)[attackerCount + 4]->setPosition(3000.0f, 7000.0f, 15000.0f);
                     this->objectivesA = new Objective(18, 0, attackerCount, this);
                     this->objectivesB = new Objective(18, attackerCount, total, this);

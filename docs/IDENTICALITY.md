@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,094** | 20,487 | 57,232 |
-| `Radar::draw` | **6,959** | 1,401 | 9,908 |
+| `LevelScript::process` | **53,095** | 20,486 | 57,232 |
+| `Radar::draw` | **6,958** | 1,400 | 9,908 |
 | `Layout` C1/C2 | **5,355** | 2,307 | 7,072 |
-| `Level::createMission` | **2,582** | 680 | 17,172 |
+| `Level::createMission` | **2,588** | 653 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,668**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,674**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Level::createMission` (w13761, wave 191b): case-4 attacker
+  `setPosition` +2 before +3, matching the original literal-pool order at
+  b3a98.  Raw **2,582 -> 2,588** (+6), aligned **680 -> 653** (-27), size
+  17,172/17,172 exact.
+* `LevelScript::process` (w13762 pass 3, wave 191b): case-125 state 0
+  timer store after `setRoute`.  Raw **53,094 -> 53,095** (+1), aligned
+  **20,487 -> 20,486** (-1), size 57,232/57,232 exact.
+* `Radar::draw` (w13751 pass 6, wave 191b): planet-lock body order
+  `field_0x14=field_0x18`, lock-confirmed sound, `dockToPlanet`.  Raw
+  **6,959 -> 6,958** (-1), aligned **1,401 -> 1,400** (-1), size
+  9,908/9,908 exact.  This batch moves `.text` 74,668 -> 74,674;
+  `.ARM.extab` stays 561.
 * `LevelScript::process` (w13769, wave 191b): case-94 state-2
   `setPosition(player->getPosition() + Vector{...})` operand order,
   matching the original `AEMath::pl(playerPos, literalVec)` at 0x13e058.

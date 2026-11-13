@@ -3973,9 +3973,9 @@ bool LevelScript::process(int delta) {
                     m_nState++;
                     int routePoints[3] = {-70000, 0, -130000};
                     Route *route = new Route(routePoints, 3);
-                    m_nScriptTimerA = 0;
                     m_pLevel->setPlayerRoute(route);
                     player->setRoute(route);
+                    m_nScriptTimerA = 0;
                 }
                 if (m_nState == 1) {
                     if (player->getRoute() != 0) {
