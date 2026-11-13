@@ -608,8 +608,8 @@ bool LevelScript::process(int delta) {
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
+    Array<RadioMessage *> *messages = m_pLevel->getMessages();
     Level *level = m_pLevel;
-    Array<RadioMessage *> *messages = level->getMessages();
     PlayerEgo *player = level->getPlayer();
     Array<KIPlayer *> *enemies = level->getEnemies();
     if (Globals::status->getCurrentCampaignMission() == 0) {
