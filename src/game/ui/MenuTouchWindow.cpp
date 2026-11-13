@@ -2345,7 +2345,7 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         {
             Layout &layout = *Globals::layout;
             if (x > Globals::w - Globals::layout->buttonInsetX - Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
-                y < Globals::layout->field_0x20_top + (layout.field_0xc_leftMargin + Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0])))
+                y < layout.field_0x20_top + (Globals::layout->field_0xc_leftMargin + Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0])))
                 this->scrollbarHit = 1;
             else
                 this->scrollbarHit = 0;
