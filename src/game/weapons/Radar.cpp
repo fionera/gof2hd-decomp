@@ -799,8 +799,7 @@ enemies:
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
-                        auto target = this->targetPos;
-                        this->lockLabel = this->calcDistance(target.x, target.y, target.z,
+                        this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
                                                              this->cameraX, this->cameraY, this->cameraZ);
                         unsigned int enFont = radarFont();
                         Globals::Canvas->DrawString(enFont, this->lockLabel, this->screenX - this->halfScreenHeight,
@@ -954,7 +953,6 @@ enemies:
                 this->lockedStation != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
-        const auto camZ = this->cameraZ;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
             PlayerGasCloud *cloud = (PlayerGasCloud *) this->gasClouds->data()[i];
             Array<AEGeometry *> *sparks = (Array<AEGeometry *> *) cloud->getSparks();
@@ -1006,7 +1004,7 @@ enemies:
                 cloud->field_0x73 = 0;
                 if (__builtin_expect(cloud == locked, 1)) { // lint: arm_builtin anchor: Radar::draw
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
-                                                         this->cameraX, this->cameraY, camZ);
+                                                         this->cameraX, this->cameraY, this->cameraZ);
                     Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                 this->screenY + this->halfScreenWidth, false);
                 }
