@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,655** | 21,210 | 57,232 |
+| `LevelScript::process` | **51,780** | 21,063 | 57,232 |
 | `Radar::draw` | **6,037** | 1,892 | 9,908 |
 | `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
@@ -30,11 +30,20 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,175**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,300**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13719, wave 191b): faithful statement order for
+  case-24 state 0, case-70 states 0/2, case-92 states 2/3 and case-105 state
+  9.  Two real case-92 bugs are fixed: state 2 increments `m_nState` (2 -> 3)
+  rather than jumping to 10, and state 3 adds the missing up-vector term
+  (our source re-added the right vector and left `getUpVector()` dead).
+  Case-105 state 9 now calls `revive()` before the three `nextInt`s and uses
+  the original `(x, rz, z+ry)` argument order.  Raw **51,655 -> 51,780**
+  (+125), aligned **21,210 -> 21,063** (-147), size 57,232/57,232 exact.
+  `.text` 72,175 -> 72,300; `.ARM.extab` unchanged (564).
 * `Radar::draw` (w13717, wave 191b): gas-spark in-sight X-first geometry
   (`int top`, `screenX < left + size*2`, `screenY < top + size*2`).  Raw
   **6,021 -> 6,037** (+16), aligned **1,917 -> 1,892** (-25), size
