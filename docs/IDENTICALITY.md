@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,525** | 22,801 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
-| `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
+| `Layout` C1/C2 | **5,232** | 2,700 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
 | `MGame::OnTouchEnd` | **2,878** | 1,661 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
@@ -35,6 +35,10 @@ Current section deltas: `.text` **71,214**, `.ARM.extab` **577**, `.ARM.exidx` *
 
 Landed changes:
 
+* `Layout` C1/C2 (w13573, wave 191b): swap the `field_0x1a0` and
+  `field_0x198` store order (0x1a0 after 0x198).  Raw 5,232 unchanged,
+  aligned 2,711 -> 2,700 (-11), size 7,072/7,072 exact.  `.text` 71,214
+  unchanged, `.ARM.extab` 577 unchanged, `.rel.plt` byte-identical.
 * `LevelScript::process` (w13561, wave 191b): two `__builtin_expect` hints:
   case-92 `m_nScriptTimerA > 2000` and case-157 explosion-window timer
   predicate.  Raw **51,527 -> 51,525** (-2), aligned 22,811 -> 22,801,

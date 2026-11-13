@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 36.2,
+   "pct": 36.4,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 36.2,
+   "pct": 36.4,
    "byte": false,
    "linked": false,
    "osize": 7072,

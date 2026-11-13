@@ -131,3 +131,83 @@ Scratch `/home/debian/GalaxyOnFire2/scratch/w13573/`: `measure.sh`,
 `perm4b.py`, `permblocks.py`, `sweep_far.py`, `sweep_win.py`, `rnd.py`.
 `valall2.py` confirms the store image is identical for all 32 flag
 combinations, so every residual is pure codegen.
+
+## 7. Follow-up pass (same worker, after the first note commit)
+
+### 7.1 Landed win: `field_0x184` restate / `field_0x1a0` swap
+
+Swapping the *second* `field_0x184` restate (line 189) with `field_0x1a0`
+(line 190) is a semantic no-op (all 32 flag configs: store image identical,
+`valall2.py` -> `configs with diffs 0`) and gives
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| base | 5,232 | 2,711 | 7,072 |
+| swap 189<->190 | **5,232** | **2,700** | 7,072 |
+
+Raw unchanged, aligned -11, size exact. This is strictly better than the
+`0x184 -> 176..179` move (5,233 / 2,708) from section 3, so it is landed.
+
+### 7.2 Root cause of the 0x1d0 SLP miss (refined)
+
+Minimal repro (`scratch/w13573/t14.cpp`): 12 consecutive `int` stores whose
+values are `flag ? A : B` with a *single* shared condition SSA (a function
+parameter) -> SLP vectorises **all three** 4-lane chunks at `-Oz`.
+
+`t9.cpp` (same 12 stores, condition from a global load) -> only 2 chunks: the
+first store carries a *different* `icmp` instruction and is left scalar,
+which shifts the chunk boundaries.
+
+In `Layout` the retina block's four `0x1d0`-group selects do **not** share one
+`icmp`: the pre-SLP IR has `%906` (0x1d8/0x1dc/0x1d4) and `%913` (0x1d0, also
+used by 0x2c0/0x1c0).  SLP vectorises the `0x1c0` chunk with a splat
+`icmp eq <4 x i8>` and the last `0x1d0` select's condition becomes
+`extractelement(%vec_icmp, 0)`; the four conditions are then
+`{icmp, icmp, icmp, extractelement}` and the `0x1d0` chunk is rejected.
+
+Forcing a single shared condition **does** vectorise it, but every form tried
+changes the surrounding block structure and is raw-worse:
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| `const unsigned char r = Globals::retinaDisplay;` before group (u1) | 5,958 | 2,690 | 7,008 |
+| `const int r = ...` (u2) | 5,958 | 2,690 | 7,008 |
+| `const unsigned char r = *rd;` (volatile, u4) | 5,979 | 3,079 | **7,072** |
+| `const bool r = Globals::retinaDisplay;` all four (v2) | 5,693 | 2,742 | 7,024 |
+| `const unsigned char rv = ...` at line 60 (w1) | 6,025 | 3,007 | 6,880 |
+
+So the 0x1d0 vector store is not reachable by a shared-condition reshape
+without a net raw regression.
+
+### 7.3 Other chunk-alignment misses
+
+The `0x140/0x144/0x148/0x14c` and `0x16c/0x170/0x174/0x178` groups are the
+same story: the original has `vst1` at `0x140` and `0x16c`, ours at `0x170`
+(and scalar at `0x140`).  The source statements are scattered
+(`0x140` line 208, `0x144` line 284, `0x148` line 158, `0x14c` line 153), so
+the chain never aligns.  Moving them adjacent (`0x140,0x144,0x148,0x14c`
+ascending, z1) gives 6,110 / 2,765 / **6,880** (fatal) and *loses* 10 vector
+stores elsewhere (57 vs 67 in the whole TU).
+
+### 7.4 Exhaustive small-perturbation sweeps (all size-exact -> raw >= 5,232)
+
+* duplicate every simple statement at `i+1` (120 size-exact): min raw 5,232.
+* adjacent swap of every simple pair (83 size-exact): min raw 5,232.
+* non-adjacent swaps `(i, i+2)` and `(i, i+3)` (111 size-exact): min raw
+  5,232; best aligned 2,705 but that one (229<->231) is semantically wrong
+  (moves `orbitInfoTextX = 12` out of its `else if`), `valall2` shows 8
+  config diffs.
+* regional moves 186..200 x 186..205 (31 size-exact) and 199..215 x 199..215
+  (33 size-exact): only 189<->190 improves (aligned 2,700).
+* moving the `rd` declaration (line 60) to 24..59: codegen-identical.
+* moving `t_field_0x2c8` (55) to 43: 5,748 / 7,072.  Moving `int v` (85) to
+  69/79/81/82: 6,379..6,387 / 7,072.
+
+### 7.5 Reproduction
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w13573
+(ulimit -v 12000000; cmake --build cmake-build-match --target link_so -j2)
+python3 tools/fn_diff.py --ours cmake-build-match/libgof2hdaa.so _ZN6LayoutC1Ev
+# raw=5232 aligned=2700 size=7072/7072 insn=2517/2552
+```
