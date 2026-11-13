@@ -19,10 +19,10 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,208** | 1,805 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **3,648** | 665 | 8,080 |
+| `MGame::OnTouchEnd` | **3,658** | 568 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
-| `Status::missionCompleted` | **71** | 38 | 1,432 |
+| `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **72,646**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,675**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13718 + w13729, wave 191b): campaign 15/22
+  chain swap, `finishMission` setMission/setRoute order, campaign-100/155
+  bodies, escort block, pause-menu close, cinematic case 1/0, `_bc8`
+  else-tail and weapon-slot tail.  Raw **3,648 -> 3,658** (+10), aligned
+  **665 -> 568** (-97), size 8,080/8,080 exact.
+* `Status::missionCompleted` (w13726, wave 191b): faithful case-158 body
+  re-queries `getProductionGoodIndex()` for `hasEquipment` and tests it
+  positively, making the `0xac288..0xac2a0` block byte-identical.  Raw
+  **71 -> 90** (+19), aligned **38 -> 32** (-6), size 1,432/1,432 exact.
+  The batch moves `.text` 72,646 -> 72,675; `.ARM.extab` stays 564.
 * `Layout` C1/C2 (w13679, wave 191b): three store-order swaps in the
   `field_0x1dc`/`0x1d4`/`0x1c0`/`0x2c0` block and the `orbitInfo*` block.
   On current master this is raw **5,266 -> 5,265** (-1), aligned 2,442

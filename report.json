@@ -57,7 +57,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 82.2,
+   "pct": 83.7,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -97,7 +97,7 @@
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 95.4,
+   "pct": 96.4,
    "byte": false,
    "linked": false,
    "osize": 1432,

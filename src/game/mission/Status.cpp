@@ -1463,17 +1463,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 158:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
-                    int index = m->getProductionGoodIndex();
-                    Array<Item *> *cargo = ship->getCargo();
                     int amount = m->getProductionGoodAmount();
-                    if (Item::isInList(index, amount, cargo)) {
+                    Array<Item *> *cargo = ship->getCargo();
+                    if (Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
                         return m;
                     }
-                    // Codegen device: the original's tail is an unconditional
-                    // branch to the shared `if (hasEquipment()) return m` test
-                    // block.  Testing the negated result here reproduces that
-                    // shared test/branch layout at the same 1432-byte size.
-                    if (!Globals::status->ship->hasEquipment(index, 1)) {
+                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
                         return m;
                     }
                 }
