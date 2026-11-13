@@ -218,3 +218,9 @@ Entry prologue `17a144..17a16e` is byte-identical.
 (+`sweepsw.out`, exhaustive single-store placement), `combo3.py` (multi-move),
 `combo127.py` (96/127 split + 95 move), `mv95.py`, `greedyA.py`,
 `secdiff.py`, `aldiff.py`, `firstmm.py`.
+
+## Harvest measurement (2026-11-13, on master c559cbf96)
+
+On the current tree the 95-clause switch store-after-`field_68` candidate
+measures raw **3,548 -> 3,731** (+183), aligned **697 -> 680** (-17), but
+size **8,084/8,080** — size-fatal.  Kept as a note.
