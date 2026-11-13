@@ -1651,8 +1651,8 @@ bool LevelScript::process(int delta) {
                     Level::initStreamOutPosition = 0;
                     m_nState = 5;
                 } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3) {
-                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nScriptTimerA = m_nScriptTime;
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 4;
                 }
                 break;
@@ -5210,8 +5210,8 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
-                        Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
                     }
                 }
