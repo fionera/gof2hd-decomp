@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,669** | 20,646 | 57,232 |
-| `Radar::draw` | **6,858** | 1,459 | 9,908 |
+| `Radar::draw` | **6,858** | 1,452 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
 | `MGame::OnTouchEnd` | **3,661** | 546 | 8,080 |
@@ -35,6 +35,9 @@ Current section deltas: `.text` **74,033**, `.ARM.extab` **561**, `.ARM.exidx` *
 
 Landed changes:
 
+* `Radar::draw` (w13756, wave 191b): gas-cloud axis order (ego-target
+  x, y, z).  Raw 6,858 (tie), aligned **1,459 -> 1,452** (-7), size
+  9,908/9,908 exact.  `.text` stays 74,033, `.ARM.extab` 561.
 * `Level::createMission` (w13755, wave 191b): case-2 crate/cargo store
   order plus a shared `enemies->data_` load (`ships`/`ship` locals).
   Raw **2,624 -> 2,593** (-31), aligned **858 -> 702** (-156), size
