@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,127** | 20,084 | 57,232 |
-| `Radar::draw` | **7,088** | 1,346 | 9,908 |
+| `Radar::draw` | **7,089** | 1,339 | 9,908 |
 | `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
 | `Level::createMission` | **3,389** | 531 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,749**, `.ARM.extab` **590**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,750**, `.ARM.extab` **590**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13758 pass 12, wave 191b): nested landmark crosshair guard, gas-cloud 24000 range test in x/y/z ego-target order, asteroid `hasScanner19` direct member read, and `lockLabel` direct `targetPos` reads.  Raw **7,088 -> 7,089** (+1), aligned **1,346 -> 1,339** (-7), size 9,908/9,908 exact.  `.text` 75,749 -> 75,750; `.ARM.extab` 590.
 * `Radar::draw` (w13784, wave 191b): dropped the planet-lock `!lockConfirmed` hint and the `field_0x1bc < 5` `alwaysEnemySeen` hint.  Raw **7,113 -> 7,088** (-25), aligned **1,366 -> 1,346** (-20), size 9,908/9,908 exact.  `.text` 75,774 -> 75,749; `.ARM.extab` 590.
 * `Level::createMission` (w13761, wave 191b): stationPirates `createStaticObject`/`pirateBase` order, case-2 `asteroidPos` hoist with interleaved `coords[0]`/`coords[2]`, and the case-4 tail `Globals` local dropped.  Raw **2,660 -> 3,389** (+729), aligned **584 -> 531** (-53), size 17,172/17,172 exact.  `.text` 75,045 -> 75,774; `.ARM.extab` 562 -> 590.
 * `LevelScript::process` (w13783, wave 191b): Chain-A intro computes `-2*delta` in integer before the float conversion, matching the original `sub.w` + `vcvt.f32.s32` at 0x138eaa.  Raw **53,130 -> 53,127** (-3), aligned **20,091 -> 20,084** (-7), size 57,232/57,232 exact.  `.text` 75,048 -> 75,045; `.ARM.extab` 562.

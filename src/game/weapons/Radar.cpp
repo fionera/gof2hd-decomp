@@ -434,7 +434,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && i != 3 && notTurretMode && notOtherLock) {
+                if (!landmarkHit && notTurretMode) {
+                    if (i != 3 && notOtherLock) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -446,6 +447,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         }
                         this->field_0x28 = this->landmarks->data()[i];
                         landmarkHit = true;
+                    }
                     }
                 }
                 this->egoPos = player->getPosition();
@@ -995,7 +997,7 @@ enemies:
                 cloud->field_0x76 = 1;
                 this->egoPos = player->getPosition();
                 this->targetPos = cloud->player->getPosition();
-                if (this->targetPos.x - this->egoPos.x > 24000.0f || this->targetPos.x - this->egoPos.x < -24000.0f ||
+                if (this->egoPos.x - this->targetPos.x > 24000.0f || this->egoPos.x - this->targetPos.x < -24000.0f ||
                     this->egoPos.y - this->targetPos.y > 24000.0f || this->egoPos.y - this->targetPos.y < -24000.0f ||
                     this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
                     cloud->field_0x73 = 0;
