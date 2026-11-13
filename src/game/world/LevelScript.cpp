@@ -2971,9 +2971,9 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
-                        m_pRadar->enabled = 0;
-                        m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
+                        m_bCinematicBreak = 1;
+                        m_pRadar->enabled = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
