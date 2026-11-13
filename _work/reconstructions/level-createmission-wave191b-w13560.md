@@ -130,3 +130,51 @@ Expected: `raw=2626 aligned=845 size=17172/17172`, `.text` diff 71,238,
 Scratch (not tracked): `/home/debian/GalaxyOnFire2/scratch/w13560/`
 (`tryrun.py`, `tailraw.py`, `normdiff.py`, `dis.py`, `batch_rnd.py`,
 `batch_q.py`, `batch_q2.py`, `apply_q4.py`, `run.log`).
+
+## 6. Further tail measurements (all size 17,172 unless noted)
+
+Starting from the pass-2 tree (raw 2,626 / aligned 845):
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| base (pass 2) | 2,626 | 845 | 17,172 |
+| raid `Status *volatile &status` on top | 2,626 | 845 | 17,172 |
+| `globals` volatile ref scoped over raid+pirates+station-pirates | 2,627 | 845 | 17,172 |
+| pirates loop `Globals *volatile &globals` | 2,626 | 845 | 17,172 |
+| pirates loop `AERandom *volatile &rnd` | 2,626 | 858 | 17,172 |
+| station-pirates `status`/`gameText` volatile refs | 2,626 | 845 | 17,172 |
+| extra-aliens `rnd`/`status`/`globals` volatile refs | 2,626 | 845 | 17,172 |
+| alien `gun` loaded after `createStaticObject` (semantic fix) | 2,627 | 841 | 17,172 |
+| fortress `gun` loaded after `createStaticObject` | 2,632 | 842 | 17,172 |
+| both `gun` after | 2,633 | 838 | 17,172 |
+| case-4 `hunters` before `opt44` | 2,629 | 839 | 17,172 |
+| case-4 `hunterCount` before `new Array` | 2,627 | 836 | 17,172 |
+| both | 2,630 | 828 | 17,172 |
+| case-4 tail `Globals *volatile &globals` | 2,732 | 838 | 17,172 |
+| case-4 tail `Array<KIPlayer *> *volatile &enemies` | 2,782 | 836 | 17,168 |
+| case-4 tail `enemies` local unused in loop bound | 2,782 | 836 | 17,168 |
+| case-4 tail no `enemies` local | 2,782 | 836 | 17,168 |
+| case-4 tail no `globals` local | 2,785 | 838 | 17,168 |
+
+Station-pirates body order — full 24-permutation sweep of
+`{C=createStaticObject+store, P=pirateBase, S=setToSleep, N=name}`:
+
+* `SNPC` (current) = 2,628 / 844 / 17,172 on the pre-pass base — best.
+* `PSNC` = 2,633 / 825, `PCSN` = 2,634 / 824, `SPNC` = 2,634 / 830.
+* Every permutation that puts `C` first (`CPSN` … `CNSP`) is **fatal**
+  (size 17,176, raw 3,544–3,560), i.e. `createStaticObject` must be the
+  last statement in source order for the frame to stay 17,172.
+  Note the binary's order is `C, P, S, N` (createStaticObject, then
+  `pirateBase`, then `setToSleep`, then `name`) — semantically ours calls
+  `setToSleep`/`name` on the *old* `enemies[i]`, but the faithful order is
+  size-fatal, so the current order is kept.
+
+Case-1 `enemyRace` reload: `enemyRace = enemyRace;`, `enemyRace += 0;`,
+`int race = enemyRace; enemyRace = race;` in the loop body are all
+optimised away (neutral 2,626).  `if (attackerCount < 0) enemyRace = 0;`
+is fatal (raw 11,977, size 17,188).
+
+`[sp,#120]` in the case-4 tail is `&Globals::globals` (stored at
+`0xb2d1c` from the literal at `0xb2dec`), so the existing
+`((AERandom *) Globals::globals)->nextInt(...)` cast is correct — the
+`Globals::rnd` spelling used by the w13560 Z1 probe is semantically wrong.
