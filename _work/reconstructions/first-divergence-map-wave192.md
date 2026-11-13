@@ -145,3 +145,37 @@ OURS  170ec1  str r2, [sp, #704]   ; 0x2c0
 
 The surrounding instructions match; only the spill slot differs (0x240 vs 0x2c0), i.e. a
 local's stack-home assignment, not a source-order issue.
+
+## Level::createShip (+0x106) — store hoisted above the level clamp
+
+```
+ORIG  c0314  ldr  r0,[r4,#0]
+      c0316  blx  Status::getLevel()
+      c031a  cmp  r0,#20
+      c031c  ble.n c0322
+      c031e  movs r0,#20
+      c0320  b.n  c0328
+      c0322  ldr  r0,[r4,#0]
+      c0324  blx  Status::getLevel()
+      c0328  add.w r0,r0,r0,lsl #2
+      c032c  cmp  r6,#1
+      c032e  add.w sl,r0,#40
+      c0332  str.w r9,[sp,#56]      <-- AFTER the clamp
+      c0336  str.w fp,[sp,#52]
+      c033a  bne.n c0352
+
+OURS  c031a  cmp  r0,#20
+      c031c  str.w r9,[sp,#56]      <-- hoisted BEFORE the branch
+      c0320  ble.n c0326
+      ...
+```
+
+Everything else in the window matches. Ours schedules the `[sp,#56]` store one basic block
+early; the original keeps it after the `min(getLevel(), 20)` clamp. This is a store-
+scheduling difference driven by where the stored local is first *used* in the source --
+move the use (or the local's definition) after the clamp so clang cannot sink/hoist it.
+
+## ModStation C1 (+0x184) — needs a closer look
+
+First differing word is `str r6,[r0,r1]` (orig) vs `ldmia r5!,{r1,r2,r6}` (ours), which
+may be a pool/pointer-table boundary rather than straight-line code; not yet classified.
