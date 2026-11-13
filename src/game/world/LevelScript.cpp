@@ -4813,28 +4813,27 @@ bool LevelScript::process(int delta) {
                 }
                 if (m_nState == 0) {
                     m_pGeometry4 = new AEGeometry(Globals::Canvas);
-                    m_pGeometry4->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_pGeometry4->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
+                    m_pGeometry4->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_nState = 1;
                 }
                 if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
-                    AEGeometry *wgeometry4 = m_pGeometry4;
                     if (player->isInRocketControl()) {
-                        player->setRocketControl(nullptr, nullptr);
                         resetCamera(m_pLevel);
-                        m_pCamera->setRumblePercentage(0.0f, 0);
+                        player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                     }
                     m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
-                    player->setFreeze(true);
-                    m_pCamera->setPosition(wgeometry4->getPosition());
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(wgeometry4);
-                    m_nScriptTimerA = 0;
-                    player->player->setVulnerable(false);
+                    m_pCamera->setTarget(m_pGeometry4);
+                    m_pCamera->setPosition(m_pGeometry4->getPosition());
                     m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
+                    player->player->setVulnerable(false);
+                    player->setFreeze(true);
+                    m_nScriptTimerA = 0;
                     m_nState = 2;
                 } else if (m_nState == 2) {
                     m_nScriptTimerA += delta;
