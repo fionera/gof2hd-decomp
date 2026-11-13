@@ -3654,10 +3654,10 @@ bool LevelScript::process(int delta) {
                         player->setComputerControlled(false);
                         m_pCamera->setLookAtCam(false);
                         m_pHud->visible = 1;
-                        m_bCinematicBreak = 0; // radar restore flag @0x48
+                        m_pRadar->enabled = 1; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_pRadar->enabled = 1; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                        m_bCinematicBreak = 0; // radar restore flag @0x48
                         for (int i = 0; i < 2; ++i) {
                             (*enemies)[i]->field_0x74 = 1;
                         }
@@ -4880,17 +4880,17 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nScriptTimerA >= 18001) {
-                        m_pHud->visible = 1;
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->setFreeze(false);
                         player->setVisible(true);
-                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        resetCamera(m_pLevel);
-                        m_pLevel->getPlayer()->resetGunDelay();
                         player->player->setVulnerable(true);
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroupFlag == 49 || (*enemies)[i]->shipGroupFlag == 44) {

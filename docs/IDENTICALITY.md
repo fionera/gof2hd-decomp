@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,842** | 20,218 | 57,232 |
+| `LevelScript::process` | **52,863** | 20,203 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
 | `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
 | `Level::createMission` | **2,660** | 584 | 17,172 |
@@ -30,11 +30,16 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,607**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,628**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13748, wave 191b): case-145 state 5 and
+  case-105 state 4 faithful teardown order.  Raw **52,842 -> 52,863**
+  (+21), aligned **20,218 -> 20,203** (-15), size 57,232/57,232 exact.
+  Rejected the same commit's case-157 state 4 reorder: -8 size and
+  +21 aligned on this base.  `.text` 74,607 -> 74,628; `.ARM.extab` 562.
 * `Level::createMission` (w13761 + w13773, wave 191b): case-2 goods
   load after `enemyRoute`, and pirateFortress gun reload after the
   `createStaticObject` store (matching 0xb340c..0xb3420).  Raw
