@@ -2050,10 +2050,9 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            float ox = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
-            float oy = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
-            float oz = (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
-            Vector pos = {pirateBase.x + ox, pirateBase.y + oy, pirateBase.z + oz};
+            Vector pos = {pirateBase.x + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
+                          pirateBase.y + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
+                          pirateBase.z + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000)};
             (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
             (*this->enemies)[i]->setToSleep();
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
@@ -2062,10 +2061,9 @@ void Level::createMission() {
     if (extraAliens >= 1) {
         this->spawnPosition = this->player->getPosition();
         this->spawnPosition.x += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
-        Vector sp = this->spawnPosition;
         this->spawnPosition.y += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000);
         this->spawnPosition.z += (float) (Globals::rnd->nextInt(50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 20000);
-        int coords[3] = {(int) sp.x, (int) sp.y, (int) sp.z};
+        int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
         Route *route = new Route(coords, 3);
         int start = stationPirates + guns + pirateEscorts;
         for (int i = pirates + start + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
@@ -2277,14 +2275,12 @@ case4Tail:
                     return;
                 }
                 case 2: {
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
-                    int coords[6];
-                    coords[0] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
-                    coords[1] = 0;
-                    coords[2] = (int) (float) (-20000 - Globals::rnd->nextInt(20000));
-                    coords[3] = 0;
-                    coords[4] = 0;
-                    coords[5] = 0;
+                    int coords[6] = {
+                        (int) (float) (-20000 - Globals::rnd->nextInt(20000)),
+                        0,
+                        (int) (float) (-20000 - Globals::rnd->nextInt(20000)),
+                        0, 0, 0
+                    };
                     this->enemyRoute = new Route(coords, 6);
                     int goods = mission->getProductionGoodAmount();
                     int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
@@ -2292,6 +2288,7 @@ case4Tail:
                     this->enemies = new Array<KIPlayer *>();
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int offset = 0;
                     for (int i = 0; i < convoyEnd; i++, offset += 2000) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),
