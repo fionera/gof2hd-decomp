@@ -51,3 +51,18 @@ The 14 residual table rows sum to exactly the `.text` differing-byte count:
 53,208 + 6,909 + 5,614 + 4,265 + 3,544 + 1,395 + 1,190 + 45 + 463 + 175 + 19
 + 11 + 28 + 16 = **76,882**, which is the current `.text` contentdiff. So there is no
 hidden `.text` delta outside the table either (no padding/alignment residue).
+
+## Caveat: LSDA bytes are partly a *consequence* of the `.text` diff
+
+A call-site entry encodes `start`, `length`, `landing pad` (a prel31 code address) and
+`action`. The landing-pad field therefore changes whenever the function's code shifts,
+even if the source `try`/`catch` structure is identical. Evidence: landing the w13905
+`for`-loop change (`41353c5bd`) moved `LevelScript::process` `.text` by 5 bytes and left
+its LSDA diff at exactly **186/348** — the record did not move at all, because the loop
+is not inside a try scope. Conversely, a scope change moves both.
+
+So the LSDA diff is **not an independent target**: expect most of the 597 bytes to
+disappear automatically once the 9 functions' `.text` matches. What is *structurally*
+meaningful is the record **size** and the **number/shape of call-site entries** — a
+different entry count means a real missing/extra `try` scope. Use the byte count only as
+a hint, not as a score.
