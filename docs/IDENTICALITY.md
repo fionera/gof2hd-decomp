@@ -31,11 +31,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,798**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,808**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13866, wave 192, second pass): case-92 state-1 teardown order (enemy `field_0x128` before `field_0x38`/`awake`, `m_bCinematicBreak` before `m_pHud->visible`, `m_nScriptTimerA`/`m_nState++` after the docking-target stores) and mission-1 intro `setTarget`/`play`/`getPosition` order.  Raw **53,192 -> 53,202** (+10), aligned **18,887 -> 18,752** (-135), size 57,232/57,232 exact.  `.text` 76,798 -> 76,808; `.ARM.extab` 594.
 * `Level::createShip` (w13855, wave 192): invert the level clamp to `getLevel() > 20 ? 20 : getLevel()`.  Raw **1,183 -> 1,190** (+7), aligned **368 -> 366** (-2), size 2,764/2,764 exact.  `.text` 76,791 -> 76,798; `.ARM.extab` 594.
 * `Level::createShip` (w13871, wave 192): `setBV` before `setShipGroup` (original tail order).  Raw **1,177 -> 1,183** (+6), aligned **372 -> 368** (-4), size 2,764/2,764 exact.  `.text` 76,785 -> 76,791; `.ARM.extab` 594.
 * `Status::missionCompleted` (w13859, wave 192, fifth pass): case-158 `amount`/`cargo`/`index` declaration order, reuse `index` in `Item::isInList`.  Raw **46 -> 45** (-1), aligned **29 -> 28** (-1), size 1,432/1,432 exact.  `.text` 76,786 -> 76,785; `.ARM.extab` 594.
