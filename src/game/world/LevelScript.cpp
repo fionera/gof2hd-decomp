@@ -3915,8 +3915,8 @@ bool LevelScript::process(int delta) {
                     if (!Globals::layout->isFading()) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
                         m_pCamera->setTarget(player->geometry);
-                        Vector dir = player->geometry->getDirection();
                         m_nScriptTimerA = 0;
+                        Vector dir = player->geometry->getDirection();
                         player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
                         if (m_pGeometry6 != nullptr) {
                             delete m_pGeometry6; // 0x144df6
