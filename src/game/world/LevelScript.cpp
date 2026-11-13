@@ -2051,9 +2051,9 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     ((PlayerFixedObject *) freighter)->setMoving(false);
                 } else if (m_nState == 2) {
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
                     freighter->translate(Vector{0.0f, (float) -delta, (float) (2 * delta)});
-                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     freighter->geometry->rotate(0.0f, 0.0f, (float) delta * 3.0e-5f);
                     m_nScriptTimerA += delta;
                     if (__builtin_expect(m_nScriptTimerA >= 15001, 0)) { // lint: arm_builtin

@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,104** | 19,040 | 57,232 |
+| `LevelScript::process` | **53,107** | 19,030 | 57,232 |
 | `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,570** | 2,011 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,709**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,712**, `.ARM.extab` **594**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13839, wave 191b, eighth pass): case-41 state-2 `updateReferenceMatrix` before `getEnemies`.  Raw **53,104 -> 53,107** (+3), aligned **19,040 -> 19,030** (-10), size 57,232/57,232 exact.  `.text` 76,709 -> 76,712; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, seventh pass): wormhole state-3 teardown order.  Raw **53,095 -> 53,104** (+9), aligned **19,043 -> 19,040** (-3), size 57,232/57,232 exact.  `.text` 76,700 -> 76,709; `.ARM.extab` 594.
 * `LevelScript::process` (w13839, wave 191b, sixth pass): case-91 state-6 hud/cinematic/radar store order.  Raw 53,095 unchanged, aligned **19,045 -> 19,043** (-2), size 57,232/57,232 exact.  `.text` 76,701 unchanged; `.ARM.extab` 594.
 * `HangarWindow::render` (w13852, wave 191b, fifth pass): inline `buttons[17]` top/gsy locals and declare the buy-list `price` before `description`.  Raw 1,393 unchanged, aligned **461 -> 407** (-54), size 9,700/9,700 exact.  `.text` 76,701 unchanged; `.ARM.extab` 594.
