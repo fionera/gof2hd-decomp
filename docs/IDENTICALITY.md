@@ -15,10 +15,10 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,535** | 21,707 | 57,232 |
+| `LevelScript::process` | **51,614** | 21,594 | 57,232 |
 | `Radar::draw` | **6,014** | 1,947 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
-| `Level::createMission` | **2,636** | 841 | 17,172 |
+| `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
@@ -30,11 +30,23 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,271**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,340**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13687, wave 191b): case-105 state-6 teardown and
+  camera block reconstructed from Thumb.  The old code called
+  `setPosition(m_tempVec)` *before* the final `+= up * 400.0f`, so the camera
+  was 400 units short; the faithful order adds the term first.  Raw
+  **51,535 -> 51,614** (+79), aligned **21,707 -> 21,594** (-113), size
+  57,232/57,232 exact.
+* `Level::createMission` (w13680, wave 191b): move `gun->cargo = nullptr` to
+  the top of the alienGuns loop and `setMaxHitpoints(1000)` after the second
+  rotation; the semantic interleave is untouched.  Raw **2,636 -> 2,626**
+  (-10, recovering the whole w13650 cost), aligned 841 -> 864 (+23), size
+  17,172/17,172 exact.  The w13671/w13685 cargo-between-rotations variant
+  (-1 raw, +181 aligned) was not landed.
 * `Radar::draw` (w13678, wave 191b): move `enemy->field_0x76 = 1;` before
   `this->egoPos = player->getPosition();` in the enemy on-screen blip block,
   matching the original's `strb.w` at 0x12ee00 before the getPosition call at

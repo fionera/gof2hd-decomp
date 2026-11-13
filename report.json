@@ -16,14 +16,6 @@
  },
  "rows": [
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 38.1,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
-  },
-  {
    "name": "_ZN6LayoutC1Ev",
    "pct": 38.1,
    "byte": false,
@@ -38,6 +30,14 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 38.3,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 57232
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",

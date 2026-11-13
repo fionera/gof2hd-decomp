@@ -3709,37 +3709,35 @@ bool LevelScript::process(int delta) {
                             (*enemies)[i]->geometry->translate(
                                     (*enemies)[i]->geometry->getRightVector() * -30000.0f);
                         }
-                        player->setFreeze(true);
-                        m_pCamera->setTarget(player->geometry);
                         player->setTurretMode(false);
+                        player->setFreeze(true);
                         player->setVisible(false);
+                        resetCamera(m_pLevel);
                         if (player->isInRocketControl()) {
-                            m_pCamera->setRumblePercentage(0.0f, 0);
                             player->setRocketControl(nullptr, nullptr);
                             player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
                         }
+                        player->setFreeLookMode(false);
+                        m_pCamera->setLookAtCam(true);
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
-                        AEGeometry *ref2 = (*enemies)[2]->geometry;
-                        m_pCamera->setTarget((*enemies)[2]->geometry);
-                        m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
-                        m_pRadar->enabled = 0;
-                        Vector *camPos = &m_tempVec; // tempVec @0x28
-                        m_pHud->visible = 0;
-                        player->setFreeLookMode(false);
-                        Vector *tmp = &m_dirVec;
-                        *camPos = ref2->getPosition();
-                        *tmp = ref2->getDirection();
-                        *camPos += *tmp * 6800.0f;
-                        *tmp = ref2->getRightVector();
-                        *camPos += *tmp * 1200.0f;
-                        *tmp = ref2->getUpVector();
-                        m_pCamera->setPosition(*camPos);
-                        *camPos += *tmp * 400.0f;
-                        m_nScriptTimerB = 0;
-                        m_pCamera->setLookAtCam(true);
-                        m_nScriptTimerA = 0;
                         player->stopShooting(0);
+                        m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        AEGeometry *ref2 = (*enemies)[2]->geometry;
+                        m_pCamera->setTarget(ref2);
+                        m_tempVec = ref2->getPosition();
+                        m_dirVec = ref2->getDirection();
+                        m_tempVec += m_dirVec * 6800.0f;
+                        m_dirVec = ref2->getRightVector();
+                        m_tempVec += m_dirVec * 1200.0f;
+                        m_dirVec = ref2->getUpVector();
+                        m_tempVec += m_dirVec * 400.0f;
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nScriptTimerB = 0;
+                        m_nScriptTimerA = 0;
                         m_nState = m_nState + 1; // 6 -> 7 (via 0x144e12)
                     }
                 } else if (m_nState == 7) {
