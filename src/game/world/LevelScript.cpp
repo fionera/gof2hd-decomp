@@ -2247,24 +2247,24 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     player->freeze = 1;
                     player->setTurretMode(false);
-                    m_pHud->visible = 0;
-                    m_pCamera->setLookAtCam(true);
-                    player->stopShooting(0);
-                    player->setFreeLookMode(false);
                     resetCamera(m_pLevel);
-                    m_pCamera->setActive(true);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     Vector camPos = (*enemies)[0]->getPosition();
-                    m_pCamera->enableFirstPersonCam(false);
-                    m_bCinematicBreak = 1;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    camPos.z += 3000.0f;
                     camPos += (*enemies)[0]->geometry->getDirection() * 10000.0f;
+                    camPos.z += 3000.0f;
                     camPos.y += 300.0f;
                     m_pCamera->setPosition(camPos);
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
