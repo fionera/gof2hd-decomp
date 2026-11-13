@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,235** | 2,668 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
-| `MGame::OnTouchEnd` | **2,878** | 1,661 | 8,080 |
+| `MGame::OnTouchEnd` | **2,878** | 1,582 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
 | `Level::createShip` | **1,164** | 400 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -35,6 +35,10 @@ Current section deltas: `.text` **71,197**, `.ARM.extab` **577**, `.ARM.exidx` *
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13622, wave 191b): swap the campaign-134
+  `field_5c`/`field_64` store order.  Raw **2,878** (tie), aligned
+  **1,661 -> 1,582** (-79), size 8,080/8,080 exact.  `.text` 71,197 unchanged,
+  `.ARM.extab` 577 unchanged, `.rel.plt` byte-identical.
 * `MGame::OnUpdate` (w13623, wave 191b): the m122 codegen anchor now stores
   `Globals::status` to a volatile local and reads it back as the
   `getCurrentCampaignMission` receiver.  The read-back is a 2-byte
