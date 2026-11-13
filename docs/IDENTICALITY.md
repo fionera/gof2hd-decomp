@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,063** | 20,722 | 57,232 |
+| `LevelScript::process` | **52,070** | 20,693 | 57,232 |
 | `Radar::draw` | **6,436** | 1,718 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **73,011**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **73,018**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13746, wave 191b): mission-1 intro reads
+  `enemyPos.z` before `setToSleep` and evaluates `delta*0.2f*depth`
+  left-to-right; mission-89 `moveForward` moved after the approach block.
+  Raw **52,063 -> 52,070** (+7), aligned **20,722 -> 20,702** (-20),
+  size 57,232/57,232 exact.
+* `LevelScript::process` (w13747, wave 191b): case-70 state 2 emits
+  `m_bCinematicBreak = 0` before `m_nState = 3`; case-92 state 3 calls
+  `setCloakingPossible(true)` before `cloak(18000, false)`.  Raw tie
+  52,070, aligned **20,702 -> 20,693** (-9), size 57,232/57,232 exact.
+  The batch moves `.text` 73,011 -> 73,018; `.ARM.extab` stays 564.
 * `MGame::OnTouchEnd` (w13745, wave 191b): campaign-100
   `initStreamOutPosition` before `switch_to_target_setting`.  Raw 3,659
   (tie), aligned **560 -> 558**, size 8,080/8,080 exact.

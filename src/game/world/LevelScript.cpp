@@ -954,13 +954,13 @@ bool LevelScript::process(int delta) {
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
-        (*enemies)[0]->setToSleep();
         float enemyZ = enemyPos.z;
+        (*enemies)[0]->setToSleep();
         float depth = enemyZ / -5000.0f;
         if (!(depth < 1.0f)) {
             depth = 1.0f;
         }
-        (*enemies)[0]->geometry->moveForward((float) delta * (0.2f * depth));
+        (*enemies)[0]->geometry->moveForward((float) delta * 0.2f * depth);
 
         // Radio message #2 drives the fade-out and scene switch (0x137e18).
         RadioMessage *msg2 = (RadioMessage *) ((*messages)[2]);
@@ -1251,7 +1251,6 @@ bool LevelScript::process(int delta) {
         m_pLevel->lodManager->forceUpdate(delta, true);
         m_pCamera->setTarget(m_pGeometry4);
         m_bCinematicBreak = 1;
-        ((PlayerFixedObject *) (*enemies)[11])->moveForward(delta);
         if (m_nState <= 2) {
             float approach = (float) m_nScriptTime / -35000.0f + 1.0f;
             float step = (float) delta;
@@ -1259,6 +1258,7 @@ bool LevelScript::process(int delta) {
             AEGeometry *ship = m_pGeometry4;
             ship->translate(-ship->getRightVector() * step * 7.0f * ((float) m_nScriptTime / -50000.0f + 1.0f));
         }
+        ((PlayerFixedObject *) (*enemies)[11])->moveForward(delta);
         switch (m_nState) {
             case 1:
                 if (m_nScriptTime >= 30001) {
@@ -2552,8 +2552,8 @@ bool LevelScript::process(int delta) {
                     radar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                     m_nState = 3;
+                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                     Player *lead = (*m_pLevel->getEnemies())[0]->player;
                     lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
                     (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
@@ -3040,8 +3040,8 @@ bool LevelScript::process(int delta) {
                     }
                     if (((RadioMessage *) ((*messages)[5]))->isOver()) {
                         for (int i = 0; i < 3; i++) {
-                            ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                             ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
+                            ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                         }
                         m_nScriptTimerA = 0;
                         m_nState++;
