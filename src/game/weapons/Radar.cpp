@@ -459,9 +459,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 unsigned int lmFont = radarFont();
                 Globals::Canvas->DrawString(lmFont, *this->labelStrings->data()[i], this->screenX + offset,
                                             this->screenY, false);
-                int rowHeight = Globals::layout->field_0x4;
                 if (i <= 1) {
                     if (i == 0 && !alienOrbit) {
+                        int rowHeight = Globals::layout->field_0x4;
                         unsigned int techFont = radarFont();
                         Globals::Canvas->DrawString(
                                 techFont,
@@ -478,7 +478,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
                                                              this->cameraX, this->cameraY, this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
-                                                    this->screenY + rowHeight, false);
+                                                    this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
             } else if (__builtin_expect((i & 0x7fffffff) == 1, 1)) { // lint: arm_builtin anchor: Radar::draw

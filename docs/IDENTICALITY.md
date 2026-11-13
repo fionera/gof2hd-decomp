@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,200** | 18,212 | 57,232 |
-| `Radar::draw` | **6,909** | 1,301 | 9,908 |
+| `Radar::draw` | **6,945** | 1,322 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
@@ -30,16 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,875**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,911**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **77,492 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
-exactly three sections -- `.text` 76,875, `.ARM.extab` 597, `.note.gnu.build-id` 20. All other
+Whole-file diff: **77,483 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
+exactly three sections -- `.text` 76,911, `.ARM.extab` 552, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
 
+* `Radar::draw` (w13911, wave 192): the layout row height is reloaded inline for the `i != 0` lock-label `DrawString` and loaded separately inside the `i == 0` tech arm (the source cached it once before the `if (i <= 1)` block).  Raw **6,909 -> 6,945** (+36), aligned **1,301 -> 1,322** (+21), size 9,908/9,908 exact.  `.text` 76,875 -> 76,911 (+36); `.ARM.extab` 597 -> **552** (-45), LSDA record 88 -> 43 differing bytes (`extab_map.py`), call-site table 111 -> 112/112.  Net section bytes **-9**.
 * `MenuTouchWindow::OnTouchBegin` (w13927, wave 192): the case-15 scrollbar test uses the fresh `Globals::layout->field_0xc_leftMargin` and the cached `layout.field_0x20_top` (swap of the two c2 field accesses).  Raw **28 -> 29** (+1), aligned **16 -> 15** (-1), size 1,896/1,896 exact.  `.text` 76,874 -> 76,875 (+1); `.ARM.extab` 597 unchanged.
 * `LevelScript::process` (w13908, wave 192): mission-81 state-0 drops the `canvas983` local and calls `Globals::Canvas->TransformGetTransform` directly, deferring the GOT load past `setPosition`.  Raw **53,203 -> 53,200** (-3), aligned **18,234 -> 18,212** (-22), size 57,232/57,232 exact.  `.text` 76,877 -> 76,874; `.ARM.extab` 597 unchanged.
 * `Radar::draw` (w13901, wave 192): apply `setFrame` inside each blip arm instead of after the branch.  Raw **6,909** unchanged, aligned **1,303 -> 1,301** (-2), size 9,908/9,908 exact.  `.text` 76,877 unchanged; `.ARM.extab` 597 unchanged.
