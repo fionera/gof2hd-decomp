@@ -2128,7 +2128,7 @@ case4Tail:
     int hunterCount = (int) (hunters + (opt44 - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    if (hunterCount <= 0) {
+    if (hunterCount == 0) {
         hunterCount = 1;
     }
     for (unsigned i = 0; i < this->enemies->size(); i++) {

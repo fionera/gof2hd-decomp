@@ -73,3 +73,7 @@ Largest first (orig bytes / ours bytes / delta):
 The 4-byte body deficit that the guard papers over is most likely inside the
 `if (raid)` block (16 B short), but no source reshaping of that block found so
 far restores size without a larger aligned regression.
+
+## Harvest rebase (master 1e92c4705)
+
+Passes 25-27 applied together: raw **3,495 -> 3,375** (-120), aligned **472 -> 463** (-9), size 17,172/17,172 exact; `.text` 76,108 -> 75,988, `.ARM.extab` 595 -> 552.
