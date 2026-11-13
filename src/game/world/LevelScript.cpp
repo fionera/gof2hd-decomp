@@ -1879,8 +1879,8 @@ bool LevelScript::process(int delta) {
                     tmp *= 1000.0f;
                     *frame += tmp;
                     tmp = player->geometry->getUpVector();
-                    *frame += tmp;
                     tmp *= 1000.0f;
+                    *frame += tmp;
                     *frame += player->geometry->getPosition();
                     m_pCamera->setPosition(frame->x, frame->y, frame->z);
                     AEGeometry *intro = new AEGeometry(0x37d2, Globals::Canvas, false);
