@@ -4023,11 +4023,11 @@ bool LevelScript::process(int delta) {
                         }
                         player->hideShipForFirstPersonCameraView(false);
                         m_bCinematicBreak = 1;
-                        player->stopShooting(0);
+                        m_pRadar->enabled = 0;
                         m_pHud->visible = 0;
                         player->setFreeLookMode(false);
                         m_pCamera->enableFirstPersonCam(false);
-                        m_pRadar->enabled = 0;
+                        player->stopShooting(0);
                         m_pCamera->setLookAtCam(true);
                         player->setVisible(false);
                         player->setFreeze(true);

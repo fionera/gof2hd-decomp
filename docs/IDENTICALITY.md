@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,537** | 22,818 | 57,232 |
+| `LevelScript::process` | **51,536** | 22,818 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,711 | 7,072 |
 | `Level::createMission` | **2,628** | 844 | 17,172 |
@@ -31,10 +31,19 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,233**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,232**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **485** (sh_size +485), `.note.gnu.build-id` **20**.
 
 Landed changes:
+
+* `LevelScript::process` (w13561, wave 191b): case-125 teardown flag move:
+  `m_pRadar->enabled = 0` before `m_pHud->visible = 0`, and
+  `stopShooting(0)` after `enableFirstPersonCam(false)`.  Raw
+  **51,537 -> 51,536** (-1), size 57,232/57,232 exact.
+* `MGame::OnTouchEnd` (w13539, wave 191b): note-only corrected original
+  95/96/127 body + negative sweeps; raw 2,882 / aligned 1,561 unchanged.
+* `Level::createShip` (w13536, wave 191b): note-only LSDA/landing-pad
+  audit and guard-invariant body; raw 1,164 unchanged.
 
 * `Generator::createMission` (w13557, wave 191b): mark the `type == 12`
   station override `__builtin_expect(..., 1)` and restore the bonus block
