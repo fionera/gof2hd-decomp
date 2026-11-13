@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,373** | 463 | 17,172 |
 | `MGame::OnTouchEnd` | **3,548** | 697 | 8,080 |
-| `HangarWindow::render` | **1,411** | 462 | 9,700 |
+| `HangarWindow::render` | **1,393** | 461 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **83** | 30 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,11 +30,15 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,788**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,770**, `.ARM.extab` **544**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13845, wave 191b, third pass): free-credits canvas/row-height declaration order.  Raw **1,411 -> 1,393** (-18), aligned **462 -> 461** (-1), size 9,700/9,700 exact.  `.text` 75,788 -> 75,770; `.ARM.extab` 544.
+* `MGame::OnTouchEnd` (w13833, wave 191b): 95-clause switch store after `field_68`.  Raw 3,548 -> 3,731, aligned 697 -> 680, but size **8,084/8,080**; reverted to a note.
+* `LevelScript::process` (w13838, wave 192, mission-94): docked free-look order + radio-14 placement.  Raw 53,041 -> 54,229, aligned 19,158 -> 19,154, but size **57,236/57,232**; reverted to a note.
+* `Level::createMission` (w13837, wave 191b, pass 27): volatile `hostileCount` read before case-4 `objectivesA`.  Raw 3,373 -> 3,573, aligned 463 -> 478, size **17,180/17,172**; reverted to a note.
 * `Status::missionCompleted` (w13842, wave 191b): case-158 dead `hasEquipment` compare.  Raw **90 -> 83** (-7), aligned **32 -> 30** (-2), size 1,432/1,432 exact.  `.text` 75,795 -> 75,788; `.ARM.extab` 544.
 * `LevelScript::process` (w13839, wave 191b): prologue declaration order.  Raw **53,083 -> 53,064** (-19), aligned **19,162 -> 19,159** (-3), size 57,232/57,232 exact.  `.text` 75,878 -> 75,859; `.ARM.extab` 552.
 * `LevelScript::process` (w13828, wave 191b, third pass): wingman loop drops the `__builtin_expect`.  Raw **53,064 -> 53,041** (-23), aligned **19,159 -> 19,158** (-1), size 57,232/57,232 exact.  `.text` 75,859 -> 75,836; `.ARM.extab` 552 -> 544 (LSDA scope shrink).
