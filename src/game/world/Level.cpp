@@ -5259,7 +5259,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             EmpGuard guard;
             fighter->setShipGroup(grp, type, hostile);
         }
-        if (__builtin_expect(missionPtr != 1, 1) && missionPtr != 23) { // lint: arm_builtin
+        if (__builtin_expect(missionPtr != 23, 1) && missionPtr != 1) { // lint: arm_builtin
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }

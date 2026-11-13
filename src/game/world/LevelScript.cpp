@@ -2520,22 +2520,22 @@ bool LevelScript::process(int delta) {
                     // @0x13c198/9c/a0 = {-600, 800, -1000} (camera offset); field seed @0x13c190 = 100000.
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     if (__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)) { // lint: arm_builtin
+                        (*m_pLevel->getEnemies())[0]->player->setAlwaysFriend(false);
                         (*m_pLevel->getEnemies())[0]->player->setAlwaysEnemy(true);
                         ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x128 = 100000;
-                        (*m_pLevel->getEnemies())[0]->player->setAlwaysFriend(false);
                         (*m_pLevel->getEnemies())[0]->field_0x38 = 0;
-                        ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x12c = 0;
-                        Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();          // vtable+0x28
                         ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x12d = 0;
-                        Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                        ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x12c = 0;
                         (*m_pLevel->getEnemies())[0]->setRoute(nullptr);
-                        camPos.x += -600.0f;
-                        m_pCamera->setPosition(camPos);
-                        camPos.y += 800.0f;
+                        Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();          // vtable+0x28
+                        Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                         camPos += dir * 2000.0f;
+                        camPos.x += -600.0f;
+                        camPos.y += 800.0f;
                         camPos.z += -1000.0f;
-                        m_nState = 2;
+                        m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
                 } else if (m_nState == 2) {

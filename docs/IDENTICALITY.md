@@ -15,13 +15,13 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,611** | 21,601 | 57,232 |
+| `LevelScript::process` | **51,625** | 21,486 | 57,232 |
 | `Radar::draw` | **6,014** | 1,947 | 9,908 |
 | `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
 | `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
-| `Level::createShip` | **1,164** | 400 | 2,764 |
+| `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
 | `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
@@ -30,11 +30,24 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,339**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,354**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13697, wave 191b): case-70 state-1 conclude
+  block reconstructed from 0x13c05a..0x13c16c.  The old source stored
+  `setPosition(camPos)` right after the x offset, so the y, z and
+  `dir*2000` terms were dead; the faithful order accumulates all four
+  terms first and restores the setAlwaysFriend/setAlwaysEnemy pair and
+  field seeds.  Raw **51,611 -> 51,625** (+14), aligned **21,601 ->
+  21,486** (-115), size 57,232/57,232 exact.
+* `Level::createShip` (w13694, wave 191b): swap the condition order to
+  `missionPtr != 23 && missionPtr != 1`.  Raw **1,164 -> 1,165** (+1),
+  aligned **400 -> 385** (-15), size 2,764/2,764 exact.
+* `LevelScript::process` (w13684, wave 191b): the case-91 state-5 teardown
+  reconstruction (0x13f3a0..0x13f53a) was measured at raw 51,534 -> 52,484
+  (+950), aligned 21,862 -> 21,618 (-244); not landed (raw+aligned worse).
 * `LevelScript::process` (w13688, wave 191b): case-158 state-1 marker
   direction names the `getPosition()` result and the up vector as locals
   instead of inlining both into `setDirection(VectorNormalize(target - pos),
