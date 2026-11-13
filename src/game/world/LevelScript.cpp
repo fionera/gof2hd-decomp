@@ -1573,9 +1573,9 @@ bool LevelScript::process(int delta) {
             case 14: {
                 // The player's ship is wrecked by the exploding fighter and towed away.
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+                    m_nState = 1;
                     (*m_pLevel->getEnemies())[0]->player->setHitpoints(0);
                     (*m_pLevel->getEnemies())[0]->setDead();
-                    m_nState = 1;
                     m_pLevel->field_8c->systemSetMatrix(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x130,
                                                         &player->geometry->getReferenceMatrix());
                     m_pLevel->field_8c->enableSystemEmit(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x130, true);
@@ -1590,26 +1590,26 @@ bool LevelScript::process(int delta) {
                     m_pLevel->field_8c->enableSystemRender(((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x138, true);
                     Globals::sound->play(15, nullptr, nullptr, 0.0f);
                 } else if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
-                    player->setFreeLookMode(false);
-                    player->setTurretMode(false);
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = player->getPosition();
-                    player->hideShipForFirstPersonCameraView(false);
                     Globals::sound->updateEvent3DAttributes(15, &pos, &zero, false);
-                    m_pLevel->flashScreen(3);
+                    player->setTurretMode(false);
                     resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    m_bCinematicBreak = 1;
+                    player->stopShooting(0);
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    m_pLevel->flashScreen(3);
+                    player->setComputerControlled(true);
                     player->setSpeed(0.0f);
                     player->player->removeAllGuns();
-                    player->stopShooting(0);
-                    m_pRadar->enabled = 0;
-                    m_bCinematicBreak = 1;
                     m_pCamera->setLookAtCam(true);
-                    m_pHud->visible = 0;
-                    m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
-                    player->setComputerControlled(true);
                     m_pCamera->setTarget(player->geometry);
                     m_pCamera->setPosition(player->getPosition());
+                    m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
                     for (unsigned int i = 0; i < enemies->count; i++) {
                         Level *lvl1613 = m_pLevel;
                         if ((*lvl1613->getEnemies())[i]->shipGroup == 8) {
@@ -1622,15 +1622,15 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 2) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
-                    m_pCamera->enableFirstPersonCam(false);
                     player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->geometry->updateReferenceMatrix();
                     float step = (float) delta;
                     player->geometry->rotate(0.0f, step / 10000.0f, 0.0f);
-                    m_pHud->visible = 0;
                     m_pCamera->translate(0.0f, 0.0f, step);
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                         TargetFollowCamera *wcamera = m_pCamera;

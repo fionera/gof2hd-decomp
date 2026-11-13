@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,668** | 20,646 | 57,232 |
+| `LevelScript::process` | **52,728** | 20,614 | 57,232 |
 | `Radar::draw` | **6,942** | 1,430 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
@@ -23,18 +23,27 @@ Residual table (raw / aligned / size; all size-exact):
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
-| `Gun::calcCharacterCollision` | **455** | 93 | 1,984 |
+| `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
 | `SpaceLounge::drawLounge` | **138** | 87 | 1,948 |
 | `Hud::draw` | **19** | 6 | 9,332 |
 | `ModStation` C1/C2 | **11** | 5 | 1,008 |
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,116**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,184**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Gun::calcCharacterCollision` (w13766 pass 1, wave 191b): faithful
+  C-D-E scatter tail -- `expect(magnitude > distance, 0)` with the
+  subtraction and damage/EMP calls inside the guarded body.  Raw
+  **455 -> 463** (+8), aligned **93 -> 57** (-36), size 1,984/1,984 exact.
+* `LevelScript::process` (w13762, wave 191b): mission-14 state 0/1/2
+  restored to the original 0x13ea84 / 0x13a9e2 / 0x13c702 statement
+  order.  Raw **52,668 -> 52,728** (+60), aligned **20,646 -> 20,614**
+  (-32), size 57,232/57,232 exact.  This batch moves `.text`
+  74,116 -> 74,184; `.ARM.extab` stays 561.
 * `Radar::draw` (w13758 pass 5, wave 191b): planet-lock `sound(26)`
   before the `dockToPlanet` block, matching 0x130454.  Raw
   **6,943 -> 6,942** (-1), aligned **1,434 -> 1,430** (-4), size
