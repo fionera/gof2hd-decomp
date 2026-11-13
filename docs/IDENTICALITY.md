@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,373** | 463 | 17,172 |
 | `MGame::OnTouchEnd` | **3,548** | 697 | 8,080 |
-| `HangarWindow::render` | **1,456** | 386 | 9,700 |
+| `HangarWindow::render` | **1,452** | 379 | 9,700 |
 | `Level::createShip` | **1,177** | 372 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,11 +30,13 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,882**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,878**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13845, wave 191b): free-credits row-height local declared last.  Raw **1,456 -> 1,452** (-4), aligned **386 -> 379** (-7), size 9,700/9,700 exact.  `.text` 75,882 -> 75,878; `.ARM.extab` 552.
+* `LevelScript::process` (w13839, wave 191b): state-16 block order + `initStreamOutPosition = 0`.  Raw **53,083 -> 53,427** (+344), aligned **19,162 -> 19,160** (-2), `.text` 75,882 -> 76,222 (+340); reverted to a note (bad byte trade).
 * `LevelScript::process` (w13826, wave 191b, second pass): tail station-list compare re-reads `Globals::status->field_90` instead of the cached `stationList`.  Raw 53,083 unchanged, aligned **19,164 -> 19,162** (-2), size 57,232/57,232 exact.  `.text` 75,882 unchanged; `.ARM.extab` 552.
 * `LevelScript::process` (w13838, wave 192): state-12 expect polarity + state-0 dispatch-tail expect.  Raw **53,083 -> 53,206** (+123), aligned **19,162 -> 19,148** (-14), `.ARM.extab` 552 -> 551, but `.text` 75,882 -> 76,005 (+123); reverted to a note (net byte regression).
 * `Level::createMission` (w13837, wave 191b): `alienGuns` table select via `(i >> 31)`.  Raw **3,375 -> 3,373** (-2), aligned 463 unchanged, size 17,172/17,172 exact.  `.text` 76,001 -> 75,999; `.ARM.extab` 552.
