@@ -1407,8 +1407,8 @@ bool LevelScript::process(int delta) {
             Globals::status->nextCampaignMission(true);
             Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-            Globals::switch_to_target_setting = 1;
             Level::initStreamOutPosition = 1;
+            Globals::switch_to_target_setting = 1;
             Globals::appManager->SetCurrentApplicationModule(2);
         }
         if (m_nState >= 2 && m_nState <= 4) {

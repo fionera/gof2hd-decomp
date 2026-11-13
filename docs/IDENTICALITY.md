@@ -36,6 +36,7 @@ Current section deltas: `.text` **76,882**, `.ARM.extab` **597**, `.ARM.exidx` *
 
 Landed changes:
 
+* `LevelScript::process` (w13888, wave 192, second pass): mission-6 `initStreamOutPosition = 1` before `switch_to_target_setting = 1` (mission-6 case-6 tail).  Raw **53,208** and aligned **18,243** unchanged, size 57,232/57,232 exact; `.text` 76,882 and `.ARM.extab` 597 unchanged.
 * `Radar::draw` (w13879, wave 192): test the `i == 1` landmark branch before `i == 3` (moves the `__builtin_expect` anchor to the `i == 1` arm).  Raw **6,909** and aligned **1,303** unchanged, size 9,908/9,908 exact; disdiff hunks **530 -> 528**.  `.text` 76,882 and `.ARM.extab` 597 unchanged.
 * `LevelScript::process` (w13886, wave 192, third pass): mission-6 HP stores reload `player->player` for each of `field_64/5c/60/68` instead of hoisting `pp`/`st`.  Raw **53,210 -> 53,208** (-2), aligned 18,243 unchanged, size 57,232/57,232 exact.  `.text` 76,884 -> 76,882; `.ARM.extab` 597.
 * `LevelScript::process` (w13886, wave 192, second pass): case-16 state-1 `player->freeze = 0`, and case-114 state-13 supernova teardown order (`setStation`/`departStation`/`initStreamOutPosition` after `nextCampaignMission`, `lookBehind` before `setRotationAroundTarget`, `setFreeLookMode` only in the docked arm).  Raw **53,204 -> 53,210** (+6), aligned **18,300 -> 18,243** (-57), size 57,232/57,232 exact.  `.text` 76,878 -> 76,884; `.ARM.extab` 597.
