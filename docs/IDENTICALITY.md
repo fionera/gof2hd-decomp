@@ -17,7 +17,7 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,507** | 22,183 | 57,232 |
 | `Radar::draw` | **6,013** | 1,961 | 9,908 |
-| `Layout` C1/C2 | **5,235** | 2,668 | 7,072 |
+| `Layout` C1/C2 | **5,244** | 2,575 | 7,072 |
 | `Level::createMission` | **2,636** | 841 | 17,172 |
 | `MGame::OnTouchEnd` | **2,878** | 1,582 | 8,080 |
 | `HangarWindow::render` | **1,038** | 620 | 9,700 |
@@ -30,11 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,201**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,210**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Layout` C1/C2 (w13637, wave 191b): three independent-field store-order
+  swaps in the ctor body (`field_0x3c` after `field_0x2c_rowHeight`,
+  `field_0x50`<->`field_0x74`, `field_0x248`<->`field_0x278`).  All are
+  semantic no-ops over the 32 Globals flag combinations.  Raw **5,235 ->
+  5,244** (+9), aligned **2,668 -> 2,575** (-93), size 7,072/7,072 exact.
+  `.text` 71,201 -> 71,210 (+9).
 * `LevelScript::process` (w13642, wave 191b): case-14 state-1 teardown,
   move `m_pHud->visible = 0;` ahead of `m_pCamera->translate(...)`, matching
   the original's `strb` at 0x13aa44 before the translate at 0x13aa9a.  Raw

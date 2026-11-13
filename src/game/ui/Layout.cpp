@@ -33,12 +33,12 @@ Layout::Layout() {
     this->field_0x40 = Globals::iPadHD ? 140 : (Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100));
     this->field_0x44 = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0x30_rowHeight = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 51 : (Globals::retinaDisplay ? 60 : 30));
-    this->field_0x3c = Globals::iPadHD ? 82 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 118 : 59));
-    this->field_0x38 = Globals::iPadHD ? 9 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 14 : 7));
     this->field_0x2c_rowHeight = Globals::iPadHD ? 4 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 6 : 3));
+    this->field_0x38 = Globals::iPadHD ? 9 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 14 : 7));
+    this->field_0x3c = Globals::iPadHD ? 82 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 118 : 59));
     this->field_0x4c = Globals::iPadHD ? 7 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0x58 = Globals::iPadHD ? 243 * 1.40625f : (Globals::n9 ? 364 : (Globals::retinaDisplay ? 486 : 243));
-    this->field_0x50 = Globals::iPadHD ? 89 * 1.40625f : (Globals::n9 ? 160 : (Globals::retinaDisplay ? 178 : 89));
+    this->field_0x74 = Globals::iPadHD ? 115 * 1.40625f : (Globals::n9 ? 207 : (Globals::retinaDisplay ? 230 : 115));
     this->field_0x78 = Globals::iPadHD ? 263 * 1.40625f : (Globals::n9 ? 473 : (Globals::retinaDisplay ? 526 : 263));
     this->field_0x34 = Globals::iPadHD ? 8 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 12 : 6));
     this->field_0x48 = Globals::iPadHD ? 15 : (Globals::n9 ? 16 : (Globals::retinaDisplay ? 22 : 11));
@@ -49,7 +49,7 @@ Layout::Layout() {
     this->field_0x6c = Globals::iPadHD ? 136 * 1.40625f : (Globals::n9 ? 170 : (Globals::iPadLarge ? 272 : (Globals::retinaDisplay ? 262 : (Globals::iPad ? 136 : 131))));
     this->field_0x70_rowHeight = Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 51 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
     this->field_0x54 = Globals::iPadHD ? 347 * 1.40625f : (Globals::n9 ? 520 : (Globals::retinaDisplay ? 694 : 347));
-    this->field_0x74 = Globals::iPadHD ? 115 * 1.40625f : (Globals::n9 ? 207 : (Globals::retinaDisplay ? 230 : 115));
+    this->field_0x50 = Globals::iPadHD ? 89 * 1.40625f : (Globals::n9 ? 160 : (Globals::retinaDisplay ? 178 : 89));
     this->field_0x2c4 = Globals::iPadHD ? 126 : (Globals::n9 ? 108 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
     this->field_0x98 = Globals::iPadHD ? 420 * 1.40625f : (Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420));
     int t_field_0x2c8 = Globals::iPadHD ? (int)(45 * 1.40625f) : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
@@ -254,10 +254,10 @@ Layout::Layout() {
     this->field_0x24c = Globals::iPadHD ? -2 : (Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0));
     this->field_0x238_blk16.d = Globals::iPadHD ? 3 * 1.40625f : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
     this->field_0x250 = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
-    this->field_0x278 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
+    this->field_0x248 = Globals::iPadHD ? 170 * 1.40625f : (Globals::n9 ? 306 : (Globals::retinaDisplay ? 340 : 170));
     this->field_0x25c = Globals::iPadHD ? 16 * 1.40625f : (Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16));
     this->field_0x258 = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
-    this->field_0x248 = Globals::iPadHD ? 170 * 1.40625f : (Globals::n9 ? 306 : (Globals::retinaDisplay ? 340 : 170));
+    this->field_0x278 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
     if (Globals::iPadHD)
         this->field_0x260 = 1 * 1.40625f;
     else if (Globals::n9)
