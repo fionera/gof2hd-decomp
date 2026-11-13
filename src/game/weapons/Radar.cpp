@@ -599,8 +599,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
                 int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
                 int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
-                if (this->screenY > top && top + size > this->screenY && this->screenX < left + size &&
-                    this->screenX > left) {
+                if (this->screenX > left && this->screenX < left + size && this->screenY > top && top + size > this->screenY) {
                     if ((int) i == StarSystem::orbitPlanetIndex) {
                         planetHit = false;
                     } else {
