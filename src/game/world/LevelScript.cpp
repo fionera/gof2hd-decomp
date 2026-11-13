@@ -4246,19 +4246,7 @@ bool LevelScript::process(int delta) {
                 // docking count in r6; also reached from cm135/case-94). Its body only runs when the
                 // incoming state == 1. ---
                 if (m_nState == 1) {
-                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
-                        player->getHackingGameDockIndex() >= 0) {
-                        PlayerFixedObject *target =
-                            (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
-                        if (target->getDockingType() == 3 && dockingCount == 1) {
-                            m_nState++;
-                            Globals::status->field_178 = 0;
-                            ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
-                                ->setDockingType(2);
-                            player->setDockingState(2); // shared tail 0x13953c increments m_nState
-                        }
-                    }
-                if (!(*enemies)[0]->player->isAlwaysEnemy() &&
+                    if (!(*enemies)[0]->player->isAlwaysEnemy() &&
                         ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
                         // Turn every non-wingman, non-flagged escort hostile (count re-fetched each pass).
                         for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; ++i) {
@@ -4267,7 +4255,19 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
+                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
+                        player->getHackingGameDockIndex() >= 0) {
+                        PlayerFixedObject *target =
+                            (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
+                        if (target->getDockingType() == 3 && dockingCount == 1) {
+                            ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                                ->setDockingType(2);
+                            player->setDockingState(2);
+                            Globals::status->field_178 = 0;
+                            m_nState++; // shared epilogue 0x13953c
+                        }
                     }
+                }
                 break; // -> post-switch tail (0x144e36)
             }
             case 142: {
