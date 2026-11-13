@@ -2275,6 +2275,7 @@ case4Tail:
                     return;
                 }
                 case 2: {
+                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int coords[6] = {
                         (int) (float) (-20000 - Globals::rnd->nextInt(20000)),
                         0,
@@ -2288,7 +2289,6 @@ case4Tail:
                     this->enemies = new Array<KIPlayer *>();
                     int total = convoyEnd + goods;
                     ArraySetLength(total, *this->enemies);
-                    Vector asteroidPos = {0.0f, 0.0f, 0.0f};
                     int offset = 0;
                     for (int i = 0; i < convoyEnd; i++, offset += 2000) {
                         (*this->enemies)[i] = this->createShip(enemyRace, 0, Globals::globals->getRandomEnemyFighter(enemyRace),

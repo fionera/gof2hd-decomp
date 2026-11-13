@@ -238,3 +238,39 @@ Measured on the post-extraAliens HEAD (raw 2,900 / aligned 506):
 
 `raw` rises by 2 while `aligned` falls by 31; `.ARM.extab` unchanged.
 `check` RATCHET PASS (byte_exact 4508 unchanged).
+
+## Session 15: `asteroidPos` hoist re-landed; `extraAliens` bound re-tested
+
+Re-measured the `case 2` `Vector asteroidPos` hoist (declaration moved from
+after `ArraySetLength(total, *this->enemies)` to the top of the case, before
+`int coords[6]`).  It reproduces the original's zero-init stores before the
+first `nextInt` (`b16d4..b1724`) and is a measured aligned win, so it is
+landed even though the whole-function -2 B shift raises raw and `.text`.
+
+| variant | raw | aligned | size | `.text` | `.ARM.extab` |
+|---|---:|---:|---:|---:|---:|
+| HEAD `356da7d29` | 2,902 | 475 | 17,172 | 75,152 | 587 |
+| **`asteroidPos` at top of case 2 (landed)** | **3,495** | **472** | **17,172** | **75,745** | **590** |
+
+`check` RATCHET PASS (byte_exact 4508 unchanged, size-exact 4524, stubs 0,
+missing 0, extra 0, data 843/843, imports 207, lint CLEAN, drift 0).
+
+`extraAliens` loop-bound re-tests (all on the post-hoist tree unless noted;
+none beat the hoist):
+
+| variant | raw | aligned | size |
+|---|---:|---:|---:|
+| `start = guns + pirateEscorts + stationPirates` (reorder) | 2,902* | 475* | 17,172 |
+| init `friendCount + field_164 + field_168 + hostileCount + pirates + start` | 2,902* | 475* | 17,172 |
+| end `start + pirates + extraAliens + ...` | 3,620 | 491 | 17,160 (FAIL) |
+| named `int end = start + extraAliens + pirates + ...` | 3,630 | 439 | 17,160 (FAIL) |
+
+\* measured on the pre-hoist HEAD (identical to base: no codegen change).
+
+The `b3dd0..b3dfa` sum is register-allocation, not source order: the original
+and ours both sum the same five stack values in the order
+`{48, extraAliens, 20, 44, 32}`, but `extraAliens` is spilled to `[sp,#92]`
+in the original and `[sp,#104]` in ours (`b3e60..b3e70` confirms this
+directly in the convoy `miningPlantIndex` sum).  The `mov.w r8,#0` placement
+difference follows from `start` living in `r8` in ours vs `ip` in the
+original; no source spelling tested moves it without changing size.
