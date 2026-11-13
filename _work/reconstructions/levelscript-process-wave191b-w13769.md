@@ -85,3 +85,38 @@ Verified directly against the Thumb (`0x13ad3c..0x13adf6`):
 
 A real aligned win; the single raw byte is a downstream shift, not a
 structural change.  `.rel.plt` byte-identical, gate green.
+
+## Landed: case-125 state-0 route/timer order
+
+Original Thumb `0x139dde..0x139df8`: `RouteC1` (via `new Route`) ->
+`Level::setPlayerRoute` -> `PlayerEgo::setRoute` -> `strd r0,r0,[fp,#144]`
+(`m_nScriptTimerA = 0`, a 64-bit zero store) last.  Source had the timer
+store between the allocation and `setPlayerRoute`.
+
+| metric | before | after |
+|---|---:|---:|
+| raw | 53,057 | **53,058** (+1) |
+| aligned | 20,271 | **20,270** (-1) |
+| size | 57,232 | 57,232 (exact) |
+| `.text` | 74,628 | 74,629 (+1) |
+| `.ARM.extab` | 561 | 561 |
+
+`.rel.plt` byte-identical, gate green.  The +1 raw byte is a downstream
+shift; the aligned count drops by one.
+
+### Tried and reverted (case 125 state 2/3)
+
+* state-2 `awake()` before `Vector playerPos = player->getPosition()`:
+  size 57,240 (gate-fatal).
+* state-2 teardown reorder (setFreeLookMode/enableFirstPersonCam/hideShip/
+  stopShooting/m_bCinematicBreak/Hud/Radar/setLookAtCam): raw 53,062,
+  aligned 20,275 (worse).
+* state-3 `setAutoPilot` before `isDockedToDockingPoint` plus
+  `resetGunDelay` after: raw 53,058, aligned 20,271 (no aligned change).
+* state-3 `m_pHud`/`m_pRadar` before `resetCamera`: raw 53,058,
+  aligned 20,271 (no aligned change).
+* state-3 `setLookAtCam(false)` before `setTarget`: raw 53,668,
+  aligned 20,299 (much worse).
+* state-3 `setComputerControlled(false)` before `setTarget`/`setLookAtCam`:
+  raw 53,059, aligned 20,270 (no aligned change).
+* state-0 `} if (m_nState == 1) {` -> `} else if` : size 57,256 (gate-fatal).
