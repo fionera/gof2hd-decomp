@@ -637,12 +637,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     if (__builtin_expect(!this->lockConfirmed, 0)) {  // lint: arm_builtin
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
+                    this->field_0x14 = this->field_0x18;
                     if (this->field_0x1a8) {
                         this->level->getPlayer()->dockToPlanet();
                     }
-                    this->field_0x14 = this->field_0x18;
                 }
-                if ((this->planetLockTimer < 1) || (missionBlocksPlanets != 0)) {
+                if ((missionBlocksPlanets != 0) || (this->planetLockTimer < 1)) {
                     goto enemies;
                 }
                 Sprite *blip;
