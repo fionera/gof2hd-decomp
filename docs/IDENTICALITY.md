@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **51,525** | 22,801 | 57,232 |
+| `LevelScript::process` | **51,519** | 22,815 | 57,232 |
 | `Radar::draw` | **6,013** | 1,965 | 9,908 |
 | `Layout` C1/C2 | **5,232** | 2,700 | 7,072 |
 | `Level::createMission` | **2,626** | 845 | 17,172 |
@@ -30,11 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **10** | 112 | 11,440 |
 
-Current section deltas: `.text` **71,208**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **71,202**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13570, wave 191b, pass 3): case-14 teardown
+  `removeAllGuns()` before `stopShooting`/`m_pHud->visible`; case-42
+  teardown `setVulnerable(false)` before `hideShipForFirstPersonCameraView`.
+  Raw **51,525 -> 51,519** (-6), aligned 22,801 -> 22,815, size
+  57,232/57,232 exact.  `.text` 71,208 -> 71,202 (-6); `.ARM.extab` 577,
+  `.rodata` 0 unchanged, `.rel.plt` byte-identical.
 * `Status::missionCompleted` (w13569, wave 191b, pass 2): delete the now-dead
   `__emutls_unregister_key` `.rodata` codegen helper.  It only existed to
   give the pre-pass `blx` a target; once the caller switched to `getType()`

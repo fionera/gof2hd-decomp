@@ -1605,14 +1605,14 @@ bool LevelScript::process(int delta) {
                     resetCamera(m_pLevel);
                     m_pCamera->enableFirstPersonCam(false);
                     player->setSpeed(0.0f);
-                    m_pHud->visible = 0;
+                    player->player->removeAllGuns();
                     player->stopShooting(0);
                     m_pRadar->enabled = 0;
                     m_bCinematicBreak = 1;
                     m_pCamera->setLookAtCam(true);
                     player->setComputerControlled(true);
                     m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
-                    player->player->removeAllGuns();
+                    m_pHud->visible = 0;
                     m_pCamera->setTarget(player->geometry);
                     m_pCamera->setPosition(player->getPosition());
                     for (unsigned int i = 0; i < enemies->count; i++) {
@@ -2141,14 +2141,14 @@ bool LevelScript::process(int delta) {
                         player->setFreeLookMode(false);
                         m_pHud->visible = 0;
                         m_pCamera->enableFirstPersonCam(false);
-                        player->hideShipForFirstPersonCameraView(false);
+                        player->player->setVulnerable(false);
                         player->setComputerControlled(true);
                         m_pCamera->setTarget(((PlayerStation *) (*self->getLandmarks())[0])->rootGeometry);
                         m_pCamera->setPosition(player->getPosition());
                         m_pCamera->setLookAtCam(true);
                         m_pRadar->enabled = 0;
                         player->setVisible(false);
-                        player->player->setVulnerable(false);
+                        player->hideShipForFirstPersonCameraView(false);
                         m_bCinematicBreak = 1;
                         m_tempVec = 5000.0f * AbyssEngine::AEMath::VectorNormalize(player->getPosition());
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
