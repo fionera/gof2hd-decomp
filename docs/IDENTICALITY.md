@@ -17,9 +17,9 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **51,621** | 21,451 | 57,232 |
 | `Radar::draw` | **6,018** | 1,927 | 9,908 |
-| `Layout` C1/C2 | **5,265** | 2,453 | 7,072 |
+| `Layout` C1/C2 | **5,266** | 2,442 | 7,072 |
 | `Level::createMission` | **2,626** | 864 | 17,172 |
-| `MGame::OnTouchEnd` | **2,910** | 1,479 | 8,080 |
+| `MGame::OnTouchEnd` | **3,650** | 694 | 8,080 |
 | `HangarWindow::render` | **1,040** | 516 | 9,700 |
 | `Level::createShip` | **1,165** | 385 | 2,764 |
 | `Status::missionCompleted` | **71** | 38 | 1,432 |
@@ -30,11 +30,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **8** | 108 | 11,440 |
 
-Current section deltas: `.text` **71,375**, `.ARM.extab` **577**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **72,116**, `.ARM.extab` **564**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `MGame::OnTouchEnd` (w13692, wave 191b): restore the original campaign
+  else-if chain order (15,22,43,42,95,65,81,74,96,100,110,120,126,127,134,
+  144,155,161,162) and the independent-store bodies (arm-81, arm-110,
+  arm-134, arm-162, arm-96/127).  Raw **2,910 -> 3,650** (+740), aligned
+  **1,479 -> 694** (-785), size 8,080/8,080 exact; `.ARM.extab` content
+  diff 577 -> 564.  The fully faithful order is 8,084 B; the landed order
+  is the best size-exact permutation found.
+* `Layout` C1/C2 (w13670, wave 191b): `field_0x168` n9 arm `37.5f -> 37.0f`
+  (the field is `int`; both truncate to 37, so the store image is
+  unchanged).  Raw **5,265 -> 5,266** (+1), aligned **2,453 -> 2,442**
+  (-11), size 7,072/7,072 exact.
 * `LevelScript::process` (w13646, wave 191b): case-70 state-0 teardown
   order (`radar->enabled` before `setActive`, `hud->visible` after
   `setLookAtCam`).  Raw **51,622 -> 51,621** (-1), aligned 21,451 (tie),
