@@ -17,10 +17,10 @@ Residual table (raw / aligned / size; all size-exact):
 |---|---:|---:|---:|
 | `LevelScript::process` | **52,842** | 20,218 | 57,232 |
 | `Radar::draw` | **6,960** | 1,397 | 9,908 |
-| `Layout` C1/C2 | **5,497** | 2,103 | 7,072 |
+| `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
 | `Level::createMission` | **2,635** | 595 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
-| `HangarWindow::render` | **1,040** | 516 | 9,700 |
+| `HangarWindow::render` | **1,013** | 479 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **90** | 32 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,11 +30,21 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,612**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,582**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `HangarWindow::render` (w13767, wave 191b): free-credits block rebuilt
+  in the original W R H C X Y statement order (`getWidth`, `rowHeight`,
+  `getHeight`, `Globals::Canvas`, `SetColor`, then `textX`/`textY`) with
+  a `volatile int` copy feeding both `DrawString` calls.  Raw
+  **1,040 -> 1,013** (-27), aligned **516 -> 479** (-37), size
+  9,700/9,700 exact.
+* `Layout` C1/C2 (w13763 pass 2, wave 191b): `field_0x2c_rowHeight` /
+  `field_0x34` store swap.  Raw **5,497 -> 5,494** (-3), aligned
+  **2,103 -> 2,095** (-8), size 7,072/7,072 exact.  This batch moves
+  `.text` 74,612 -> 74,582; `.ARM.extab` stays 561.
 * `LevelScript::process` (w13748 + w13771, wave 191b): case-16 state 1
   `cinematicBreak` after `forceUpdate`, and case-80 state 0 faithful
   order (`setTurretMode` -> `resetCamera` -> `setFreeLookMode` ->

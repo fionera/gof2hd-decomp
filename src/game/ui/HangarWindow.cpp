@@ -1061,19 +1061,19 @@ void HangarWindow::render() {
             int y = (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * row + baseY;
             button->setPosition(baseX, y);
             if (visible) {
-                int rh = Globals::layout->field_0x2c_rowHeight;
                 int width = button->getWidth();
+                int rh = Globals::layout->field_0x2c_rowHeight;
                 int height = button->getHeight();
-                int textX = width + baseX + rh;
-                int textY = (int) ((float) y + (float) height * 0.2f);
-                volatile int &textYv = textY;
                 PaintCanvas *canvas = Globals::Canvas;
                 canvas->SetColor(0xffffffffu);
+                int textX = width + baseX + rh;
+                int textY = (int) ((float) y + (float) height * 0.2f);
+                volatile int textYv = textY;
                 canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textYv, false);
                 canvas->SetColor(0x777777ffu);
                 if (i == 0) {
-                    canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4, false);
+                    canvas->DrawString(hangarFont(), String(""), textX, textYv + Globals::layout->field_0x4, false);
                 } else {
                     canvas->DrawString(
                         hangarFont(),
