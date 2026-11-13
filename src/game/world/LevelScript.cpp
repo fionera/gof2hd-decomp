@@ -979,7 +979,6 @@ bool LevelScript::process(int delta) {
         m_bCinematicBreak = 1;
         switch (m_nState) {
             case 0: {
-                AbyssEngine::PaintCanvas *canvas983 = Globals::Canvas;
                 // Build the arrival rumble up, then seat the station model and play its sting.
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 10000.0f;
@@ -989,9 +988,9 @@ bool LevelScript::process(int delta) {
                 m_pCamera->setRumblePercentage(rumble, 100);
                 if (m_nScriptTime >= 10001) {
                     m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f});
-                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) canvas983->TransformGetTransform(m_pGeometry5->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nState = 1;

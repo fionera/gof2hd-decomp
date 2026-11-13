@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,203** | 18,234 | 57,232 |
+| `LevelScript::process` | **53,200** | 18,212 | 57,232 |
 | `Radar::draw` | **6,909** | 1,301 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,16 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,877**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,874**, `.ARM.extab` **597**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **77,494 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
-exactly three sections -- `.text` 76,877, `.ARM.extab` 597, `.note.gnu.build-id` 20. All other
+Whole-file diff: **77,491 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
+exactly three sections -- `.text` 76,874, `.ARM.extab` 597, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
 
+* `LevelScript::process` (w13908, wave 192): mission-81 state-0 drops the `canvas983` local and calls `Globals::Canvas->TransformGetTransform` directly, deferring the GOT load past `setPosition`.  Raw **53,203 -> 53,200** (-3), aligned **18,234 -> 18,212** (-22), size 57,232/57,232 exact.  `.text` 76,877 -> 76,874; `.ARM.extab` 597 unchanged.
 * `Radar::draw` (w13901, wave 192): apply `setFrame` inside each blip arm instead of after the branch.  Raw **6,909** unchanged, aligned **1,303 -> 1,301** (-2), size 9,908/9,908 exact.  `.text` 76,877 unchanged; `.ARM.extab` 597 unchanged.
 * `Layout` C1/C2 (w13836, wave 191b, second pass): three independent-store moves (`field_0x114_strip5c`, `field_0x200`, `field_0x1f0`).  Raw **5,570 -> 5,585** (+15), aligned **2,011 -> 2,005** (-6), size 7,072/7,072 exact.  `.text` 76,785 -> 76,800; `.ARM.extab` 594.
 * `LevelScript::process` (w13905, wave 192, fourth pass): case-94 state-2 scatter loop written as `for (int i = 2; i != 4; i++)` instead of a `do { ... i++; } while (i != 4)`.  Raw **53,208 -> 53,203** (-5), aligned **18,243 -> 18,234** (-9), size 57,232/57,232 exact.  `.text` 76,882 -> 76,877; `.ARM.extab` 597 unchanged.
