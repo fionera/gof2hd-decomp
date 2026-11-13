@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,053** | 19,355 | 57,232 |
-| `Radar::draw` | **6,925** | 1,303 | 9,908 |
+| `LevelScript::process` | **53,088** | 19,164 | 57,232 |
+| `Radar::draw` | **6,909** | 1,303 | 9,908 |
 | `Layout` C1/C2 | **5,571** | 2,011 | 7,072 |
 | `Level::createMission` | **3,375** | 463 | 17,172 |
 | `MGame::OnTouchEnd` | **3,665** | 545 | 8,080 |
@@ -30,11 +30,15 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,987**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,006**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13838, wave 192): case-157 states 7/8/9 statement reorders.  Raw **53,053 -> 53,077** (+24), aligned **19,355 -> 19,228** (-127), size 57,232/57,232 exact.  `.text` 75,987 -> 76,011; `.ARM.extab` 552.
+* `LevelScript::process` (w13826, wave 191b): case-157 state-0/1 order.  Raw **53,077 -> 53,086** (+9), aligned **19,228 -> 19,198** (-30), size 57,232/57,232 exact.  `.text` 76,011 -> 76,020; `.ARM.extab` 552.
+* `LevelScript::process` (w13828, wave 191b): case-154 state-4 `moveForward` before the camera-local block.  Raw **53,086 -> 53,088** (+2), aligned **19,198 -> 19,164** (-34), size 57,232/57,232 exact.  `.text` 76,020 -> 76,022; `.ARM.extab` 552.
+* `Radar::draw` (w13829, wave 191b): campaign guard gains an upper bound (`campaign >= 2 && campaign < 0x100`), reproducing the original unsigned-range test shape.  Raw **6,925 -> 6,909** (-16), aligned 1,303 unchanged, size 9,908/9,908 exact.  `.text` 76,022 -> 76,006; `.ARM.extab` 552.
 * `Level::createMission` (w13803, wave 191b, passes 25-27): raid-scope globals local, case-4 hunter loop reads `this->enemies` directly, and the `hunterCount == 0` guard.  Raw **3,495 -> 3,375** (-120), aligned **472 -> 463** (-9), size 17,172/17,172 exact.  `.text` 76,108 -> 75,988; `.ARM.extab` 595 -> 552.
 * `LevelScript::process` (w13820, wave 191b): case 157/158 and state-machine statement reorders.  Raw **52,997 -> 53,053** (+56), aligned **19,531 -> 19,355** (-176), size 57,232/57,232 exact.  `.text` 76,052 -> 76,108; `.ARM.extab` 596 -> 595.  The raw rise is branch-offset shift from the reorders; the instruction-level alignment is the structural progress.
 * `Layout` C1/C2 (w13808, wave 191b, second harvest, rebased on w13816): the `field_0x94`/`field_0x1ec` order on top of the w13816 independent-store order.  Raw **5,572 -> 5,571** (-1), aligned **2,012 -> 2,011** (-1), size 7,072/7,072 exact.  `.text` 75,988 -> 75,987; `.ARM.extab` 552 (unchanged).

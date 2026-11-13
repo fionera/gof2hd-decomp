@@ -534,7 +534,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr ||
                 this->lockedStation != nullptr;
-    if (campaign >= 2 && this->planetTargets != nullptr && !alienOrbit &&
+    if (campaign >= 2 && campaign < 0x100 && this->planetTargets != nullptr && !alienOrbit &&
         !this->level->getPlayer()->isDockingToPlanet()) {
         Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
         bool planetHit = false;
