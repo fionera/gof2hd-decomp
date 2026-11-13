@@ -15,8 +15,8 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,728** | 20,614 | 57,232 |
-| `Radar::draw` | **6,942** | 1,430 | 9,908 |
+| `LevelScript::process` | **52,774** | 20,612 | 57,232 |
+| `Radar::draw` | **6,960** | 1,404 | 9,908 |
 | `Layout` C1/C2 | **5,265** | 2,442 | 7,072 |
 | `Level::createMission` | **2,593** | 702 | 17,172 |
 | `MGame::OnTouchEnd` | **3,683** | 544 | 8,080 |
@@ -30,11 +30,22 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,206**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **74,270**, `.ARM.extab` **561**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `Radar::draw` (w13751 pass 3 + w13756, wave 191b): gas-cloud range-test
+  axis order (x target-ego, y/z ego-target, matching the per-axis `vsub`
+  direction), gas loop reads `this->cameraZ` directly, and the enemy lock
+  label uses `this->targetPos` directly.  Raw **6,942 -> 6,960** (+18),
+  aligned **1,430 -> 1,404** (-26), size 9,908/9,908 exact.
+* `LevelScript::process` (w13762 pass 2, wave 191b): shared-tail
+  teardown order restored to 0x138000 (`field_0x24=0`, start-sequence
+  flags, `setLookAtCam(false)`, `setVulnerable(true)`, cinematic break,
+  `setCollide(true)`, then `Globals::status`).  Raw **52,728 -> 52,774**
+  (+46), aligned **20,614 -> 20,612** (-2), size 57,232/57,232 exact.
+  This batch moves `.text` 74,206 -> 74,270; `.ARM.extab` stays 561.
 * `MGame::OnTouchEnd` (w13745, wave 191b): cinematic case-0 moved into
   the switch default behind an explicit `getCurrentCampaignMission()==0`
   test (clang now emits the original `cmp #1` / `cmp #0` order), and the

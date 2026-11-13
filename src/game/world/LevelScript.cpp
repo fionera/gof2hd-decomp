@@ -1480,12 +1480,12 @@ bool LevelScript::process(int delta) {
             Level *lvl = m_pLevel;
             field_0x24 = 0;
             m_bStartSequence = 0;    // active = false
-            Status *st = Globals::status;
-            m_pCamera->setLookAtCam(false);
-            lvl->getPlayer()->setCollide(true);
-            m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
             m_bStartSequenceOver = 1; // startSequenceIsOver = true
+            m_pCamera->setLookAtCam(false);
             lvl->getPlayer()->player->setVulnerable(true);
+            m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
+            lvl->getPlayer()->setCollide(true);
+            Status *st = Globals::status;
 
             if (Level::programmedStation != 0) {
                 if (!Level::programmedStation->equals(st->getStation())) {
