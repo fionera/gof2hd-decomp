@@ -1662,24 +1662,23 @@ bool LevelScript::process(int delta) {
             case 16: {
                 // Wormhole tutorial: show the target, open the wormhole and send the enemies through.
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
-                    m_pCamera->enableFirstPersonCam(false);
-                    Level *self = m_pLevel;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
-                    player->stopShooting(0);
+                    m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
                     m_bCinematicBreak = 1;
-                    player->setComputerControlled(true);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
+                    player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
-                    m_pCamera->setTarget((*self->getEnemies())[0]->geometry);
-                    Vector camPos = (*self->getEnemies())[0]->getPosition();
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     camPos += Vector{6000.0f, 4000.0f, 47500.0f};
                     m_pCamera->setPosition(camPos);
-                    self->lodManager->forceUpdate(delta, false);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
                     TargetFollowCamera *cam1688 = m_pCamera;
