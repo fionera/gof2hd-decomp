@@ -2450,13 +2450,13 @@ bool LevelScript::process(int delta) {
                     // from the .rodata pool: @0x13c188 = -5000000.0f (parked-position z).
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
-                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                         m_nState = 2;
                         (*m_pLevel->getEnemies())[0]->setActive(false);
@@ -4133,8 +4133,8 @@ bool LevelScript::process(int delta) {
                 // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
                 if (__builtin_expect((m_nState == 1), 1)) { // lint: arm_builtin
                     // Advance once the mission's production quota is at least half filled.
-                    int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
                     int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
+                    int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
                     if (statusValue >= amount / 2) {
                         m_nState++;
                     }
@@ -4152,9 +4152,9 @@ bool LevelScript::process(int delta) {
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     KIPlayer *enemy = (*enemies)[i];
                     if (enemy->shipGroup == 8 && enemy->isDead()) {
+                        (*enemies)[i]->revive();          // vtable+0x18
                         Vector playerPos = player->getPosition();
                         (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
-                        (*enemies)[i]->revive();          // vtable+0x18
                         (*enemies)[i]->player->setEnemy(player->player);
                         delete (*enemies)[i]->cargo;
                         (*enemies)[i]->cargo = nullptr;
@@ -4242,7 +4242,7 @@ bool LevelScript::process(int delta) {
                     // state 0 (0x139688): once the player has won the hacking mini-game at a valid dock,
                     // rename that dock and clear its docking type, then advance to state 1 (which falls
                     // straight into the shared conclusion tail below).
-                    if (player->hackingWon() && player->isDockedToDockingPoint() &&
+                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
                         player->getHackingGameDockIndex() >= 0) {
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                             ->setName(String("", false));

@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **53,032** | 19,927 | 57,232 |
+| `LevelScript::process` | **53,034** | 19,884 | 57,232 |
 | `Radar::draw` | **6,996** | 1,318 | 9,908 |
 | `Layout` C1/C2 | **5,538** | 2,032 | 7,072 |
 | `Level::createMission` | **2,902** | 475 | 17,172 |
@@ -30,7 +30,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **75,119**, `.ARM.extab` **587**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,121**, `.ARM.extab` **587**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
@@ -44,6 +44,7 @@ Landed changes:
 * `LevelScript::process` (w13787, wave 191b): mission-154 s7 `setPosition(dir*10000)` before the `m_nScriptTimerA += delta` bump.  Raw **53,100 -> 53,035** (-65), aligned **19,937 -> 19,938** (+1), size 57,232/57,232 exact.  `.text` 75,146 -> 75,081; `.ARM.extab` 587.
 * `LevelScript::process` (w13790, wave 191b, case-16): camera target before the position load.  Raw **53,035 -> 53,032** (-3), aligned **19,938 -> 19,927** (-11), size 57,232/57,232 exact.  `.text` 75,081 -> 75,078; `.ARM.extab` 587.
 * `Radar::draw` (w13789, wave 191b): `bool missionBlocksPlanets` plus two dropped hints.  Raw **6,955 -> 6,996** (+41), aligned **1,336 -> 1,318** (-18), size 9,908/9,908 exact.  `.text` 75,078 -> 75,119; `.ARM.extab` 587.
+* `LevelScript::process` (w13769, wave 191b, cases 69/70/135/139): statement order and the case-69 state-1 LOD `forceUpdate` moved after `resetCamera`.  Raw **53,032 -> 53,034** (+2), aligned **19,927 -> 19,884** (-43), size 57,232/57,232 exact.  `.text` 75,119 -> 75,121; `.ARM.extab` 587.
 * `Level::createMission` (w13773, wave 191b): pirateFortress gun reload after store, case-2 route coords brace init with goods after Route, stationPirates createStaticObject-before-pirateBase, stationPirates escort Vector pos inline initializer, case-4 hunter loop drops the globals local, and extraAliens reads spawnPosition directly.  Raw **3,389 -> 2,900** (-489), aligned **531 -> 506** (-25), size 17,172/17,172 exact.  `.text` 75,798 -> 75,309; `.ARM.extab` 590 -> 587.
 * `Layout` C1/C2 (w13775, wave 191b, second harvest): two more independent store swaps.  Raw **5,542 -> 5,541** (-1), aligned **2,049 -> 2,033** (-16), size 7,072/7,072 exact.  `.text` 75,309 -> 75,308; `.ARM.extab` 587.
 * `Layout` C1/C2 (w13775, wave 191b): store swap `s(188,196)` plus three more independent store swaps.  Raw **5,494 -> 5,542** (+48), aligned **2,095 -> 2,049** (-46), size 7,072/7,072 exact.  `.text` 75,750 -> 75,798; `.ARM.extab` 590.
