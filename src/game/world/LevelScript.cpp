@@ -2042,14 +2042,14 @@ bool LevelScript::process(int delta) {
                     m_pLevel->field_74->enableSystemEmit(field_0xe0, true);
                     m_pLevel->field_74->enableSystemEmit(field_0xe4, true);
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
+                    freighter->player->setHitpoints(9999999);
+                    ((PlayerFixedObject *) freighter)->setMoving(false);
                     m_pCamera->setTarget(freighter->geometry);
                     m_pCamera->setPosition(freighter->getPosition());
                     m_pCamera->translate(-3000.0f, -2000.0f, 12000.0f);
-                    freighter->player->setHitpoints(9999999);
-                    m_nScriptTimerA = 0;
-                    (*enemies)[0]->player->StopEngineSound();
                     Globals::sound->play(155, nullptr, nullptr, 0.0f);
-                    ((PlayerFixedObject *) freighter)->setMoving(false);
+                    (*enemies)[0]->player->StopEngineSound();
+                    m_nScriptTimerA = 0;
                 } else if (m_nState == 2) {
                     (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
