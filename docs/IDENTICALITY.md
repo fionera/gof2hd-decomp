@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **52,886** | 20,148 | 57,232 |
+| `LevelScript::process` | **53,130** | 20,091 | 57,232 |
 | `Radar::draw` | **7,113** | 1,366 | 9,908 |
 | `Layout` C1/C2 | **5,494** | 2,095 | 7,072 |
 | `Level::createMission` | **2,660** | 584 | 17,172 |
@@ -30,11 +30,12 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **28** | 16 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **74,804**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **75,048**, `.ARM.extab` **562**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Landed changes:
 
+* `LevelScript::process` (w13769, wave 191b): mission-0x4e state 1/10/12 statement order, mission-154 state-2 body/tail order, and the duplicate `field_68` gamma-HP store removed.  Raw **52,886 -> 53,130** (+244), aligned **20,148 -> 20,091** (-57), size 57,232/57,232 exact.  `.text` 74,804 -> 75,048; `.ARM.extab` 562.
 * `Radar::draw` (w13758 passes 10-11, wave 191b): planet-lock store after the lock-confirmed sound plus the `planetLockTimer`/`missionBlocksPlanets` condition order, and the EMP block uses an `empCanvas` local with `barWidth` stored before `DrawRegion2D`.  Raw **6,960 -> 7,113** (+153), aligned **1,397 -> 1,366** (-31), size 9,908/9,908 exact.  `.text` 74,651 -> 74,804; `.ARM.extab` 562.
 * `LevelScript::process` (w13748, wave 191b): case-0 intro teardown order, case-16 s1 `forceUpdate` placement, and case-145 s5 `cinematicBreak`/radar store order.  Raw **52,863 -> 52,886** (+23), aligned **20,203 -> 20,148** (-55), size 57,232/57,232 exact.  `.text` 74,628 -> 74,651; `.ARM.extab` 562.
 * `LevelScript::process` (w13748, wave 191b): case-145 state 5 and

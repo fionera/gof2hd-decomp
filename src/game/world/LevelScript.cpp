@@ -808,8 +808,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
                         m_nState = 9;
-                        m_pCamera->setRumblePercentage(0.0f, 0);
                         m_nScriptTimerA = 0;
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
@@ -819,16 +819,16 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 9: {
-                    player->setPosition(0.0f, 0.0f, 0.0f);
                     // State 9: jump to the intro planet.
-                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    m_nState = 10;
                     m_pLevel->getStarSystem()->switchPlanetForIntro();
-                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
                     m_pLevel->switchSkyboxForIntro();
+                    player->setPosition(0.0f, 0.0f, 0.0f);
                     m_pLevel->particleRenderBoolPtr->reset();
                     m_pLevel->particleEmitBoolPtr->reset();
+                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
                     m_pGeometry5->setPosition(player->getPosition());
-                    m_nState = 10;
                     m_pCamera->setPosition(5000.0f, 500.0f, -10000.0f);
                     m_nScriptTimerA = 0;
                     break;
@@ -1062,11 +1062,11 @@ bool LevelScript::process(int delta) {
         // 0x138378: dispatch on (m_nState - 1) -> substates s1..s12 (states 0 / >12 do nothing).
         switch (m_nState) {
             case 1: { // s1 @0x1383a0: lock camera onto the station and start its approach animation.
+                m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                         Globals::Canvas->TransformGetTransform(
                                 ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry->transform);
                 t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                 m_nState = 2;
                 break;
             }
@@ -1164,9 +1164,9 @@ bool LevelScript::process(int delta) {
             case 10: { // s10 @0x13b948: pan the camera further, ramp the rumble DOWN over the frame
                        // timer, re-aim the docking model along the current camera direction, then at
                        // timer>=4001 advance to s11 and clear the rumble.
+                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 4000.0f; // @0x13b930
-                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
                 if (!(rumble < 1.0f)) {
                     rumble = 1.0f;
                 }
@@ -1208,8 +1208,8 @@ bool LevelScript::process(int delta) {
                     player->freeze = 0;
                     player->setVisible(true);
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    return m_bCinematicBreak != 0;
                     m_nState = 13;
+                    return m_bCinematicBreak != 0;
                 }
                 break;
             }
@@ -1770,11 +1770,10 @@ bool LevelScript::process(int delta) {
                 // enemy flag, flip all of enemies[1..3] to permanent enemies.
                 if (m_nState == 0) {
                     for (int i = 1; i <= 3; i++) {
-                        Level *self = m_pLevel;
-                        Player *ship = (*self->getEnemies())[i]->player;
+                        Player *ship = (*m_pLevel->getEnemies())[i]->player;
                         if (ship->enemyFlagsLo != 0) {
                             for (int j = 1; j != 4; ++j) {
-                                (*self->getEnemies())[j]->player->setAlwaysEnemy(true);
+                                (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
                             }
                             break;
                         }
@@ -5201,16 +5200,16 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerA >= 6500) {
+                        m_nState++;
                         Globals::status->nextCampaignMission(true);
                         Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
                         Globals::status->field_64 = player->player->getHitpoints();
                         Globals::status->field_5c = player->player->getShieldHP();
-                        m_nState++;
                         Globals::status->field_60 = player->player->getArmorHP();
+                        Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
-                        Globals::status->field_68 = player->player->getGammaHP();
                         Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
