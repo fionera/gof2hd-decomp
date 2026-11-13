@@ -1463,6 +1463,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 158:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
+                    Status *st = Globals::status;
                     int amount = m->getProductionGoodAmount();
                     Array<Item *> *cargo = ship->getCargo();
                     if (Item::isInList(m->getProductionGoodIndex(), amount, cargo)) {
@@ -1474,7 +1475,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     // `if (hasEquipment()) return m` test block instead of a
                     // local `cmp; b`, which is how the original reaches the
                     // same test from case 10.
-                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1) < 0) {
+                    if (st->ship->hasEquipment(m->getProductionGoodIndex(), 1) < 0) {
                         return m;
                     }
                 }
