@@ -1924,30 +1924,29 @@ bool LevelScript::process(int delta) {
                 // Escort the transport to the wormhole; the pirates jump in behind it.
                 if (m_nState == 0) {
                     if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
-                    player->setTurretMode(false);
-                    (*enemies)[0]->setVisible(true);
                     ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
-                    KIPlayer *transport = (*enemies)[0];
-                    transport->setPosition((float) m_pLevel->getFriendRoute()->getWaypoint(0)->x,
+                    (*enemies)[0]->setPosition((float) m_pLevel->getFriendRoute()->getWaypoint(0)->x,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z);
+                    (*enemies)[0]->awake();
+                    (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->shipGroup = 1;
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
                     player->player->setVulnerable(false);
                     m_pHud->visible = 0;
-                    player->hideShipForFirstPersonCameraView(false);
-                    m_pCamera->enableFirstPersonCam(false);
-                    (*enemies)[0]->awake();
                     m_pRadar->enabled = 0;
-                    m_pCamera->setLookAtCam(true);
-                    resetCamera(m_pLevel);
                     player->stopShooting(0);
-                    m_pCamera->setPosition((*enemies)[0]->getPosition());
                     m_bCinematicBreak = 1;
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
-                    m_nState = 1;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setPosition((*enemies)[0]->getPosition());
                     m_pCamera->translate(-7000.0f, 500.0f, 17000.0f);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 1;
                     }
                 } else if (m_nState == 1) {
                     // 0x13e6da: keep the camera drifting backwards while the escort message plays.
