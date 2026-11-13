@@ -824,7 +824,7 @@ void HangarWindow::render() {
                             // setPosition body order (rather than the original
                             // source's setPosition-first order) is the size-exact
                             // shape that aligns the buy-list and free-credits runs.
-                            if (tab == 0) { } else if (__builtin_expect(tab != 3 || Globals::status->getShip() != this->selectedItem->ship, 1)) { // lint: arm_builtin
+                            if (tab == 0) { } else if (__builtin_expect(tab != 3 || this->selectedItem->ship != Globals::status->getShip(), 1)) { // lint: arm_builtin
                                 (*this->buttons)[1]->setVisible(true);
                                 int upgTab = tab;
                                 (*this->buttons)[1]->draw();
@@ -1040,8 +1040,8 @@ void HangarWindow::render() {
                                     Globals::Canvas->GetTextHeight(hangarFont()) * 2);
         }
     } else if (this->freeCreditsActive) {
-        int baseX = Globals::layout->buttonInsetX + this->dialog->x;
-        int baseY = Globals::layout->field_0x2c_rowHeight * 2 + this->dialog->y + Globals::layout->windowTopInset;
+        int baseX = this->dialog->x + Globals::layout->buttonInsetX;
+        int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 2;
         int row = 0;
         for (int i = 0; __builtin_expect(i < 5, 1); i++) { // lint: arm_builtin
             TouchButton *button = (*this->buttons)[18 + i];
