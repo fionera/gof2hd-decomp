@@ -1063,7 +1063,7 @@ void HangarWindow::render() {
                 int width = button->getWidth();
                 int height = button->getHeight();
                 int rh = Globals::layout->field_0x2c_rowHeight;
-                PaintCanvas *canvas = Globals::Canvas;
+                PaintCanvas *volatile canvas = Globals::Canvas;
                 canvas->SetColor(0xffffffffu);
                 int textX = width + baseX + rh;
                 int textY = (int) ((float) y + (float) height * 0.2f);
