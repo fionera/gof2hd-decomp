@@ -42,11 +42,17 @@ campaign` cast it does **not** perturb the object relocation order (see §3).
 |---|---:|---|---|---|
 | base `campaign >= 2` | 6,925 | OK | 0/0/0 | |
 | **`campaign >= 2 && campaign < 0x100`** | **6,909** | **OK** | **0/0/0** | landed |
-| `(unsigned char) campaign >= 2` | 6,358 | DIFF | 7/1/1 | body byte-identical `12e3c6..12febc`; PLT reorder |
+| `(unsigned char) campaign >= 2` | 6,358 | DIFF | 7/1/1 | campaign stays in `sl`; PLT reorder |
+| `int campaign = (unsigned char) getCurrentCampaignMission()` | 6,369 | DIFF | 7/1/1 | same `sl` assignment, slightly different tail |
 | `campaign > 1u` / `>= 2u` / `(campaign>>1)!=0` / `!=0&&!=1` / `(campaign&~1)!=0` | 6,926 | OK | 0/0/0 | +1 |
 | `2 <= campaign`, `campaign - 2 >= 0` | 6,925 | OK | 0/0/0 | identical to base |
 | `(unsigned short) campaign >= 2` | 8,404 | DIFF | — | size 9,916 ✗ |
 | `campaign % 256 >= 2` | 9,515 | OK | — | size 9,856 ✗ |
+
+The 16-byte win is a plateau: `(unsigned) campaign - 2 < 254`, `2 <= campaign && campaign < 0x100`,
+`campaign <= 0xff`, `long campaign`, `uint32_t campaign`, and upper bounds `0x40`/`0x80` all give
+exactly `raw=6909, aligned=1303, size=9908, rel.plt OK, MGame 0/0/0`.  Upper bounds `>= 0x200`
+change codegen (size 9,912+ ✗); `campaign < 256u` changes codegen to 9,848 ✗.
 
 Earlier sessions also tried `short campaign` (7,606, size 9,912 ✗),
 `volatile int campaign` (9,006, size 9,844 ✗), `volatile int mbp` (9,527 ✗),
