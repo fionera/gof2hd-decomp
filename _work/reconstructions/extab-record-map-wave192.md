@@ -66,3 +66,44 @@ disappear automatically once the 9 functions' `.text` matches. What is *structur
 meaningful is the record **size** and the **number/shape of call-site entries** — a
 different entry count means a real missing/extra `try` scope. Use the byte count only as
 a hint, not as a score.
+
+## `HangarWindow::render` LSDA is `.text`-derived (w13912)
+
+> Numbers in this section are from base `.text` 76,882 / `.ARM.extab` 597.
+> Current master is `.text` 76,911 / `.ARM.extab` 552 (w13911 landed the
+> Radar extab -45), so re-measure before relying on the absolute values.
+
+Record `0x1c30fc` (948 B, Generic, personality `0x5eb60`), LSDA proper at record
+offset `0x0c`, CS table `0x1c3111..0x1c34b0`, **156 call-site trips in both
+binaries**. The action table is **identical** (every differing trip has
+`action = 0`); all 15 differing trips are pure ±2 B start / landing-pad shifts
+that track the `.text` shape:
+
+| trips | orig | ours (HEAD, raw 1,395) |
+|---|---|---|
+| 39 | `0x9cc..0xa62` | `0x9cc..0xa78` |
+| 40 | `0xa88..0xb14` | `0xa80..0xb16` |
+| 41–44, 98–100, 130–131, 133–135 | — | ±2 B pad/start shifts |
+
+There is **no `try`/`catch` in `HangarWindow.cpp`**: every landing pad is a
+`String`-temporary destructor cleanup (`add r0,sp,#N` with N in 216…324). The
+tail pads (`0x14b5e0..0x14b6a6`) are the same 12 destructor chains on both
+sides; only their entry addresses shift.
+
+**Shape driver:** the original hoists the ship-guard `ldrd r5,r4,[sp,#132]`
+to `0x149b20` and reloads it after `Status::getShip` at `0x149b3c`. Our source
+keeps `setVisible` -> `int upgTab = tab;` -> `draw` -> `setPosition`.
+
+**Experiment (not landed).** Hoisting `int upgTab = tab;` above the
+`if (tab == 0) {} else if (...)` guard:
+- raw **1,395 -> 1,193**, aligned **396 -> 400**, size **9,700 exact**, insn 3,733/3,734.
+- `.ARM.extab` diff **597 -> 1,238 B**; record region 36 -> 677 B; 34 differing
+  trips (vs 15). Trip 39 shrinks `0x96 -> 0x76`, trip 40 becomes
+  `0xa62/0xb2`; new ±2/±4 shifts at trips 17, 46, 65, 101–122.
+- Variant keeping the `upgradeMode` block *inside* the guard body (using the
+  hoisted `upgTab`): raw 1,193 / aligned 400 / size exact, record region
+  **676 B** — proving the trip-39/40 boundary move is caused by the `upgTab`
+  hoist itself, not by moving the block.
+
+Net loss by the "extab growth must not exceed `.text` savings" rule
+(+641 extab vs -202 text), so HEAD stays at raw 1,395 / aligned 396.
