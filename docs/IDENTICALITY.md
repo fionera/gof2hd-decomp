@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,567** | 17,586 | 57,232 |
+| `LevelScript::process` | **54,769** | 17,576 | 57,232 |
 | `Radar::draw` | **7,017** | 1,252 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,366**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,568**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,941 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,366, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,143 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,568, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14075, wave 192): case-94 docked camera order -- `lookBehind()` then `setRotationAroundTarget(true)` then `player->setFreeLookMode(true)` inside the docked branch; the non-docked branch only does `setPosition(m_dirVec)`.  Raw **54,567 -> 54,769** (+202), aligned **17,586 -> 17,576** (-10), size 57,232/57,232 exact.  `.text` 78,366 -> 78,568 (+202); `.ARM.extab` 555 unchanged; whole-file 78,941 -> 79,143.  Landed under the aligned-primary rule.
 
 * `HangarWindow::render` (w14040, wave 192): materialize the `PaintCanvas *volatile canvas` local after `button->getHeight()` instead of before `getWidth()`.  Raw **1,395 -> 1,414** (+19), aligned **396 -> 395** (-1), size 9,700/9,700 exact.  `.text` 78,347 -> 78,366 (+19); `.ARM.extab` 555 unchanged; whole-file 78,922 -> 78,941.  Landed under the aligned-primary rule.
 

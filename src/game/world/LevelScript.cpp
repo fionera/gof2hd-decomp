@@ -3246,14 +3246,14 @@ bool LevelScript::process(int delta) {
                             bool docked = player->isDockedToDockingPoint();
                             m_pCamera->setLookAtCam(false);
                             if (docked) {
-                                m_pCamera->setRotationAroundTarget(true);
                                 lookBehind();
+                                m_pCamera->setRotationAroundTarget(true);
+                                player->setFreeLookMode(true);
                                 if (field_0xab) {
                                     player->setTurretMode(true);
                                 }
                             } else {
                                 m_pCamera->setPosition(m_dirVec);
-                                player->setFreeLookMode(true);
                             }
                             m_pHud->visible = 1;
                             m_pRadar->enabled = 1;
