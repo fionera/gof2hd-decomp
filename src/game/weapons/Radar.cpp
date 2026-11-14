@@ -353,7 +353,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
     int alienOrbit = Globals::status->inAlienOrbit();
-    int campaign = Globals::status->getCurrentCampaignMission();
+    signed char campaign = (signed char) Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
     this->route = this->level->getPlayerRoute();
@@ -599,7 +599,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
                 int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
                 int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
-                if (this->screenX > left && this->screenX < left + size && this->screenY > top && top + size > this->screenY) {
+                if (this->screenX > left && this->screenX < left + size && this->screenY > top && this->screenY < top + size) {
                     if ((int) i == StarSystem::orbitPlanetIndex) {
                         planetHit = false;
                     } else {

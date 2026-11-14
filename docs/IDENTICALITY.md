@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **53,209** | 18,127 | 57,232 |
-| `Radar::draw` | **6,945** | 1,322 | 9,908 |
+| `Radar::draw` | **6,993** | 1,269 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,544** | 697 | 8,080 |
@@ -30,16 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **76,920**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **76,968**, `.ARM.extab` **552**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **77,492 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
-exactly three sections -- `.text` 76,920, `.ARM.extab` 552, `.note.gnu.build-id` 20. All other
+Whole-file diff: **77,540 of 2,187,328 bytes (3.54 %)** differ, and they are confined to
+exactly three sections -- `.text` 76,968, `.ARM.extab` 552, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
 
+* `Radar::draw` (w13957, wave 192): `campaign` is a `signed char` and the planet-hit rect test ends with `this->screenY < top + size` (the Y compare in the same order as X).  Raw **6,945 -> 6,993** (+48), aligned **1,322 -> 1,269** (-53), size 9,908/9,908 exact.  `.text` 76,920 -> 76,968 (+48); `.ARM.extab` 552 unchanged.  The two edits are coupled: the rect-Y change alone is size-fatal (9,904).
 * `LevelScript::process` (w13932, wave 192): case 139 runs the escort-hostility loop before the hacking-dock block, and the hacking-dock block's stores are ordered `setDockingType` -> `setDockingState` -> `field_178 = 0` -> `m_nState++` (the `m_nState++` was also moved out of the `dockingCount == 1` body into the shared epilogue).  Raw **53,200 -> 53,209** (+9), aligned **18,212 -> 18,127** (-85), size 57,232/57,232 exact.  `.text` 76,911 -> 76,920 (+9); `.ARM.extab` 552 unchanged.
 * `Radar::draw` (w13911, wave 192): the layout row height is reloaded inline for the `i != 0` lock-label `DrawString` and loaded separately inside the `i == 0` tech arm (the source cached it once before the `if (i <= 1)` block).  Raw **6,909 -> 6,945** (+36), aligned **1,301 -> 1,322** (+21), size 9,908/9,908 exact.  `.text` 76,875 -> 76,911 (+36); `.ARM.extab` 597 -> **552** (-45), LSDA record 88 -> 43 differing bytes (`extab_map.py`), call-site table 111 -> 112/112.  Net section bytes **-9**.
 * `MenuTouchWindow::OnTouchBegin` (w13927, wave 192): the case-15 scrollbar test uses the fresh `Globals::layout->field_0xc_leftMargin` and the cached `layout.field_0x20_top` (swap of the two c2 field accesses).  Raw **28 -> 29** (+1), aligned **16 -> 15** (-1), size 1,896/1,896 exact.  `.text` 76,874 -> 76,875 (+1); `.ARM.extab` 597 unchanged.
