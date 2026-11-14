@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **54,567** | 17,586 | 57,232 |
-| `Radar::draw` | **7,016** | 1,263 | 9,908 |
+| `Radar::draw` | **7,017** | 1,252 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,346**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,347**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,921 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,346, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **78,922 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,347, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `Radar::draw` (w14037, wave 192): the asteroid wreck test is a `bool` and the wreck-marker x/y chain uses a `goto wreckDraw` ladder (the `field_0x11e && field_0x11f` arm jumps to the shared `y = screenY` tail instead of duplicating it).  Raw **7,016 -> 7,017** (+1), aligned **1,263 -> 1,252** (-11), size 9,908/9,908 exact.  `.text` 78,346 -> 78,347 (+1); `.ARM.extab` 555 unchanged; whole-file 78,921 -> 78,922.
 
 * `LevelScript::process` (w14022/w14028, wave 192): fix the escort route1 z sign (`r.z * 900000.0f - d.z * 90000.0f`) and drop the redundant `Level *lvl` / `Status *st` locals in the mission>=2 start-sequence block.  Raw **54,573 -> 54,567** (-6), aligned **17,591 -> 17,586** (-5), size 57,232/57,232 exact.  `.text` 78,355 -> 78,346; `.ARM.extab` 555 unchanged; whole-file 78,930 -> 78,921.
 
