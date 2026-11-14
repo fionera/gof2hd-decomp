@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,769** | 17,575 | 57,232 |
+| `LevelScript::process` | **54,769** | 17,548 | 57,232 |
 | `Radar::draw` | **7,017** | 1,252 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -39,6 +39,8 @@ exactly three sections -- `.text` 78,568, `.ARM.extab` 555, `.note.gnu.build-id`
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14082, wave 192): state-9 reveal body order -- `fighter->setPosition(...)` before `setVisible(true)` / `setActive(true)`.  Raw 54,769 unchanged, aligned **17,575 -> 17,548** (-27), size 57,232/57,232 exact.  `.text` 78,568 and `.ARM.extab` 555 unchanged; whole-file 79,143 unchanged.
 
 * `LevelScript::process` (w14073, wave 192): escort route1 z element written as `d.z * -90000.0f - r.z * 900000.0f` (same value, original evaluation order).  Raw 54,769 unchanged, aligned **17,576 -> 17,575** (-1), size 57,232/57,232 exact.  `.text` 78,568 and `.ARM.extab` 555 unchanged; whole-file 79,143 unchanged.
 

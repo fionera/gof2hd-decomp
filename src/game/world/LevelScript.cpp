@@ -5039,9 +5039,9 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
+                        fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
                         fighter->setVisible(true);
                         fighter->setActive(true);
-                        fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
                     }
                     m_tempVec = AbyssEngine::AEMath::VectorNormalize((*enemies)[stationIndex]->getPosition()
                                                                      - fighter->getPosition());
