@@ -1780,7 +1780,7 @@ bool LevelScript::process(int delta) {
                     for (int j = 1; j != 4; ++j) {
                         (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
                     }
-                    m_nState++; // shared tail 0x13aba4 -> 0x13edde
+                    return 1; // shared tail 0x13aba4 -> 0x13edde
                 }
                 break;
             }
