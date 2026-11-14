@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,474** | 17,632 | 57,232 |
+| `LevelScript::process` | **54,461** | 17,610 | 57,232 |
 | `Radar::draw` | **6,993** | 1,269 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,16 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,233**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,220**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,808 of 2,187,328 bytes (3.60 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,233, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **78,795 of 2,187,328 bytes (3.60 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,220, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
 
+* `LevelScript::process` (w13977, wave 192): bisect of the w13965 hint batch -- re-add `__builtin_expect(..., 1)` on `m_nScriptTimerA >= 110001` and `m_nScriptTimerB >= 25001`, and flip `messages[14]->isOver()` from 0 to 1; the other w13965 retunes stay.  Raw **54,474 -> 54,461** (-13), aligned **17,632 -> 17,610** (-22), size 57,232/57,232 exact.  `.text` 78,233 -> 78,220; `.ARM.extab` 555 unchanged.  Strict improvement on both metrics.
 * `LevelScript::process` (w13982, wave 192): the state-2 intro arm calls `m_pCamera->translate/setPosition` directly instead of through a `TargetFollowCamera *camera2` local.  Raw **54,474** unchanged, aligned **17,633 -> 17,632** (-1), size 57,232/57,232 exact.  `.text` 78,233 and `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13962, wave 192): the state-3 intro arm aliases `TargetFollowCamera *wcamera = m_pCamera;` and uses it for `setTarget`/`setFixed`/`setLocal`.  Raw **54,475 -> 54,474** (-1), aligned **17,645 -> 17,633** (-12), size 57,232/57,232 exact.  `.text` 78,234 -> 78,233; `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13965, wave 192): retune the `arm_builtin` hints -- drop the `__builtin_expect(..., 1)` on `isFading()` and on the `messages[2]->isTriggered()` arm, drop the `..., 0` on `m_nScriptTime >= 9001` and on `isInWormhole()`, and flip the `shipGroup == 9` hint from 0 to 1.  Raw **53,310 -> 54,475** (+1,165), aligned **18,050 -> 17,645** (-405), size 57,232/57,232 exact.  `.text` 77,069 -> 78,234 (+1,165); `.ARM.extab` 552 -> 555 (+3).  Hint-only change: no semantics move.

@@ -3791,7 +3791,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 9) {
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 110001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 110001, 1)) { // lint: arm_builtin
                         m_nScriptTimerA = 0;
                         Vector lightDir = AbyssEngine::AEMath::VectorNormalize(
                                 m_pLevel->getStarSystem()->getLightDirection());
@@ -4925,7 +4925,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nScriptTimerB += delta;
-                    if (m_nScriptTimerB >= 25001) {
+                    if (__builtin_expect(m_nScriptTimerB >= 25001, 1)) { // lint: arm_builtin
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
                         m_nScriptTimerB = 0;
@@ -5083,7 +5083,7 @@ bool LevelScript::process(int delta) {
                                                 Vector{0.0f, 0.0f, 0.0f});
                         }
                     }
-                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 0)) { // lint: arm_builtin
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)) { // lint: arm_builtin
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
                         m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
                         m_nScriptTimerA = 0;
