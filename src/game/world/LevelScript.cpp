@@ -2824,9 +2824,9 @@ bool LevelScript::process(int delta) {
                 // Escorting the defector freighter to the station, then flying away with it.
                 if (m_nState == 0) {
                     if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                        m_nScriptTimerB = 0;
                         m_nState = 1;
                         (*enemies)[0]->setActive(true);
-                        m_nScriptTimerB = 0;
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
                                 ->setName(String(*Globals::gameText->getText(3211), false));
                     }
