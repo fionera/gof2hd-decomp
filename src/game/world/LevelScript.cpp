@@ -3607,7 +3607,7 @@ bool LevelScript::process(int delta) {
                         int route1[3] = {
                                 (int) (d.x * -900000.0f - r.x * 900000.0f),
                                 (int) (d.y * -900000.0f - r.y * 900000.0f),
-                                (int) (r.z * 900000.0f - d.z * 90000.0f),
+                                (int) (d.z * -90000.0f - r.z * 900000.0f),
                         };
                         Route *escort0Route = new Route(route0, 3);
                         Route *escort1Route = new Route(route1, 3);
