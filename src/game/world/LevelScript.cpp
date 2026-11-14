@@ -1030,7 +1030,7 @@ bool LevelScript::process(int delta) {
             }
         }
         if (m_nState == 3) {
-            if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
+            if (!Globals::layout->isFading()) {
                 Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
                 Globals::status->nextCampaignMission(true);
                 Globals::switch_to_target_setting = 0;
@@ -1084,7 +1084,7 @@ bool LevelScript::process(int delta) {
                     if (!Globals::sound->isPlaying(1122)) {
                         Globals::sound->play(1122, nullptr, nullptr, 0.0f);
                     }
-                    if (__builtin_expect(m_nScriptTime >= 9001, 0)) { // lint: arm_builtin
+                    if (m_nScriptTime >= 9001) {
                         m_nState = 4;
                     }
                 }
@@ -1698,7 +1698,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
                     m_nState = 3;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
-                } else if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isTriggered(), 1) && m_nState == 3) { // lint: arm_builtin
+                } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
                     m_nState = 4;
                     (*m_pLevel->getLandmarks())[3]->setVisible(true);
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
@@ -2068,7 +2068,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->useTargetsUpVector(false);
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         KIPlayer *ship = (*enemies)[i];
-                        if (__builtin_expect(ship != nullptr && ship->shipGroup == 9, 0)) { // lint: arm_builtin
+                        if (__builtin_expect(ship != nullptr && ship->shipGroup == 9, 1)) { // lint: arm_builtin
                             ship->player->setEnemy(player->player);
                         }
                     }
@@ -2125,7 +2125,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     m_pCamera->setRumblePercentage(0.5f, 30);
                     Globals::sound->setParamValue(1, 153, 0.5f);
-                    if (__builtin_expect((player->isInWormhole()), 0)) { // lint: arm_builtin
+                    if ((player->isInWormhole())) {
                         player->setTurretMode(false);
                         resetCamera(m_pLevel);
                         Level *self = m_pLevel;
@@ -2227,7 +2227,7 @@ bool LevelScript::process(int delta) {
                     if (player->player->getArmorHP() <= 0) {
                         if (enemies != nullptr) {
                             for (unsigned int i = 0; i < enemies->count; i++) {
-                                if (__builtin_expect((*enemies)[i]->player->isAlwaysFriend(), 0)) { // lint: arm_builtin
+                                if ((*enemies)[i]->player->isAlwaysFriend()) {
                                     (*enemies)[i]->player->setShootingEnabled(true);
                                 }
                             }
@@ -3144,7 +3144,7 @@ bool LevelScript::process(int delta) {
                     Vector &v_dirVecA = m_dirVec;
                     m_nScriptTimerA += delta;
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
-                    if ((m_nScriptTimerA >= 8001)) { // lint: arm_builtin
+                    if ((m_nScriptTimerA >= 8001)) {
                         v_dirVecA = (*enemies)[3]->geometry->getDirection();
                         resetCamera(m_pLevel);
                         m_tempVec += v_dirVecA * 10000.0f;
@@ -3506,7 +3506,7 @@ bool LevelScript::process(int delta) {
                                     target = k;
                                 }
                             }
-                            (*enemies)[i]->player->setEnemy(__builtin_expect(target == -1, 1) ? player->player : (*enemies)[target]->player); // lint: arm_builtin
+                            (*enemies)[i]->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
                         }
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
@@ -3599,7 +3599,7 @@ bool LevelScript::process(int delta) {
                     Vector drift = (player->geometry->getDirection() * 6.08f
                                     + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.9f, drift.y * 0.9f, drift.z * 0.9f);
-                    if (__builtin_expect((((RadioMessage *) ((*messages)[1]))->isOver()), 1)) { // lint: arm_builtin
+                    if ((((RadioMessage *) ((*messages)[1]))->isOver())) {
                         Vector r = player->geometry->getRightVector();
                         Vector d = player->geometry->getDirection();
                         int route0[3] = {
@@ -3791,7 +3791,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 9) {
                     m_nScriptTimerA += delta;
-                    if (__builtin_expect(m_nScriptTimerA >= 110001, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerA >= 110001) {
                         m_nScriptTimerA = 0;
                         Vector lightDir = AbyssEngine::AEMath::VectorNormalize(
                                 m_pLevel->getStarSystem()->getLightDirection());
@@ -4103,7 +4103,7 @@ bool LevelScript::process(int delta) {
                         m_nState = 1;
                         int xOff = 25000;
                         for (unsigned int i = 0; i < enemies->count; ++i) {
-                            if (__builtin_expect(((*enemies)[i]->shipGroup == 8), 0)) { // lint: arm_builtin
+                            if (((*enemies)[i]->shipGroup == 8)) {
                                 Vector playerPos = player->getPosition();
                                 (*enemies)[i]->setVisible(true);
                                 (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
@@ -4465,7 +4465,7 @@ bool LevelScript::process(int delta) {
                     for (int i = 0; i < 13; i++) {
                         KIPlayer *enemy = (*enemies)[i];
                         m_tempVec = enemy->geometry->getDirection();
-                        if (__builtin_expect((m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000), 1)) { // lint: arm_builtin
+                        if ((m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000)) {
                             m_tempVec -= enemy->geometry->getRightVector()
                                          * ((float) m_nScriptTimerA / 100000.0f);
                         }
@@ -4595,7 +4595,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
                     m_pCamera->setLocal(local);
-                    if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 0)) { // lint: arm_builtin
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[2]))->isOver(), 1)) { // lint: arm_builtin
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
@@ -4725,7 +4725,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (__builtin_expect(m_nScriptTimerA >= 2001, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerA >= 2001) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*enemies)[i];
                             if (__builtin_expect((ship->shipGroup == 9), 1)) { // lint: arm_builtin
@@ -4859,7 +4859,7 @@ bool LevelScript::process(int delta) {
                         m_nState = 4;
                     }
                 } else if (m_nState == 4) {
-                    if (__builtin_expect(m_nScriptTimerB <= 6999, 1)) { // lint: arm_builtin
+                    if (__builtin_expect(m_nScriptTimerB <= 6999, 0)) { // lint: arm_builtin
                         m_nScriptTimerB += delta;
                     }
                     m_nScriptTimerA += delta;
@@ -4913,7 +4913,7 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 5) {
                     int destroyed;
-                    if (__builtin_expect(Globals::isRunningHDonWeakDevice, 1)) { // lint: arm_builtin
+                    if (Globals::isRunningHDonWeakDevice) {
                         destroyed = 5;
                         for (int i = 6; i < 12; i++) {
                             destroyed += (*enemies)[i]->isDead();
@@ -4925,7 +4925,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nScriptTimerB += delta;
-                    if (__builtin_expect(m_nScriptTimerB >= 25001, 1)) { // lint: arm_builtin
+                    if (m_nScriptTimerB >= 25001) {
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
                         m_nScriptTimerB = 0;
@@ -4970,7 +4970,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     KIPlayer *chaser = (*enemies)[chaserIndex];
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (__builtin_expect((*enemies)[stationIndex]->getPosition().x < chaser->getPosition().x, 1)) { // lint: arm_builtin
+                    if ((*enemies)[stationIndex]->getPosition().x < chaser->getPosition().x) {
                         chaser->geometry->moveForward((float) (delta * 3));
                     }
                     if (((RadioMessage *) ((*messages)[10]))->isTriggered()) {
@@ -5075,7 +5075,7 @@ bool LevelScript::process(int delta) {
                     if (m_pExplosion != nullptr) {
                         m_pExplosion->update(delta, nullptr);
                         m_nScriptTimerA += delta;
-                        if (__builtin_expect((m_nScriptTimerA >= 6001), 0)) { // lint: arm_builtin
+                        if ((m_nScriptTimerA >= 6001)) {
                             m_nScriptTimerA = -2000;
                             Globals::sound->play(2244, nullptr, nullptr, 0.0f);
                             m_pExplosion->start((*enemies)[stationIndex]->getPosition()
@@ -5083,7 +5083,7 @@ bool LevelScript::process(int delta) {
                                                 Vector{0.0f, 0.0f, 0.0f});
                         }
                     }
-                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)) { // lint: arm_builtin
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 0)) { // lint: arm_builtin
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
                         m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
                         m_nScriptTimerA = 0;
@@ -5114,7 +5114,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pExplosion->update(delta, nullptr);
                     m_pCamera->translate((float) (-2 * delta), 0.0f, (float) -delta * 0.33f);
-                    if (__builtin_expect((((RadioMessage *) ((*messages)[15]))->isOver()), 0)) { // lint: arm_builtin
+                    if ((((RadioMessage *) ((*messages)[15]))->isOver())) {
                         m_nScriptTimerA += delta;
                         if (m_nScriptTimerA >= 3001) {
                             m_pGeometry1->setPosition(
@@ -5158,7 +5158,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA < 3000) {
                         m_pCamera->translate((float) (-20 * delta), 0.0f, (float) (-20 * delta));
-                    } else if (__builtin_expect((m_nScriptTimerA < 7000), 0)) { // lint: arm_builtin
+                    } else if ((m_nScriptTimerA < 7000)) {
                         m_pCamera->translate((float) (-3 * delta), 0.0f, (float) delta * -10.0f);
                     }
                     if (m_nScriptTimerA < 5000) {
@@ -5178,13 +5178,13 @@ bool LevelScript::process(int delta) {
                                             - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
                                             Vector{0.0f, 0.0f, 0.0f});
                     }
-                    if (__builtin_expect((m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700), 0)) { // lint: arm_builtin
+                    if ((m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700)) {
                         Globals::sound->play(2248, nullptr, nullptr, 0.0f);
                         Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
                         m_pGeometry1->setVisible(false);
                         (*enemies)[stationIndex]->setVisible(false);
                     }
-                    if (__builtin_expect(m_nScriptTimerA >= 5500, 0)) { // lint: arm_builtin
+                    if (m_nScriptTimerA >= 5500) {
                         m_pExplosion->update(delta, nullptr);
                     }
                     if (m_nScriptTimerA > 5000 && m_nScriptTimerA < 6000) {
@@ -5285,8 +5285,8 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerA >= 4001) {
                         m_nScriptTimerA = 0;
-                        if (__builtin_expect(AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition()) // lint: arm_builtin
-                            < 25000.0f && Globals::rnd->nextInt(100) >= 61, 1)) {
+                        if (AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition())
+                            < 25000.0f && Globals::rnd->nextInt(100) >= 61) {
                             for (unsigned int i = 1; i <= 3; i++) {
                                 if (!(*enemies)[i]->player->isActive()) {
                                     (*enemies)[i]->revive();
