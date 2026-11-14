@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,837** | 17,519 | 57,232 |
+| `LevelScript::process` | **54,838** | 17,510 | 57,232 |
 | `Radar::draw` | **7,017** | 1,252 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,636**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,637**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,211 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,636, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,212 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,637, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14109, wave 192): case-14 uses `m_tempVec` directly instead of a `Vector &tvA` alias.  Raw **54,837 -> 54,838** (+1), aligned **17,519 -> 17,510** (-9), size 57,232/57,232 exact.  `.text` 78,636 -> 78,637; `.ARM.extab` 555 unchanged; whole-file 79,211 -> 79,212.  Landed under the aligned-primary rule.
 
 * `LevelScript::process` (w14107, wave 192): case-21 tail is `return 1;` (original `movs r0,#1; b.w 0x13edde`), not `m_nState++`.  Raw **54,867 -> 54,837** (-30), aligned **17,517 -> 17,519** (+2), size 57,232/57,232 exact.  Difference-hunk count **19 -> 15** (hunks 17/18 merge into one contiguous shift), which is why aligned ticks up while raw falls.  `.text` 78,666 -> 78,636; `.ARM.extab` 555 unchanged; whole-file 79,241 -> 79,211.  Landed for the hunk reduction + control-flow correctness, with the aligned +2 recorded.
 

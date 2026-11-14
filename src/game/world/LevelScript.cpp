@@ -910,15 +910,14 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 14: {
-                    Vector &tvA = m_tempVec;
                     m_nScriptTimerA += delta;
                     float spin = (float) delta / 5000.0f;
                     player->rotate(spin, spin, spin);
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     if (m_nScriptTimerA >= 12001) {
-                        tvA = player->getPosition();
-                        tvA += Vector{-3000.0f, 3500.0f, -6700.0f};
-                        m_pCamera->setPosition(tvA);
+                        m_tempVec = player->getPosition();
+                        m_tempVec += Vector{-3000.0f, 3500.0f, -6700.0f};
+                        m_pCamera->setPosition(m_tempVec);
                         m_nState = 15;
                         m_nScriptTimerA = 0;
                     }
