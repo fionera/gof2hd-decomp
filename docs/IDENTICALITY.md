@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,474** | 17,633 | 57,232 |
+| `LevelScript::process` | **54,474** | 17,632 | 57,232 |
 | `Radar::draw` | **6,993** | 1,269 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -40,6 +40,7 @@ exact.
 
 Landed changes:
 
+* `LevelScript::process` (w13982, wave 192): the state-2 intro arm calls `m_pCamera->translate/setPosition` directly instead of through a `TargetFollowCamera *camera2` local.  Raw **54,474** unchanged, aligned **17,633 -> 17,632** (-1), size 57,232/57,232 exact.  `.text` 78,233 and `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13962, wave 192): the state-3 intro arm aliases `TargetFollowCamera *wcamera = m_pCamera;` and uses it for `setTarget`/`setFixed`/`setLocal`.  Raw **54,475 -> 54,474** (-1), aligned **17,645 -> 17,633** (-12), size 57,232/57,232 exact.  `.text` 78,234 -> 78,233; `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13965, wave 192): retune the `arm_builtin` hints -- drop the `__builtin_expect(..., 1)` on `isFading()` and on the `messages[2]->isTriggered()` arm, drop the `..., 0` on `m_nScriptTime >= 9001` and on `isInWormhole()`, and flip the `shipGroup == 9` hint from 0 to 1.  Raw **53,310 -> 54,475** (+1,165), aligned **18,050 -> 17,645** (-405), size 57,232/57,232 exact.  `.text` 77,069 -> 78,234 (+1,165); `.ARM.extab` 552 -> 555 (+3).  Hint-only change: no semantics move.
 * `LevelScript::process` (w13962, wave 192): in the state-4 leader-follow block, `m_dirVec = leader->getDirection();` is read before `m_tempVec += m_dirVec * ((float) delta * 1.7f);` (the original reloads the direction first).  Raw **53,305 -> 53,310** (+5), aligned **18,068 -> 18,050** (-18), size 57,232/57,232 exact.  `.text` 77,064 -> 77,069 (+5); `.ARM.extab` 552 unchanged.

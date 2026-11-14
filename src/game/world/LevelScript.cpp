@@ -1071,11 +1071,10 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 2: { // s2 @0x13ba5c: pan the camera in; once counter>=7001 reframe it.
-                TargetFollowCamera *camera2 = m_pCamera;
-                camera2->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
+                m_pCamera->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
                 if (m_nScriptTime >= 7001) {
                     m_nState = 3;
-                    camera2->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
+                    m_pCamera->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
                 }
                 break;
             }
