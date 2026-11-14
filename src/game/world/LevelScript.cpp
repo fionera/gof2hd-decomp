@@ -1530,7 +1530,7 @@ bool LevelScript::process(int delta) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
         // shared exit-wormhole body below (the size/isOver/state gate lives there, once).
         goto wormholeExitBody;
-    } else if (__builtin_expect(Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr, 1)) { // lint: arm_builtin
+    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr) {
         // NB: the mission id is read first here (0x13876e), then the message array is null-tested
         // (0x138776) -- the reverse of the mission-50 branch above.
     wormholeExitBody:
