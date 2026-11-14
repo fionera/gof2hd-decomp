@@ -2096,7 +2096,6 @@ bool LevelScript::process(int delta) {
             case 42: {
                 // Leaving the alien system through the wormhole.
                 if (messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()) {
-                    m_nScriptTimerA = 0;
                     Globals::sound->play(153, nullptr, nullptr, 0.0f);
                     m_nScriptTime = 0;
                     delete m_pLevel->objectivesB;
@@ -2105,6 +2104,7 @@ bool LevelScript::process(int delta) {
                     m_pLevel->objectivesA = nullptr;
                     (*m_pLevel->getLandmarks())[3]->setPosition(25000.0f, 20000.0f, -55000.0f);
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
+                    m_nScriptTimerA = 0;
                     m_nState = 6;
                 }
                 // The state tests are ordered 6, 0, 7 (not the numeric order) because that is the
