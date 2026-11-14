@@ -3046,8 +3046,8 @@ bool LevelScript::process(int delta) {
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    m_tempVec += m_dirVec * ((float) delta * 1.7f);
                     m_dirVec = leader->getDirection();
+                    m_tempVec += m_dirVec * ((float) delta * 1.7f);
                     m_dirVec = leader->getRightVector();
                     m_tempVec += m_dirVec * ((float) -delta * 0.03f);
                     m_dirVec = leader->getUpVector();
