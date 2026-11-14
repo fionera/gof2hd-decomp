@@ -20,7 +20,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
-| `HangarWindow::render` | **1,395** | 396 | 9,700 |
+| `HangarWindow::render` | **1,414** | 395 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **45** | 28 | 1,432 |
 | `Gun::calcCharacterCollision` | **463** | 57 | 1,984 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,347**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,366**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,922 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,347, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **78,941 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,366, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `HangarWindow::render` (w14040, wave 192): materialize the `PaintCanvas *volatile canvas` local after `button->getHeight()` instead of before `getWidth()`.  Raw **1,395 -> 1,414** (+19), aligned **396 -> 395** (-1), size 9,700/9,700 exact.  `.text` 78,347 -> 78,366 (+19); `.ARM.extab` 555 unchanged; whole-file 78,922 -> 78,941.  Landed under the aligned-primary rule.
 
 * `Radar::draw` (w14037, wave 192): the asteroid wreck test is a `bool` and the wreck-marker x/y chain uses a `goto wreckDraw` ladder (the `field_0x11e && field_0x11f` arm jumps to the shared `y = screenY` tail instead of duplicating it).  Raw **7,016 -> 7,017** (+1), aligned **1,263 -> 1,252** (-11), size 9,908/9,908 exact.  `.text` 78,346 -> 78,347 (+1); `.ARM.extab` 555 unchanged; whole-file 78,921 -> 78,922.
 
