@@ -881,10 +881,10 @@ bool LevelScript::process(int delta) {
                     float spin = (float) delta / 3000.0f;
                     player->rotate(spin, spin, spin);
                     if (((RadioMessage *) ((*messages)[17]))->isOver()) {
-                        m_nScriptTimerA = 0;
                         m_tempVec = player->getPosition();
                         m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
                         m_pCamera->setPosition(m_tempVec);
+                        m_nScriptTimerA = 0;
                         m_nState = 13;
                     }
                     break;
