@@ -69,3 +69,22 @@ Ours: `[sp,#104]`=status, `[sp,#108]`=security, raid in r8; literal pool 16 B la
 5. `int er = *(volatile int *) &enemyRace;` -> raw 16,473 (known dead end)
 
 No measured win available from the entry block; tree left clean, nothing committed.
+
+## CORRECTION (w13999, 2026-11-14 05:45 UTC) — the table values above were byte-swapped
+
+The `tbh` table starts at `0xb02ac` and the target is `0xb02ac + 2*value`, so the
+halfwords must be read little-endian from `0xb02ac + 2*index`. Re-dumped:
+
+| idx | offset | original | ours | original target | ours target | delta |
+|---|---|---|---|---:|---:|---:|
+| 1 | `0xb02ae` | `0x0a14` | `0x0a13` | `0xb16d4` | `0xb16d2` | **2 bytes** |
+| 3 | `0xb02b2` | `0x0b8a` | `0x0b89` | `0xb19c0` | `0xb19be` | **2 bytes** |
+
+Every other entry is identical. The earlier "`0x140a` vs `0x130a`" / "`0x8a0b` vs
+`0x890b`" figures were byte-swapped reads of these same halfwords, and the
+"0x100 bytes shorter" conclusion was **wrong**: each affected body is only
+**2 bytes** short, and the 2-byte shift is what cascades into the 4,265 raw
+diff. The two bodies to fix are the block ending at `0xb16d4` (idx 1) and the
+block ending at `0xb19c0` (idx 3). w13999 verified idx 2/4 (shared body
+`0xb02d0`-`0xb10c4`, 3,572/3,572 bytes) and `0xb10c6`-`0xb158c`
+(1,222/1,222 bytes) are identical.
