@@ -36,12 +36,14 @@ Facts established by the decode:
 the record. `cs_len` = call-site-table byte length (ULEB). `trips` = number of
 call-site entries. `cs_len` and `action` columns are **orig / ours**. `action` is the raw
 action-record bytes as they appear in the record (not a decoded action
-value); `none` means the record carries no action bytes at all.
+value); `none` means the record carries no action bytes at all. When the
+action table is empty (every trip's action is 0) the bytes shown are just
+trailing alignment padding, not a decoded action.
 
 | function | fn addr | extab off | rec size | diff B | cs_len | trips | action |
 |---|---|---:|---:|---:|---|---|---|
 | `_ZN11LevelScript7processEi` | 0x137d18 | 0x1c2af8 | 348 | 189 | 0x144 / 0x144 | 46 / 46 | `000000` / `000000` |
-| `_ZN5Level13createMissionEv` | 0x0affd8 | 0x1a9ac4 | 956 | 144 | **0x3a6 / 0x3a5 (+1)** | 148 / 148 | **`00` / `0000`** |
+| `_ZN5Level13createMissionEv` | 0x0affd8 | 0x1a9ac4 | 956 | 144 | **0x3a6 / 0x3a5 (+1)** | 148 / 148 | `00` / `0000` (padding only) |
 | `_ZN5Level10createShipEiiiP8Waypointbb` | 0x0c0214 | 0x1ab09c | 336 | 93 | 0x13b / 0x13b | 57 / 57 | none |
 | `_ZN5Radar4drawEP6PlayerP3Hudi` | 0x12e050 | 0x1c203c | 132 | 43 | 0x70 / 0x70 | 19 / 19 | none |
 | `_ZN12HangarWindow6renderEv` | 0x1490d8 | 0x1c30fc | 948 | 36 | 0x39f / 0x39f | 156 / 156 | none |
@@ -86,30 +88,46 @@ call-site table is shifted because the `.text` block lengths differ (trip 0 is
 
 ### `Level::createMission` — record `0x1a9ac4`, 956 B, 144 differing B
 
-**The only structural difference in the whole residual set.** `cs_len` is
-`0x3a6` orig vs `0x3a5` ours (**+1 byte**), and the action record is `00` orig
-vs `0000` ours — i.e. the original's action slot is a 1-byte ULEB (`0`) while
-ours encodes a 2-byte ULEB (`0x80 0x00`). Both decode to action 0, but the
-*encoding* differs: the original's first call-site entry has `action = 0`
-written as a single byte, while ours emits a non-canonical 2-byte ULEB. The
-record is still 956 B in both because our +1 `cs_len` byte is absorbed by a
-shorter landing-pad field elsewhere (see below).
+`cs_len` is `0x3a6` orig vs `0x3a5` ours (**+1 byte**), and the raw action
+bytes are `00` orig vs `0000` ours. **The action record itself is empty in
+both**: all 148 trips decode with `action == 0`, there are no zero-length trips
+in either record, and the trailing `00` / `0000` is only padding to the
+record's 4-byte alignment (both records are 956 B). The `+1` `cs_len` byte is
+not an action-encoding difference either — it is a ULEB boundary in one trip
+length: trip 141 is `(16524, 130, 0, 0)` orig (length 130 = 2-byte ULEB
+`82 01`) vs `(16528, 124, 0, 0)` ours (length 124 = 1-byte `7c`). Both records
+carry 74 distinct landing pads and the same total instruction count
+(8584 = `sum(length)/2`).
 
 Diff offsets:
 `[19,29,42,54,67,79,92,105,117,129,142,155,162,174,186,198,211,223,236,248,261,273,285,291,295,298,302,307,310,314,319,322,326,332,335,339,344,347,351,353,360,372,385,397,398,409,410,422,423,434,446,459,471,484,496,509,522,534,546,559,572,584,597,609,621,633,645,657,669,681,693,706,718,731,743,756,769,782,795,808,820,826,830,833,837,839,843,846,850,852,856,859,863,869,872,876,882,886,890,896,904,907,908,910..952]`
 
-90 of 148 trips differ, almost all by a landing-pad delta of **-2** (orig is
-2 higher than ours), e.g.:
+90 of 148 trips differ. Only these trips change their `(start, length)`:
 
 | trip | orig | ours |
 |---|---|---|
-| 1 | `(228, 4, 17100)` | `(228, 4, 17098)` |
-| 3 | `(860, 8, 17060)` | `(860, 8, 17058)` |
-| 21 | `(4234, 20, 17080)` | `(4234, 20, 17078)` |
+| 43 | `(5532, 334, 0, 0)` | `(5532, 332, 0, 0)` |
+| 129 | `(14196, 974, 0, 0)` | `(14196, 966, 0, 0)` |
+| 131 | `(15178, 674, 0, 0)` | `(15170, 678, 0, 0)` |
+| 133 | `(15860, 190, 0, 0)` | `(15856, 198, 0, 0)` |
+| 141 | `(16524, 130, 0, 0)` | `(16528, 124, 0, 0)` |
+| 142 | `(16654, 8, 16924, 0)` | `(16652, 8, 16920, 0)` |
+| 144 | `(16752, 4, 16984, 0)` | `(16750, 4, 17050, 0)` |
+| 146 | `(16898, 14, 16982, 0)` | `(16896, 14, 17048, 0)` |
+| 147 | `(16912, 260, 0, 0)` | `(16910, 262, 0, 0)` |
 
-The `-2` LP delta tracks the `.text` 4,265 B residual: the landing pads point 2
-bytes lower in our code. The extra `cs_len` byte is a real encoding difference
-(1-byte vs 2-byte action ULEB) but does not change record size.
+Every other differing trip keeps the same `(start, length)` and only its
+landing pad moves. The LP deltas are not uniform: mostly **-2** (orig 2 higher
+than ours), but trips 40-78 (even), 86, 88, 90, 126 and 128 are **-6**;
+80, 82, 84 are **-14**; 142 is **-4**; and 144/146 are **+66** (orig
+16984/16982 vs ours 17050/17048). These are LP shifts from the `tbh` case-body
+codegen, i.e. the `.text` residual owned by w14003/w14004 — not a scope
+structure difference.
+
+**There is no extra cleanup/landing-pad scope to remove.** An extra scope would
+show up as a zero-length trip or a non-empty action table; neither exists. The
+`cs_len` `+1` is the trip-141 ULEB boundary, and all remaining record bytes
+follow the `tbh` case-body `.text` shape.
 
 ### `Level::createShip` — record `0x1ab09c`, 336 B, 93 differing B
 
@@ -212,20 +230,23 @@ therefore still open; any fix must preserve the 1008 B code size.
    and `landing_pad` are code addresses/extents; they change whenever the
    function's `.text` shifts, even with an identical `try`/`catch` structure.
    Only **record size**, **trip count**, and **action bytes** are structural.
-   In this residual set only `createMission` changes a structural field
-   (action encoding `00` vs `0000`, `cs_len` +1); every other difference is a
-   scheduling/extent effect.
+   In this residual set **no record changes a structural field**: every record
+   has the same size, trip count and (empty) action table. `createMission`'s
+   `00`/`0000` action bytes are 4-byte alignment padding, and its `cs_len` +1
+   is the trip-141 length ULEB crossing 127 -> 128, itself a `.text` extent
+   effect.
 2. **No extab-local edit is possible for 8 of 9 records.** They converge only
    when their function's `.text` becomes byte-exact. `Radar::C1` (LP ±2),
    `ModStation::C1` (one 8-byte instruction across a scope boundary), and the
    `-2` LP deltas in `createMission` are the closest to local, but all are still
    `.text` scheduling.
-3. **`createMission`'s 1-byte vs 2-byte action ULEB** is the one encoding
-   difference that is *not* a pure address shift. It may be fixable
-   independently of full `.text` equality if the source shape that produces the
-   first call-site entry's action slot can be matched, but the record size is
-   already correct (956 B), so it yields no `.ARM.extab` byte-count win on its
-   own unless it also changes the LP fields.
+3. **`createMission` has no action-encoding difference.** The action table is
+   empty in both records (all 148 trips `action == 0`), so the `00` vs `0000`
+   bytes are alignment padding. The `cs_len` +1 is trip 141's length ULEB
+   (orig 130 = `82 01`, ours 124 = `7c`), i.e. the protected extent of the
+   `tbh` case-body region owned by w14003/w14004. The record is already 956 B
+   in both, so there is no extab-only byte win: the remaining 144 differing
+   bytes converge only when the `tbh` case bodies become byte-exact.
 4. **`createShip` trip 0/1** is a genuine scope-structure divergence (one 406 B
    unprotected region vs a 28 B protected region + 374 B unprotected region),
    consistent with the known `EmpGuard`/scope issue in that function.

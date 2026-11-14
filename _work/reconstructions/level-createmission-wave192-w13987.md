@@ -88,3 +88,12 @@ diff. The two bodies to fix are the block ending at `0xb16d4` (idx 1) and the
 block ending at `0xb19c0` (idx 3). w13999 verified idx 2/4 (shared body
 `0xb02d0`-`0xb10c4`, 3,572/3,572 bytes) and `0xb10c6`-`0xb158c`
 (1,222/1,222 bytes) are identical.
+
+## LSDA cross-reference (w14021)
+
+The `.ARM.extab` record at `0x1a9ac4` (956 B) has an **empty action table** in
+both binaries (all 148 trips `action == 0`; the `00` vs `0000` bytes are 4-byte
+alignment padding). The `cs_len` `0x3a6` vs `0x3a5` is trip 141's length ULEB
+(orig 130 = `82 01`, ours 124 = `7c`), i.e. the protected extent of the `tbh`
+case bodies — no extra cleanup scope exists. See
+`extab-residual-wave192-w14001.md`.
