@@ -3009,9 +3009,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                     }
                 } else if (m_nState == 3) {
+                    TargetFollowCamera *wcamera = m_pCamera;
                     m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     AEGeometry *leader = (*enemies)[0]->geometry;
-                    m_pCamera->setTarget(leader);
+                    wcamera->setTarget(leader);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
@@ -3021,9 +3022,9 @@ bool LevelScript::process(int delta) {
                     m_tempVec += m_dirVec * ((float) -delta * 0.03f);
                     m_dirVec = leader->getUpVector();
                     m_tempVec += m_dirVec * ((float) delta * 0.05f * 0.004f);
-                    m_pCamera->setFixed(true);
+                    wcamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
-                    m_pCamera->setLocal(local);
+                    wcamera->setLocal(local);
                     for (int i = 0; i < 3; i++) {
                         float speed = (i == 0) ? 2.0f : (i == 1 ? 2.3f : 2.2f);
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
