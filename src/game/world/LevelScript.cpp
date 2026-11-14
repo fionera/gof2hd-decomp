@@ -3614,8 +3614,8 @@ bool LevelScript::process(int delta) {
                         };
                         Route *escort0Route = new Route(route0, 3);
                         Route *escort1Route = new Route(route1, 3);
-                        (*enemies)[1]->setRoute(escort1Route);
                         (*enemies)[0]->setRoute(escort0Route);
+                        (*enemies)[1]->setRoute(escort1Route);
                         for (int i = 0; i < 2; ++i) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;

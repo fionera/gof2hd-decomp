@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,454** | 17,603 | 57,232 |
+| `LevelScript::process` | **54,454** | 17,595 | 57,232 |
 | `Radar::draw` | **6,993** | 1,269 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -43,6 +43,7 @@ Landed changes:
 * `LevelScript::process` (w13977, wave 192): bisect of the w13965 hint batch -- re-add `__builtin_expect(..., 1)` on `m_nScriptTimerA >= 110001` and `m_nScriptTimerB >= 25001`, and flip `messages[14]->isOver()` from 0 to 1; the other w13965 retunes stay.  Raw **54,474 -> 54,461** (-13), aligned **17,632 -> 17,610** (-22), size 57,232/57,232 exact.  `.text` 78,233 -> 78,220; `.ARM.extab` 555 unchanged.  Strict improvement on both metrics.
 * `LevelScript::process` (w13989, wave 192): in the mission-0 exhaust sequence, zero `m_nScriptTimerB` **before** `setExhaustVisible(true)` instead of after.  Raw **54,461 -> 54,455** (-6), aligned **17,610 -> 17,609** (-1), size 57,232/57,232 exact.  `.text` 78,220 -> 78,214; `.ARM.extab` 555 unchanged.  (The same agent's `Level *level` local removal is not landed: raw +119 for aligned -4.)
 * `LevelScript::process` (w14022, wave 192): in the state-4 camera drift, inline `player->geometry` instead of caching it in a local `AEGeometry *g`.  Raw **54,455 -> 54,454** (-1), aligned **17,609 -> 17,603** (-6), size 57,232 exact.  `.text` 78,214 -> 78,213; `.ARM.extab` 555 unchanged.
+* `LevelScript::process` (w14022, wave 192): in the mission-0 escort setup, call `(*enemies)[0]->setRoute(escort0Route)` before `(*enemies)[1]->setRoute(escort1Route)`.  Raw 54,454 unchanged, aligned **17,603 -> 17,595** (-8), size exact.  `.text` 78,213 unchanged, `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13982, wave 192): the state-2 intro arm calls `m_pCamera->translate/setPosition` directly instead of through a `TargetFollowCamera *camera2` local.  Raw **54,474** unchanged, aligned **17,633 -> 17,632** (-1), size 57,232/57,232 exact.  `.text` 78,233 and `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13962, wave 192): the state-3 intro arm aliases `TargetFollowCamera *wcamera = m_pCamera;` and uses it for `setTarget`/`setFixed`/`setLocal`.  Raw **54,475 -> 54,474** (-1), aligned **17,645 -> 17,633** (-12), size 57,232/57,232 exact.  `.text` 78,234 -> 78,233; `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13965, wave 192): retune the `arm_builtin` hints -- drop the `__builtin_expect(..., 1)` on `isFading()` and on the `messages[2]->isTriggered()` arm, drop the `..., 0` on `m_nScriptTime >= 9001` and on `isInWormhole()`, and flip the `shipGroup == 9` hint from 0 to 1.  Raw **53,310 -> 54,475** (+1,165), aligned **18,050 -> 17,645** (-405), size 57,232/57,232 exact.  `.text` 77,069 -> 78,234 (+1,165); `.ARM.extab` 552 -> 555 (+3).  Hint-only change: no semantics move.
