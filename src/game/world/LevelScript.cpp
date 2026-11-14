@@ -1470,18 +1470,16 @@ bool LevelScript::process(int delta) {
         if (m_pLevel->getPlayer() != 0 &&
             Globals::status->getCurrentCampaignMission() >= 2 &&
             field_0x24 >= 7001) {
-            Level *lvl = m_pLevel;
             field_0x24 = 0;
             m_bStartSequence = 0;    // active = false
             m_bStartSequenceOver = 1; // startSequenceIsOver = true
             m_pCamera->setLookAtCam(false);
-            lvl->getPlayer()->player->setVulnerable(true);
+            m_pLevel->getPlayer()->player->setVulnerable(true);
             m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
-            lvl->getPlayer()->setCollide(true);
-            Status *st = Globals::status;
+            m_pLevel->getPlayer()->setCollide(true);
 
             if (Level::programmedStation != 0) {
-                if (!Level::programmedStation->equals(st->getStation())) {
+                if (!Level::programmedStation->equals(Globals::status->getStation())) {
                     m_pHud->hudEvent(5, m_pLevel->getPlayer(), 0);
                 }
             }
@@ -1491,7 +1489,7 @@ bool LevelScript::process(int delta) {
                 setAutoPilotToProgrammedStation();
             }
 
-            if (st->getWingmen() != 0) {
+            if (Globals::status->getWingmen() != 0) {
                 Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
                 for (unsigned int i = 0; i < wingmen->count; ++i) {
                     KIPlayer *wingman = (*wingmen)[i];
@@ -3609,7 +3607,7 @@ bool LevelScript::process(int delta) {
                         int route1[3] = {
                                 (int) (d.x * -900000.0f - r.x * 900000.0f),
                                 (int) (d.y * -900000.0f - r.y * 900000.0f),
-                                (int) (r.z * 900000.0f + d.z * 90000.0f),
+                                (int) (r.z * 900000.0f - d.z * 90000.0f),
                         };
                         Route *escort0Route = new Route(route0, 3);
                         Route *escort1Route = new Route(route1, 3);

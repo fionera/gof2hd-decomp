@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,573** | 17,591 | 57,232 |
+| `LevelScript::process` | **54,567** | 17,586 | 57,232 |
 | `Radar::draw` | **7,016** | 1,263 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,220**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,346**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,930 of 2,187,328 bytes (3.60 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,355, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **78,921 of 2,187,328 bytes (3.61 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,346, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14022/w14028, wave 192): fix the escort route1 z sign (`r.z * 900000.0f - d.z * 90000.0f`) and drop the redundant `Level *lvl` / `Status *st` locals in the mission>=2 start-sequence block.  Raw **54,573 -> 54,567** (-6), aligned **17,591 -> 17,586** (-5), size 57,232/57,232 exact.  `.text` 78,355 -> 78,346; `.ARM.extab` 555 unchanged; whole-file 78,930 -> 78,921.
 
 * `LevelScript::process` (w13977, wave 192): bisect of the w13965 hint batch -- re-add `__builtin_expect(..., 1)` on `m_nScriptTimerA >= 110001` and `m_nScriptTimerB >= 25001`, and flip `messages[14]->isOver()` from 0 to 1; the other w13965 retunes stay.  Raw **54,474 -> 54,461** (-13), aligned **17,632 -> 17,610** (-22), size 57,232/57,232 exact.  `.text` 78,233 -> 78,220; `.ARM.extab` 555 unchanged.  Strict improvement on both metrics.
 * `LevelScript::process` (w13989, wave 192): in the mission-0 exhaust sequence, zero `m_nScriptTimerB` **before** `setExhaustVisible(true)` instead of after.  Raw **54,461 -> 54,455** (-6), aligned **17,610 -> 17,609** (-1), size 57,232/57,232 exact.  `.text` 78,220 -> 78,214; `.ARM.extab` 555 unchanged.  (The same agent's `Level *level` local removal is not landed: raw +119 for aligned -4.)

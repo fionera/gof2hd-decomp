@@ -111,7 +111,7 @@ section stays size- and base-exact. `.rodata`'s original 269,159 B are
 `Status::missionCompleted` rank helper (`src/game/mission/StatusMissionTable.cpp`)
 was removed in wave 191b w13569, so the `.rodata`..`.fini_array` gap is gone. `.fini_array` is back to 8 B @ `0x20cba0`, and
 `.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical again (w13358). The
-differing section bytes are `.text` (78,355), `.ARM.extab` (555), and
+differing section bytes are `.text` (78,346), `.ARM.extab` (555), and
 `.note.gnu.build-id` (20); `.rodata` is now byte-identical. `.rel.plt` is
 **byte-identical** (29,392 B): the wave-150 w9602
 case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
@@ -253,7 +253,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4524** compared): **byte_exact 4508, linked_exact 4508, avg 99.93%**
+Current numbers (of **4524** compared): **byte_exact 4508, linked_exact 4508, avg 99.94%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
