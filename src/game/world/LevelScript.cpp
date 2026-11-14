@@ -3637,9 +3637,8 @@ bool LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // 3 -> 4
                     }
                 } else if (m_nState == 4) {
-                    AEGeometry *g = player->geometry;
                     m_nScriptTimerA += delta;
-                    Vector drift = (g->getDirection() * 6.08f
+                    Vector drift = (player->geometry->getDirection() * 6.08f
                                     + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x * 0.1f, drift.y * 0.1f, drift.z * 0.1f);
                     for (int i = 0; i < 2; ++i) {
