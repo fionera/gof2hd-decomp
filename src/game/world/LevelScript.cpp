@@ -5055,7 +5055,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nFlashCountdown = 300;
                     }
-                    if (__builtin_expect(m_nFlashCountdown > 0, 1)) { // lint: arm_builtin
+                    if (m_nFlashCountdown > 0) {
                         m_nFlashCountdown -= delta;
                         if (m_nFlashCountdown <= 0) {
                             m_nFlashCountdown = 0;
@@ -5078,7 +5078,7 @@ bool LevelScript::process(int delta) {
                                                 Vector{0.0f, 0.0f, 0.0f});
                         }
                     }
-                    if (__builtin_expect(((RadioMessage *) ((*messages)[14]))->isOver(), 1)) { // lint: arm_builtin
+                    if (((RadioMessage *) ((*messages)[14]))->isOver()) {
                         m_tempVec = (*enemies)[stationIndex]->getPosition();
                         m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
                         m_nScriptTimerA = 0;

@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,838** | 17,510 | 57,232 |
+| `LevelScript::process` | **54,842** | 17,499 | 57,232 |
 | `Radar::draw` | **7,017** | 1,252 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,637**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,640**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,212 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,637, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,215 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,640, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14133, wave 192): drop the `__builtin_expect` hints on `m_nFlashCountdown > 0` and `messages[14]->isOver()` in the case-9 cold tail.  Raw **54,838 -> 54,842** (+4), aligned **17,510 -> 17,499** (-11), size 57,232/57,232 exact.  `.text` 78,637 -> 78,640; `.ARM.extab` 555 unchanged; whole-file 79,212 -> 79,215.
 
 * `LevelScript::process` (w14109, wave 192): case-14 uses `m_tempVec` directly instead of a `Vector &tvA` alias.  Raw **54,837 -> 54,838** (+1), aligned **17,519 -> 17,510** (-9), size 57,232/57,232 exact.  `.text` 78,636 -> 78,637; `.ARM.extab` 555 unchanged; whole-file 79,211 -> 79,212.  Landed under the aligned-primary rule.
 
