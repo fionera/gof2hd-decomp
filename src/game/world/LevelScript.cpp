@@ -5241,8 +5241,8 @@ bool LevelScript::process(int delta) {
                         ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
                         if (m_nScriptTimerA >= 34000) {
                             m_nScriptTimerA = 0;
-                            ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(true);
                             m_nScriptTimerB = 0;
+                            ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(true);
                             m_nState = 2;
                         }
                     }
