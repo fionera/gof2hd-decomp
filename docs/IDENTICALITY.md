@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,454** | 17,595 | 57,232 |
+| `LevelScript::process` | **54,573** | 17,591 | 57,232 |
 | `Radar::draw` | **7,016** | 1,263 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -33,8 +33,8 @@ Residual table (raw / aligned / size; all size-exact):
 Current section deltas: `.text` **78,220**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **78,808 of 2,187,328 bytes (3.60 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,233, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **78,930 of 2,187,328 bytes (3.60 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,355, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
@@ -46,6 +46,7 @@ Landed changes:
 * `LevelScript::process` (w14022, wave 192): in the mission-0 escort setup, call `(*enemies)[0]->setRoute(escort0Route)` before `(*enemies)[1]->setRoute(escort1Route)`.  Raw 54,454 unchanged, aligned **17,603 -> 17,595** (-8), size exact.  `.text` 78,213 unchanged, `.ARM.extab` 555 unchanged.
 * `Radar::draw` (w14026, wave 192): rewrite the asteroid wreck-marker x/y branch chain as an explicit `else if` ladder (`field_0x11e && field_0x11f` / `field_0x11e` / `field_0x11f` / else).  Raw **6,993 -> 7,016** (+23), aligned **1,269 -> 1,263** (-6), size 9,908 exact.  `.text` 78,213 -> 78,236 (+23), `.ARM.extab` 555 unchanged.  Aligned win at a raw cost -- accepted under the aligned-primary rule.
 * `MGame::OnTouchEnd` (w14030, wave 192): implement the missing campaign-mission-22 body (switch_to_target_setting, copy hitpoints/shield/armor/gamma into status fields, `active = 0`, `SetCurrentApplicationModule(5)`, return).  Raw **3,544 -> 3,541** (-3), aligned **697 -> 693** (-4), size 8,080 exact.  `.text` 78,236 -> 78,233, `.ARM.extab` 555 unchanged.
+* `LevelScript::process` (w14039, wave 192): drop the cached `Level *level` local and read `m_pLevel` directly.  Raw **54,454 -> 54,573** (+119), aligned **17,595 -> 17,591** (-4), size exact, but the difference-hunk count drops **26 -> 19** -- the residual becomes one contiguous shift instead of 26 scattered clusters.  `.text` 78,233 -> 78,355, whole-file 78,808 -> 78,930.  Landed for the hunk reduction under the aligned-primary rule.
 * `LevelScript::process` (w13982, wave 192): the state-2 intro arm calls `m_pCamera->translate/setPosition` directly instead of through a `TargetFollowCamera *camera2` local.  Raw **54,474** unchanged, aligned **17,633 -> 17,632** (-1), size 57,232/57,232 exact.  `.text` 78,233 and `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13962, wave 192): the state-3 intro arm aliases `TargetFollowCamera *wcamera = m_pCamera;` and uses it for `setTarget`/`setFixed`/`setLocal`.  Raw **54,475 -> 54,474** (-1), aligned **17,645 -> 17,633** (-12), size 57,232/57,232 exact.  `.text` 78,234 -> 78,233; `.ARM.extab` 555 unchanged.
 * `LevelScript::process` (w13965, wave 192): retune the `arm_builtin` hints -- drop the `__builtin_expect(..., 1)` on `isFading()` and on the `messages[2]->isTriggered()` arm, drop the `..., 0` on `m_nScriptTime >= 9001` and on `isInWormhole()`, and flip the `shipGroup == 9` hint from 0 to 1.  Raw **53,310 -> 54,475** (+1,165), aligned **18,050 -> 17,645** (-405), size 57,232/57,232 exact.  `.text` 77,069 -> 78,234 (+1,165); `.ARM.extab` 552 -> 555 (+3).  Hint-only change: no semantics move.
