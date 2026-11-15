@@ -860,8 +860,8 @@ enemies:
             }
         tractor:
             if (this->tractorMode2 && wreck && enemy->isDead() && this->field_0x1c == nullptr) {
-                this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
+                this->dockNavPtr = enemy;
                 enemyHit = true;
             }
         }

@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **54,872** | 17,497 | 57,232 |
-| `Radar::draw` | **7,201** | 1,235 | 9,908 |
+| `Radar::draw` | **7,201** | 1,233 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
@@ -39,6 +39,8 @@ exactly three sections -- `.text` 78,855, `.ARM.extab` 555, `.note.gnu.build-id`
 exact.
 
 Landed changes:
+
+* `Radar::draw` (w14177, wave 192): tail tractor store order -- `this->field_0x1c = enemy;` before `this->dockNavPtr = enemy;`.  Raw **7,201** unchanged, aligned **1,235 -> 1,233** (-2), size 9,908/9,908 exact.  `.text` 78,855 unchanged; `.ARM.extab` 555 unchanged; whole-file 79,430 unchanged.
 
 * `Radar::draw` (w14177, wave 192): `wreck` is an `int` (not `bool`) and the enemy-hit guard drops the `__builtin_expect` on `enemy->field_0x24` (`(!enemyHit || enemy->field_0x24)`).  Raw **7,087 -> 7,201** (+114), aligned **1,247 -> 1,235** (-12), size 9,908/9,908 exact.  `.text` 78,741 -> 78,855 (+114); `.ARM.extab` 555 unchanged; `.ARM.exidx` 0; whole-file 79,316 -> 79,430.  Aligned win at a raw cost -- accepted under the aligned-primary rule.
 
