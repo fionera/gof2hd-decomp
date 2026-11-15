@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **54,872** | 17,497 | 57,232 |
-| `Radar::draw` | **7,087** | 1,247 | 9,908 |
+| `Radar::draw` | **7,201** | 1,235 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,741**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,855**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,316 of 2,187,328 bytes (3.63 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,741, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,430 of 2,187,328 bytes (3.63 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,855, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `Radar::draw` (w14177, wave 192): `wreck` is an `int` (not `bool`) and the enemy-hit guard drops the `__builtin_expect` on `enemy->field_0x24` (`(!enemyHit || enemy->field_0x24)`).  Raw **7,087 -> 7,201** (+114), aligned **1,247 -> 1,235** (-12), size 9,908/9,908 exact.  `.text` 78,741 -> 78,855 (+114); `.ARM.extab` 555 unchanged; `.ARM.exidx` 0; whole-file 79,316 -> 79,430.  Aligned win at a raw cost -- accepted under the aligned-primary rule.
 
 * `Radar::draw` (w14159, wave 192): `missionBlocksPlanets` is a `bool` (not `int`) and the planet-lock early-out is the bitwise disjunction `missionBlocksPlanets | (planetLockTimer < 1)`.  Raw **7,017 -> 7,087** (+70), aligned **1,252 -> 1,247** (-5), size 9,908/9,908 exact.  `.text` 78,670 -> 78,741 (+71); `.ARM.extab` 555 unchanged; `.ARM.exidx` 0; whole-file 79,246 -> 79,316.  Aligned win at a raw cost -- accepted under the aligned-primary rule.
 

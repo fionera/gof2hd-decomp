@@ -691,7 +691,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -835,7 +835,7 @@ enemies:
             if (!this->level->getPlayer()->isAutoPilot() &&
                 __builtin_expect(!this->level->getPlayer()->isDockedToDockingPoint(), 1) && // lint: arm_builtin anchor: Radar::draw
                 !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) &&
-                (!enemyHit || __builtin_expect((enemy->field_0x24), 0)) &&  // lint: arm_builtin
+                (!enemyHit || enemy->field_0x24) &&
                 (!wreck || enemy->isDead())) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
                     this->field_0x1c = enemy;
