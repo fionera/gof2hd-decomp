@@ -5031,8 +5031,8 @@ bool LevelScript::process(int delta) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = (*enemies)[stationIndex]->getPosition();
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
-                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (delta * -10));
                     KIPlayer *fighter = (*enemies)[fighterIndex];
+                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (delta * -10));
                     fighter->geometry->moveForward((float) (2 * delta));
                     fighter->player->shoot(0, (long long) delta, false);
                     m_nScriptTimerA += delta;
