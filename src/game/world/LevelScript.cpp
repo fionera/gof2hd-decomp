@@ -5094,8 +5094,8 @@ bool LevelScript::process(int delta) {
                         m_nState = 10;
                     }
                 } else if (m_nState == 10) {
-                    Vector pos = (*enemies)[stationIndex]->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = (*enemies)[stationIndex]->getPosition();
                     Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
                     m_nScriptTimerB += delta;
                     m_pCamera->setRumblePercentage(0.0f, 0);
@@ -5154,7 +5154,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA < 3000) {
                         m_pCamera->translate((float) (-20 * delta), 0.0f, (float) (-20 * delta));
                     } else if ((m_nScriptTimerA < 7000)) {
-                        m_pCamera->translate((float) (-3 * delta), 0.0f, (float) delta * -10.0f);
+                        m_pCamera->translate((float) (-3 * delta), 0.0f, (float) (-10 * delta));
                     }
                     if (m_nScriptTimerA < 5000) {
                         m_pGeometry4->moveForward((float) (35 * delta));
@@ -5174,10 +5174,10 @@ bool LevelScript::process(int delta) {
                                             Vector{0.0f, 0.0f, 0.0f});
                     }
                     if ((m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700)) {
-                        Globals::sound->play(2248, nullptr, nullptr, 0.0f);
-                        Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
                         m_pGeometry1->setVisible(false);
                         (*enemies)[stationIndex]->setVisible(false);
+                        Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
+                        Globals::sound->play(2248, nullptr, nullptr, 0.0f);
                     }
                     if (m_nScriptTimerA >= 5500) {
                         m_pExplosion->update(delta, nullptr);
@@ -5285,8 +5285,8 @@ bool LevelScript::process(int delta) {
                             for (unsigned int i = 1; i <= 3; i++) {
                                 if (!(*enemies)[i]->player->isActive()) {
                                     (*enemies)[i]->revive();
-                                    (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
                                     (*enemies)[i]->setActive(true);
+                                    (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
                                     (*enemies)[i]->player->turnEnemy();
                                     break;
                                 }
@@ -5294,8 +5294,8 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerB >= 25001) {
-                        ((PlayerFighter *) (*enemies)[0])->field_0x140 = !((PlayerFighter *) (*enemies)[0])->field_0x140;
                         m_nScriptTimerB = 0;
+                        ((PlayerFighter *) (*enemies)[0])->field_0x140 = !((PlayerFighter *) (*enemies)[0])->field_0x140;
                     }
                 }
                 break;
