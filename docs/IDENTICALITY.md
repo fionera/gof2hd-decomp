@@ -19,7 +19,7 @@ Residual table (raw / aligned / size; all size-exact):
 | `Radar::draw` | **7,201** | 1,233 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
-| `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
+| `MGame::OnTouchEnd` | **3,253** | 682 | 8,080 |
 | `HangarWindow::render` | **1,414** | 395 | 9,700 |
 | `Level::createShip` | **1,190** | 366 | 2,764 |
 | `Status::missionCompleted` | **45** | 28 | 1,432 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,856**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,568**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,430 of 2,187,328 bytes (3.63 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,856, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,144 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,568, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `MGame::OnTouchEnd` (w14165, wave 192): drop the `__builtin_expect` on `mission->isCampaignMission()` in the campaign-162 branch.  Raw **3,541 -> 3,253** (-288), aligned **693 -> 682** (-11), size 8,080/8,080 exact.  `.text` 78,856 -> 78,568 (-288); `.ARM.extab` diff 555 -> 556 (size unchanged); whole-file 79,430 -> 79,144.
 
 * `LevelScript::process` (w14162, wave 192): hoist the fighter load above the static `getFighter` call in hunk 14.  Raw **54,872 -> 54,873** (+1), aligned **17,497 -> 17,487** (-10), size 57,232/57,232 exact.  `.text` 78,855 -> 78,856 (+1); `.ARM.extab` 555 unchanged; whole-file 79,430 unchanged.
 

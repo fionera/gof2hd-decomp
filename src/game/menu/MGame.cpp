@@ -1733,7 +1733,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
-                        } else if (__builtin_expect(mission->isCampaignMission(), 1) && Globals::status->getCurrentCampaignMission() == 162) { // lint: arm_builtin
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 162) {
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
                             Globals::status->field_60 = this->player->player->getArmorHP();
