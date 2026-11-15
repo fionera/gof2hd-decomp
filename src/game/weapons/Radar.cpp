@@ -343,7 +343,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    int missionBlocksPlanets = 0;
+    bool missionBlocksPlanets = false;
     bool alwaysEnemySeen = false;
     bool alwaysEnemy = false;
     if (__builtin_expect((!mission->isEmpty()), 1) && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&  // lint: arm_builtin
@@ -643,7 +643,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         this->level->getPlayer()->dockToPlanet();
                     }
                 }
-                if (missionBlocksPlanets + (this->planetLockTimer < 1)) {
+                if (missionBlocksPlanets | (this->planetLockTimer < 1)) {
                     goto enemies;
                 }
                 if (__builtin_expect((this->field_0x18 != 0), 1) && this->field_0x18 != this->field_0x14) {  // lint: arm_builtin

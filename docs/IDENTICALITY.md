@@ -16,7 +16,7 @@ Residual table (raw / aligned / size; all size-exact):
 | function | raw | aligned | size |
 |---|---:|---:|---:|
 | `LevelScript::process` | **54,872** | 17,497 | 57,232 |
-| `Radar::draw` | **7,017** | 1,252 | 9,908 |
+| `Radar::draw` | **7,087** | 1,247 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
 | `MGame::OnTouchEnd` | **3,541** | 693 | 8,080 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,670**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,741**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,246 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,670, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,316 of 2,187,328 bytes (3.63 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,741, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `Radar::draw` (w14159, wave 192): `missionBlocksPlanets` is a `bool` (not `int`) and the planet-lock early-out is the bitwise disjunction `missionBlocksPlanets | (planetLockTimer < 1)`.  Raw **7,017 -> 7,087** (+70), aligned **1,252 -> 1,247** (-5), size 9,908/9,908 exact.  `.text` 78,670 -> 78,741 (+71); `.ARM.extab` 555 unchanged; `.ARM.exidx` 0; whole-file 79,246 -> 79,316.  Aligned win at a raw cost -- accepted under the aligned-primary rule.
 
 * `LevelScript::process` (w14127, wave 192): the case-21 tail is `m_nState++` after all -- 0x13edde is the shared state-store tail (`str r0,[r5,#28]`), so `movs r0,#1` stores state 1 rather than returning.  This supersedes pass 41.  Raw **54,842 -> 54,872** (+30), aligned **17,499 -> 17,497** (-2), size 57,232/57,232 exact; difference-hunk count **15 -> 14**.  `.text` 78,640 -> 78,670; `.ARM.extab` 555 unchanged; whole-file 79,215 -> 79,246.
 
