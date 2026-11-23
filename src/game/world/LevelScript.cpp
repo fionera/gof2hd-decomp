@@ -2164,7 +2164,7 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 7: {
-                    m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
+                    m_pCamera->translate(0.0f, 0.0f, -18.0f * (float) delta);
                     m_pCamera->setRumblePercentage(100.0f, 30);
                     if (m_bRenderParticles) {
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
