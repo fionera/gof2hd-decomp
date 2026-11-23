@@ -1,0 +1,7 @@
+No measured win was found within the timebox; nothing committed.
+
+**Final state**
+- `_ZN11LevelScript7processEi`: baseline **raw=54870 / aligned=17438 / size=57232/57232**, insn 20709/20830 — unchanged, built `.so` verified.
+- Hunk 3/14 first divergence at `0x137d56` is a callee-saved register-allocation permutation (original: `this`→`sl`, `Globals`→`r4`; ours: `this`→`fp`, `Globals`→`r9`) cascading globally from a +121-instruction body delta, not locally steerable by source shape in the remaining time.
+- Two experiments measured and reverted: inline double-indexed enemies (raw 55532, aligned 18559, size 57424) and hoisting `Status*` (raw 55351, aligned 19638, size 57184).
+- Worktree clean (`git status --porcelain` empty), source pristine vs `LevelScript.cpp.bak`, scratch notes updated at `scratch/w14200/notes.md`, gate untouched.
