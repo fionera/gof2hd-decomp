@@ -4997,7 +4997,7 @@ bool LevelScript::process(int delta) {
                     if (__builtin_expect(m_nScriptTimerA <= 9999, 1)) { // lint: arm_builtin
                         m_nScriptTimerA += delta;
                     }
-                    station->rootGeometry->moveForward((float) m_nScriptTimerA / 10000.0f * (float) delta * -10.0f);
+                    station->rootGeometry->moveForward((float) m_nScriptTimerA / 10000.0f * (float) (delta * -10));
                     if (station->rootGeometry->getPosition().z > 100000.0f) {
                         KIPlayer *fighter = (*enemies)[fighterIndex];
                         fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
