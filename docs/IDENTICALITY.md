@@ -15,7 +15,7 @@ Residual table (raw / aligned / size; all size-exact):
 
 | function | raw | aligned | size |
 |---|---:|---:|---:|
-| `LevelScript::process` | **54,870** | 17,438 | 57,232 |
+| `LevelScript::process` | **55,117** | 17,409 | 57,232 |
 | `Radar::draw` | **7,201** | 1,233 | 9,908 |
 | `Layout` C1/C2 | **5,614** | 1,993 | 7,072 |
 | `Level::createMission` | **4,265** | 386 | 17,172 |
@@ -30,15 +30,17 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,563**, `.ARM.extab` **555**, `.ARM.exidx` **0**,
+Current section deltas: `.text` **78,810**, `.ARM.extab` **556**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
-Whole-file diff: **79,139 of 2,187,328 bytes (3.62 %)** differ, and they are confined to
-exactly three sections -- `.text` 78,563, `.ARM.extab` 555, `.note.gnu.build-id` 20. All other
+Whole-file diff: **79,386 of 2,187,328 bytes (3.63 %)** differ, and they are confined to
+exactly three sections -- `.text` 78,810, `.ARM.extab` 556, `.note.gnu.build-id` 20. All other
 24 sections (including `.bss`, NOBITS) are size- and content-identical, and the file size is
 exact.
 
 Landed changes:
+
+* `LevelScript::process` (w14202, wave 192, pass 52): the case-73 scatter loop computes `yBase = nextInt(10000)` before subtracting 5000 (late y-subtract).  Applied alone on top of pass 51 it moves raw **55,118 -> 55,117** (-1) and aligned **17,410 -> 17,409** (-1), size 57,232/57,232 exact.  The residual-table and section totals above are the post-merge master values.  (Passes 50 and 51 had already landed in `a8fb6fcaa`/`8ea4a04eb`.)
 
 * `MGame::OnTouchEnd` (w14217, wave 192): drop the `count`-zero edge in the mining-plant refine loop by testing `count >= 0` (the original compares the negative amount counter against zero and branches at equality).  Raw **3,253 -> 3,251** (-2), aligned **682 -> 681** (-1), size 8,080/8,080 exact.  `.text` 78,565 -> 78,563; `.ARM.extab` diff 555 unchanged; whole-file 79,141 -> 79,139.
 

@@ -2603,9 +2603,10 @@ bool LevelScript::process(int delta) {
                             for (int i = 4; i != 8; ++i) {
                                 int magX = 35000 + Globals::rnd->nextInt(10000);
                                 int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
-                                int y = Globals::rnd->nextInt(10000) - 5000;
+                                int yBase = Globals::rnd->nextInt(10000);
                                 int magZ = 35000 + Globals::rnd->nextInt(10000);
                                 int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                                int y = yBase - 5000;
                                 Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
                                 (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
                                 (*enemies)[i]->awake();                             // vtable+0xc
