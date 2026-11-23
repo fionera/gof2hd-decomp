@@ -1391,7 +1391,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             refinedAny = true;
                         }
                         int count = -amount;
-                        if (count > 0) {
+                        if (count >= 0) {
                             report += String("\n") + String(count) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
