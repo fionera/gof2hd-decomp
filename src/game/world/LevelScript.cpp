@@ -2113,7 +2113,8 @@ bool LevelScript::process(int delta) {
                 // reference (state 7, 0x13da1e) before PlayerEgo::deleteHackingGame (0x13ded4) in
                 // .rel.plt without a duplicate anchor call.  The branches are mutually exclusive,
                 // so the reordering is semantics-preserving.
-                if (m_nState == 6) {
+                switch (m_nState) {
+                case 6: {
                     Vector pos = player->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(153, &pos, &zero, false);
@@ -2153,10 +2154,16 @@ bool LevelScript::process(int delta) {
                         Globals::sound->play(154, nullptr, nullptr, 0.0f);
                         m_nState = 7;
                     }
-                } else if (m_nState == 0 && !Globals::status->inAlienOrbit()) {
-                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
-                    m_nState = 1;
-                } else if (m_nState == 7) {
+                    break;
+                }
+                case 0: {
+                    if (!Globals::status->inAlienOrbit()) {
+                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                        m_nState = 1;
+                    }
+                    break;
+                }
+                case 7: {
                     m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
                     m_pCamera->setRumblePercentage(100.0f, 30);
                     if (m_bRenderParticles) {
@@ -2184,6 +2191,9 @@ bool LevelScript::process(int delta) {
                         }
                     } else {
                         m_nScriptTimerA += delta;
+                        // Redundant store (the switch already guarantees state 7); keeps the
+                        // original block width at 8 bytes where -Oz would otherwise fold it.
+                        m_nState = 7;
                         if (!Globals::layout->isFading() || m_nScriptTimerA >= 10001) {
                             Player *pp = player->player;
                             Globals::status->field_64 = pp->getHitpoints();
@@ -2203,6 +2213,8 @@ bool LevelScript::process(int delta) {
                             return m_bCinematicBreak != 0;
                         }
                     }
+                    break;
+                }
                 }
 
                 break;
