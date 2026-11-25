@@ -3297,11 +3297,11 @@ bool LevelScript::process(int delta) {
                             m_nScriptTimerA = 0;
                             int x = -40000;
                             for (int i = 4; i != 6; i++) {
-                                (*enemies)[i]->awake();
-                                x -= 3000;
                                 KIPlayer *ship = (*enemies)[i];
                                 ship->setPosition(player->getPosition() + Vector{(float) x, 3000.0f, 20000.0f});
+                                (*enemies)[i]->awake();
                                 (*enemies)[i]->setVisible(true);
+                                x -= 3000;
                             }
                             m_nState++;
                         }
