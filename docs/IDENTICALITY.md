@@ -4,6 +4,29 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-25 (wave 192/193)
+
+Gate re-verified on `f99b76b2f`: byte_exact **4508/4524**, linked_exact **4508/4524**,
+size-exact **4524/4524**, data_exact **843/843**, imports **207**, lint **CLEAN**, drift **0**.
+16 functions remain non-byte-exact, all size-exact; `LevelScript::process` raw is **55,115**
+(aligned 17,409) after pass 54.
+
+Direct per-section comparison (`readelf` `sh_offset`/`sh_size`, `cmp`-equivalent) gives the
+authoritative residual:
+
+| section | differing bytes | orig / ours size |
+|---|---:|---:|
+| `.text` | **78,772** | 1,259,464 / 1,259,464 |
+| `.ARM.extab` | **122,327** | **156,312 / 156,308 (4 B short)** |
+| `.ARM.exidx` | **1,307** | 28,528 / 28,528 |
+| `.rel.plt` | **4** | 29,392 / 29,392 |
+| `.note.gnu.build-id` | 20 | 36 / 36 |
+| total | **202,430** | |
+
+All other 22 sections are byte-identical (`.bss` is NOBITS). The two differing `.rel.plt` words
+are the symbol indices of adjacent entries at file offset `0x5898`/`0x58a0`. The wave-191b text
+below is a historical log; its "Current section deltas" paragraph is superseded by this table.
+
 ## Update 2026-11-13 (wave 191b)
 
 **Current authoritative state.** `check` is green: byte_exact **4508/4524**,
@@ -30,7 +53,8 @@ Residual table (raw / aligned / size; all size-exact):
 | `MenuTouchWindow::OnTouchBegin` | **29** | 15 | 1,896 |
 | `MGame::OnUpdate` | **16** | 6 | 11,440 |
 
-Current section deltas: `.text` **78,810**, `.ARM.extab` **556**, `.ARM.exidx` **0**,
+Section deltas reported at the end of wave 191b (superseded by the 2026-11-25 update):
+`.text` **78,810**, `.ARM.extab` **556**, `.ARM.exidx` **0**,
 `.rodata` **0** (sh_size and content byte-identical), `.note.gnu.build-id` **20**.
 
 Whole-file diff: **79,386 of 2,187,328 bytes (3.63 %)** differ, and they are confined to

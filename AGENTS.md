@@ -91,13 +91,14 @@ Known gate limitations (do not lean on them):
 `check` is green: byte_exact **4508/4524**, linked_exact **4508/4524**, size-exact
 **4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
 **CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 16 functions are not
-byte-exact. All **27 original ELF section headers are byte-identical** (no extra section);
-`.text`, `.rodata`, `.data`,
-`.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
-`.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. `.ARM.extab` is
-size- and base-exact at `0x26298` (wave-102 LSDA-scope pass). The only
-differing section bytes are `.text` (74,628), `.ARM.extab` (562) and
-`.note.gnu.build-id` (20); `.ARM.exidx` and `.rodata` are now byte-identical.
+byte-exact. All **27 original section headers are present** (no extra section), and
+`.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`,
+`.hash` and `.rel.dyn` are size- and base-exact. `.rodata`, `.data`, `.data.rel.ro`,
+`.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are content byte-identical. `.ARM.extab` is
+**4 B short** (orig `0x26298`, ours `0x26294`); `.ARM.exidx` content differs in 1,307 bytes;
+`.rel.plt` content differs in 4 bytes. The differing section bytes are `.text` (**78,772**),
+`.ARM.extab` (**122,327**), `.ARM.exidx` (**1,307**), `.rel.plt` (**4**) and
+`.note.gnu.build-id` (20).
 
 ## Source rules (hard)
 

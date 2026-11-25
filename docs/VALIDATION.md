@@ -93,30 +93,27 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-10, waves 165-166)
+### Current state — ELF sections (corrected 2026-11-25, wave 192/193)
 All **27 original section headers are present**, with no extra section and an
-**exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
+**exact file size** (2,187,328 B). `.text`, `.rodata`, `.data`, `.data.rel.ro`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
-`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
-`.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
-and `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size- and base-exact**
-(`0x26298` @ `0x1a3b78`): `Level::createShip` is the faithful 336 B real-`new` cleanup-only
-record (57 rows, `ttype 0xff`); the wave-131 `try`/`catch` body (328 B record) was reverted in
-wave 132 because it left the section 8 B short and shifted `.ARM.exidx`.
+`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.rodata`, `.data`,
+`.data.rel.ro`, `.dynamic`, `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`,
+`.note.android.ident`, `.note.gnu.gold-version` and `.ARM.attributes` are content
+byte-identical. **`.ARM.extab` is 4 B short** — original `sh_size` `0x26298`, ours `0x26294`
+(base `0x1a3b78` exact) — and `.ARM.exidx` is size/base-exact but differs in **1,307**
+content bytes (its entries track the shifted extab). `.rel.plt` is size/base-exact but now
+differs in **4 bytes**: two adjacent entries (`0x5898`/`0x58a0`) have swapped symbol indices.
+`Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows,
+`ttype 0xff`); the wave-131 `try`/`catch` body (328 B record) was reverted in wave 132.
 `Generator::createMission` is exact at 172 B (wave-121 w7110); `HangarWindow::render`'s
-948 B record was recovered in wave 177 (w12116): row 39 LSDA length is now 152/150
-after the wave-184 w12817 ship-guard operand flip, the record diff is 81, and the
-section stays size- and base-exact. `.rodata`'s original 269,159 B are
-**byte-identical** (base `0x1c9e10`, `sh_size` 269,159); the former 484 B
-`Status::missionCompleted` rank helper (`src/game/mission/StatusMissionTable.cpp`)
-was removed in wave 191b w13569, so the `.rodata`..`.fini_array` gap is gone. `.fini_array` is back to 8 B @ `0x20cba0`, and
-`.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical again (w13358). The
-differing section bytes are `.text` (78,810), `.ARM.extab` (556), and
-`.note.gnu.build-id` (20); `.rodata` is now byte-identical. `.rel.plt` is
-**byte-identical** (29,392 B): the wave-150 w9602
-case-125 independent-if form moves the first `PlayerStation::setVisible` reference ahead of
-`PlayerEgo::deleteHackingGame`, fixing the former entries-2835/2836 swap. `.bss` is NOBITS
-(its file bytes are linker padding).
+948 B record was recovered in wave 177 (w12116), row 39 LSDA length 152/150 after the
+wave-184 w12817 ship-guard operand flip. `.rodata`'s original 269,159 B are
+**byte-identical** (base `0x1c9e10`, `sh_size` 269,159). `.fini_array` is 8 B @
+`0x20cba0`, and `.dynamic`/`.rel.dyn`/`.data.rel.ro` are byte-identical.
+The differing section bytes are `.text` (**78,772**), `.ARM.extab` (**122,327**),
+`.ARM.exidx` (**1,307**), `.rel.plt` (**4**), and `.note.gnu.build-id` (20);
+`.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
