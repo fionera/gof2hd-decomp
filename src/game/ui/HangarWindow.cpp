@@ -809,36 +809,31 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // Original guard order: tab == 0 skips the body and a
-                            // tab == 3 ship match skips it too.  The branch hint
-                            // keeps the ship body out of line as in the original,
-                            // and the tab snapshot anchors the reload of tab at the
-                            // upgrade check, so the row-39 LSDA range stays 150
-                            // bytes.  The upgrade check lives inside the guard body
-                            // (the original's row-40 cleanup scope covers it), and
-                            // the upgrade button order below is a codegen shape that
-                            // keeps the function at 9,700 B.  The empty `tab == 0`
-                            // arm makes the zero-tab test a separate basic block,
-                            // which is what keeps the buy-list String temporaries in
-                            // r5/r6 instead of spilling `sl`.  The setVisible/draw/
-                            // setPosition body order (rather than the original
-                            // source's setPosition-first order) is the size-exact
-                            // shape that aligns the buy-list and free-credits runs.
-                            if (tab == 0) { } else if (__builtin_expect(tab != 3 || this->selectedItem->ship != Globals::status->getShip(), 1)) { // lint: arm_builtin
-                                (*this->buttons)[1]->setVisible(true);
-                                int upgTab = tab;
-                                (*this->buttons)[1]->draw();
-                                (*this->buttons)[1]->setPosition(
-                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                    this->field_0x114 + y, 18);
-                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                                if (__builtin_expect(upgTab == 1 && this->upgradeMode, 1)) { // lint: arm_builtin
+                            // tab == 0 and a tab == 3 ship match both skip the buy
+                            // button body.  Snapshotting tab keeps the guard shape
+                            // (and the reload at the upgrade check) faithful to the
+                            // original.  The button 1 body uses the original's
+                            // setPosition/setVisible/draw order, and the upgrade
+                            // check runs after the guard with the button 2/10 order
+                            // below; this nested shape stays size-exact at 9,700 B.
+                            int upgTab = tab;
+                            if (upgTab != 0) {
+                                if (upgTab != 3 || Globals::status->getShip() != this->selectedItem->ship) {
+                                    (*this->buttons)[1]->setPosition(
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                        this->field_0x114 + y, 18);
+                                    (*this->buttons)[1]->setVisible(true);
+                                    (*this->buttons)[1]->draw();
+                                    buttonOffset =
+                                        (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                }
+                            }
+                            if (this->upgradeMode && upgTab == 1) {
                                     (*this->buttons)[2]->setVisible(true);
                                     (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                       this->field_0x114 + y, 17);
                                     (*this->buttons)[10]->setVisible(true);
                                     (*this->buttons)[10]->draw();
-                                }
                             }
                         } else {
                             // The original dispatches the two selected-item button
