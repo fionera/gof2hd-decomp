@@ -5188,11 +5188,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     struct EmpGuard {
         ~EmpGuard() {}
     };
-    int mission;
-    {
-        EmpGuard guard;
-        mission = Globals::status->getCurrentCampaignMission();
-    }
+    int mission = Globals::status->getCurrentCampaignMission();
     int wpz, wpx, wpy;
     if (waypoint != nullptr) {
         wpx = waypoint->x;
