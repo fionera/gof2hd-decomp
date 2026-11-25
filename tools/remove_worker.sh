@@ -6,6 +6,6 @@ MAIN=$(cd "$(dirname "$0")/.." && pwd)
 w=$1
 d=/home/debian/GalaxyOnFire2/wt/$w
 git -C "$MAIN" worktree remove --force "$d" 2>/dev/null || true
-git -C "$MAIN" branch -D "wave87-$w" 2>/dev/null || true
+git -C "$MAIN" branch -D "wave193-$w" 2>/dev/null || true
 git -C "$MAIN" worktree prune
 echo "removed $d"
