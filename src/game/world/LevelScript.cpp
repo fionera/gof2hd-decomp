@@ -4198,14 +4198,14 @@ bool LevelScript::process(int delta) {
                     Vector *tempVec = &m_tempVec;
                     Vector *scratch = &m_dirVec;
                     *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    *scratch = player->GetUpVector();
                     *scratch = player->GetDirVector();
                     *tempVec += *scratch * ((float) delta * 2.01f);
                     *scratch = player->geometry->getRightVector();
-                    m_pCamera->setFixed(true);
                     *tempVec += *scratch * ((float) delta * 0.03f);
-                    AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
+                    *scratch = player->GetUpVector();
                     *tempVec += *scratch * ((float) delta * 0.01f);
+                    m_pCamera->setFixed(true);
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[0]))->isOver()) {
                         player->player->setVulnerable(true);
@@ -4216,10 +4216,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget(player->geometry);
-                        m_pRadar->enabled = 1;
                         m_pCamera->setLookAtCam(false);
-                        resetCamera(m_pLevel);
                         m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_bCinematicBreak = 0;
