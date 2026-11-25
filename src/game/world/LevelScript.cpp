@@ -1678,7 +1678,7 @@ bool LevelScript::process(int delta) {
                     Level *self = m_pLevel;
                     cam1688->translate((float) -delta, 0.0f, (float) (-3 * delta));
                     self->lodManager->forceUpdate(delta, false);
-                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                    if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
                         cam1688->setLookAtCam(false);
                         cam1688->setTarget(player->geometry);
                         player->setComputerControlled(false);
