@@ -2574,7 +2574,7 @@ bool LevelScript::process(int delta) {
                         // Wait for any escort (enemies[8+]) whose EMP points dropped below max.
                         for (unsigned int i = 8; i < enemies->count; ++i) {
                             if ((*enemies)[i]->field_0x40 != 0 &&
-                                (*enemies)[i]->player->getMaxEmpPoints() > (*enemies)[i]->player->getEmpPoints()) {
+                                (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]->player->getMaxEmpPoints()) {
                                 m_nState = 2;
                                 break;
                             }
