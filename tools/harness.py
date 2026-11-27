@@ -9,15 +9,18 @@ keeps improved branches, and cleans up unimproved worktrees automatically.
 from __future__ import annotations
 
 import argparse
+import collections
 import concurrent.futures
 import datetime as dt
 import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -31,6 +34,18 @@ import validate  # noqa: E402
 
 PROMPT_TEMPLATE = SCRIPT_DIR / "agent_prompt.md"
 _GIT_LOCK = threading.Lock()
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+_WORKER_COLORS = (
+    "\x1b[36m",  # cyan
+    "\x1b[33m",  # yellow
+    "\x1b[32m",  # green
+    "\x1b[35m",  # magenta
+    "\x1b[34m",  # blue
+    "\x1b[96m",  # bright cyan
+    "\x1b[93m",  # bright yellow
+    "\x1b[92m",  # bright green
+)
+_ANSI_RESET = "\x1b[0m"
 
 
 @dataclass
@@ -42,6 +57,375 @@ class TargetGroup:
     @property
     def total_diff_bytes(self) -> int:
         return sum(int(s.get("diff_bytes", 0)) for s in self.symbols)
+
+
+@dataclass
+class WorkerLiveState:
+    worker: int
+    slug: str
+    tu: str
+    phase: str = "queued"
+    started_at: Optional[float] = None
+    finished_at: Optional[float] = None
+    last_line: str = ""
+    recent_lines: collections.deque[str] = field(default_factory=lambda: collections.deque(maxlen=20))
+    status: str = "queued"
+    delta: int = 0
+
+
+def _clean_line(text: str) -> str:
+    cleaned = _ANSI_ESCAPE_RE.sub("", text)
+    cleaned = cleaned.replace("\r", " ").replace("\n", " ").replace("\t", " ")
+    return " ".join(cleaned.split())
+
+
+def _truncate(text: str, width: int) -> str:
+    if width <= 0:
+        return ""
+    if len(text) <= width:
+        return text
+    if width <= 3:
+        return text[:width]
+    return text[: width - 3] + "..."
+
+
+def _fmt_elapsed(seconds: float) -> str:
+    secs = max(0, int(seconds))
+    mins, secs = divmod(secs, 60)
+    hours, mins = divmod(mins, 60)
+    if hours > 0:
+        return f"{hours}h{mins:02d}m{secs:02d}s"
+    return f"{mins:02d}:{secs:02d}"
+
+
+def resolve_view_mode(view: str, is_tty: bool) -> str:
+    if view == "auto":
+        return "dashboard" if is_tty else "stream"
+    return view
+
+
+class HarnessMonitor:
+    """Thread-safe live worker state tracker and terminal view renderer."""
+
+    def __init__(
+        self,
+        run_id: str,
+        groups: Sequence[TargetGroup],
+        log_dir: Path,
+        view: str,
+        out: Optional[Any] = None,
+        is_tty: Optional[bool] = None,
+        refresh_interval: float = 0.25,
+    ) -> None:
+        self.run_id = run_id
+        self.log_dir = log_dir
+        self.view = view
+        self._out = out if out is not None else sys.stdout
+        self.is_tty = (
+            bool(getattr(self._out, "isatty", lambda: False)())
+            if is_tty is None
+            else is_tty
+        )
+        self._refresh_interval = refresh_interval
+        self.lock = threading.Lock()
+        self.started_at = time.monotonic()
+        self.workers: Dict[int, WorkerLiveState] = {
+            idx: WorkerLiveState(worker=idx, slug=g.slug, tu=g.tu_key)
+            for idx, g in enumerate(groups, 1)
+        }
+        self.recent_tail: collections.deque[Tuple[int, str]] = collections.deque(maxlen=64)
+        self._stop_event = threading.Event()
+        self._thread: Optional[threading.Thread] = None
+        self._dashboard_started = False
+
+    def set_phase(self, worker_idx: int, phase: str) -> None:
+        quiet_msg: Optional[str] = None
+        with self.lock:
+            st = self.workers.get(worker_idx)
+            if st is None:
+                return
+            was_queued = st.started_at is None
+            if was_queued and phase != "queued":
+                st.started_at = time.monotonic()
+                st.status = "running"
+                if self.view == "quiet":
+                    quiet_msg = f"[w{worker_idx}] start {st.tu}\n"
+            st.phase = phase
+        if quiet_msg is not None:
+            with self.lock:
+                self._out.write(quiet_msg)
+                self._out.flush()
+
+    def record_line(self, worker_idx: int, raw_line: str) -> None:
+        stripped = raw_line.rstrip("\r\n")
+        clean = _clean_line(stripped)
+        stream_out: Optional[str] = None
+        with self.lock:
+            st = self.workers.get(worker_idx)
+            if st is None:
+                return
+            if st.started_at is None:
+                st.started_at = time.monotonic()
+            if clean:
+                st.last_line = clean
+                st.recent_lines.append(clean)
+                self.recent_tail.append((worker_idx, clean))
+            if self.view == "stream":
+                prefix = f"[w{worker_idx} {st.slug}] "
+                if self.is_tty:
+                    color = _WORKER_COLORS[(worker_idx - 1) % len(_WORKER_COLORS)]
+                    stream_out = f"{color}{prefix}{_ANSI_RESET}{stripped}\n"
+                else:
+                    stream_out = f"{prefix}{stripped}\n"
+                self._out.write(stream_out)
+                self._out.flush()
+
+    def finish_worker(
+        self,
+        worker_idx: int,
+        status: str,
+        delta: int = 0,
+        message: str = "",
+    ) -> None:
+        with self.lock:
+            st = self.workers.get(worker_idx)
+            if st is None:
+                return
+            now = time.monotonic()
+            if st.started_at is None:
+                st.started_at = now
+            st.finished_at = now
+            st.status = status
+            st.phase = status
+            st.delta = delta
+            if message:
+                clean_msg = _clean_line(message)
+                if clean_msg:
+                    st.last_line = clean_msg
+            if self.view == "quiet":
+                detail = f" - {message}" if message else ""
+                self._out.write(f"[w{worker_idx}] {status} ({delta:+d}B) {st.tu}{detail}\n")
+                self._out.flush()
+
+    def render_dashboard_text(self) -> str:
+        cols, rows = shutil.get_terminal_size(fallback=(100, 30))
+        cols = max(40, cols)
+        rows = max(12, rows)
+        now = time.monotonic()
+        elapsed = _fmt_elapsed(now - self.started_at)
+
+        with self.lock:
+            states = [self.workers[idx] for idx in sorted(self.workers)]
+            tail_items = list(self.recent_tail)
+
+        total = len(states)
+        done = sum(1 for s in states if s.finished_at is not None)
+        matched = sum(1 for s in states if s.status == "matched")
+        improved = sum(1 for s in states if s.status == "improved")
+        unchanged = sum(1 for s in states if s.status == "unchanged")
+        failed = sum(1 for s in states if s.status in ("regressed", "error"))
+
+        lines: List[str] = []
+        header = (
+            f"GOF2HD Harness | run={self.run_id} | elapsed={elapsed} | "
+            f"done={done}/{total} matched={matched} improved={improved} "
+            f"unchanged={unchanged} failed={failed}"
+        )
+        lines.append(_truncate(header, cols))
+        lines.append(_truncate(f"Logs: {self.log_dir}", cols))
+        lines.append("-" * cols)
+
+        tu_w = min(28, max(12, cols // 4))
+        fixed = 4 + 1 + tu_w + 1 + 10 + 1 + 7 + 1
+        act_w = max(8, cols - fixed)
+
+        lines.append(
+            _truncate(
+                f"{'W':<4} {'TU':<{tu_w}} {'PHASE':<10} {'ELAPSED':>7} {'ACTIVITY'}",
+                cols,
+            )
+        )
+        for st in states:
+            if st.started_at is None:
+                w_elapsed = "--:--"
+            else:
+                end_t = st.finished_at if st.finished_at is not None else now
+                w_elapsed = _fmt_elapsed(end_t - st.started_at)
+            w_id = f"w{st.worker}"
+            tu_col = _truncate(st.tu, tu_w)
+            phase_col = _truncate(st.phase, 10)
+            act_col = _truncate(st.last_line, act_w)
+            lines.append(
+                _truncate(
+                    f"{w_id:<4} {tu_col:<{tu_w}} {phase_col:<10} {w_elapsed:>7} {act_col}",
+                    cols,
+                )
+            )
+
+        lines.append("-" * cols)
+        lines.append("Live Tail:")
+        max_tail = max(3, min(8, rows - len(lines) - 1))
+        active_ids = {s.worker for s in states if s.finished_at is None}
+        if active_ids:
+            active_tail = [item for item in tail_items if item[0] in active_ids]
+            shown_tail = active_tail[-max_tail:] if active_tail else tail_items[-max_tail:]
+        else:
+            shown_tail = tail_items[-max_tail:]
+        if shown_tail:
+            for w_idx, text in shown_tail:
+                lines.append(_truncate(f"[w{w_idx}] {text}", cols))
+        else:
+            lines.append("  (waiting for worker output...)")
+
+        return "\n".join(lines) + "\n"
+
+    def _draw_dashboard(self) -> None:
+        frame = "\x1b[H\x1b[2J" + self.render_dashboard_text()
+        with self.lock:
+            if not self._dashboard_started:
+                return
+            self._out.write(frame)
+            self._out.flush()
+
+    def start(self) -> None:
+        if self.view != "dashboard":
+            return
+        with self.lock:
+            if self._dashboard_started:
+                return
+            self._dashboard_started = True
+            self._out.write("\x1b[?1049h\x1b[?25l")
+            self._out.flush()
+        self._draw_dashboard()
+        self._stop_event.clear()
+
+        def _loop() -> None:
+            while not self._stop_event.wait(self._refresh_interval):
+                self._draw_dashboard()
+
+        self._thread = threading.Thread(target=_loop, name="harness-dashboard", daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        if self.view != "dashboard":
+            return
+        self._stop_event.set()
+        if self._thread is not None:
+            self._thread.join(timeout=1.0)
+            self._thread = None
+        self._draw_dashboard()
+        with self.lock:
+            if self._dashboard_started:
+                self._dashboard_started = False
+                self._out.write("\x1b[?25h\x1b[?1049l")
+                self._out.flush()
+
+
+def setup_tmux_session(
+    tmux_bin: str,
+    session_name: str,
+    log_paths: Sequence[Path],
+) -> None:
+    """Pre-create worker log files and start a detached tmux session with tiled tail -F panes."""
+    if not log_paths:
+        return
+    for p in log_paths:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.touch(exist_ok=True)
+
+    first_cmd = f"tail -F {shlex.quote(str(log_paths[0]))}"
+    proc = subprocess.run(
+        [tmux_bin, "new-session", "-d", "-s", session_name, first_cmd],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"tmux new-session failed (rc={proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}"
+        )
+
+    for p in log_paths[1:]:
+        tail_cmd = f"tail -F {shlex.quote(str(p))}"
+        sp = subprocess.run(
+            [tmux_bin, "split-window", "-t", session_name, tail_cmd],
+            capture_output=True,
+            text=True,
+        )
+        if sp.returncode != 0:
+            raise RuntimeError(
+                f"tmux split-window failed (rc={sp.returncode}): {sp.stderr.strip() or sp.stdout.strip()}"
+            )
+        subprocess.run(
+            [tmux_bin, "select-layout", "-t", session_name, "tiled"],
+            capture_output=True,
+            text=True,
+        )
+
+
+def _write_log_line(
+    log_fh: Any,
+    line: str,
+    worker_idx: int,
+    monitor: Optional[HarnessMonitor] = None,
+) -> None:
+    out_line = line if line.endswith("\n") else line + "\n"
+    log_fh.write(out_line)
+    log_fh.flush()
+    if monitor is not None:
+        monitor.record_line(worker_idx, out_line)
+
+
+def _run_streaming_cmd(
+    cmd: Sequence[str],
+    cwd: Path,
+    env: Dict[str, str],
+    log_fh: Any,
+    worker_idx: int,
+    monitor: Optional[HarnessMonitor] = None,
+    timeout: Optional[int] = None,
+) -> int:
+    """Run a subprocess streaming stdout+stderr line-by-line to log_fh and monitor."""
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+    )
+    timed_out = threading.Event()
+    timer: Optional[threading.Timer] = None
+    if timeout is not None and timeout > 0:
+        def _kill() -> None:
+            timed_out.set()
+            try:
+                proc.kill()
+            except OSError:
+                pass
+
+        timer = threading.Timer(timeout, _kill)
+        timer.daemon = True
+        timer.start()
+
+    try:
+        assert proc.stdout is not None
+        for raw_line in iter(proc.stdout.readline, ""):
+            log_fh.write(raw_line)
+            log_fh.flush()
+            if monitor is not None:
+                monitor.record_line(worker_idx, raw_line)
+        proc.stdout.close()
+        rc = proc.wait()
+    finally:
+        if timer is not None:
+            timer.cancel()
+
+    if timed_out.is_set():
+        raise subprocess.TimeoutExpired(cmd=cmd, timeout=timeout or 0)
+    return rc
 
 
 def _sanitize_slug(text: str, max_len: int = 36) -> str:
@@ -282,6 +666,8 @@ def prebuild_worktree(
     log_fh: Any,
     cmake_bin: str = "cmake",
     timeout: Optional[int] = None,
+    worker_idx: int = 0,
+    monitor: Optional[HarnessMonitor] = None,
 ) -> Optional[str]:
     """Configure and build <wt_path>/cmake-build-match before invoking codex.
 
@@ -293,34 +679,42 @@ def prebuild_worktree(
     if worker_env.get("GOF2_FMOD_LIBDIR"):
         configure_cmd.append(f"-DGOF2_FMOD_LIBDIR={worker_env['GOF2_FMOD_LIBDIR']}")
 
-    log_fh.write(f"\n# --- prebuild configure: {' '.join(shlex.quote(c) for c in configure_cmd)} ---\n")
-    log_fh.flush()
-    cfg = subprocess.run(
+    _write_log_line(
+        log_fh,
+        f"# --- prebuild configure: {' '.join(shlex.quote(c) for c in configure_cmd)} ---",
+        worker_idx,
+        monitor,
+    )
+    cfg_rc = _run_streaming_cmd(
         configure_cmd,
         cwd=wt_path,
         env=worker_env,
-        stdout=log_fh,
-        stderr=subprocess.STDOUT,
-        text=True,
+        log_fh=log_fh,
+        worker_idx=worker_idx,
+        monitor=monitor,
         timeout=timeout,
     )
-    if cfg.returncode != 0:
-        return f"prebuild configure failed (rc={cfg.returncode})"
+    if cfg_rc != 0:
+        return f"prebuild configure failed (rc={cfg_rc})"
 
     build_cmd = [cmake_bin, "--build", "--preset", "link"]
-    log_fh.write(f"\n# --- prebuild build: {' '.join(shlex.quote(c) for c in build_cmd)} ---\n")
-    log_fh.flush()
-    bld = subprocess.run(
+    _write_log_line(
+        log_fh,
+        f"# --- prebuild build: {' '.join(shlex.quote(c) for c in build_cmd)} ---",
+        worker_idx,
+        monitor,
+    )
+    bld_rc = _run_streaming_cmd(
         build_cmd,
         cwd=wt_path,
         env=worker_env,
-        stdout=log_fh,
-        stderr=subprocess.STDOUT,
-        text=True,
+        log_fh=log_fh,
+        worker_idx=worker_idx,
+        monitor=monitor,
         timeout=timeout,
     )
-    if bld.returncode != 0:
-        return f"prebuild build failed (rc={bld.returncode})"
+    if bld_rc != 0:
+        return f"prebuild build failed (rc={bld_rc})"
     return None
 
 
@@ -334,6 +728,7 @@ def run_worker(
     log_dir: Path,
     template_text: str,
     shared_env: Dict[str, str],
+    monitor: Optional[HarnessMonitor] = None,
 ) -> Dict[str, Any]:
     branch = f"decomp/{run_id}-w{idx}-{group.slug}"
     wt_root = Path(args.worktree_root)
@@ -367,21 +762,28 @@ def run_worker(
 
     wt_created = False
     try:
+        if monitor is not None:
+            monitor.set_phase(idx, "worktree")
         _create_worktree(repo_root, wt_path, branch)
         wt_created = True
 
         worker_env = dict(shared_env)
         worker_env["GOF2_BUILD_DIR"] = str(wt_build_dir)
+        worker_env["PYTHONUNBUFFERED"] = "1"
 
         if args.dry_run:
-            log_path.write_text(
-                f"[dry-run] worker={idx} branch={branch} tu={group.tu_key}\n"
-                f"[dry-run] symbols={', '.join(result['symbols'])}\n"
-                f"[dry-run] worktree={wt_path}\n"
-                f"[dry-run] build_dir={wt_build_dir}\n"
-                f"[dry-run] GOF2_ORIGINAL_SO={worker_env.get('GOF2_ORIGINAL_SO', '')}\n"
-                f"[dry-run] GOF2_FMOD_LIBDIR={worker_env.get('GOF2_FMOD_LIBDIR', '')}\n"
-            )
+            if monitor is not None:
+                monitor.set_phase(idx, "dry-run")
+            with log_path.open("a", encoding="utf-8") as log_fh:
+                for line in (
+                    f"[dry-run] worker={idx} branch={branch} tu={group.tu_key}",
+                    f"[dry-run] symbols={', '.join(result['symbols'])}",
+                    f"[dry-run] worktree={wt_path}",
+                    f"[dry-run] build_dir={wt_build_dir}",
+                    f"[dry-run] GOF2_ORIGINAL_SO={worker_env.get('GOF2_ORIGINAL_SO', '')}",
+                    f"[dry-run] GOF2_FMOD_LIBDIR={worker_env.get('GOF2_FMOD_LIBDIR', '')}",
+                ):
+                    _write_log_line(log_fh, line, idx, monitor)
             result["status"] = "dry-run"
             result["message"] = "worktree created and prompt rendered (codex skipped)"
             return result
@@ -395,38 +797,47 @@ def run_worker(
             cmd.extend(shlex.split(args.codex_args))
         cmd.append(prompt_text)
 
-        with log_path.open("w", encoding="utf-8") as log_fh:
-            log_fh.write(f"# worker {idx} | tu={group.tu_key} | branch={branch}\n")
-            log_fh.flush()
+        with log_path.open("a", encoding="utf-8") as log_fh:
+            _write_log_line(
+                log_fh,
+                f"# worker {idx} | tu={group.tu_key} | branch={branch}",
+                idx,
+                monitor,
+            )
 
             if not args.skip_prebuild:
+                if monitor is not None:
+                    monitor.set_phase(idx, "prebuild")
                 prebuild_err = prebuild_worktree(
                     wt_path=wt_path,
                     worker_env=worker_env,
                     log_fh=log_fh,
                     cmake_bin=args.cmake_bin,
                     timeout=args.timeout,
+                    worker_idx=idx,
+                    monitor=monitor,
                 )
                 if prebuild_err is not None:
                     result["status"] = "error"
                     result["message"] = prebuild_err
                     return result
 
-            log_fh.write("\n# --- codex exec ---\n")
-            log_fh.flush()
-            proc = subprocess.run(
+            if monitor is not None:
+                monitor.set_phase(idx, "codex")
+            _write_log_line(log_fh, "# --- codex exec ---", idx, monitor)
+            codex_rc = _run_streaming_cmd(
                 cmd,
                 cwd=wt_path,
                 env=worker_env,
-                stdout=log_fh,
-                stderr=subprocess.STDOUT,
-                text=True,
+                log_fh=log_fh,
+                worker_idx=idx,
+                monitor=monitor,
                 timeout=args.timeout,
             )
 
-        if proc.returncode != 0:
+        if codex_rc != 0:
             result["status"] = "error"
-            result["message"] = f"codex exited with code {proc.returncode}"
+            result["message"] = f"codex exited with code {codex_rc}"
             return result
 
         has_uncommitted, has_new_commits = _has_repo_changes(wt_path, base_head)
@@ -436,6 +847,8 @@ def run_worker(
             return result
 
         # Run validate.py check inside the worktree against its own cmake-build-match
+        if monitor is not None:
+            monitor.set_phase(idx, "validate")
         wt_report = log_dir / f"w{idx}.report.json"
         check_cmd = [
             sys.executable,
@@ -457,20 +870,19 @@ def run_worker(
             check_cmd.append("--no-freshness")
 
         with log_path.open("a", encoding="utf-8") as log_fh:
-            log_fh.write("\n# --- post-worker validate.py check ---\n")
-            log_fh.flush()
-            chk = subprocess.run(
+            _write_log_line(log_fh, "# --- post-worker validate.py check ---", idx, monitor)
+            chk_rc = _run_streaming_cmd(
                 check_cmd,
                 cwd=wt_path,
                 env=worker_env,
-                stdout=log_fh,
-                stderr=subprocess.STDOUT,
-                text=True,
+                log_fh=log_fh,
+                worker_idx=idx,
+                monitor=monitor,
             )
 
-        if chk.returncode != 0:
+        if chk_rc != 0:
             result["status"] = "regressed"
-            result["message"] = f"validate.py check failed (rc={chk.returncode})"
+            result["message"] = f"validate.py check failed (rc={chk_rc})"
             return result
 
         after_diff = before_diff
@@ -516,6 +928,13 @@ def run_worker(
         result["message"] = str(exc)
         return result
     finally:
+        if monitor is not None:
+            monitor.finish_worker(
+                idx,
+                status=result["status"],
+                delta=result["diff_delta"],
+                message=result["message"],
+            )
         if wt_created and not args.keep_worktrees:
             delete_branch = not result["kept_branch"]
             _cleanup_worktree(repo_root, wt_path, branch, delete_branch=delete_branch)
@@ -590,6 +1009,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--worktree-root", default=".harness/wt", help="Worktree parent directory (default: .harness/wt)")
     p.add_argument("--repo-root", help="Repository root (default: auto)")
     p.add_argument("--timeout", type=int, default=1800, help="Per-worker timeout in seconds (default: 1800)")
+    p.add_argument(
+        "--view",
+        choices=("auto", "dashboard", "stream", "tmux", "quiet"),
+        default="auto",
+        help="Live worker output mode (default: auto -> dashboard on TTY, stream otherwise)",
+    )
     p.add_argument("--dry-run", action="store_true", help="Create worktrees & render prompts without running prebuild or codex")
     p.add_argument("--skip-prebuild", action="store_true", default=False, help="Skip automatic cmake configure + build in fresh worktrees")
     p.add_argument("--keep-worktrees", action="store_true", help="Do not delete worktrees after workers finish")
@@ -652,15 +1077,49 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("No target functions to process.")
         return 0
 
-    template_text = PROMPT_TEMPLATE.read_text(encoding="utf-8")
+    stdout_is_tty = bool(getattr(sys.stdout, "isatty", lambda: False)())
+    stdin_is_tty = bool(getattr(sys.stdin, "isatty", lambda: False)())
+    view = resolve_view_mode(args.view, stdout_is_tty)
 
-    print(
-        f"Starting harness run {run_id}: {len(groups)} TU task(s), "
-        f"up to {args.workers} parallel worker(s){' [DRY-RUN]' if args.dry_run else ''}"
+    tmux_bin: Optional[str] = None
+    tmux_session: Optional[str] = None
+    if view == "tmux":
+        tmux_bin = shutil.which("tmux")
+        if not tmux_bin:
+            print("error: --view tmux requires 'tmux' in PATH", file=sys.stderr)
+            return 2
+        tmux_session = f"gof2-{run_id}"
+        log_paths = [log_dir / f"w{idx}.log" for idx in range(1, len(groups) + 1)]
+        try:
+            setup_tmux_session(tmux_bin, tmux_session, log_paths)
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+
+    template_text = PROMPT_TEMPLATE.read_text(encoding="utf-8")
+    monitor = HarnessMonitor(
+        run_id=run_id,
+        groups=groups,
+        log_dir=log_dir,
+        view=view,
+        out=sys.stdout,
+        is_tty=stdout_is_tty,
     )
 
+    if view != "dashboard":
+        print(
+            f"Starting harness run {run_id}: {len(groups)} TU task(s), "
+            f"up to {args.workers} parallel worker(s){' [DRY-RUN]' if args.dry_run else ''}"
+        )
+        if view == "tmux" and tmux_session:
+            if not (stdout_is_tty and stdin_is_tty and not os.environ.get("TMUX")):
+                print(f"tmux attach -t {tmux_session}")
+
     results: List[Dict[str, Any]] = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+    interrupted = False
+    monitor.start()
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.workers))
+    try:
         futs = [
             pool.submit(
                 run_worker,
@@ -673,17 +1132,33 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 log_dir,
                 template_text,
                 shared_env,
+                monitor,
             )
             for idx, group in enumerate(groups, 1)
         ]
+        if (
+            view == "tmux"
+            and tmux_bin
+            and tmux_session
+            and stdout_is_tty
+            and stdin_is_tty
+            and not os.environ.get("TMUX")
+        ):
+            subprocess.run([tmux_bin, "attach", "-t", tmux_session])
         for fut in concurrent.futures.as_completed(futs):
             results.append(fut.result())
+    except KeyboardInterrupt:
+        interrupted = True
+    finally:
+        pool.shutdown(wait=not interrupted, cancel_futures=interrupted)
+        monitor.stop()
 
     results.sort(key=lambda r: r["worker"])
     summary = {
         "run_id": run_id,
         "base_head": base_head,
         "dry_run": bool(args.dry_run),
+        "view": view,
         "workers": args.workers,
         "tasks": len(results),
         "counts": {
@@ -694,8 +1169,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     }
     summary_path = log_dir / "summary.json"
     summary_path.write_text(json.dumps(summary, indent=2) + "\n")
+    if interrupted:
+        print("\nInterrupted by user (Ctrl-C).", file=sys.stderr)
     print_summary(results, summary_path)
 
+    if interrupted:
+        return 130
     has_errors = any(r["status"] in ("error", "regressed") for r in results)
     return 1 if has_errors else 0
 

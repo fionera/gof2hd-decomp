@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import stat
@@ -12,6 +14,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -771,6 +774,197 @@ class TestHarness(unittest.TestCase):
         self.assertEqual(summary["counts"]["error"], 1)
         self.assertIn("prebuild configure failed", summary["results"][0]["message"])
 
+
+    def test_view_stream_prefixes_and_unbuffered_env(self) -> None:
+        self.assertEqual(harness.resolve_view_mode("auto", True), "dashboard")
+        self.assertEqual(harness.resolve_view_mode("auto", False), "stream")
+
+        mock_codex = self.repo / "mock_codex_stream.py"
+        mock_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "import os, shutil, time\n"
+            "from pathlib import Path\n"
+            "print('STREAM_UNBUF=' + os.environ.get('PYTHONUNBUFFERED', ''))\n"
+            "print('STREAM_STEP_1')\n"
+            "time.sleep(0.05)\n"
+            "print('STREAM_STEP_2')\n"
+            "p = Path('src/Alpha.cpp')\n"
+            "p.write_text(p.read_text() + '// streamed\\n')\n"
+            "bdir = Path(os.environ['GOF2_BUILD_DIR'])\n"
+            "bdir.mkdir(parents=True, exist_ok=True)\n"
+            "shutil.copyfile(os.environ['GOF2_ORIGINAL_SO'], bdir / 'libgof2hdaa.so')\n"
+        )
+        mock_codex.chmod(mock_codex.stat().st_mode | stat.S_IXUSR)
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = harness.main(
+                [
+                    "--repo-root", str(self.repo),
+                    "--report", str(self.report_path),
+                    "--original", str(self.orig_so),
+                    "--targets", "_ZN5Alpha3runEv,_ZN5Alpha4drawEv",
+                    "--workers", "1",
+                    "--codex-bin", str(mock_codex),
+                    "--skip-prebuild",
+                    "--skip-layout",
+                    "--no-freshness",
+                    "--view", "stream",
+                ]
+            )
+        self.assertEqual(rc, 0)
+        out = buf.getvalue()
+        self.assertIn("[w1 alpha] STREAM_UNBUF=1", out)
+        self.assertIn("[w1 alpha] STREAM_STEP_1", out)
+        self.assertIn("[w1 alpha] STREAM_STEP_2", out)
+        self.assertIn("[w1 alpha] CHECK PASSED", out)
+        self.assertIn("=== Harness Run Summary ===", out)
+
+    def test_view_dashboard_renders_table_tail_and_restores_terminal(self) -> None:
+        mock_codex = self.repo / "mock_codex_dash.py"
+        mock_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "import time\n"
+            "print('DASH_ACTIVITY_LINE_1')\n"
+            "time.sleep(0.05)\n"
+            "print('DASH_ACTIVITY_LINE_2')\n"
+        )
+        mock_codex.chmod(mock_codex.stat().st_mode | stat.S_IXUSR)
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = harness.main(
+                [
+                    "--repo-root", str(self.repo),
+                    "--report", str(self.report_path),
+                    "--original", str(self.orig_so),
+                    "--targets", "_ZN4Beta3runEv",
+                    "--workers", "1",
+                    "--codex-bin", str(mock_codex),
+                    "--skip-prebuild",
+                    "--view", "dashboard",
+                ]
+            )
+        self.assertEqual(rc, 0)
+        out = buf.getvalue()
+        # Alternate screen enter + hide cursor, and clean restore on exit
+        self.assertIn("\x1b[?1049h\x1b[?25l", out)
+        self.assertIn("\x1b[?25h\x1b[?1049l", out)
+        # Dashboard header, table columns, worker row, and live tail pane
+        self.assertIn("GOF2HD Harness | run=", out)
+        self.assertIn("TU", out)
+        self.assertIn("PHASE", out)
+        self.assertIn("ACTIVITY", out)
+        self.assertIn("src/Beta.cpp", out)
+        self.assertIn("Live Tail:", out)
+        self.assertIn("[w1] DASH_ACTIVITY_LINE_2", out)
+        # Final summary is printed after restoring the terminal
+        restore_idx = out.rfind("\x1b[?25h\x1b[?1049l")
+        summary_idx = out.rfind("=== Harness Run Summary ===")
+        self.assertGreater(summary_idx, restore_idx)
+
+    def test_view_quiet_minimal_output_and_full_log(self) -> None:
+        mock_codex = self.repo / "mock_codex_quiet.py"
+        mock_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "print('QUIET_HIDDEN_VERBOSE_LINE')\n"
+        )
+        mock_codex.chmod(mock_codex.stat().st_mode | stat.S_IXUSR)
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = harness.main(
+                [
+                    "--repo-root", str(self.repo),
+                    "--report", str(self.report_path),
+                    "--original", str(self.orig_so),
+                    "--targets", "_ZN4Beta3runEv",
+                    "--workers", "1",
+                    "--codex-bin", str(mock_codex),
+                    "--skip-prebuild",
+                    "--view", "quiet",
+                ]
+            )
+        self.assertEqual(rc, 0)
+        out = buf.getvalue()
+        self.assertIn("Starting harness run", out)
+        self.assertIn("[w1] start src/Beta.cpp", out)
+        self.assertIn("[w1] unchanged (+0B) src/Beta.cpp", out)
+        self.assertIn("=== Harness Run Summary ===", out)
+        self.assertNotIn("QUIET_HIDDEN_VERBOSE_LINE", out)
+
+        summaries = sorted((self.repo / ".harness" / "logs").rglob("summary.json"))
+        summary = json.loads(summaries[-1].read_text())
+        log_text = Path(summary["results"][0]["log"]).read_text()
+        self.assertIn("QUIET_HIDDEN_VERBOSE_LINE", log_text)
+
+    def test_view_tmux_creates_tiled_session_and_precreates_logs(self) -> None:
+        tmux_dir = self.repo / "mock_bin"
+        tmux_dir.mkdir()
+        tmux_calls_log = self.repo / "tmux_calls.jsonl"
+        mock_tmux = tmux_dir / "tmux"
+        mock_tmux.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, shlex, sys\n"
+            "from pathlib import Path\n"
+            "argv = sys.argv[1:]\n"
+            "log_exists = None\n"
+            "if argv and argv[0] in ('new-session', 'split-window'):\n"
+            "    cmd_tokens = shlex.split(argv[-1])\n"
+            "    if len(cmd_tokens) >= 3 and cmd_tokens[:2] == ['tail', '-F']:\n"
+            "        log_exists = Path(cmd_tokens[2]).is_file()\n"
+            f"with open({str(tmux_calls_log)!r}, 'a') as fh:\n"
+            "    fh.write(json.dumps({'argv': argv, 'log_exists': log_exists}) + '\\n')\n"
+        )
+        mock_tmux.chmod(mock_tmux.stat().st_mode | stat.S_IXUSR)
+
+        buf = io.StringIO()
+        with mock.patch("shutil.which", return_value=str(mock_tmux)):
+            with contextlib.redirect_stdout(buf):
+                rc = harness.main(
+                    [
+                        "--repo-root", str(self.repo),
+                        "--report", str(self.report_path),
+                        "--workers", "2",
+                        "--max-tasks", "2",
+                        "--dry-run",
+                        "--view", "tmux",
+                    ]
+                )
+        self.assertEqual(rc, 0)
+        out = buf.getvalue()
+        calls = [json.loads(line) for line in tmux_calls_log.read_text().splitlines()]
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(calls[0]["argv"][:3], ["new-session", "-d", "-s"])
+        session_name = calls[0]["argv"][3]
+        self.assertTrue(session_name.startswith("gof2-"))
+        self.assertIn("tail -F", calls[0]["argv"][4])
+        self.assertIn("w1.log", calls[0]["argv"][4])
+        self.assertTrue(calls[0]["log_exists"])
+
+        self.assertEqual(calls[1]["argv"][:3], ["split-window", "-t", session_name])
+        self.assertIn("tail -F", calls[1]["argv"][3])
+        self.assertIn("w2.log", calls[1]["argv"][3])
+        self.assertTrue(calls[1]["log_exists"])
+
+        self.assertEqual(calls[2]["argv"], ["select-layout", "-t", session_name, "tiled"])
+        self.assertIn(f"tmux attach -t {session_name}", out)
+        self.assertIn("=== Harness Run Summary ===", out)
+
+        # Missing tmux binary returns exit code 2
+        err_buf = io.StringIO()
+        with mock.patch("shutil.which", return_value=None):
+            with contextlib.redirect_stderr(err_buf):
+                rc_missing = harness.main(
+                    [
+                        "--repo-root", str(self.repo),
+                        "--report", str(self.report_path),
+                        "--dry-run",
+                        "--view", "tmux",
+                    ]
+                )
+        self.assertEqual(rc_missing, 2)
+        self.assertIn("tmux", err_buf.getvalue())
 
 if __name__ == "__main__":
     unittest.main()
