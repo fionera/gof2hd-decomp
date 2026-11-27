@@ -1,7 +1,0 @@
-# sodiff_allow.txt -- the documented irreducible symbol delta: defined exports our build has that
-# the original does not. Every name here must have a rationale in docs/VALIDATION.md. The diff
-# target and tools/ratchet.py treat any extra export NOT on this list as a hard failure, and
-# tools/ratchet.py --update-baseline refuses to lock a state with undocumented extras.
-#
-# Empty since 2026-10-21: every former entry was fixed in source (see docs/VALIDATION.md,
-# "Reducible (already fixed)"). Do not add an entry without a rationale there.

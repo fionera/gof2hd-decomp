@@ -242,61 +242,54 @@ add_custom_target(link_so DEPENDS "${_so}")
 # =================================================================================================
 # Validation targets
 # =================================================================================================
-# diff -- whole-.so dynamic-symbol parity gate. Builds the .so, then compares our exported .dynsym
-# against the original's: prints original / ours / extra / missing / wrong_type. Exit 0 iff parity.
-add_custom_target(diff
-    DEPENDS "${_so}"
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/sodiff.py
-            --original "${GOF2_ORIGINAL_SO}" --ours "${_so}"
-            --allow "${CMAKE_SOURCE_DIR}/tools/sodiff_allow.txt"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
-    COMMENT "Symbol-parity diff vs the original .so (allow: documented irreducible delta)")
-
-# verify -- per-function ASM match of our linked .so vs the original (byte-exact / linked-exact /
-# fuzzy %), plus the missing/wrong_type/extra symbol-set deltas.
+# verify -- fast binary comparison vs original .so (byte-exact / linked-exact / section parity)
+# Writes report to ${CMAKE_BINARY_DIR}/report.json (never repo root).
 add_custom_target(verify
     DEPENDS "${_so}"
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/verify/verify.py
-            --build-dir ${CMAKE_BINARY_DIR}/verify
-            --original "${GOF2_ORIGINAL_SO}" --ours "${_so}"
-            --objdump ${GOF2_NDK_OBJDUMP}
-            --fail-on-wrong-type
-    # Sync the tracked repo-root snapshot in the same step, so it can never go stale again
-    # (it drifted once when it was hand-copied per pass).
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/verify/report.json
-            ${CMAKE_SOURCE_DIR}/report.json
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/validate.py status
+            --build-dir "${CMAKE_BINARY_DIR}"
+            --original "${GOF2_ORIGINAL_SO}"
+            --ours "${_so}"
+            --objdump "${GOF2_NDK_OBJDUMP}"
+            --json "${CMAKE_BINARY_DIR}/report.json"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
     COMMENT "Validating ARM build vs original .so (opt=${GOF2_MATCH_OPT})")
 
 # verify-fn -- single-function side-by-side diff:  FN=<mangled> cmake --build <dir> --target verify-fn
 add_custom_target(verify-fn
     DEPENDS "${_so}"
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/verify/verify.py
-            --build-dir ${CMAKE_BINARY_DIR}/verify
-            --original "${GOF2_ORIGINAL_SO}" --ours "${_so}"
-            --objdump ${GOF2_NDK_OBJDUMP}
-            --show "$ENV{FN}"
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/validate.py diff
+            --build-dir "${CMAKE_BINARY_DIR}"
+            --original "${GOF2_ORIGINAL_SO}"
+            --ours "${_so}"
+            --objdump "${GOF2_NDK_OBJDUMP}"
+            "$ENV{FN}"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
     COMMENT "Side-by-side ASM diff for FN")
 
-# lint -- structural invariants (one class per file, no void*/union, no explicit template
-# instantiation, no asm/__attribute__/extern-C/linker hacks, no circular includes).
+# lint -- source-authenticity linter over src/ + CMakeLists.txt debt audit.
 add_custom_target(lint
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/goal_lint.py ${CMAKE_SOURCE_DIR}/src
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/validate.py lint
+            --src "${CMAKE_SOURCE_DIR}/src"
+            --cmake "${CMAKE_SOURCE_DIR}/CMakeLists.txt"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
-    COMMENT "Structural lint of src/")
+    COMMENT "Source-authenticity lint of src/")
 
-# Field name/offset drift: every field_0xNN must sit at offset 0xNN (its offset in the original
-# binary). Authoritative check via clang -fdump-record-layouts (works for non-standard-layout too).
+# drift -- field_0xNN offset check via NDK clang++ -fdump-record-layouts (AAPCS).
 add_custom_target(drift
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/layout.py
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/validate.py layout
+            --build-dir "${CMAKE_BINARY_DIR}"
+            --src "${CMAKE_SOURCE_DIR}/src"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
-    COMMENT "Field name/offset drift check (layout.py)")
+    COMMENT "Field name/offset drift check (validate.py layout)")
 
-# check -- the machine-checked no-degradation gate: relinks/re-verifies if stale, then compares
-# byte_exact/linked_exact/stubs/parity/imports/lint against tools/verify_baseline.json and the
-# tools/sodiff_allow.txt irreducible delta. This is what the pre-push hook runs.
+# check -- full regression gate vs tools/baseline.json (freshness, parity, imports, lint, layout).
 add_custom_target(check
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/ratchet.py --build-dir ${CMAKE_BINARY_DIR}
+    DEPENDS "${_so}"
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/validate.py check
+            --build-dir "${CMAKE_BINARY_DIR}"
+            --original "${GOF2_ORIGINAL_SO}"
+            --ours "${_so}"
+            --objdump "${GOF2_NDK_OBJDUMP}"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
-    COMMENT "No-degradation ratchet vs tools/verify_baseline.json")
+    COMMENT "Regression gate vs tools/baseline.json")

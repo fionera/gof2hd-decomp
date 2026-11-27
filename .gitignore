@@ -1,20 +1,24 @@
-# CMake / CLion
+# CMake / IDEs
 cmake-build-*/
-/build/
+build/
 compile_commands.json
 .idea/
 .cache/
 
-# object files, scratch, python caches
+# Harness, validation outputs, worktrees
+.harness/
+.worktrees/
+.claude/worktrees/
+report.json
+
+# Object files, scratch, python caches
 *.o
 *.log
 *.out
 __pycache__/
 *.pyc
-.verify-spike/
-cmake-build-match/
 
-# vendored match-lib source trees + build artifacts (downloaded/built by third_party/build_match_lib.cmake)
+# Vendored match-lib source trees + build artifacts (downloaded/built by third_party/build_match_lib.cmake)
 third_party/openssl/openssl-*/
 third_party/zlib/zlib-*/
 third_party/libzip/libzip-*/
