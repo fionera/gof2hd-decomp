@@ -525,6 +525,7 @@ class TestHarness(unittest.TestCase):
                 "--targets", "_ZN5Alpha3runEv,_ZN5Alpha4drawEv",
                 "--workers", "1",
                 "--codex-bin", str(mock_codex),
+                "--skip-prebuild",
                 "--skip-layout",
                 "--no-freshness",
             ]
@@ -544,6 +545,231 @@ class TestHarness(unittest.TestCase):
             cwd=self.repo, capture_output=True, text=True, check=True,
         ).stdout.strip()
         self.assertIn(res["branch"], branches)
+
+    def test_resolve_external_paths_from_cache_env_and_cli(self) -> None:
+        main_build = self.repo / "custom-build"
+        main_build.mkdir()
+        fmod_dir = self.repo / "ext_fmod"
+        fmod_dir.mkdir()
+        env_fmod = self.repo / "env_fmod"
+        env_fmod.mkdir()
+        cli_fmod = self.repo / "cli_fmod"
+        cli_fmod.mkdir()
+
+        # Relative entries in CMakeCache.txt must resolve to absolute paths
+        (main_build / "CMakeCache.txt").write_text(
+            "GOF2_ORIGINAL_SO:FILEPATH=../orig.so\n"
+            "GOF2_FMOD_LIBDIR:PATH=../ext_fmod\n"
+        )
+
+        # 1. Auto-discovery from CMakeCache.txt when env/CLI unset
+        orig, fmod = harness.resolve_external_paths(
+            repo_root=self.repo,
+            build_dir=main_build,
+            env={},
+        )
+        self.assertEqual(orig, self.orig_so.resolve())
+        self.assertEqual(fmod, fmod_dir.resolve())
+        self.assertTrue(orig.is_absolute())
+        self.assertTrue(fmod.is_absolute())
+
+        # 2. Env var overrides CMakeCache.txt
+        orig_e, fmod_e = harness.resolve_external_paths(
+            repo_root=self.repo,
+            build_dir=main_build,
+            env={"GOF2_FMOD_LIBDIR": str(env_fmod)},
+        )
+        self.assertEqual(orig_e, self.orig_so.resolve())
+        self.assertEqual(fmod_e, env_fmod.resolve())
+
+        # 3. CLI flag overrides env var and CMakeCache.txt
+        orig_c, fmod_c = harness.resolve_external_paths(
+            repo_root=self.repo,
+            build_dir=main_build,
+            fmod_libdir_arg=str(cli_fmod),
+            env={"GOF2_FMOD_LIBDIR": str(env_fmod)},
+        )
+        self.assertEqual(orig_c, self.orig_so.resolve())
+        self.assertEqual(fmod_c, cli_fmod.resolve())
+
+    def test_prebuild_and_env_propagation_into_worker(self) -> None:
+        main_build = self.repo / "main-build"
+        main_build.mkdir()
+        fmod_dir = self.repo / "apk_libs"
+        fmod_dir.mkdir()
+        (main_build / "CMakeCache.txt").write_text(
+            f"GOF2_ORIGINAL_SO:FILEPATH={main_build / '..' / 'orig.so'}\n"
+            f"GOF2_FMOD_LIBDIR:PATH={main_build / '..' / 'apk_libs'}\n"
+        )
+
+        cmake_calls_log = self.repo / "cmake_calls.jsonl"
+        codex_env_log = self.repo / "codex_env.json"
+
+        mock_cmake = self.repo / "mock_cmake.py"
+        mock_cmake.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, os, shutil, sys\n"
+            "from pathlib import Path\n"
+            "rec = {\n"
+            "    'argv': sys.argv[1:],\n"
+            "    'cwd': os.getcwd(),\n"
+            "    'orig': os.environ.get('GOF2_ORIGINAL_SO'),\n"
+            "    'fmod': os.environ.get('GOF2_FMOD_LIBDIR'),\n"
+            "    'parallel': os.environ.get('CMAKE_BUILD_PARALLEL_LEVEL'),\n"
+            "}\n"
+            f"with open({str(cmake_calls_log)!r}, 'a') as fh:\n"
+            "    fh.write(json.dumps(rec) + '\\n')\n"
+            "print('MOCK_CMAKE_OUT ' + ' '.join(sys.argv[1:]))\n"
+            "if sys.argv[1:3] == ['--build', '--preset']:\n"
+            "    bdir = Path.cwd() / 'cmake-build-match'\n"
+            "    bdir.mkdir(parents=True, exist_ok=True)\n"
+            "    (bdir / 'libgof2hdaa.so').write_bytes(b'PREBUILT')\n"
+        )
+        mock_cmake.chmod(mock_cmake.stat().st_mode | stat.S_IXUSR)
+
+        mock_codex = self.repo / "mock_codex_prebuild.py"
+        mock_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, os, shutil\n"
+            "from pathlib import Path\n"
+            "bdir = Path.cwd() / 'cmake-build-match'\n"
+            "prebuilt_ok = (bdir / 'libgof2hdaa.so').is_file()\n"
+            "info = {\n"
+            "    'cwd': os.getcwd(),\n"
+            "    'GOF2_ORIGINAL_SO': os.environ.get('GOF2_ORIGINAL_SO'),\n"
+            "    'GOF2_FMOD_LIBDIR': os.environ.get('GOF2_FMOD_LIBDIR'),\n"
+            "    'GOF2_BUILD_DIR': os.environ.get('GOF2_BUILD_DIR'),\n"
+            "    'prebuilt_ok': prebuilt_ok,\n"
+            "}\n"
+            f"Path({str(codex_env_log)!r}).write_text(json.dumps(info))\n"
+            "p = Path('src/Alpha.cpp')\n"
+            "p.write_text(p.read_text() + '// matched after prebuild\\n')\n"
+            "shutil.copyfile(os.environ['GOF2_ORIGINAL_SO'], bdir / 'libgof2hdaa.so')\n"
+        )
+        mock_codex.chmod(mock_codex.stat().st_mode | stat.S_IXUSR)
+
+        prev_parallel = os.environ.get("CMAKE_BUILD_PARALLEL_LEVEL")
+        prev_orig = os.environ.pop("GOF2_ORIGINAL_SO", None)
+        prev_fmod = os.environ.pop("GOF2_FMOD_LIBDIR", None)
+        os.environ["CMAKE_BUILD_PARALLEL_LEVEL"] = "3"
+        try:
+            rc = harness.main(
+                [
+                    "--repo-root", str(self.repo),
+                    "--build-dir", str(main_build),
+                    "--report", str(self.report_path),
+                    "--targets", "_ZN5Alpha3runEv,_ZN5Alpha4drawEv",
+                    "--workers", "1",
+                    "--cmake-bin", str(mock_cmake),
+                    "--codex-bin", str(mock_codex),
+                    "--skip-layout",
+                    "--no-freshness",
+                ]
+            )
+        finally:
+            if prev_parallel is None:
+                os.environ.pop("CMAKE_BUILD_PARALLEL_LEVEL", None)
+            else:
+                os.environ["CMAKE_BUILD_PARALLEL_LEVEL"] = prev_parallel
+            if prev_orig is not None:
+                os.environ["GOF2_ORIGINAL_SO"] = prev_orig
+            if prev_fmod is not None:
+                os.environ["GOF2_FMOD_LIBDIR"] = prev_fmod
+
+        self.assertEqual(rc, 0)
+        calls = [json.loads(line) for line in cmake_calls_log.read_text().splitlines()]
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(
+            calls[0]["argv"],
+            [
+                "--preset",
+                "default",
+                f"-DGOF2_ORIGINAL_SO={self.orig_so.resolve()}",
+                f"-DGOF2_FMOD_LIBDIR={fmod_dir.resolve()}",
+            ],
+        )
+        self.assertEqual(calls[1]["argv"], ["--build", "--preset", "link"])
+        self.assertEqual(calls[1]["parallel"], "3")
+
+        env_seen = json.loads(codex_env_log.read_text())
+        self.assertTrue(env_seen["prebuilt_ok"])
+        self.assertEqual(env_seen["GOF2_ORIGINAL_SO"], str(self.orig_so.resolve()))
+        self.assertEqual(env_seen["GOF2_FMOD_LIBDIR"], str(fmod_dir.resolve()))
+        self.assertEqual(env_seen["GOF2_BUILD_DIR"], str(Path(env_seen["cwd"]) / "cmake-build-match"))
+
+        summaries = sorted((self.repo / ".harness" / "logs").rglob("summary.json"))
+        summary = json.loads(summaries[-1].read_text())
+        self.assertEqual(summary["counts"]["matched"], 1)
+        res = summary["results"][0]
+        log_text = Path(res["log"]).read_text()
+        self.assertIn("MOCK_CMAKE_OUT --preset default", log_text)
+        self.assertIn("MOCK_CMAKE_OUT --build --preset link", log_text)
+
+        prompt_text = Path(res["prompt"]).read_text()
+        self.assertIn("cmake-build-match/", prompt_text)
+        self.assertIn("GOF2_ORIGINAL_SO", prompt_text)
+        self.assertIn("GOF2_FMOD_LIBDIR", prompt_text)
+        self.assertIn("cmake --build --preset link", prompt_text)
+
+    def test_skip_prebuild_and_prebuild_failure_behavior(self) -> None:
+        cmake_marker = self.repo / "cmake_was_called"
+        failing_cmake = self.repo / "failing_cmake.py"
+        failing_cmake.write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            "from pathlib import Path\n"
+            f"Path({str(cmake_marker)!r}).write_text('called')\n"
+            "print('simulated cmake configure error')\n"
+            "sys.exit(2)\n"
+        )
+        failing_cmake.chmod(failing_cmake.stat().st_mode | stat.S_IXUSR)
+
+        codex_marker = self.repo / "codex_was_called"
+        mock_codex = self.repo / "mock_codex_marker.py"
+        mock_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "from pathlib import Path\n"
+            f"Path({str(codex_marker)!r}).write_text('called')\n"
+        )
+        mock_codex.chmod(mock_codex.stat().st_mode | stat.S_IXUSR)
+
+        # 1. With --skip-prebuild, failing_cmake is never called
+        rc_skip = harness.main(
+            [
+                "--repo-root", str(self.repo),
+                "--report", str(self.report_path),
+                "--original", str(self.orig_so),
+                "--targets", "_ZN4Beta3runEv",
+                "--workers", "1",
+                "--cmake-bin", str(failing_cmake),
+                "--codex-bin", str(mock_codex),
+                "--skip-prebuild",
+            ]
+        )
+        self.assertEqual(rc_skip, 0)
+        self.assertFalse(cmake_marker.exists())
+        self.assertTrue(codex_marker.exists())
+
+        # 2. Without --skip-prebuild, prebuild failure aborts worker before codex runs
+        codex_marker.unlink()
+        rc_fail = harness.main(
+            [
+                "--repo-root", str(self.repo),
+                "--report", str(self.report_path),
+                "--original", str(self.orig_so),
+                "--targets", "_ZN4Beta3runEv",
+                "--workers", "1",
+                "--cmake-bin", str(failing_cmake),
+                "--codex-bin", str(mock_codex),
+            ]
+        )
+        self.assertEqual(rc_fail, 1)
+        self.assertTrue(cmake_marker.exists())
+        self.assertFalse(codex_marker.exists())
+        summaries = sorted((self.repo / ".harness" / "logs").rglob("summary.json"))
+        summary = json.loads(summaries[-1].read_text())
+        self.assertEqual(summary["counts"]["error"], 1)
+        self.assertIn("prebuild configure failed", summary["results"][0]["message"])
 
 
 if __name__ == "__main__":

@@ -166,7 +166,7 @@ def render_prompt(
     template_text: str,
     group: TargetGroup,
     branch_name: str,
-    build_dir_name: str,
+    build_dir_name: str = "cmake-build-match",
 ) -> str:
     lines = ["| Symbol (demangled) | Mangled | Orig Size | Diff Bytes | Linked Exact |", "|---|---|---:|---:|:---:|"]
     for s in group.symbols:
@@ -183,7 +183,7 @@ def render_prompt(
         "{{TARGET_SYMBOLS_TABLE}}": "\n".join(lines),
         "{{PRIMARY_SYMBOL}}": primary,
         "{{DIFF_CMD}}": f"python3 tools/validate.py diff --build-dir {shlex.quote(build_dir_name)} {sym_args}",
-        "{{BUILD_CMD}}": f"cmake --build {shlex.quote(build_dir_name)} --target link_so",
+        "{{BUILD_CMD}}": "cmake --build --preset link",
         "{{CHECK_CMD}}": f"python3 tools/validate.py check --build-dir {shlex.quote(build_dir_name)}",
     }
     out = template_text
@@ -226,6 +226,104 @@ def _has_repo_changes(wt_path: Path, base_head: str) -> Tuple[bool, bool]:
     return has_uncommitted, has_new_commits
 
 
+def resolve_external_paths(
+    repo_root: Path,
+    build_dir: Path,
+    original_arg: Optional[str] = None,
+    fmod_libdir_arg: Optional[str] = None,
+    env: Optional[Dict[str, str]] = None,
+) -> Tuple[Optional[Path], Optional[Path]]:
+    """Resolve absolute paths for GOF2_ORIGINAL_SO and GOF2_FMOD_LIBDIR.
+
+    Precedence: explicit CLI flag -> environment variable -> <build_dir>/CMakeCache.txt
+    -> existing sibling fallback.
+    """
+    env_map = os.environ if env is None else env
+    cache = validate.parse_cmake_cache(build_dir)
+
+    def _resolve(raw: Optional[str], base: Optional[Path] = None) -> Optional[Path]:
+        if not raw or not raw.strip():
+            return None
+        path = Path(raw.strip()).expanduser()
+        if not path.is_absolute() and base is not None:
+            path = base / path
+        return path.resolve()
+
+    orig_path: Optional[Path] = None
+    if original_arg:
+        orig_path = _resolve(original_arg)
+    elif env_map.get("GOF2_ORIGINAL_SO"):
+        orig_path = _resolve(env_map.get("GOF2_ORIGINAL_SO"))
+    elif cache.get("GOF2_ORIGINAL_SO"):
+        orig_path = _resolve(cache.get("GOF2_ORIGINAL_SO"), base=build_dir)
+    else:
+        cand = repo_root.parent / "_work" / "bins" / "android_2.0.16_libgof2hdaa.so"
+        if cand.is_file():
+            orig_path = cand.resolve()
+
+    fmod_path: Optional[Path] = None
+    if fmod_libdir_arg:
+        fmod_path = _resolve(fmod_libdir_arg)
+    elif env_map.get("GOF2_FMOD_LIBDIR"):
+        fmod_path = _resolve(env_map.get("GOF2_FMOD_LIBDIR"))
+    elif cache.get("GOF2_FMOD_LIBDIR"):
+        fmod_path = _resolve(cache.get("GOF2_FMOD_LIBDIR"), base=build_dir)
+    elif orig_path is not None:
+        cand = orig_path.parent / "apk_libs"
+        if cand.is_dir():
+            fmod_path = cand.resolve()
+
+    return orig_path, fmod_path
+
+
+def prebuild_worktree(
+    wt_path: Path,
+    worker_env: Dict[str, str],
+    log_fh: Any,
+    cmake_bin: str = "cmake",
+    timeout: Optional[int] = None,
+) -> Optional[str]:
+    """Configure and build <wt_path>/cmake-build-match before invoking codex.
+
+    Returns None on success or an error message string on failure.
+    """
+    configure_cmd = [cmake_bin, "--preset", "default"]
+    if worker_env.get("GOF2_ORIGINAL_SO"):
+        configure_cmd.append(f"-DGOF2_ORIGINAL_SO={worker_env['GOF2_ORIGINAL_SO']}")
+    if worker_env.get("GOF2_FMOD_LIBDIR"):
+        configure_cmd.append(f"-DGOF2_FMOD_LIBDIR={worker_env['GOF2_FMOD_LIBDIR']}")
+
+    log_fh.write(f"\n# --- prebuild configure: {' '.join(shlex.quote(c) for c in configure_cmd)} ---\n")
+    log_fh.flush()
+    cfg = subprocess.run(
+        configure_cmd,
+        cwd=wt_path,
+        env=worker_env,
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        text=True,
+        timeout=timeout,
+    )
+    if cfg.returncode != 0:
+        return f"prebuild configure failed (rc={cfg.returncode})"
+
+    build_cmd = [cmake_bin, "--build", "--preset", "link"]
+    log_fh.write(f"\n# --- prebuild build: {' '.join(shlex.quote(c) for c in build_cmd)} ---\n")
+    log_fh.flush()
+    bld = subprocess.run(
+        build_cmd,
+        cwd=wt_path,
+        env=worker_env,
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        text=True,
+        timeout=timeout,
+    )
+    if bld.returncode != 0:
+        return f"prebuild build failed (rc={bld.returncode})"
+    return None
+
+
 def run_worker(
     idx: int,
     run_id: str,
@@ -245,7 +343,8 @@ def run_worker(
     log_path = log_dir / f"w{idx}.log"
     prompt_path = log_dir / f"w{idx}.prompt.md"
 
-    build_dir_name = Path(args.build_dir).name if args.build_dir else "cmake-build-match"
+    build_dir_name = "cmake-build-match"
+    wt_build_dir = wt_path / build_dir_name
     prompt_text = render_prompt(template_text, group, branch, build_dir_name)
     prompt_path.write_text(prompt_text)
 
@@ -272,13 +371,16 @@ def run_worker(
         wt_created = True
 
         worker_env = dict(shared_env)
-        worker_env["GOF2_BUILD_DIR"] = str(wt_path / build_dir_name)
+        worker_env["GOF2_BUILD_DIR"] = str(wt_build_dir)
 
         if args.dry_run:
             log_path.write_text(
                 f"[dry-run] worker={idx} branch={branch} tu={group.tu_key}\n"
                 f"[dry-run] symbols={', '.join(result['symbols'])}\n"
                 f"[dry-run] worktree={wt_path}\n"
+                f"[dry-run] build_dir={wt_build_dir}\n"
+                f"[dry-run] GOF2_ORIGINAL_SO={worker_env.get('GOF2_ORIGINAL_SO', '')}\n"
+                f"[dry-run] GOF2_FMOD_LIBDIR={worker_env.get('GOF2_FMOD_LIBDIR', '')}\n"
             )
             result["status"] = "dry-run"
             result["message"] = "worktree created and prompt rendered (codex skipped)"
@@ -295,6 +397,22 @@ def run_worker(
 
         with log_path.open("w", encoding="utf-8") as log_fh:
             log_fh.write(f"# worker {idx} | tu={group.tu_key} | branch={branch}\n")
+            log_fh.flush()
+
+            if not args.skip_prebuild:
+                prebuild_err = prebuild_worktree(
+                    wt_path=wt_path,
+                    worker_env=worker_env,
+                    log_fh=log_fh,
+                    cmake_bin=args.cmake_bin,
+                    timeout=args.timeout,
+                )
+                if prebuild_err is not None:
+                    result["status"] = "error"
+                    result["message"] = prebuild_err
+                    return result
+
+            log_fh.write("\n# --- codex exec ---\n")
             log_fh.flush()
             proc = subprocess.run(
                 cmd,
@@ -317,21 +435,22 @@ def run_worker(
             result["message"] = "no file edits or commits produced"
             return result
 
-        # Run validate.py check inside the worktree
+        # Run validate.py check inside the worktree against its own cmake-build-match
         wt_report = log_dir / f"w{idx}.report.json"
         check_cmd = [
             sys.executable,
             str(wt_path / "tools" / "validate.py"),
             "check",
             "--build-dir",
-            str(wt_path / build_dir_name),
+            str(wt_build_dir),
             "--repo-root",
             str(wt_path),
             "--json",
             str(wt_report),
         ]
-        if args.original:
-            check_cmd.extend(["--original", str(Path(args.original).resolve())])
+        orig_so = worker_env.get("GOF2_ORIGINAL_SO")
+        if orig_so:
+            check_cmd.extend(["--original", orig_so])
         if args.skip_layout:
             check_cmd.append("--skip-layout")
         if args.no_freshness:
@@ -403,7 +522,10 @@ def run_worker(
 
 
 def load_non_exact_from_status(
-    args: argparse.Namespace, repo_root: Path, log_dir: Path
+    args: argparse.Namespace,
+    repo_root: Path,
+    log_dir: Path,
+    orig_path: Optional[Path] = None,
 ) -> List[Dict[str, Any]]:
     if args.report:
         rep = json.loads(Path(args.report).read_text())
@@ -421,8 +543,9 @@ def load_non_exact_from_status(
         str(report_path),
         "--no-disasm",
     ]
-    if args.original:
-        cmd.extend(["--original", str(Path(args.original).resolve())])
+    resolved_orig = orig_path or (Path(args.original).expanduser().resolve() if args.original else None)
+    if resolved_orig:
+        cmd.extend(["--original", str(resolved_orig)])
     proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True)
     if proc.returncode != 0:
         raise RuntimeError(
@@ -459,13 +582,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--profile", help="Codex profile override (--profile)")
     p.add_argument("--codex-bin", default="codex", help="Codex CLI binary (default: codex)")
     p.add_argument("--codex-args", help="Additional quoted flags passed to `codex exec`")
-    p.add_argument("--build-dir", help="CMake build directory (default: auto-discovered)")
+    p.add_argument("--build-dir", help="Main CMake build directory for status & CMakeCache.txt discovery (default: auto-discovered)")
     p.add_argument("--original", help="Path to original libgof2hdaa.so")
+    p.add_argument("--fmod-libdir", help="Directory holding libfmodex.so/libfmodevent.so (default: auto-discovered)")
+    p.add_argument("--cmake-bin", default="cmake", help="CMake CLI binary for worktree prebuild (default: cmake)")
     p.add_argument("--report", help="Existing validate.py status JSON report (skip initial status run)")
     p.add_argument("--worktree-root", default=".harness/wt", help="Worktree parent directory (default: .harness/wt)")
     p.add_argument("--repo-root", help="Repository root (default: auto)")
     p.add_argument("--timeout", type=int, default=1800, help="Per-worker timeout in seconds (default: 1800)")
-    p.add_argument("--dry-run", action="store_true", help="Create worktrees & render prompts without running codex")
+    p.add_argument("--dry-run", action="store_true", help="Create worktrees & render prompts without running prebuild or codex")
+    p.add_argument("--skip-prebuild", action="store_true", default=False, help="Skip automatic cmake configure + build in fresh worktrees")
     p.add_argument("--keep-worktrees", action="store_true", help="Do not delete worktrees after workers finish")
     p.add_argument("--skip-layout", action="store_true", help="Pass --skip-layout to post-worker validate.py check")
     p.add_argument("--no-freshness", action="store_true", help="Pass --no-freshness to post-worker validate.py check")
@@ -487,13 +613,28 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
     base_head = head_proc.stdout.strip()
 
+    # Resolve GOF2_ORIGINAL_SO / GOF2_FMOD_LIBDIR as absolute paths from CLI, env, or main CMakeCache.txt
+    build_dir = validate.resolve_build_dir(args.build_dir, repo_root)
+    shared_env = dict(os.environ)
+    orig_path, fmod_path = resolve_external_paths(
+        repo_root=repo_root,
+        build_dir=build_dir,
+        original_arg=args.original,
+        fmod_libdir_arg=args.fmod_libdir,
+        env=shared_env,
+    )
+    if orig_path is not None:
+        shared_env["GOF2_ORIGINAL_SO"] = str(orig_path)
+    if fmod_path is not None:
+        shared_env["GOF2_FMOD_LIBDIR"] = str(fmod_path)
+
     explicit_targets = [t.strip() for t in args.targets.split(",") if t.strip()] if args.targets else None
 
     if explicit_targets and not args.report and args.dry_run:
         non_exact: List[Dict[str, Any]] = []
     else:
         try:
-            non_exact = load_non_exact_from_status(args, repo_root, log_dir)
+            non_exact = load_non_exact_from_status(args, repo_root, log_dir, orig_path=orig_path)
         except Exception as exc:
             if explicit_targets:
                 non_exact = []
@@ -512,17 +653,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
 
     template_text = PROMPT_TEMPLATE.read_text(encoding="utf-8")
-
-    # Inherit GOF2_ORIGINAL_SO / GOF2_FMOD_LIBDIR from env or CMakeCache.txt
-    build_dir = validate.resolve_build_dir(args.build_dir, repo_root)
-    cache = validate.parse_cmake_cache(build_dir)
-    shared_env = dict(os.environ)
-    orig = args.original or shared_env.get("GOF2_ORIGINAL_SO") or cache.get("GOF2_ORIGINAL_SO")
-    if orig:
-        shared_env["GOF2_ORIGINAL_SO"] = str(Path(orig).expanduser().resolve())
-    fmod = shared_env.get("GOF2_FMOD_LIBDIR") or cache.get("GOF2_FMOD_LIBDIR")
-    if fmod:
-        shared_env["GOF2_FMOD_LIBDIR"] = str(Path(fmod).expanduser().resolve())
 
     print(
         f"Starting harness run {run_id}: {len(groups)} TU task(s), "

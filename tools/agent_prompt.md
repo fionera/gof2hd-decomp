@@ -3,6 +3,11 @@
 Target TU: `{{TARGET_TU}}`
 Branch: `{{BRANCH_NAME}}`
 
+## Environment
+
+- This worktree is already configured and built in `cmake-build-match/` with `GOF2_ORIGINAL_SO` and `GOF2_FMOD_LIBDIR` exported in your environment.
+- You do **not** need to re-run `cmake --preset default`. Rebuild after edits with `cmake --build --preset link` and run `tools/validate.py` against `cmake-build-match`.
+
 ## Target Symbol(s)
 
 {{TARGET_SYMBOLS_TABLE}}

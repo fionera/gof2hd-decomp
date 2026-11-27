@@ -13,12 +13,22 @@ project(GalaxyOnFire2 LANGUAGES C CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # compile_commands.json for clangd/CLion code intelligence
 
 # The original release .so we are matching (ELF 32-bit ARM, armeabi-v7a softfp, stripped).
-set(GOF2_ORIGINAL_SO "${CMAKE_SOURCE_DIR}/../_work/bins/android_2.0.16_libgof2hdaa.so"
+if(DEFINED ENV{GOF2_ORIGINAL_SO} AND NOT "$ENV{GOF2_ORIGINAL_SO}" STREQUAL "")
+    set(_default_original_so "$ENV{GOF2_ORIGINAL_SO}")
+else()
+    set(_default_original_so "${CMAKE_SOURCE_DIR}/../_work/bins/android_2.0.16_libgof2hdaa.so")
+endif()
+set(GOF2_ORIGINAL_SO "${_default_original_so}"
     CACHE FILEPATH "The original libgof2hdaa.so to match against")
 # The app's prebuilt FMOD Ex / FMOD Event shared libraries from the original APK
 # (lib/armeabi-v7a/libfmodex.so, libfmodevent.so): link inputs only, as in the original link.
-get_filename_component(_orig_dir "${GOF2_ORIGINAL_SO}" DIRECTORY)
-set(GOF2_FMOD_LIBDIR "${_orig_dir}/apk_libs" CACHE PATH "Directory holding the APK's libfmodex.so/libfmodevent.so")
+if(DEFINED ENV{GOF2_FMOD_LIBDIR} AND NOT "$ENV{GOF2_FMOD_LIBDIR}" STREQUAL "")
+    set(_default_fmod_libdir "$ENV{GOF2_FMOD_LIBDIR}")
+else()
+    get_filename_component(_orig_dir "${GOF2_ORIGINAL_SO}" DIRECTORY)
+    set(_default_fmod_libdir "${_orig_dir}/apk_libs")
+endif()
+set(GOF2_FMOD_LIBDIR "${_default_fmod_libdir}" CACHE PATH "Directory holding the APK's libfmodex.so/libfmodevent.so")
 
 # One OBJECT library feeds both the per-function ASM verify (diff vs the original) and the whole-.so
 # link (gold link below). The original .so is -fPIC, so these objects match it and link cleanly.
